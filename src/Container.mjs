@@ -13,6 +13,8 @@ class TeqFw_Di_Container {
         const _create = new Map();
         const _resolver = new Resolver();
 
+        _objects.set("TeqFw_Di_Container", this);
+
         /**
          * Async creation of the object by given object ID. This function instances are placed into `_create` queue
          * to be performed after all deps will be created.
@@ -71,11 +73,40 @@ class TeqFw_Di_Container {
             });
         }
 
+        /**
+         *
+         * @type {function(*=): Promise<unknown>}
+         * @memberOf TeqFw_Di_Container.prototype
+         */
         this.get = create_object;
 
+        /**
+         *
+         * @param id
+         * @return {Promise<void>}
+         * @memberOf TeqFw_Di_Container.prototype
+         */
         this.has = async function (id) {
         };
 
+        /**
+         *
+         * @param {string} id
+         * @param {Object} object
+         * @memberOf TeqFw_Di_Container.prototype
+         */
+        this.put = function (id, object) {
+            const norm_id = Normalizer.parseId(id);
+            _objects.set(norm_id, object);
+        };
+
+        /**
+         *
+         * @param {string} namespace
+         * @param {string} path
+         * @param {string} [ext]
+         * @memberOf TeqFw_Di_Container.prototype
+         */
         this.addSourceMapping = function (namespace, path, ext = "mjs") {
             const ns_norm = Normalizer.parseId(namespace);
             _resolver.addNamespaceRoot({ns: ns_norm, path, ext});

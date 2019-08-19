@@ -15,6 +15,7 @@ export default class TeqFw_Di_Resolver {
      * @typedef {Object} TeqFw_Di_Resolver.ResolveDetailsData
      * @property {string} path
      * @property {string} ext
+     * @property {boolean} is_absolute 'true' if path is absolute.
      */
     /**
      * Tree-like structure of namespaces registry entry.
@@ -46,13 +47,14 @@ export default class TeqFw_Di_Resolver {
          * Registry root path for the namespace.
          *
          * @param {string} ns namespace (TeqFw_Di)
-         * @param {string} path path (absolute or relative to `TeqFw_Di_Container` sources)
+         * @param {string} path absolute or relative to `TeqFw_Di_Container` sources (see `is_absolute` param)
          * @param {string} ext extension to use in filename composition
+         * @param {boolean} [is_absolute]
          * @memberOf TeqFw_Di_Resolver.prototype
          */
-        this.addNamespaceRoot = function ({ns, path, ext}) {
+        this.addNamespaceRoot = function ({ns, path, ext, is_absolute = true}) {
             /** @type {TeqFw_Di_Resolver.ResolveDetailsData} */
-            const entry = {path, ext};
+            const entry = {path, ext, is_absolute};
             const spaces = ns.split(NSS);
             let pointer = _namespaces;
             for (const one of spaces) {
@@ -86,17 +88,18 @@ export default class TeqFw_Di_Resolver {
                         pointer = pointer[part];
                         if (pointer[KEY_SRC]) {
                             const entry = pointer[KEY_SRC];
-                            const path = entry.path;
-                            const ext = entry.ext;
+                            const {path, ext, is_absolute} = entry;
                             // compose path to NS default root
                             result = `${path}/../index.${ext}`;
+                            if (!is_absolute) result = `./${result}`;
                         }
                     } else {
-                        const {path, ext} = pointer[KEY_SRC];
+                        const {path, ext, is_absolute} = pointer[KEY_SRC];
                         const ns_module = ns_explored.substring(1);
                         const ns_object = object_id.substring(ns_module.length + 1);
                         const path_object = ns_object.replace(new RegExp(NSS, 'g'), "/") + "." + ext;
                         result = `${path}/${path_object}`;
+                        if (!is_absolute) result = `./${result}`;
                         break;
                     }
                     ns_explored += NSS + part;
@@ -104,7 +107,7 @@ export default class TeqFw_Di_Resolver {
                 // save source path mapping for object_id
                 _objects[object_id] = result;
             }
-            return "./" + result;
+            return result;
         };
     }
 }
