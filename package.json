@@ -1,0 +1,21 @@
+{
+  "name": "@teqfw/di",
+  "version": "0.1.0",
+  "description": "ES6 module based Dependency Injection. Works in nodejs & browsers.",
+  "type": "module",
+  "main": "./src/Container.mjs",
+  "scripts": {
+    "example": "node --experimental-modules main.mjs",
+    "test": "jest"
+  },
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teqfw/di.git"
+  },
+  "devDependencies": {
+    "esm": "^3.2.25",
+    "mocha": "^6.2.0",
+    "should": "^13.2.3"
+  }
+}
