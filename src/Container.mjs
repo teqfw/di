@@ -75,7 +75,7 @@ class TeqFw_Di_Container {
 
         /**
          *
-         * @type {function(*=): Promise<unknown>}
+         * @type {function(*=): Promise<Object>}
          * @memberOf TeqFw_Di_Container.prototype
          */
         this.get = create_object;
