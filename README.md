@@ -2,6 +2,8 @@
 
 Dependency Injection container prototype (common for browsers &amp; nodejs) as example for publication on [habr.com](https://habr.com/ru/post/464347/).
 
+Inspired by [awilix](https://github.com/jeffijoe/awilix).
+
 ## Usage
 
 ```
