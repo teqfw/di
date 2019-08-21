@@ -10,9 +10,9 @@ import Container from "./src/Container.mjs";
 // create new container and configure it
 const container = new Container();
 // TMP: sources are mapped related to "./src/Container" script
-container.addSourceMapping("TeqFw_Sample", "../example");
+container.addSourceMapping("Vendor_Module", "../example");
 // get object by ID from container
-container.get("TeqFw_Sample_App")
-    .then(function (app) {
+container.get("Vendor_Module_App")
+    .then(/** @type {Vendor_Module_App} app */(app) => {
         app.run();
     });
