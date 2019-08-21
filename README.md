@@ -20,7 +20,7 @@ const container = new Container();
 container.addSourceMapping("Vendor_Module", "../example");
 // get object by ID from container
 container.get("Vendor_Module_App")
-    .then(/** @type {Vendor_Module_App} app */(app) => {
+    .then(/** @type {Vendor_Module_App} */(app) => {
         app.run();
     });
 ```
