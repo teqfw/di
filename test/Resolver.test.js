@@ -5,7 +5,7 @@ import should from "should";
 /** @type {TeqFw_Di_Resolver} */
 const resolver = new Resolver();
 
-describe("resolver", function () {
+describe("Resolver", function () {
 
     it("should registry and resolve namespaces", function (done) {
         resolver.addNamespaceRoot({ns: "Vendor_Project_App", path: "./path/to/app/root", ext: "js"});

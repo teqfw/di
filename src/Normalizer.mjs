@@ -1,22 +1,41 @@
 /**
- * Valid object ID starts with a letter and can contain letters, digits & underscore.
- * @type {RegExp}
+ * Format validator for dependencies identifiers.
+ *
+ * @namespace TeqFw_Di_Normalizer
  */
-const REG_EXP_VALID_ID = /^[A-Za-z]\w*$/;
 
-export default class TeqFw_Di_Normalizer {
-    constructor() {
-    }
+/**
+ * @typedef {Object} TeqFw_Di_Normalizer.IdData
+ * @property {string} id - Original ID.
+ * @property {string} source_part - Part of the full ID that used to define source codes to import.
+ * @property {boolean} is_singleton - 'true' if ID corresponds to singleton object in DI container..
+ * @property {string} [instance_name] - Part of the full ID that used to define instance name.
+ */
 
-    /**
-     * Validate objects identifier.
-     *
-     * @param {string} id Object ID to validate.
-     * @return {string} Valid object ID.
-     */
-    static parseId(id) {
-        const is_valid = REG_EXP_VALID_ID.test(id);
-        if (!is_valid) throw new Error(`Invalid identifier: ${id}.`);
-        return id;
-    }
+/**
+ * Valid object ID starts with a letter and can contain letters, digits, underscore and '$' sign as separator
+ * for source identifier and instance identifier.
+ *
+ * @type {RegExp}
+ * @memberOf TeqFw_Di_Normalizer
+ */
+const REG_EXP_VALID_ID = /^([A-Za-z]\w*)(\$?)(\w*)$/;
+
+/**
+ * Validate objects identifier, parse and return ID parts.
+ *
+ * @param {string} id Dependency identifier to validate.
+ * @return {TeqFw_Di_Normalizer.IdData} Parsed data for given ID.
+ * @throws {Error} if `id` is not valid.
+ * @memberOf TeqFw_Di_Normalizer
+ */
+function parseId(id) {
+    const parts = REG_EXP_VALID_ID.exec(id);
+    if (!parts) throw new Error(`Invalid identifier: '${id}'. See 'https://github.com/teqfw/di/blob/master/docs/identifiers.md'.`);
+    const source_part = parts[1];
+    const instance_name = parts[3];
+    const is_singleton = !(source_part === id);
+    return {id, source_part, is_singleton, instance_name};
 }
+
+export default {parseId}
