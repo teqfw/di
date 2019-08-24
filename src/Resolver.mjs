@@ -37,7 +37,7 @@ export default class TeqFw_Di_Resolver {
          */
         const _namespaces = {};
         /**
-         *
+         * TODO: does this property useful?? We should load every path just once.
          * @type {{}}
          * @private
          */
