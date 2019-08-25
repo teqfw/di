@@ -17,7 +17,7 @@ describe("Normalizer", function () {
             .to.deep.equal({
             id: "Vendor_Project_Module_Dependency",
             source_part: "Vendor_Project_Module_Dependency",
-            is_singleton: false,
+            is_instance: false,
             instance_name: ""
         });
         done();
@@ -28,7 +28,7 @@ describe("Normalizer", function () {
             .to.deep.equal({
             id: "Vendor_Project_Module_Dependency$",
             source_part: "Vendor_Project_Module_Dependency",
-            is_singleton: true,
+            is_instance: true,
             instance_name: ""
         });
         done();
@@ -39,7 +39,7 @@ describe("Normalizer", function () {
             .to.deep.equal({
             id: "Vendor_Project_Module_Dependency$name",
             source_part: "Vendor_Project_Module_Dependency",
-            is_singleton: true,
+            is_instance: true,
             instance_name: "name"
         });
         done();

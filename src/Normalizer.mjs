@@ -8,7 +8,7 @@
  * @typedef {Object} TeqFw_Di_Normalizer.IdData
  * @property {string} id - Original ID.
  * @property {string} source_part - Part of the full ID that used to define source codes to import.
- * @property {boolean} is_singleton - 'true' if ID corresponds to singleton object in DI container..
+ * @property {boolean} is_instance - 'true' if ID corresponds to singleton object in DI container..
  * @property {string} [instance_name] - Part of the full ID that used to define instance name.
  */
 
@@ -34,8 +34,8 @@ function parseId(id) {
     if (!parts) throw new Error(`Invalid identifier: '${id}'. See 'https://github.com/teqfw/di/blob/master/docs/identifiers.md'.`);
     const source_part = parts[1];
     const instance_name = parts[3];
-    const is_singleton = !(source_part === id);
-    return {id, source_part, is_singleton, instance_name};
+    const is_instance = !(source_part === id);
+    return {id, source_part, is_instance, instance_name};
 }
 
 export default {parseId}
