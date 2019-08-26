@@ -31,6 +31,13 @@ export default class TeqFw_Di_ModulesLoader {
             });
         }
 
+        this.has = function (dep_id) {
+            return _imports.hasOwnProperty(dep_id);
+        };
+        this.delete = function (dep_id) {
+            delete _imports[dep_id];
+        };
+
         this.set = function (id, imported) {
             _imports[id] = imported;
         };

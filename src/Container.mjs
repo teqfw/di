@@ -153,33 +153,45 @@ class TeqFw_Di_Container {
         };
 
         /**
-         * Check existence of singleton or imported data in container.
+         * Check existence of created instance or imported data in container.
          *
-         * @param {string} id
-         * @return {boolean} 'true' if
+         * @param {string} dep_id
+         * @return {boolean}
          * @memberOf TeqFw_Di_Container.prototype
          */
-        this.has = function (id) {
+        this.has = function (dep_id) {
+            const parsed = Normalizer.parseId(dep_id);
+            if (parsed.is_instance) {
+                return _instances.has(parsed.id);
+            } else {
+                return _modules_loader.has(parsed.id);
+            }
         };
 
         /**
-         * Delete stored object by `id` (if exist).
+         * Delete stored instance or import result (factory function or object) by `id` (if exist).
          *
-         * @param {string} id
+         * @param {string} dep_id
          * @memberOf TeqFw_Di_Container.prototype
          */
-        this.delete = function (id) {
+        this.delete = function (dep_id) {
+            const parsed = Normalizer.parseId(dep_id);
+            if (parsed.is_instance) {
+                _instances.delete(parsed.id);
+            } else {
+                _modules_loader.delete(parsed.id);
+            }
         };
 
         /**
-         * Place object instance (singleton) into the container. Replace existing object with the same ID.
+         * Place object instance into the container. Replace existing instance with the same ID.
          *
-         * @param {string} id - ID for (named) singleton ("Vendor_Module_Object$", "Vendor_Module_Object$name").
+         * @param {string} dep_id - ID for (named) instance ("Vendor_Module_Object$", "Vendor_Module_Object$name").
          * @param {Object} object
          * @memberOf TeqFw_Di_Container.prototype
          */
-        this.put = function (id, object) {
-            const parsed = Normalizer.parseId(id);
+        this.put = function (dep_id, object) {
+            const parsed = Normalizer.parseId(dep_id);
             if (parsed.is_instance) {
                 _instances.set(parsed.id, object);
             } else {
