@@ -15,6 +15,14 @@ export default class TeqFw_Di_ModulesLoader {
         const _resolver = spec.resolver || new Resolver();
         const _imports = {};
 
+        this.addNamespaceRoot = function ({ns, path, ext, is_absolute = true}) {
+            _resolver.addNamespaceRoot({ns, path, ext, is_absolute});
+        };
+
+        this.delete = function (dep_id) {
+            delete _imports[dep_id];
+        };
+
         this.get = function (id) {
             return new Promise(function (resolve, reject) {
                 if (_imports[id]) {
@@ -29,28 +37,27 @@ export default class TeqFw_Di_ModulesLoader {
                     });
                 }
             });
-        }
-
-        this.has = function (dep_id) {
-            return _imports.hasOwnProperty(dep_id);
         };
-        this.delete = function (dep_id) {
-            delete _imports[dep_id];
-        };
-
-        this.set = function (id, imported) {
-            _imports[id] = imported;
-        };
-
-        this.addNamespaceRoot = function ({ns, path, ext, is_absolute = true}) {
-            _resolver.addNamespaceRoot({ns, path, ext, is_absolute});
-        }
 
         /**
          * @return {TeqFw_Di_ModulesLoader_Resolver}
          */
         this.getResolver = function () {
             return _resolver;
-        }
+        };
+
+        this.has = function (dep_id) {
+            return _imports.hasOwnProperty(dep_id);
+        };
+
+        this.list = function () {
+            const result = Array.from(Object.keys(_imports));
+            return result.sort();
+        };
+        this.set = function (id, imported) {
+            _imports[id] = imported;
+        };
+
+
     }
 }

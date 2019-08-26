@@ -26,6 +26,33 @@ class TeqFw_Di_Container {
         _instances.set("TeqFw_Di_Container$", this);
 
         /**
+         *
+         * @param {string} namespace
+         * @param {string} path
+         * @param {string} [ext]
+         * @memberOf TeqFw_Di_Container.prototype
+         */
+        this.addSourceMapping = function (namespace, path, ext = "mjs") {
+            const parsed = Normalizer.parseId(namespace);
+            if (parsed.is_instance) throw new Error(`Namespace cannot contain '$' symbol.`);
+            _modules_loader.addNamespaceRoot({ns: parsed.source_part, path, ext, is_absolute: true});
+        }
+        /**
+         * Delete stored instance or import result (factory function or object) by `id` (if exist).
+         *
+         * @param {string} dep_id
+         * @memberOf TeqFw_Di_Container.prototype
+         */
+        this.delete = function (dep_id) {
+            const parsed = Normalizer.parseId(dep_id);
+            if (parsed.is_instance) {
+                _instances.delete(parsed.id);
+            } else {
+                _modules_loader.delete(parsed.id);
+            }
+        };
+
+        /**
          * Get/create object by given object ID.
          *
          * @param {string} id
@@ -169,20 +196,18 @@ class TeqFw_Di_Container {
         };
 
         /**
-         * Delete stored instance or import result (factory function or object) by `id` (if exist).
+         * Get list of contained dependencies (created instances and loaded modules).
          *
-         * @param {string} dep_id
+         * @return {Array<string>}
          * @memberOf TeqFw_Di_Container.prototype
          */
-        this.delete = function (dep_id) {
-            const parsed = Normalizer.parseId(dep_id);
-            if (parsed.is_instance) {
-                _instances.delete(parsed.id);
-            } else {
-                _modules_loader.delete(parsed.id);
-            }
+        this.list = function () {
+            const instances = Array.from(_instances.keys());
+            const modules = _modules_loader.list();
+            const result = [...instances, ...modules];
+            result.sort();
+            return result;
         };
-
         /**
          * Place object instance into the container. Replace existing instance with the same ID.
          *
@@ -190,7 +215,7 @@ class TeqFw_Di_Container {
          * @param {Object} object
          * @memberOf TeqFw_Di_Container.prototype
          */
-        this.put = function (dep_id, object) {
+        this.set = function (dep_id, object) {
             const parsed = Normalizer.parseId(dep_id);
             if (parsed.is_instance) {
                 _instances.set(parsed.id, object);
@@ -199,18 +224,7 @@ class TeqFw_Di_Container {
             }
         };
 
-        /**
-         *
-         * @param {string} namespace
-         * @param {string} path
-         * @param {string} [ext]
-         * @memberOf TeqFw_Di_Container.prototype
-         */
-        this.addSourceMapping = function (namespace, path, ext = "mjs") {
-            const parsed = Normalizer.parseId(namespace);
-            if (parsed.is_instance) throw new Error(`Namespace cannot contain '$' symbol.`);
-            _modules_loader.addNamespaceRoot({ns: parsed.source_part, path, ext, is_absolute: true});
-        }
+
     }
 }
 

@@ -41,8 +41,8 @@ There are 3 types of dependency identifiers in `TeqFw/DI:
 Let our DI-container can handle all these 3 cases:
 ```ecmascript 6
 const container = new TeqFw_Di_Container();
-container.put("dependency$", dependency("default"));
-container.put("dependency$named", dependency("named"));
+container.set("dependency$", dependency("default"));
+container.set("dependency$named", dependency("named"));
 
 const dep1 = container.get("dependency"); // create new instance
 const dep2 = container.get("dependency$"); // get singleton

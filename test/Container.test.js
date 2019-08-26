@@ -13,7 +13,8 @@ describe("TeqFw_Di_Container", function () {
             .respondTo("delete")
             .respondTo("get")
             .respondTo("has")
-            .respondTo("put");
+            .respondTo("list")
+            .respondTo("set");
         done();
     });
 
@@ -25,11 +26,27 @@ describe("TeqFw_Di_Container", function () {
             });
     });
 
+    it("lists contained instances and loaded modules", function (done) {
+        const dep_id_instance_default = "dbConfiguration$";
+        const dep_id_instance_named = "dbConfiguration$postgres";
+        const dep_id_module = "Vendor_Project_Module";
+        const obj = {name: "one object for all deps"};
+        container.set(dep_id_instance_default, obj);
+        container.set(dep_id_instance_named, obj);
+        container.set(dep_id_module, obj);
+        const deps = container.list();
+        expect(deps).contains("dbConfiguration$");
+        expect(deps).contains("dbConfiguration$postgres");
+        expect(deps).contains("TeqFw_Di_Container$");
+        expect(deps).contains("Vendor_Project_Module");
+        done();
+    });
+
     describe("allows to delete", function () {
         it("(named) instance from container", function (done) {
             const dep_id = "configuration$postgres";
             const obj = {name: "this is configuration for postgres DB"};
-            container.put(dep_id, obj);
+            container.set(dep_id, obj);
             expect(container.has(dep_id)).equal(true);
             container.delete(dep_id);
             expect(container.has(dep_id)).equal(false);
@@ -39,7 +56,7 @@ describe("TeqFw_Di_Container", function () {
         it("loaded module from container", function (done) {
             const dep_id = "Vendor_Module_Source";
             const loaded_module = {name: "Module Source to delete"};
-            container.put(dep_id, loaded_module);
+            container.set(dep_id, loaded_module);
             expect(container.has(dep_id)).equal(true);
             container.delete(dep_id);
             expect(container.has(dep_id)).equal(false);
@@ -51,7 +68,7 @@ describe("TeqFw_Di_Container", function () {
         it("(named) instance to container", function (done) {
             const id_named = "configuration$postgres";
             const obj = {name: "this is configuration for postgres DB"};
-            container.put(id_named, obj);
+            container.set(id_named, obj);
             container.get(id_named)
                 .then((obj) => {
                     expect(obj).equal(obj);
@@ -62,7 +79,7 @@ describe("TeqFw_Di_Container", function () {
         it("object template as factory to module loader", function (done) {
             const id = "ExportedObject";
             const obj_in = {name: "this template object is exported from outer source"};
-            container.put(id, obj_in);
+            container.set(id, obj_in);
             container.get(id)
                 .then((obj_out) => {
                     expect(obj_out).not.equal(obj_in);
@@ -76,13 +93,13 @@ describe("TeqFw_Di_Container", function () {
             const depFactoryFunc = function () {
                 return {name: "depFactoryFunc"};
             };
-            container.put("DepFunc", depFactoryFunc);
+            container.set("DepFunc", depFactoryFunc);
             // main function factory with dependency been get from FunctionFactory
             const id = "MainFactory";
             const mainFactory = function ({DepFunc}) {
                 return {dep: DepFunc};
             };
-            container.put(id, mainFactory);
+            container.set(id, mainFactory);
             container.get(id)
                 .then((obj_new) => {
                     expect(obj_new).deep.equal({dep: {name: "depFactoryFunc"}});
@@ -97,13 +114,13 @@ describe("TeqFw_Di_Container", function () {
                     return {name: "depFactoryClass"};
                 }
             };
-            container.put("DepClass", depFactoryClass);
+            container.set("DepClass", depFactoryClass);
             // main function factory with dependency been get from FunctionFactory
             const id = "MainFactory";
             const mainFactory = function ({DepClass}) {
                 return {dep: DepClass};
             };
-            container.put(id, mainFactory);
+            container.set(id, mainFactory);
             container.get(id)
                 .then((obj_new) => {
                     expect(obj_new).deep.equal({dep: {name: "depFactoryClass"}});
@@ -121,7 +138,7 @@ describe("TeqFw_Di_Container", function () {
             const mainFactory = function ({Test_Container_DepFunc}) {
                 return {dep: Test_Container_DepFunc};
             };
-            container.put(id, mainFactory);
+            container.set(id, mainFactory);
             container.get(id)
                 .then((obj_new) => {
                     expect(obj_new).deep.equal({dep: {name: "Test_Container_DepFunc"}});
@@ -137,7 +154,7 @@ describe("TeqFw_Di_Container", function () {
             const mainFactory = function ({Test_Container_DepClass}) {
                 return {dep: Test_Container_DepClass};
             };
-            container.put(id, mainFactory);
+            container.set(id, mainFactory);
             container.get(id)
                 .then((obj_new) => {
                     expect(obj_new).deep.equal({dep: {name: "Test_Container_DepClass"}});
