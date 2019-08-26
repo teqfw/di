@@ -3,7 +3,7 @@ import {describe, it} from "mocha";
 import {expect} from "chai";
 
 
-describe("Container", function () {
+describe("TeqFw_Di_Container", function () {
     /** @type {TeqFw_Di_Container} */
     const container = new Container();
 
@@ -24,7 +24,7 @@ describe("Container", function () {
             });
     });
 
-    it("allows to put (named) singleton to container", function (done) {
+    it("allows to put (named) instance to container", function (done) {
         const id_named = "configuration$postgres";
         const obj = {name: "this is configuration for postgres DB"};
         container.put(id_named, obj);
@@ -86,5 +86,38 @@ describe("Container", function () {
                 done();
             });
     });
+
+    it("allows to import functional dependency from source", function (done) {
+        // set up source mapping
+        container.addSourceMapping("Test_Container", __dirname + "/Container.test");
+        // main function factory with dependency been get from FunctionFactory
+        const id = "MainFactory";
+        const mainFactory = function ({Test_Container_DepFunc}) {
+            return {dep: Test_Container_DepFunc};
+        };
+        container.put(id, mainFactory);
+        container.get(id)
+            .then((obj_new) => {
+                expect(obj_new).deep.equal({dep: {name: "Test_Container_DepFunc"}});
+                done();
+            });
+    });
+
+    it("allows to import class dependency from source", function (done) {
+        // set up source mapping
+        container.addSourceMapping("Test_Container", __dirname + "/Container.test");
+        // main function factory with dependency been get from FunctionFactory
+        const id = "MainFactory";
+        const mainFactory = function ({Test_Container_DepClass}) {
+            return {dep: Test_Container_DepClass};
+        };
+        container.put(id, mainFactory);
+        container.get(id)
+            .then((obj_new) => {
+                expect(obj_new).deep.equal({dep: {name: "Test_Container_DepClass"}});
+                done();
+            });
+    });
+
 
 });

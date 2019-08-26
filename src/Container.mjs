@@ -5,24 +5,22 @@
  *
  * @namespace TeqFw_Di
  */
+import ModulesLoader from "./ModulesLoader.mjs";
 import Normalizer from "./Normalizer.mjs";
-import Resolver from "./Resolver.mjs";
 
 /**
  * Dependency Injection container.
  *
+ * @param {Object} [spec]
+ * @param {TeqFw_Di_ModulesLoader} [spec.modules_loader]
  * @memberOf TeqFw_Di
  */
 class TeqFw_Di_Container {
-    constructor() {
-        /** Defaults imported from the sources  */
-        const _imports = new Map();
+    constructor(spec = {}) {
         /** Created instances (singletons) */
         const _instances = new Map();
-        /** Namespace to path (filesystem or web) mapping */
-        const _sources = new Map();
-        /** Object to resolve path to source by dependency ID */
-        const _resolver = new Resolver();
+        /** Modules loader (given in constructor or empty one) */
+        const _modules_loader = spec.modules_loader || new ModulesLoader();
 
         // set default instance of the DI container
         _instances.set("TeqFw_Di_Container$", this);
@@ -35,7 +33,7 @@ class TeqFw_Di_Container {
          * @memberOf TeqFw_Di_Container.prototype
          */
         this.get = async function get_object(id) {
-            return new Promise(function (resolve) {
+            return new Promise(function (resolve, reject) {
 
                 function create_proxy_spec() {
                     // dependencies to create currently requested object (local cache)
@@ -62,6 +60,8 @@ class TeqFw_Di_Container {
                                         // see "function create_object(id)"
                                         const fn_parent = create_funcs[id];
                                         fn_parent();
+                                    }).catch(err => {
+                                        reject(err);
                                     });
                                 }
                                 // interrupt construction process until new dependency will be created
@@ -73,9 +73,11 @@ class TeqFw_Di_Container {
                 }
 
                 /**
-                 * Create new object using `imported` object (class or function).
+                 * Create new object using `imported` object (class or function) and `spec` proxy to resolve
+                 * dependencies.
                  *
                  * @param {Function} imported
+                 * @param {Proxy} spec
                  * @param imported
                  * @return {Promise<Object>}
                  */
@@ -112,35 +114,40 @@ class TeqFw_Di_Container {
                         resolve(inst_by_id);
                     } else {
                         // TODO: create new instance then save it to `_instance` registry.
+                        throw new Error("Is not implemented yet");
                     }
                 } else {
                     // get imported object from `_imports` (or load sources) then create new object
-                    const imported = _imports.get(parsed.id);
-                    const import_type = typeof imported;
-                    if (import_type === "object") {
-                        // imported data is an object, clone this object and return new one on every call
-                        const result = Object.assign({}, imported);
-                        resolve(result);
-                    } else if (import_type === "function") {
-                        // imported data is simple function or class
-                        // create new function to resolve all deps and to make requested object
-                        const spec = create_proxy_spec();
-                        const fn_make = function () {
-                            create_instance(imported, spec).then((obj) => {
-                                resolve(obj);
-                            }).catch((err) => {
-                                // stealth constructor exceptions
-                            });
-                        };
-                        //register `make` function in the local context to re-call it later
-                        // (when any un-existing dependency will be created)
-                        create_funcs[parsed.id] = fn_make;
-                        fn_make();
-                    } else if (import_type === "undefined") {
-                        // we need to import sources before creating dependency
-                    } else {
-                        throw new Error("Unexpected type of stored import.");
-                    }
+                    _modules_loader.get(parsed.id)
+                        .then((imported) => {
+                            const import_type = typeof imported;
+                            if (import_type === "object") {
+                                // imported data is an object, clone this object and return new one on every call
+                                const result = Object.assign({}, imported);
+                                resolve(result);
+                            } else if (import_type === "function") {
+                                // imported data is simple function or class
+                                // create new function to resolve all deps and to make requested object
+                                const spec = create_proxy_spec();
+                                const fn_make = function () {
+                                    create_instance(imported, spec).then((obj) => {
+                                        resolve(obj);
+                                    }).catch((err) => {
+                                        // stealth constructor exceptions
+                                        const break_point = err;
+                                    });
+                                };
+                                //register `make` function in the local context to re-call it later
+                                // (when any un-existing dependency will be created)
+                                create_funcs[parsed.id] = fn_make;
+                                fn_make();
+                            } else {
+                                throw new Error("Unexpected type of loaded module.");
+                            }
+                        })
+                        .catch(err => {
+                            reject(err);
+                        });
                 }
             });
         };
@@ -176,7 +183,7 @@ class TeqFw_Di_Container {
             if (parsed.is_instance) {
                 _instances.set(parsed.id, object);
             } else {
-                _imports.set(parsed.id, object);
+                _modules_loader.set(parsed.id, object);
             }
         };
 
@@ -190,7 +197,7 @@ class TeqFw_Di_Container {
         this.addSourceMapping = function (namespace, path, ext = "mjs") {
             const parsed = Normalizer.parseId(namespace);
             if (parsed.is_instance) throw new Error(`Namespace cannot contain '$' symbol.`);
-            _resolver.addNamespaceRoot({ns: parsed.source_part, path, ext});
+            _modules_loader.addNamespaceRoot({ns: parsed.source_part, path, ext, is_absolute: true});
         }
     }
 }

@@ -3,7 +3,13 @@ import {describe, it} from "mocha";
 import {expect} from "chai";
 
 
-describe("Normalizer", function () {
+describe("TeqFw_Di_Normalizer", function () {
+
+    it("has all expected public methods", function (done) {
+        expect(Normalizer)
+            .respondTo("parseId");
+        done();
+    });
 
     it("should reject invalid IDs", function (done) {
         expect(() => {
