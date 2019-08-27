@@ -7,6 +7,7 @@
  */
 import ModulesLoader from "./ModulesLoader.mjs";
 import Normalizer from "./Normalizer.mjs";
+import SpecProxy from "./Container/SpecProxy.mjs";
 
 /**
  * Dependency Injection container.
@@ -59,45 +60,8 @@ class TeqFw_Di_Container {
          * @return {Promise<Object>}
          * @memberOf TeqFw_Di_Container.prototype
          */
-        this.get = async function get_object(id) {
+        this.get = function get_object(id) {
             return new Promise(function (resolve, reject) {
-
-                function create_proxy_spec() {
-                    // dependencies to create currently requested object (local cache)
-                    const deps = {};
-                    return new Proxy({}, {
-                        get(target, dep_id) {
-                            // analyze property name and create deps here...
-                            if (deps[dep_id]) {
-                                // return dependency from local cache
-                                return deps[dep_id];
-                            } else {
-                                // look up dependency in container
-                                const parsed = Normalizer.parseId(dep_id);
-                                if (parsed.is_instance && _instances.has(dep_id)) {
-                                    // requested dependency is an instance and is created already
-                                    // save dependency to local cache & return
-                                    deps[dep_id] = _instances.get(dep_id);
-                                    return deps[dep_id];
-                                } else {
-                                    // create new instance
-                                    get_object(dep_id).then((obj) => {
-                                        deps[dep_id] = obj;
-                                        // we need to call to failed function to create parent object
-                                        // see "function create_object(id)"
-                                        const fn_parent = create_funcs[id];
-                                        fn_parent();
-                                    }).catch(err => {
-                                        reject(err);
-                                    });
-                                }
-                                // interrupt construction process until new dependency will be created
-                                // and new construction process will be started
-                                throw `There is no dependency with id '${dep_id}' yet.`;
-                            }
-                        }
-                    });
-                }
 
                 /**
                  * Create new object using `imported` object (class or function) and `spec` proxy to resolve
@@ -129,8 +93,8 @@ class TeqFw_Di_Container {
                     }
                 }
 
-                // local cache to save make-functions for main object & dependencies
-                const create_funcs = {};
+                // local registry to save make-functions for main object & its dependencies
+                const make_funcs = {};
                 const parsed = Normalizer.parseId(id);
 
                 if (parsed.is_instance) {
@@ -155,7 +119,7 @@ class TeqFw_Di_Container {
                             } else if (import_type === "function") {
                                 // imported data is simple function or class
                                 // create new function to resolve all deps and to make requested object
-                                const spec = create_proxy_spec();
+                                const spec = new SpecProxy(id, _instances, get_object, make_funcs, reject);
                                 const fn_make = function () {
                                     create_instance(imported, spec).then((obj) => {
                                         resolve(obj);
@@ -166,7 +130,7 @@ class TeqFw_Di_Container {
                                 };
                                 //register `make` function in the local context to re-call it later
                                 // (when any un-existing dependency will be created)
-                                create_funcs[parsed.id] = fn_make;
+                                make_funcs[parsed.id] = fn_make;
                                 fn_make();
                             } else {
                                 throw new Error("Unexpected type of loaded module.");
