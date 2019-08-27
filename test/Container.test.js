@@ -143,7 +143,7 @@ describe("TeqFw_Di_Container", function () {
     describe("allows to import:", function () {
         it("functional dependency from source", function (done) {
             // set up source mapping
-            container.addSourceMapping("Test_Container", __dirname + "/Container.test");
+            container.addSourceMapping("Test_Container", __dirname + "/Container.test/d001");
             // main function factory with dependency been get from FunctionFactory
             const id = "MainFactory";
             const mainFactory = function ({Test_Container_DepFunc}) {
@@ -159,7 +159,7 @@ describe("TeqFw_Di_Container", function () {
 
         it("class dependency from source", function (done) {
             // set up source mapping
-            container.addSourceMapping("Test_Container", __dirname + "/Container.test");
+            container.addSourceMapping("Test_Container", __dirname + "/Container.test/d001");
             // main function factory with dependency been get from FunctionFactory
             const id = "MainFactory";
             const mainFactory = function ({Test_Container_DepClass}) {
@@ -174,5 +174,24 @@ describe("TeqFw_Di_Container", function () {
         });
     });
 
-
+    describe("handles the errors:", function () {
+        it("circular dependencies", function (done) {
+            const container = new Container();
+            // set up source mapping
+            container.addSourceMapping("Test_Container", __dirname + "/Container.test/d002");
+            // container.get("Test_Container_MainClass")
+            //     .then((obj_new) => {
+            //         expect(obj_new).deep.equal({dep: {name: "Test_Container_DepClass"}});
+            //         done();
+            //     });
+            container.get("Test_Container_MainClass").catch(
+                (e) => {
+                    const boo = 4;
+                    expect(e.message)
+                        .equal("Circular dependencies (main: Test_Container_MainClass; dep: Test_Container_DepClass)");
+                    done();
+                }
+            );
+        });
+    });
 });

@@ -57,39 +57,29 @@ class TeqFw_Di_Container {
          * Get/create object by given object ID.
          *
          * @param {string} id
+         * @param {Array<string>} deps_stack stack of dependencies to prevent circular loop.
          * @return {Promise<Object>}
          * @memberOf TeqFw_Di_Container.prototype
          */
-        this.get = function get_object(id) {
+        function get_object(id, deps_stack) {
             return new Promise(function (resolve, reject) {
 
                 /**
                  * Create new object using `imported` object (class or function) and `spec` proxy to resolve
                  * dependencies.
                  *
-                 * @param {Function} imported
-                 * @param {Proxy} spec
-                 * @param imported
-                 * @return {Promise<Object>}
+                 * @param {Function} constructor
+                 * @param {TeqFw_Di_Container_SpecProxy} spec
+                 * @return {Object}
                  */
-                async function create_instance(imported, spec) {
-                    /**
-                     *  Return "true" if `obj` is a class (not just a function).
-                     *
-                     *  https://stackoverflow.com/a/29094018/4073821
-                     *
-                     * @param {Function} obj
-                     * @return {boolean}
-                     */
-                    function is_class(obj) {
-                        const proto = Object.getOwnPropertyDescriptor(obj, 'prototype');
-                        return !proto.writable;
-                    }
-
-                    if (is_class(imported)) {
-                        return new imported(spec);
+                function create_instance(constructor, spec) {
+                    // https://stackoverflow.com/a/29094018/4073821
+                    const proto = Object.getOwnPropertyDescriptor(constructor, 'prototype');
+                    const is_class = !proto.writable;
+                    if (is_class) {
+                        return new constructor(spec);
                     } else {
-                        return imported(spec);
+                        return constructor(spec);
                     }
                 }
 
@@ -108,25 +98,27 @@ class TeqFw_Di_Container {
                         throw new Error("Is not implemented yet");
                     }
                 } else {
-                    // get imported object from `_imports` (or load sources) then create new object
+                    // get `constructor` object from ModulesLoader then create new object
                     _modules_loader.get(parsed.id)
-                        .then((imported) => {
-                            const import_type = typeof imported;
-                            if (import_type === "object") {
-                                // imported data is an object, clone this object and return new one on every call
-                                const result = Object.assign({}, imported);
+                        .then((constructor) => {
+                            const constructor_type = typeof constructor;
+                            if (constructor_type === "object") {
+                                // `constructor` is an object, clone this object and return new one on every call
+                                const result = Object.assign({}, constructor);
                                 resolve(result);
-                            } else if (import_type === "function") {
-                                // imported data is simple function or class
+                            } else if (constructor_type === "function") {
+                                // `constructor` is simple function or class
+                                // create spec proxy to analyze dependencies of the construction object in current scope
+                                const spec = new SpecProxy(id, deps_stack, _instances, make_funcs, get_object, reject);
                                 // create new function to resolve all deps and to make requested object
-                                const spec = new SpecProxy(id, _instances, get_object, make_funcs, reject);
                                 const fn_make = function () {
-                                    create_instance(imported, spec).then((obj) => {
-                                        resolve(obj);
-                                    }).catch((err) => {
-                                        // stealth constructor exceptions
-                                        const break_point = err;
-                                    });
+                                    try {
+                                        const inst_new = create_instance(constructor, spec);
+                                        resolve(inst_new);
+                                    } catch (e) {
+                                        // stealth constructor exceptions (for absent deps that should be made asyncly)
+                                        if (e !== SpecProxy.EXCEPTION_TO_STEALTH) throw e;
+                                    }
                                 };
                                 //register `make` function in the local context to re-call it later
                                 // (when any un-existing dependency will be created)
@@ -141,6 +133,23 @@ class TeqFw_Di_Container {
                         });
                 }
             });
+        };
+
+        /**
+         * Get/create object by ID.
+         *
+         * @param {string} id
+         * @return {Promise<Object>}
+         * @memberOf TeqFw_Di_Container.prototype
+         */
+        this.get = async function (id) {
+            const deps_stack = [id];
+            try {
+                const result = await get_object(id, deps_stack);
+                return result;
+            } catch (e) {
+                throw e;
+            }
         };
 
         /**

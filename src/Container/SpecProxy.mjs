@@ -9,19 +9,27 @@ import Normalizer from "../Normalizer";
  *
  * @class
  */
-export default class TeqFw_Di_Container_SpecProxy {
+class TeqFw_Di_Container_SpecProxy {
 
     /**
-     * @param {string} object_id ID of the constructing object ("Vendor_Module_Class", "dbCfg$pg", ...).
+     * @param {string} main_id ID of the constructing object ("Vendor_Module_Class", "dbCfg$pg", ...).
+     * @param {Array<string>} deps_stack All incomplete dependencies in current construction process
+     * (to prevent circular dependencies).
      * @param {Map} container_instances Container level registry with created instances (with ids "...$[...]").
-     * @param {Function} fn_get_dependency `TeqFw_Di_Container.get_object` function to get/create required dependencies.
      * @param {Object<string, Function>} make_funcs constructing process level registry to save functions that
      * construct main object & nested dependencies.
+     * @param {Function} fn_get_dependency `TeqFw_Di_Container.get_object` function to get/create required dependencies.
      * @param {Function} fn_get_object_reject TeqFw_Di_Container.get_object@Promise.reject to interrupt
      * construction process on some error (import error or circular dependency, for example).
      * @return {{}} Proxy object to resolve dependencies.
      */
-    constructor(object_id, container_instances, fn_get_dependency, make_funcs, fn_get_object_reject) {
+    constructor(main_id,
+                deps_stack,
+                container_instances,
+                make_funcs,
+                fn_get_dependency,
+                fn_get_object_reject) {
+
         /**
          * Resolved dependencies for currently constructing object.
          *
@@ -47,13 +55,20 @@ export default class TeqFw_Di_Container_SpecProxy {
                         deps[dep_id] = container_instances.get(dep_id);
                         return deps[dep_id];
                     } else {
+                        // check stack of incomplete dependencies
+                        if (deps_stack.includes(dep_id)) {
+                            // `dep_id` is already requested to be created, so we report it as "main"
+                            throw new Error(`Circular dependencies (main: ${dep_id}; dep: ${main_id})`);
+                        }
+                        // ... and register new one
+                        deps_stack.push(dep_id);
                         // create new required dependency for this object
-                        fn_get_dependency(dep_id).then((obj) => {
+                        fn_get_dependency(dep_id, deps_stack).then((obj) => {
                             // save created `dep_id` instance to local dependencies registry
                             deps[dep_id] = obj;
                             // call to failed construction function to create main object
                             // see `fn_make` in `TeqFw_Di_Container.get`
-                            const fn_make_main = make_funcs[object_id];
+                            const fn_make_main = make_funcs[main_id];
                             fn_make_main();
                         }).catch(err => {
                             fn_get_object_reject(err);
@@ -61,9 +76,19 @@ export default class TeqFw_Di_Container_SpecProxy {
                     }
                     // interrupt construction process until new dependency will be created
                     // and new construction process will be started
-                    throw `There is no dependency with id '${dep_id}' yet.`;
+                    throw TeqFw_Di_Container_SpecProxy.EXCEPTION_TO_STEALTH;
                 }
             }
         });
     }
 }
+
+/**
+ * Marker for construction exceptions that should be stolen.
+ *
+ * @type {string}
+ * @memberOf TeqFw_Di_Container_SpecProxy
+ */
+TeqFw_Di_Container_SpecProxy.EXCEPTION_TO_STEALTH="TeqFw_Di_Container_SpecProxy.exception_to_stealth";
+
+export default TeqFw_Di_Container_SpecProxy;

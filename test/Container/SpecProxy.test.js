@@ -12,6 +12,7 @@ describe("TeqFw_Di_Container_SpecProxy", function () {
         const dep_id = "config$pg";
         const dep_obj = {name: "boo"};
         const obj_id = "Vendor_Module_Class";
+        const deps_stack = ["Vendor_Module_Class"];
         const container_insts = new Map();
         const fn_get_dep = async function () {
             return dep_obj;
@@ -22,7 +23,7 @@ describe("TeqFw_Di_Container_SpecProxy", function () {
         };
 
         /** @type {TeqFw_Di_Container_SpecProxy} */
-        const spec_proxy = new SpecProxy(obj_id, container_insts, fn_get_dep, make_funcs, fn_reject);
+        const spec_proxy = new SpecProxy(obj_id, deps_stack, container_insts, make_funcs, fn_get_dep, fn_reject);
 
         // add make function to call `spec_proxy[dep_id]` once again after dependency constructing
         make_funcs[obj_id] = function () {
@@ -37,7 +38,7 @@ describe("TeqFw_Di_Container_SpecProxy", function () {
             console.log(dep);
         } catch (err) {
             // catch first exception on "dep is not found" event
-            expect(err).equal(`There is no dependency with id '${dep_id}' yet.`);
+            expect(err).equal(SpecProxy.EXCEPTION_TO_STEALTH);
         }
 
     });
