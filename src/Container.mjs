@@ -180,6 +180,14 @@ class TeqFw_Di_Container {
         };
 
         /**
+         * @return {TeqFw_Di_ModulesLoader}
+         * @memberOf TeqFw_Di_Container.prototype
+         */
+        this.getModulesLoader = function () {
+            return _modules_loader;
+        };
+
+        /**
          * Check existence of created instance or imported data in container.
          *
          * @param {string} dep_id

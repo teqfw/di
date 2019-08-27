@@ -36,23 +36,17 @@ export default class TeqFw_Di_ModulesLoader_Resolver {
          * @private
          */
         const _namespaces = {};
-        /**
-         * TODO: does this property useful?? We should load every path just once.
-         * @type {{}}
-         * @private
-         */
-        const _objects = {};
 
         /**
          * Registry root path for the namespace.
          *
          * @param {string} ns namespace (TeqFw_Di)
          * @param {string} path absolute or relative to `TeqFw_Di_Container` sources (see `is_absolute` param)
-         * @param {string} ext extension to use in filename composition
-         * @param {boolean} [is_absolute]
+         * @param {string} [ext] extension to use in filename composition
+         * @param {boolean} [is_absolute] default: true
          * @memberOf TeqFw_Di_ModulesLoader_Resolver.prototype
          */
-        this.addNamespaceRoot = function ({ns, path, ext, is_absolute = true}) {
+        this.addNamespaceRoot = function ({ns, path, ext = "js", is_absolute = true}) {
             /** @type {TeqFw_Di_ModulesLoader_Resolver.ResolveDetailsData} */
             const entry = {path, ext, is_absolute};
             const spaces = ns.split(NSS);
@@ -70,44 +64,68 @@ export default class TeqFw_Di_ModulesLoader_Resolver {
         };
 
         /**
+         * Resolve path to module's source using `source_id`.
          *
-         * @param object_id
+         * @param {string} source_id
          * @return {*}
          * @memberOf TeqFw_Di_ModulesLoader_Resolver.prototype
          */
-        this.getSourceById = function (object_id) {
-            let result = object_id;
-            if (_objects[object_id]) {
-                result = _objects[object_id];
-            } else {
-                const parts = object_id.split(NSS);
-                let ns_explored = ""; // explored part of the object's full name
-                let pointer = _namespaces;
-                for (const part of parts) {
-                    if (pointer[part]) {
-                        pointer = pointer[part];
-                        if (pointer[KEY_SRC]) {
-                            const entry = pointer[KEY_SRC];
-                            const {path, ext, is_absolute} = entry;
-                            // compose path to NS default root
-                            result = `${path}/../index.${ext}`;
-                            if (!is_absolute) result = `./${result}`;
-                        }
-                    } else {
-                        const {path, ext, is_absolute} = pointer[KEY_SRC];
-                        const ns_module = ns_explored.substring(1);
-                        const ns_object = object_id.substring(ns_module.length + 1);
-                        const path_object = ns_object.replace(new RegExp(NSS, 'g'), "/") + "." + ext;
-                        result = `${path}/${path_object}`;
+        this.getSourceById = function (source_id) {
+            let result;
+            const parts = source_id.split(NSS);
+            let ns_explored = ""; // explored part of the object's full name
+            let pointer = _namespaces;
+            for (const part of parts) {
+                if (pointer[part]) {
+                    pointer = pointer[part];
+                    if (pointer[KEY_SRC]) {
+                        const entry = pointer[KEY_SRC];
+                        const {path, ext, is_absolute} = entry;
+                        // compose path to NS default root
+                        result = `${path}/../index.${ext}`;
                         if (!is_absolute) result = `./${result}`;
-                        break;
                     }
-                    ns_explored += NSS + part;
+                } else {
+                    const {path, ext, is_absolute} = pointer[KEY_SRC];
+                    const ns_module = ns_explored.substring(1);
+                    const ns_object = source_id.substring(ns_module.length + 1);
+                    const path_object = ns_object.replace(new RegExp(NSS, 'g'), "/") + "." + ext;
+                    result = `${path}/${path_object}`;
+                    if (!is_absolute) result = `./${result}`;
+                    break;
                 }
-                // save source path mapping for object_id
-                _objects[object_id] = result;
+                ns_explored += NSS + part;
             }
+            if (result === undefined) throw new Error(`Cannot resolve path for id '${source_id}'.`);
             return result;
         };
+        /**
+         * @return {Object}
+         * @memberOf TeqFw_Di_ModulesLoader_Resolver.prototype
+         */
+        this.list = function () {
+            const result = {};
+
+            /**
+             * Scan one level of mapping tree and save mapping data into results (if found) and/or dive deeper.
+
+             * @param cur_path
+             * @param level
+             */
+            function scan_level(cur_path, level) {
+                for (const key of Object.keys(level)) {
+                    if (key === KEY_SRC) {
+                        result[cur_path] = level[KEY_SRC];
+                    } else {
+                        const sub_path = (cur_path) ? cur_path + NSS + key : key;
+                        const sub = level[key];
+                        scan_level(sub_path, sub);
+                    }
+                }
+            }
+
+            scan_level("", _namespaces);
+            return result;
+        }
     }
 }

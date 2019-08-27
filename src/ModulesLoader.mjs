@@ -1,4 +1,5 @@
 import Resolver from "./ModulesLoader/Resolver.mjs"
+import Normalizer from "./Normalizer.mjs"
 
 /**
  * Load modules and save export results inside.
@@ -55,6 +56,8 @@ export default class TeqFw_Di_ModulesLoader {
             return result.sort();
         };
         this.set = function (id, imported) {
+            const parsed = Normalizer.parseId(id);
+            if (parsed.is_instance) throw new Error("Cannot load module source as instance (remove '$' from `id`).");
             _imports[id] = imported;
         };
 

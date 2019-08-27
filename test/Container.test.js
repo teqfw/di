@@ -8,13 +8,17 @@ describe("TeqFw_Di_Container", function () {
     const container = new Container();
 
     it("has all expected public methods", function (done) {
-        expect(new Container())
-            .respondTo("addSourceMapping")
-            .respondTo("delete")
-            .respondTo("get")
-            .respondTo("has")
-            .respondTo("list")
-            .respondTo("set");
+        const methods = Object.getOwnPropertyNames(container)
+            .filter(p => (typeof container[p] === 'function'));
+        expect(methods).deep.equal([
+            "addSourceMapping",
+            "delete",
+            "get",
+            "getModulesLoader",
+            "has",
+            "list",
+            "set"
+        ]);
         done();
     });
 
@@ -26,23 +30,30 @@ describe("TeqFw_Di_Container", function () {
             });
     });
 
-    it("lists contained instances and loaded modules", function (done) {
-        const dep_id_instance_default = "dbConfiguration$";
-        const dep_id_instance_named = "dbConfiguration$postgres";
-        const dep_id_module = "Vendor_Project_Module";
-        const obj = {name: "one object for all deps"};
-        container.set(dep_id_instance_default, obj);
-        container.set(dep_id_instance_named, obj);
-        container.set(dep_id_module, obj);
-        const deps = container.list();
-        expect(deps).contains("dbConfiguration$");
-        expect(deps).contains("dbConfiguration$postgres");
-        expect(deps).contains("TeqFw_Di_Container$");
-        expect(deps).contains("Vendor_Project_Module");
-        done();
+    describe("allows to inspect itself:", function () {
+        it("access modules loader", function (done) {
+            const loader = container.getModulesLoader();
+            expect(loader.constructor.name).equal("TeqFw_Di_ModulesLoader");
+            done();
+        });
+
+        it("lists contained instances and loaded modules", function (done) {
+            const dep_id_instance_default = "dbConfiguration$";
+            const dep_id_instance_named = "dbConfiguration$postgres";
+            const dep_id_module = "Vendor_Project_Module";
+            const obj = {name: "one object for all deps"};
+            container.set(dep_id_instance_default, obj);
+            container.set(dep_id_instance_named, obj);
+            container.set(dep_id_module, obj);
+            const deps = container.list();
+            expect(deps).contains(dep_id_instance_default);
+            expect(deps).contains(dep_id_instance_named);
+            expect(deps).contains(dep_id_module);
+            done();
+        });
     });
 
-    describe("allows to delete", function () {
+    describe("allows to delete:", function () {
         it("(named) instance from container", function (done) {
             const dep_id = "configuration$postgres";
             const obj = {name: "this is configuration for postgres DB"};
@@ -64,7 +75,7 @@ describe("TeqFw_Di_Container", function () {
         });
     });
 
-    describe("allows to place", function () {
+    describe("allows to place:", function () {
         it("(named) instance to container", function (done) {
             const id_named = "configuration$postgres";
             const obj = {name: "this is configuration for postgres DB"};
@@ -129,7 +140,7 @@ describe("TeqFw_Di_Container", function () {
         });
     });
 
-    describe("allows to import", function () {
+    describe("allows to import:", function () {
         it("functional dependency from source", function (done) {
             // set up source mapping
             container.addSourceMapping("Test_Container", __dirname + "/Container.test");
