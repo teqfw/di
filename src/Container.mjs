@@ -5,15 +5,15 @@
  *
  * @namespace TeqFw_Di
  */
-import ModulesLoader from "./ModulesLoader.mjs";
-import Normalizer from "./Normalizer.mjs";
+import ModulesLoader from "./Container/ModulesLoader.mjs";
+import Normalizer from "./Container/Normalizer.mjs";
 import SpecProxy from "./Container/SpecProxy.mjs";
 
 /**
  * Dependency Injection container.
  *
  * @param {Object} [spec]
- * @param {TeqFw_Di_ModulesLoader} [spec.modules_loader]
+ * @param {TeqFw_Di_Container_ModulesLoader} [spec.modules_loader]
  * @memberOf TeqFw_Di
  */
 class TeqFw_Di_Container {
@@ -151,7 +151,7 @@ class TeqFw_Di_Container {
         };
 
         /**
-         * @return {TeqFw_Di_ModulesLoader}
+         * @return {TeqFw_Di_Container_ModulesLoader}
          * @memberOf TeqFw_Di_Container.prototype
          */
         this.getModulesLoader = function () {

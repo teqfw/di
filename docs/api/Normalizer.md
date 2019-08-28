@@ -1,4 +1,4 @@
-# `TeqFw_Di_Normalizer` API
+# `TeqFw_Di_Container_Normalizer` API
 
 ## Overview
 

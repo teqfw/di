@@ -1,4 +1,4 @@
-# `TeqFw_Di_ModulesLoader_Resolver` API
+# `TeqFw_Di_Container_ModulesLoader_Resolver` API
 
 ## Overview
 

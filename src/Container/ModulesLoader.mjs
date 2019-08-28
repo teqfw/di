@@ -6,11 +6,11 @@ import Normalizer from "./Normalizer.mjs"
  *
  * @class
  */
-export default class TeqFw_Di_ModulesLoader {
+export default class TeqFw_Di_Container_ModulesLoader {
     /**
      *
      * @param {Object} [spec]
-     * @param {TeqFw_Di_ModulesLoader_Resolver} [spec.resolver]
+     * @param {TeqFw_Di_Container_ModulesLoader_Resolver} [spec.resolver]
      */
     constructor(spec = {}) {
         const _resolver = spec.resolver || new Resolver();
@@ -43,7 +43,7 @@ export default class TeqFw_Di_ModulesLoader {
         };
 
         /**
-         * @return {TeqFw_Di_ModulesLoader_Resolver}
+         * @return {TeqFw_Di_Container_ModulesLoader_Resolver}
          */
         this.getResolver = function () {
             return _resolver;

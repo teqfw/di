@@ -1,9 +1,9 @@
-import ModulesLoader from "../src/ModulesLoader.mjs";
+import ModulesLoader from "../../src/Container/ModulesLoader.mjs";
 import {describe, it} from "mocha";
 import {expect} from "chai";
 
 
-describe("TeqFw_Di_ModulesLoader", function () {
+describe("TeqFw_Di_Container_ModulesLoader", function () {
 
     const loader = new ModulesLoader();
 
@@ -25,7 +25,7 @@ describe("TeqFw_Di_ModulesLoader", function () {
     describe("allows to inspect itself", function () {
         it("access resolver", function (done) {
             const resolver = loader.getResolver();
-            expect(resolver.constructor.name).equal("TeqFw_Di_ModulesLoader_Resolver");
+            expect(resolver.constructor.name).equal("TeqFw_Di_Container_ModulesLoader_Resolver");
             done();
         });
 

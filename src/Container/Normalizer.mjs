@@ -1,11 +1,11 @@
 /**
  * Format validator for dependencies identifiers.
  *
- * @namespace TeqFw_Di_Normalizer
+ * @namespace TeqFw_Di_Container_Normalizer
  */
 
 /**
- * @typedef {Object} TeqFw_Di_Normalizer.IdData
+ * @typedef {Object} TeqFw_Di_Container_Normalizer.IdData
  * @property {string} id - Original ID.
  * @property {string} source_part - Part of the full ID that used to define source codes to import.
  * @property {boolean} is_instance - 'true' if ID corresponds to singleton object in DI container..
@@ -17,7 +17,7 @@
  * for source identifier and instance identifier.
  *
  * @type {RegExp}
- * @memberOf TeqFw_Di_Normalizer
+ * @memberOf TeqFw_Di_Container_Normalizer
  */
 const REG_EXP_VALID_ID = /^([A-Za-z]\w*)(\$?)(\w*)$/;
 
@@ -25,9 +25,9 @@ const REG_EXP_VALID_ID = /^([A-Za-z]\w*)(\$?)(\w*)$/;
  * Validate objects identifier, parse and return ID parts.
  *
  * @param {string} id Dependency identifier to validate.
- * @return {TeqFw_Di_Normalizer.IdData} Parsed data for given ID.
+ * @return {TeqFw_Di_Container_Normalizer.IdData} Parsed data for given ID.
  * @throws {Error} if `id` is not valid.
- * @memberOf TeqFw_Di_Normalizer
+ * @memberOf TeqFw_Di_Container_Normalizer
  */
 function parseId(id) {
     const parts = REG_EXP_VALID_ID.exec(id);

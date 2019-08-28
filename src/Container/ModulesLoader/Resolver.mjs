@@ -7,12 +7,12 @@ const KEY_SRC = ".src";
  * Map namespaces to file structure. Resolve and cache "object ID to source path" mapping.
  * @class
  */
-export default class TeqFw_Di_ModulesLoader_Resolver {
+export default class TeqFw_Di_Container_ModulesLoader_Resolver {
     /**
      * Resolving details.
      *
-     * @memberOf TeqFw_Di_ModulesLoader_Resolver
-     * @typedef {Object} TeqFw_Di_ModulesLoader_Resolver.ResolveDetailsData
+     * @memberOf TeqFw_Di_Container_ModulesLoader_Resolver
+     * @typedef {Object} TeqFw_Di_Container_ModulesLoader_Resolver.ResolveDetailsData
      * @property {string} path
      * @property {string} ext
      * @property {boolean} is_absolute 'true' if path is absolute.
@@ -20,8 +20,8 @@ export default class TeqFw_Di_ModulesLoader_Resolver {
     /**
      * Tree-like structure of namespaces registry entry.
      *
-     * @memberOf TeqFw_Di_ModulesLoader_Resolver
-     * @typedef {Object<string, TeqFw_Di_ModulesLoader_Resolver.NamespaceData|TeqFw_Di_ModulesLoader_Resolver.ResolveDetailsData>} TeqFw_Di_ModulesLoader_Resolver.NamespaceData
+     * @memberOf TeqFw_Di_Container_ModulesLoader_Resolver
+     * @typedef {Object<string, TeqFw_Di_Container_ModulesLoader_Resolver.NamespaceData|TeqFw_Di_Container_ModulesLoader_Resolver.ResolveDetailsData>} TeqFw_Di_Container_ModulesLoader_Resolver.NamespaceData
      */
 
     constructor() {
@@ -32,7 +32,7 @@ export default class TeqFw_Di_ModulesLoader_Resolver {
          * TeqFw_Prj_App_Mod => ./another/path/to/mod/files
          * TeqFw_Prj_App_Mod_Rewrite => ./rewrite/path/to/part/of/mod/files
          *
-         * @type {Object<string, TeqFw_Di_ModulesLoader_Resolver.NamespaceData>}
+         * @type {Object<string, TeqFw_Di_Container_ModulesLoader_Resolver.NamespaceData>}
          * @private
          */
         const _namespaces = {};
@@ -44,10 +44,10 @@ export default class TeqFw_Di_ModulesLoader_Resolver {
          * @param {string} path absolute or relative to `TeqFw_Di_Container` sources (see `is_absolute` param)
          * @param {string} [ext] extension to use in filename composition
          * @param {boolean} [is_absolute] default: true
-         * @memberOf TeqFw_Di_ModulesLoader_Resolver.prototype
+         * @memberOf TeqFw_Di_Container_ModulesLoader_Resolver.prototype
          */
         this.addNamespaceRoot = function ({ns, path, ext = "js", is_absolute = true}) {
-            /** @type {TeqFw_Di_ModulesLoader_Resolver.ResolveDetailsData} */
+            /** @type {TeqFw_Di_Container_ModulesLoader_Resolver.ResolveDetailsData} */
             const entry = {path, ext, is_absolute};
             const spaces = ns.split(NSS);
             let pointer = _namespaces;
@@ -68,7 +68,7 @@ export default class TeqFw_Di_ModulesLoader_Resolver {
          *
          * @param {string} source_id
          * @return {*}
-         * @memberOf TeqFw_Di_ModulesLoader_Resolver.prototype
+         * @memberOf TeqFw_Di_Container_ModulesLoader_Resolver.prototype
          */
         this.getSourceById = function (source_id) {
             let result;
@@ -101,7 +101,7 @@ export default class TeqFw_Di_ModulesLoader_Resolver {
         };
         /**
          * @return {Object}
-         * @memberOf TeqFw_Di_ModulesLoader_Resolver.prototype
+         * @memberOf TeqFw_Di_Container_ModulesLoader_Resolver.prototype
          */
         this.list = function () {
             const result = {};

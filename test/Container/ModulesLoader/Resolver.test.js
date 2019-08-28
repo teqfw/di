@@ -1,9 +1,9 @@
-import Resolver from "../../src/ModulesLoader/Resolver.mjs";
+import Resolver from "../../../src/Container/ModulesLoader/Resolver.mjs";
 import {describe, it} from "mocha";
 import {expect} from "chai";
 
-describe("TeqFw_Di_ModulesLoader_Resolver", function () {
-    /** @type {TeqFw_Di_ModulesLoader_Resolver} */
+describe("TeqFw_Di_Container_ModulesLoader_Resolver", function () {
+    /** @type {TeqFw_Di_Container_ModulesLoader_Resolver} */
     const resolver = new Resolver();
 
     it("has all expected public methods", function (done) {

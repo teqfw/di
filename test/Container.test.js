@@ -33,7 +33,7 @@ describe("TeqFw_Di_Container", function () {
     describe("allows to inspect itself:", function () {
         it("access modules loader", function (done) {
             const loader = container.getModulesLoader();
-            expect(loader.constructor.name).equal("TeqFw_Di_ModulesLoader");
+            expect(loader.constructor.name).equal("TeqFw_Di_Container_ModulesLoader");
             done();
         });
 

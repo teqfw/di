@@ -1,4 +1,4 @@
-import Normalizer from "../Normalizer";
+import Normalizer from "./Normalizer.mjs";
 
 /**
  * Proxy object to analyze dependencies specification and to return required dependencies.
