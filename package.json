@@ -1,7 +1,7 @@
 {
   "name": "@teqfw/di",
-  "version": "0.1.1",
-  "description": "ES6 module based Dependency Injection. Works in nodejs & browsers.",
+  "version": "0.2.0",
+  "description": "Dependency Injection container based on ES6 modules (works for browsers & nodejs).",
   "type": "module",
   "main": "./src/Container.mjs",
   "scripts": {
@@ -16,7 +16,6 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "esm": "^3.2.25",
-    "mocha": "^6.2.0",
-    "should": "^13.2.3"
+    "mocha": "^6.2.0"
   }
 }
