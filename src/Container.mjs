@@ -6,7 +6,7 @@
  * @namespace TeqFw_Di
  */
 import ModulesLoader from "./Container/ModulesLoader.mjs";
-import Normalizer from "./Container/Normalizer.mjs";
+import Normalizer from "./Normalizer.mjs";
 import SpecProxy from "./Container/SpecProxy.mjs";
 
 /**
