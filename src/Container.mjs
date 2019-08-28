@@ -30,7 +30,7 @@ class TeqFw_Di_Container {
          * Get/create object by given object ID.
          *
          * @param {string} id
-         * @param {Array<string>} deps_stack stack of dependencies to prevent circular loop.
+         * @param {Set<string>} deps_stack stack of dependencies to prevent circular loop.
          * @return {Promise<Object>}
          * @memberOf TeqFw_Di_Container.prototype
          */
@@ -141,7 +141,7 @@ class TeqFw_Di_Container {
          * @memberOf TeqFw_Di_Container.prototype
          */
         this.get = async function (obj_id) {
-            const deps_stack = [obj_id];
+            const deps_stack = new Set([obj_id]);
             try {
                 const result = await get_object(obj_id, deps_stack);
                 return result;

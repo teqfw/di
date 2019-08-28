@@ -13,7 +13,7 @@ class TeqFw_Di_Container_SpecProxy {
 
     /**
      * @param {string} main_id ID of the constructing object ("Vendor_Module_Class", "dbCfg$pg", ...).
-     * @param {Array<string>} deps_stack All incomplete dependencies in current construction process
+     * @param {Set<string>} deps_stack All incomplete dependencies in current construction process
      * (to prevent circular dependencies).
      * @param {Map} container_instances Container level registry with created instances (with ids "...$[...]").
      * @param {Object<string, Function>} make_funcs constructing process level registry to save functions that
@@ -56,16 +56,18 @@ class TeqFw_Di_Container_SpecProxy {
                         return deps[dep_id];
                     } else {
                         // check stack of incomplete dependencies
-                        if (deps_stack.includes(dep_id)) {
+                        if (deps_stack.has(dep_id)) {
                             // `dep_id` is already requested to be created, so we report it as "main"
                             throw new Error(`Circular dependencies (main: ${dep_id}; dep: ${main_id})`);
                         }
                         // ... and register new one
-                        deps_stack.push(dep_id);
+                        deps_stack.add(dep_id);
                         // create new required dependency for this object
                         fn_get_dependency(dep_id, deps_stack).then((obj) => {
                             // save created `dep_id` instance to local dependencies registry
                             deps[dep_id] = obj;
+                            // remove created dependency from circular registry
+                            deps_stack.delete(dep_id);
                             // call to failed construction function to create main object
                             // see `fn_make` in `TeqFw_Di_Container.get`
                             const fn_make_main = make_funcs[main_id];
@@ -89,6 +91,6 @@ class TeqFw_Di_Container_SpecProxy {
  * @type {string}
  * @memberOf TeqFw_Di_Container_SpecProxy
  */
-TeqFw_Di_Container_SpecProxy.EXCEPTION_TO_STEALTH="TeqFw_Di_Container_SpecProxy.exception_to_stealth";
+TeqFw_Di_Container_SpecProxy.EXCEPTION_TO_STEALTH = "TeqFw_Di_Container_SpecProxy.exception_to_stealth";
 
 export default TeqFw_Di_Container_SpecProxy;
