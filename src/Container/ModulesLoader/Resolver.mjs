@@ -26,7 +26,8 @@ export default class TeqFw_Di_Container_ModulesLoader_Resolver {
 
     constructor() {
         /**
-         * Registry for namespaces. Tree-like structure to save root paths to sources for namespaces.
+         * Registry for namespaces. Tree-like structure to save root paths (relative or absolute) to sources
+         * by namespaces.
          *
          * TeqFw_Prj_App => ./path/to/app/files
          * TeqFw_Prj_App_Mod => ./another/path/to/mod/files
@@ -36,6 +37,10 @@ export default class TeqFw_Di_Container_ModulesLoader_Resolver {
          * @private
          */
         const _namespaces = {};
+        /**
+         * @type {string}
+         */
+        let _mapping_root;
 
         /**
          * Registry root path for the namespace.
@@ -128,5 +133,15 @@ export default class TeqFw_Di_Container_ModulesLoader_Resolver {
             scan_level("", _namespaces);
             return result;
         }
+
+        /**
+         * Set mapping root for relative paths.
+         *
+         * @param path
+         * @memberOf TeqFw_Di_Container_ModulesLoader_Resolver.prototype
+         */
+        this.setMappingRoot = function (path) {
+            _mapping_root = path;
+        };
     }
 }

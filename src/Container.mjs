@@ -110,14 +110,16 @@ class TeqFw_Di_Container {
          *
          * @param {string} namespace
          * @param {string} path
+         * @param {boolean} [is_absolute]
          * @param {string} [ext]
          * @memberOf TeqFw_Di_Container.prototype
          */
-        this.addSourceMapping = function (namespace, path, ext = "mjs") {
+        this.addSourceMapping = function (namespace, path, is_absolute = false, ext = "mjs") {
             const parsed = Normalizer.parseId(namespace);
             if (parsed.is_instance) throw new Error(`Namespace cannot contain '$' symbol.`);
-            _modules_loader.addNamespaceRoot({ns: parsed.source_part, path, ext, is_absolute: true});
-        }
+            _modules_loader.addNamespaceRoot({ns: parsed.source_part, path, ext, is_absolute});
+        };
+
         /**
          * Delete stored instance or import result (factory function or object) by `id` (if exist).
          *
