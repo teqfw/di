@@ -12,7 +12,8 @@ describe("TeqFw_Di_Container_ModulesLoader_Resolver", function () {
         expect(methods).deep.equal([
             "addNamespaceRoot",
             "getSourceById",
-            "list"
+            "list",
+            "setMappingRoot"
         ]);
         done();
     });

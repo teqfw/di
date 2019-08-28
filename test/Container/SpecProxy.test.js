@@ -7,12 +7,10 @@ describe("TeqFw_Di_Container_SpecProxy", function () {
 
 
     it("allows to get dependency by id", function (done) {
-
-
         const dep_id = "config$pg";
         const dep_obj = {name: "boo"};
         const obj_id = "Vendor_Module_Class";
-        const deps_stack = ["Vendor_Module_Class"];
+        const deps_stack = new Set(["Vendor_Module_Class"]);
         const container_insts = new Map();
         const fn_get_dep = async function () {
             return dep_obj;
