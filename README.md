@@ -6,6 +6,34 @@ Proxy object for `constructor` specification is inspired by [awilix](https://git
 
 
 
+## Usage
+Main object (`./path/to/app/sources/App.mjs`):
+```ecmascript 6
+export default class Sample_App {
+    constructor({Sample_App_Config}) {
+        this.cfg = Sample_App_Config;
+        this.run = function () {}
+    }
+}
+```
+Dependency (`./path/to/app/sources/App/Config.mjs`):
+```ecmascript 6
+export default class Sample_App_Config {
+    constructor() {}
+}
+```
+
+Load container, setup namespace mapping, get object: 
+```ecmascript 6
+import Container from "./path/to/Container.mjs";
+const container = new Container();
+// map sources relatively to this script
+container.addSourceMapping("Sample", "./path/to/app/sources");
+container.get("Sample_App").then(app => app.run());
+```
+
+
+
 ## Modules
 `@teqfw/di` works with ES6 modules [that have](./docs/export_default.md) `export default` defined.
 ```ecmascript 6
