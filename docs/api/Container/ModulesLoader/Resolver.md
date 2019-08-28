@@ -4,4 +4,5 @@
 
 * `constructor()`
 * `addNamespaceRoot({ns, path, ext, is_absolute = true})`
-* `getSourceById(object_id)`
+* `getSourceById(source_id)`
+* `list()`

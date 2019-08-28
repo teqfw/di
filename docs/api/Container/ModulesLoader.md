@@ -4,5 +4,9 @@
 
 * `constructor(spec = {[resolver]})`
 * `addNamespaceRoot({ns, path, ext, is_absolute = true})`
-* `get(id)` (async)
+* `delete(obj_id)`
+* `get(obj_id)` (async)
+* `getResolver()`
+* `has(obj_id)`
+* `list()`
 * `set(id, imported)`

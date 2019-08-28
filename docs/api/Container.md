@@ -4,7 +4,9 @@
 
 * `constructor(spec = {[modules_loader]})`
 * `addSourceMapping(namespace, path, ext = "mjs")`
-* `delete(id)`
-* `get(id)` (async)
-* `has(id)`
-* `put(id, object)`
+* `delete(obj_id)`
+* `get(obj_id)` (async)
+* `getModulesLoader()`
+* `has(obj_id)`
+* `list()`
+* `set(obj_id, object)`

@@ -27,33 +27,6 @@ class TeqFw_Di_Container {
         _instances.set("TeqFw_Di_Container$", this);
 
         /**
-         *
-         * @param {string} namespace
-         * @param {string} path
-         * @param {string} [ext]
-         * @memberOf TeqFw_Di_Container.prototype
-         */
-        this.addSourceMapping = function (namespace, path, ext = "mjs") {
-            const parsed = Normalizer.parseId(namespace);
-            if (parsed.is_instance) throw new Error(`Namespace cannot contain '$' symbol.`);
-            _modules_loader.addNamespaceRoot({ns: parsed.source_part, path, ext, is_absolute: true});
-        }
-        /**
-         * Delete stored instance or import result (factory function or object) by `id` (if exist).
-         *
-         * @param {string} dep_id
-         * @memberOf TeqFw_Di_Container.prototype
-         */
-        this.delete = function (dep_id) {
-            const parsed = Normalizer.parseId(dep_id);
-            if (parsed.is_instance) {
-                _instances.delete(parsed.id);
-            } else {
-                _modules_loader.delete(parsed.id);
-            }
-        };
-
-        /**
          * Get/create object by given object ID.
          *
          * @param {string} id
@@ -134,16 +107,43 @@ class TeqFw_Di_Container {
         };
 
         /**
+         *
+         * @param {string} namespace
+         * @param {string} path
+         * @param {string} [ext]
+         * @memberOf TeqFw_Di_Container.prototype
+         */
+        this.addSourceMapping = function (namespace, path, ext = "mjs") {
+            const parsed = Normalizer.parseId(namespace);
+            if (parsed.is_instance) throw new Error(`Namespace cannot contain '$' symbol.`);
+            _modules_loader.addNamespaceRoot({ns: parsed.source_part, path, ext, is_absolute: true});
+        }
+        /**
+         * Delete stored instance or import result (factory function or object) by `id` (if exist).
+         *
+         * @param {string} obj_id
+         * @memberOf TeqFw_Di_Container.prototype
+         */
+        this.delete = function (obj_id) {
+            const parsed = Normalizer.parseId(obj_id);
+            if (parsed.is_instance) {
+                _instances.delete(parsed.id);
+            } else {
+                _modules_loader.delete(parsed.id);
+            }
+        };
+
+        /**
          * Get/create object by ID.
          *
-         * @param {string} id
+         * @param {string} obj_id
          * @return {Promise<Object>}
          * @memberOf TeqFw_Di_Container.prototype
          */
-        this.get = async function (id) {
-            const deps_stack = [id];
+        this.get = async function (obj_id) {
+            const deps_stack = [obj_id];
             try {
-                const result = await get_object(id, deps_stack);
+                const result = await get_object(obj_id, deps_stack);
                 return result;
             } catch (e) {
                 throw e;
@@ -157,23 +157,21 @@ class TeqFw_Di_Container {
         this.getModulesLoader = function () {
             return _modules_loader;
         };
-
         /**
          * Check existence of created instance or imported data in container.
          *
-         * @param {string} dep_id
+         * @param {string} obj_id
          * @return {boolean}
          * @memberOf TeqFw_Di_Container.prototype
          */
-        this.has = function (dep_id) {
-            const parsed = Normalizer.parseId(dep_id);
+        this.has = function (obj_id) {
+            const parsed = Normalizer.parseId(obj_id);
             if (parsed.is_instance) {
                 return _instances.has(parsed.id);
             } else {
                 return _modules_loader.has(parsed.id);
             }
         };
-
         /**
          * Get list of contained dependencies (created instances and loaded modules).
          *
@@ -190,12 +188,12 @@ class TeqFw_Di_Container {
         /**
          * Place object instance into the container. Replace existing instance with the same ID.
          *
-         * @param {string} dep_id - ID for (named) instance ("Vendor_Module_Object$", "Vendor_Module_Object$name").
+         * @param {string} obj_id - ID for (named) instance ("Vendor_Module_Object$", "Vendor_Module_Object$name").
          * @param {Object} object
          * @memberOf TeqFw_Di_Container.prototype
          */
-        this.set = function (dep_id, object) {
-            const parsed = Normalizer.parseId(dep_id);
+        this.set = function (obj_id, object) {
+            const parsed = Normalizer.parseId(obj_id);
             if (parsed.is_instance) {
                 _instances.set(parsed.id, object);
             } else {

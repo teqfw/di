@@ -99,6 +99,7 @@ export default class TeqFw_Di_Container_ModulesLoader_Resolver {
             if (result === undefined) throw new Error(`Cannot resolve path for id '${source_id}'.`);
             return result;
         };
+
         /**
          * @return {Object}
          * @memberOf TeqFw_Di_Container_ModulesLoader_Resolver.prototype
