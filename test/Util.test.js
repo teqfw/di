@@ -1,9 +1,9 @@
-import Normalizer from "../src/Normalizer.mjs";
+import Normalizer from "../src/Util.mjs";
 import {describe, it} from "mocha";
 import {expect} from "chai";
 
 
-describe("TeqFw_Di_Normalizer", function () {
+describe("TeqFw_Di_Util", function () {
 
     it("has all expected public methods", function (done) {
         const methods = Object.getOwnPropertyNames(Normalizer)

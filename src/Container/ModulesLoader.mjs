@@ -1,5 +1,5 @@
-import Resolver from "./ModulesLoader/Resolver.mjs"
-import Normalizer from "../Normalizer.mjs"
+import Resolver from "./ModulesLoader/Resolver.mjs";
+import Normalizer from "../Util.mjs";
 
 /**
  * Load modules and save export results inside.

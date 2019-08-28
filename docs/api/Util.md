@@ -1,4 +1,4 @@
-# `TeqFw_Di_Normalizer` API
+# `TeqFw_Di_Util` API
 
 ## Overview
 
