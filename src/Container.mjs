@@ -86,17 +86,14 @@ class TeqFw_Di_Container {
                 // local registry to save make-functions for main object & its dependencies
                 const make_funcs = {};
                 const parsed = Normalizer.parseId(id);
-
-                if (parsed.is_instance) {
-                    // get required instance from `_instances` or check sources import and create new one
+                // get required instance from `_instances` or check sources import and create new dependency
+                if (
+                    (parsed.is_instance) &&
+                    (_instances.get(parsed.id) !== undefined)
+                ) {
                     const inst_by_id = _instances.get(parsed.id);
-                    if (inst_by_id !== undefined) {
-                        // instance with required `id` was created before, just return it
-                        resolve(inst_by_id);
-                    } else {
-                        // TODO: create new instance then save it to `_instance` registry.
-                        throw new Error("Is not implemented yet");
-                    }
+                    // instance with required `id` was created before, just return it
+                    resolve(inst_by_id);
                 } else {
                     // get `constructor` object from ModulesLoader then create new object
                     _modules_loader.get(parsed.id)
@@ -114,6 +111,7 @@ class TeqFw_Di_Container {
                                 const fn_make = function () {
                                     try {
                                         const inst_new = create_instance(constructor, spec);
+                                        if (parsed.is_instance) _instances.set(parsed.id, inst_new);
                                         resolve(inst_new);
                                     } catch (e) {
                                         // stealth constructor exceptions (for absent deps that should be made asyncly)

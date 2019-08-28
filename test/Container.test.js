@@ -143,6 +143,8 @@ describe("TeqFw_Di_Container", function () {
     describe("allows to import:", function () {
         it("functional dependency from source", function (done) {
             // set up source mapping
+            /** @type {TeqFw_Di_Container} */
+            const container = new Container();
             container.addSourceMapping("Test_Container", __dirname + "/Container.test/d001");
             // main function factory with dependency been get from FunctionFactory
             const id = "MainFactory";
@@ -159,6 +161,8 @@ describe("TeqFw_Di_Container", function () {
 
         it("class dependency from source", function (done) {
             // set up source mapping
+            /** @type {TeqFw_Di_Container} */
+            const container = new Container();
             container.addSourceMapping("Test_Container", __dirname + "/Container.test/d001");
             // main function factory with dependency been get from FunctionFactory
             const id = "MainFactory";
@@ -172,6 +176,18 @@ describe("TeqFw_Di_Container", function () {
                     done();
                 });
         });
+
+        it("create new named dependency from source", function (done) {
+            /** @type {TeqFw_Di_Container} */
+            const container = new Container();
+            // set up source mapping
+            container.addSourceMapping("Test_Container", __dirname + "/Container.test/d003");
+            container.get("Test_Container_MainClass")
+                .then((obj_new) => {
+                    expect(obj_new).deep.equal({name: "main", dep1: {name: "dep"}, dep2: {name: "dep"}});
+                    done();
+                });
+        });
     });
 
     describe("handles the errors:", function () {
@@ -179,11 +195,6 @@ describe("TeqFw_Di_Container", function () {
             const container = new Container();
             // set up source mapping
             container.addSourceMapping("Test_Container", __dirname + "/Container.test/d002");
-            // container.get("Test_Container_MainClass")
-            //     .then((obj_new) => {
-            //         expect(obj_new).deep.equal({dep: {name: "Test_Container_DepClass"}});
-            //         done();
-            //     });
             container.get("Test_Container_MainClass").catch(
                 (e) => {
                     const boo = 4;

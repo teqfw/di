@@ -26,13 +26,15 @@ export default class TeqFw_Di_ModulesLoader {
 
         this.get = function (id) {
             return new Promise(function (resolve, reject) {
-                if (_imports[id]) {
-                    resolve(_imports[id]);
+                const parsed = Normalizer.parseId(id);
+                const source_id = parsed.source_part;
+                if (_imports[source_id]) {
+                    resolve(_imports[source_id]);
                 } else {
-                    const source_file = _resolver.getSourceById(id);
+                    const source_file = _resolver.getSourceById(source_id);
                     import(source_file).then(imported => {
-                        _imports[id] = imported.default;
-                        resolve(_imports[id]);
+                        _imports[source_id] = imported.default;
+                        resolve(_imports[source_id]);
                     }).catch(err => {
                         reject(err);
                     });
