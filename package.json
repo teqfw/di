@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./src/Container.mjs",
   "scripts": {
-    "example": "node --experimental-modules main.mjs",
+    "example": "node --experimental-modules ./example/s001/s001.mjs",
     "test": "./node_modules/mocha/bin/mocha --require esm --ui tdd --recursive ./test/"
   },
   "license": "GPL-3.0",

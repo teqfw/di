@@ -1,8 +1,8 @@
-# Export in `TeqFw/DI`
+# Export in `@teqfw/di`
 
 [Export in EcmaScript.](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/export)
 
-`TeqFw/DI` container expects that any imported module has `default` export defined. Only these 3 export results are valid in `TeqFw/DI`:
+`@teqfw/di` container expects that all loaded modules have `default` export defined. Only these 3 export results are valid in `@teqfw/di`:
 ```ecmascript 6
 // object
 export default {}

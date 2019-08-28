@@ -1,4 +1,4 @@
-# `TeqFw/DI`
+# `@teqfw/di`
 
 1. [Export in TeqFw/DI](./export_default.md)
 1. [Dependencies Identifiers](./identifiers.md)
