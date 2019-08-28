@@ -6,8 +6,6 @@ Proxy object for `constructor` specification is inspired by [awilix](https://git
 
 
 
-## Usage
-
 ## Modules
 `@teqfw/di` works with ES6 modules [that have](./docs/export_default.md) `export default` defined.
 ```ecmascript 6
@@ -126,7 +124,7 @@ container.get("Sample_App").then(app => app.run());
 
 ## Example
 
-[Simple application](./example/s001/s001.html)
+[Simple application](./example/s001/)
 
 ### Use as `nodejs` app:
 ```
