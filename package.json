@@ -6,7 +6,7 @@
   "main": "./src/Container.mjs",
   "scripts": {
     "example": "node --experimental-modules main.mjs",
-    "test": "jest"
+    "test": "./node_modules/mocha/bin/mocha --require esm --ui tdd --recursive ./test/"
   },
   "license": "GPL-3.0",
   "repository": {
