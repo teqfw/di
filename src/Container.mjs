@@ -15,9 +15,11 @@ import SpecProxy from "./Container/SpecProxy.mjs";
  * @param {Object} [spec]
  * @param {TeqFw_Di_Container_ModulesLoader} [spec.modules_loader]
  * @memberOf TeqFw_Di
+ * @implements {TeqFw_Di_ContainerInterface}
  */
-class TeqFw_Di_Container {
+export default class TeqFw_Di_Container {
     constructor(spec = {}) {
+        // super();
         /** Created instances (singletons) */
         const _instances = new Map();
         /** Modules loader (given in constructor or empty one) */
@@ -202,9 +204,5 @@ class TeqFw_Di_Container {
                 _modules_loader.set(parsed.id, object);
             }
         };
-
-
     }
 }
-
-export default TeqFw_Di_Container;
