@@ -1,12 +1,13 @@
 {
   "name": "@teqfw/di",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Dependency Injection container based on ES6 modules (works for browsers & nodejs).",
-  "type": "module",
+  "type-is-not-used-here": "module",
   "main": "./src/Container.mjs",
   "scripts": {
     "example": "node --experimental-modules ./example/s001/s001.mjs",
-    "test": "./node_modules/mocha/bin/mocha --require esm --ui tdd --recursive ./test/"
+    "test": "./node_modules/mocha/bin/mocha --require esm --recursive './test/**/*.test.js'",
+    "jsdoc": "./node_modules/jsdoc/jsdoc.js -d ./jsdoc/ -c ./.jsdoc.rc -r"
   },
   "license": "GPL-3.0",
   "repository": {
@@ -14,8 +15,13 @@
     "url": "git+https://github.com/teqfw/di.git"
   },
   "devDependencies": {
-    "chai": "^4.2.0",
-    "esm": "^3.2.25",
-    "mocha": "^6.2.0"
+    "chai": "*",
+    "esm": "*",
+    "jsdoc": "*",
+    "mocha": "*",
+    "nyc": "*"
+  },
+  "esm": {
+    "cjs": true
   }
 }

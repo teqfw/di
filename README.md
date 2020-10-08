@@ -1,5 +1,7 @@
 # @teqfw/di
 
+<span style="color:red">**THIS IS MY OWN PET PROJECT. PLEASE, USE IT JUST FOR YOU OWN FUN.**</span>
+
 Dependency Injection container based on ES6 modules (works for browsers &amp; nodejs).
 
 Proxy object for `constructor` specification is inspired by [awilix](https://github.com/jeffijoe/awilix).

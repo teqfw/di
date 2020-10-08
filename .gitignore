@@ -1,4 +1,6 @@
 /.idea/
+/.nyc_output/
+/jsdoc/
 /node_modules/
 /package-lock.json
 /tmp/

@@ -1,16 +1,15 @@
 /**
  * Format validator for dependencies identifiers.
- *
- * @namespace TeqFw_Di_Util
  */
 
 /**
- * @typedef {Object} TeqFw_Di_Util.IdData
+ * @typedef {Object} TeqFw_Di_Util.Id
  * @property {string} id - Original ID.
  * @property {string} source_part - Part of the full ID that used to define source codes to import.
  * @property {boolean} is_instance - 'true' if ID corresponds to singleton object in DI container..
  * @property {string} [instance_name] - Part of the full ID that used to define instance name.
  * @property {string} [plugin] - Part of the full ID that used to define plugin name.
+ *
  */
 
 /**
@@ -26,9 +25,9 @@ const REG_EXP_VALID_ID = /^(([a-z]\w*)(\${2}))?([A-Za-z]\w*)(\$?)(\w*)$/;
  * Validate objects identifier, parse and return ID parts.
  *
  * @param {string} id Dependency identifier to validate.
- * @return {TeqFw_Di_Util.IdData} Parsed data for given ID.
+ * @return {TeqFw_Di_Util.Id} Parsed data for given ID.
  * @throws {Error} if `id` is not valid.
- * @memberOf TeqFw_Di_Util
+ * @memberOf TeqFw_Di_Util.prototype
  */
 function parseId(id) {
     const parts = REG_EXP_VALID_ID.exec(id);
@@ -40,4 +39,11 @@ function parseId(id) {
     return {id, source_part, is_instance, instance_name, plugin};
 }
 
-export default {parseId}
+/**
+ * @class TeqFw_Di_Util
+ */
+export default class TeqFw_Di_Util {
+    constructor() {
+        this.parseId = parseId;
+    }
+}
