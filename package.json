@@ -2,7 +2,7 @@
   "name": "@teqfw/di",
   "version": "0.3.0",
   "description": "Dependency Injection container based on ES6 modules (works for browsers & nodejs).",
-  "type-is-not-used-here": "module",
+  "type": "module",
   "main": "./src/Container.mjs",
   "scripts": {
     "example": "node --experimental-modules ./example/s001/s001.mjs",
