@@ -3,9 +3,9 @@
  *
  * Root object for the package.
  */
-import Loader from './Container/Loader.js';
-import Util from './Util.js';
-import SpecProxy from './Container/SpecProxy.js';
+import Loader from './Container/Loader';
+import Util from './Util';
+import SpecProxy from './Container/SpecProxy';
 
 const $util = new Util();
 
@@ -113,7 +113,7 @@ export default class TeqFw_Di_Container {
          * @param {boolean} [is_absolute]
          * @param {string} [ext]
          */
-        this.addSourceMapping = function (namespace, path, is_absolute = false, ext = 'js') {
+        this.addSourceMapping = function (namespace, path, is_absolute = false, ext = 'mjs') {
             const parsed = $util.parseId(namespace);
             if (parsed.is_instance) throw new Error('Namespace cannot contain \'$\' symbol.');
             _modulesLoader.addNamespaceRoot({ns: parsed.source_part, path, ext, is_absolute});

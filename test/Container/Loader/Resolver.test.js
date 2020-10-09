@@ -1,4 +1,4 @@
-import Resolver from '../../../src/Container/Loader/Resolver.js';
+import Resolver from '../../../src/Container/Loader/Resolver';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 

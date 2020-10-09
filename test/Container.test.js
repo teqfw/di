@@ -1,4 +1,4 @@
-import Container from '../src/Container.js';
+import Container from '../src/Container';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 

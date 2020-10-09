@@ -2,8 +2,8 @@
   "name": "@teqfw/di",
   "version": "0.3.0",
   "description": "Dependency Injection container based on ES6 modules (works for browsers & nodejs).",
-  "type-is-not-used-here": "module",
-  "main": "./src/Container.js",
+  "type": "module",
+  "main": "./src/Container.mjs",
   "scripts": {
     "example": "node --experimental-modules ./example/s001/s001.mjs",
     "test": "./node_modules/mocha/bin/mocha --require esm --recursive './test/**/*.test.js'",

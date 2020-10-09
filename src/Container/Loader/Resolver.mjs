@@ -54,7 +54,7 @@ export default class TeqFw_Di_Container_Loader_Resolver {
      * @param {string} [ext] extension to use in filename composition
      * @param {boolean} [is_absolute] default: true
      */
-    addNamespaceRoot({ns, path, ext = 'js', is_absolute = true}) {
+    addNamespaceRoot({ns, path, ext = 'mjs', is_absolute = true}) {
         /** @type {TeqFw_Di_Container_Loader_Resolver.ResolveDetailsData} */
         const entry = {path, ext, is_absolute};
         const spaces = ns.split(NSS);
