@@ -1,5 +1,5 @@
-import Resolver from './Loader/Resolver';
-import Util from '../Util';
+import Resolver from './Loader/Resolver.mjs';
+import Util from '../Util.mjs';
 
 const $util = new Util();
 /**

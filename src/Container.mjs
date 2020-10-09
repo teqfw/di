@@ -3,9 +3,9 @@
  *
  * Root object for the package.
  */
-import Loader from './Container/Loader';
-import Util from './Util';
-import SpecProxy from './Container/SpecProxy';
+import Loader from './Container/Loader.mjs';
+import Util from './Util.mjs';
+import SpecProxy from './Container/SpecProxy.mjs';
 
 const $util = new Util();
 
