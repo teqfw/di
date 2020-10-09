@@ -28,23 +28,19 @@ export default class TeqFw_Di_Container_Loader {
         delete this.sources[parsed.source_part];
     }
 
-    get(depId) {
-        const me = this;
-        return new Promise(function (resolve, reject) {
-            const parsed = $util.parseId(depId);
-            const sourceId = parsed.source_part;
-            if (me.sources[sourceId]) {
-                resolve(me.sources[sourceId]);
-            } else {
-                const sourceFile = me.resolver.getSourceById(sourceId);
-                import(sourceFile).then(imported => {
-                    me.sources[sourceId] = imported.default;
-                    resolve(me.sources[sourceId]);
-                }).catch(err => {
-                    reject(err);
-                });
-            }
-        });
+    async get(depId) {
+        let result;
+        const parsed = $util.parseId(depId);
+        const sourceId = parsed.source_part;
+        if (this.sources[sourceId]) {
+            result = this.sources[sourceId];
+        } else {
+            const sourceFile = this.resolver.getSourceById(sourceId);
+            const imported = await import(sourceFile);
+            this.sources[sourceId] = imported.default;
+            result = this.sources[sourceId];
+        }
+        return result;
     }
 
     /**
