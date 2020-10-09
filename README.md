@@ -27,7 +27,7 @@ export default class Sample_App_Config {
 
 Load container, setup namespace mapping, get object: 
 ```ecmascript 6
-import Container from "./path/to/Container.mjs";
+import Container from "./path/to/Container.js";
 const container = new Container();
 // map sources relatively to this script
 container.addSourceMapping("Sample", "./path/to/app/sources");
@@ -144,7 +144,7 @@ Include main script as ES module to the page (see `type="module"`):
 
 `main.mjs`:
 ```ecmascript 6
-import Container from "./path/to/Container.mjs";
+import Container from "./path/to/Container.js";
 const container = new Container();
 container.addSourceMapping("Sample", "./path/to/src");
 container.get("Sample_App").then(app => app.run());

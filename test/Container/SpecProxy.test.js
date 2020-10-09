@@ -1,42 +1,42 @@
-import SpecProxy from "../../src/Container/SpecProxy.mjs";
-import {describe, it} from "mocha";
-import {expect} from "chai";
+import SpecProxy from '../../src/Container/SpecProxy.js';
+import {describe, it} from 'mocha';
+import assert from 'assert';
 
-describe("TeqFw_Di_Container_SpecProxy", function () {
+describe('TeqFw_Di_Container_SpecProxy', () => {
     // this is small entrance test, `SpecProxy` is tested mainly as part of `Container` object.
 
 
-    it("allows to get dependency by id", function (done) {
-        const dep_id = "config$pg";
-        const dep_obj = {name: "boo"};
-        const obj_id = "Vendor_Module_Class";
-        const deps_stack = new Set(["Vendor_Module_Class"]);
-        const container_insts = new Map();
-        const fn_get_dep = async function () {
-            return dep_obj;
+    it('allows to get dependency by id', (done) => {
+        const depId = 'config$pg';
+        const dependency = {name: 'boo'};
+        const objId = 'Vendor_Module_Class';
+        const depsStack = new Set(['Vendor_Module_Class']);
+        const containerInsts = new Map();
+        const fnGetDep = async () => {
+            return dependency;
         };
-        const make_funcs = {};
-        const fn_reject = function () {
+        const makeFuncs = {};
+        const fnReject = () => {
             // this function is not called
         };
 
         /** @type {TeqFw_Di_Container_SpecProxy} */
-        const spec_proxy = new SpecProxy(obj_id, deps_stack, container_insts, make_funcs, fn_get_dep, fn_reject);
+        const specProxy = new SpecProxy(objId, depsStack, containerInsts, makeFuncs, fnGetDep, fnReject);
 
         // add make function to call `spec_proxy[dep_id]` once again after dependency constructing
-        make_funcs[obj_id] = function () {
-            const dep = spec_proxy[dep_id];
-            expect(dep).equal(dep_obj);
+        makeFuncs[objId] = () => {
+            const dep = specProxy[depId];
+            assert.strictEqual(dep, dependency);
             done();
         };
 
         try {
-            const dep = spec_proxy[dep_id];
+            const dep = specProxy[depId];
             // the next line will never be reached
             console.log(dep);
         } catch (err) {
-            // catch first exception on "dep is not found" event
-            expect(err).equal(SpecProxy.EXCEPTION_TO_STEALTH);
+            // catch first exception on 'dep is not found' event
+            assert.strictEqual(err, SpecProxy.EXCEPTION_TO_STEALTH);
         }
 
     });

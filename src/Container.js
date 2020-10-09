@@ -2,19 +2,18 @@
  * `TeqFw/DI` container.
  *
  * Root object for the package.
- *
- * @namespace TeqFw_Di
  */
-import ModulesLoader from "./Container/ModulesLoader.mjs";
-import Normalizer from "./Util.mjs";
-import SpecProxy from "./Container/SpecProxy.mjs";
+import Loader from './Container/Loader.js';
+import Util from './Util.js';
+import SpecProxy from './Container/SpecProxy.js';
+
+const $util = new Util();
 
 /**
  * Dependency Injection container.
  *
  * @param {Object} [spec]
- * @param {TeqFw_Di_Container_ModulesLoader} [spec.modules_loader]
- * @memberOf TeqFw_Di
+ * @param {TeqFw_Di_Container_Loader} [spec.modules_loader]
  * @implements {TeqFw_Di_ContainerInterface}
  */
 export default class TeqFw_Di_Container {
@@ -23,20 +22,19 @@ export default class TeqFw_Di_Container {
         /** Created instances (singletons) */
         const _instances = new Map();
         /** Modules loader (given in constructor or empty one) */
-        const _modules_loader = spec.modules_loader || new ModulesLoader();
+        const _modulesLoader = spec.modules_loader || new Loader();
 
         // set default instance of the DI container
-        _instances.set("TeqFw_Di_Container$", this);
+        _instances.set('TeqFw_Di_Container$', this);
 
         /**
          * Get/create object by given object ID.
          *
          * @param {string} id
-         * @param {Set<string>} deps_stack stack of dependencies to prevent circular loop.
+         * @param {Set<string>} depsStack stack of dependencies to prevent circular loop.
          * @return {Promise<Object>}
-         * @memberOf TeqFw_Di_Container.prototype
          */
-        function get_object(id, deps_stack) {
+        function getObject(id, depsStack) {
             return new Promise(function (resolve, reject) {
 
                 /**
@@ -47,11 +45,11 @@ export default class TeqFw_Di_Container {
                  * @param {TeqFw_Di_Container_SpecProxy} spec
                  * @return {Object}
                  */
-                function create_instance(constructor, spec) {
+                function createInstance(constructor, spec) {
                     // https://stackoverflow.com/a/29094018/4073821
                     const proto = Object.getOwnPropertyDescriptor(constructor, 'prototype');
-                    const is_class = !proto.writable;
-                    if (is_class) {
+                    const isClass = proto && !proto.writable;
+                    if (isClass) {
                         return new constructor(spec);
                     } else {
                         return constructor(spec);
@@ -59,35 +57,35 @@ export default class TeqFw_Di_Container {
                 }
 
                 // local registry to save make-functions for main object & its dependencies
-                const make_funcs = {};
-                const parsed = Normalizer.parseId(id);
+                const makeFuncs = {};
+                const parsed = $util.parseId(id);
                 // get required instance from `_instances` or check sources import and create new dependency
                 if (
                     (parsed.is_instance) &&
                     (_instances.get(parsed.id) !== undefined)
                 ) {
-                    const inst_by_id = _instances.get(parsed.id);
+                    const instById = _instances.get(parsed.id);
                     // instance with required `id` was created before, just return it
-                    resolve(inst_by_id);
+                    resolve(instById);
                 } else {
-                    // get `constructor` object from ModulesLoader then create new object
-                    _modules_loader.get(parsed.id)
+                    // get `constructor` object from Loader then create new object
+                    _modulesLoader.get(parsed.id)
                         .then((constructor) => {
-                            const constructor_type = typeof constructor;
-                            if (constructor_type === "object") {
+                            const constructorType = typeof constructor;
+                            if (constructorType === 'object') {
                                 // `constructor` is an object, clone this object and return new one on every call
                                 const result = Object.assign({}, constructor);
                                 resolve(result);
-                            } else if (constructor_type === "function") {
+                            } else if (constructorType === 'function') {
                                 // `constructor` is simple function or class
                                 // create spec proxy to analyze dependencies of the construction object in current scope
-                                const spec = new SpecProxy(id, deps_stack, _instances, make_funcs, get_object, reject);
+                                const spec = new SpecProxy(id, depsStack, _instances, makeFuncs, getObject, reject);
                                 // create new function to resolve all deps and to make requested object
-                                const fn_make = function () {
+                                const fnMake = function () {
                                     try {
-                                        const inst_new = create_instance(constructor, spec);
-                                        if (parsed.is_instance) _instances.set(parsed.id, inst_new);
-                                        resolve(inst_new);
+                                        const instNew = createInstance(constructor, spec);
+                                        if (parsed.is_instance) _instances.set(parsed.id, instNew);
+                                        resolve(instNew);
                                     } catch (e) {
                                         // stealth constructor exceptions (for absent deps that should be made asyncly)
                                         if (e !== SpecProxy.EXCEPTION_TO_STEALTH) throw e;
@@ -95,10 +93,10 @@ export default class TeqFw_Di_Container {
                                 };
                                 //register `make` function in the local context to re-call it later
                                 // (when any un-existing dependency will be created)
-                                make_funcs[parsed.id] = fn_make;
-                                fn_make();
+                                makeFuncs[parsed.id] = fnMake;
+                                fnMake();
                             } else {
-                                throw new Error("Unexpected type of loaded module.");
+                                throw new Error('Unexpected type of loaded module.');
                             }
                         })
                         .catch(err => {
@@ -106,7 +104,7 @@ export default class TeqFw_Di_Container {
                         });
                 }
             });
-        };
+        }
 
         /**
          *
@@ -114,77 +112,67 @@ export default class TeqFw_Di_Container {
          * @param {string} path
          * @param {boolean} [is_absolute]
          * @param {string} [ext]
-         * @memberOf TeqFw_Di_Container.prototype
          */
-        this.addSourceMapping = function (namespace, path, is_absolute = false, ext = "mjs") {
-            const parsed = Normalizer.parseId(namespace);
-            if (parsed.is_instance) throw new Error(`Namespace cannot contain '$' symbol.`);
-            _modules_loader.addNamespaceRoot({ns: parsed.source_part, path, ext, is_absolute});
+        this.addSourceMapping = function (namespace, path, is_absolute = false, ext = 'mjs') {
+            const parsed = $util.parseId(namespace);
+            if (parsed.is_instance) throw new Error('Namespace cannot contain \'$\' symbol.');
+            _modulesLoader.addNamespaceRoot({ns: parsed.source_part, path, ext, is_absolute});
         };
 
         /**
          * Delete stored instance or import result (factory function or object) by `id` (if exist).
          *
-         * @param {string} obj_id
-         * @memberOf TeqFw_Di_Container.prototype
+         * @param {string} depId
          */
-        this.delete = function (obj_id) {
-            const parsed = Normalizer.parseId(obj_id);
+        this.delete = function (depId) {
+            const parsed = $util.parseId(depId);
             if (parsed.is_instance) {
                 _instances.delete(parsed.id);
             } else {
-                _modules_loader.delete(parsed.id);
+                _modulesLoader.delete(parsed.id);
             }
         };
 
         /**
          * Get/create object by ID.
          *
-         * @param {string} obj_id
+         * @param {string} depId
          * @return {Promise<Object>}
-         * @memberOf TeqFw_Di_Container.prototype
          */
-        this.get = async function (obj_id) {
-            const deps_stack = new Set([obj_id]);
-            try {
-                const result = await get_object(obj_id, deps_stack);
-                return result;
-            } catch (e) {
-                throw e;
-            }
+        this.get = async function (depId) {
+            const depsStack = new Set([depId]);
+            return await getObject(depId, depsStack);
         };
 
         /**
-         * @return {TeqFw_Di_Container_ModulesLoader}
-         * @memberOf TeqFw_Di_Container.prototype
+         * @return {TeqFw_Di_Container_Loader}
          */
-        this.getModulesLoader = function () {
-            return _modules_loader;
+        this.getLoader = function () {
+            return _modulesLoader;
         };
         /**
          * Check existence of created instance or imported data in container.
          *
-         * @param {string} obj_id
+         * @param {string} depId
          * @return {boolean}
-         * @memberOf TeqFw_Di_Container.prototype
          */
-        this.has = function (obj_id) {
-            const parsed = Normalizer.parseId(obj_id);
+        this.has = function (depId) {
+            const parsed = $util.parseId(depId);
             if (parsed.is_instance) {
                 return _instances.has(parsed.id);
             } else {
-                return _modules_loader.has(parsed.id);
+                return _modulesLoader.has(parsed.id);
             }
         };
+
         /**
          * Get list of contained dependencies (created instances and loaded modules).
          *
          * @return {Array<string>}
-         * @memberOf TeqFw_Di_Container.prototype
          */
         this.list = function () {
             const instances = Array.from(_instances.keys());
-            const modules = _modules_loader.list();
+            const modules = _modulesLoader.list();
             const result = [...instances, ...modules];
             result.sort();
             return result;
@@ -192,16 +180,15 @@ export default class TeqFw_Di_Container {
         /**
          * Place object instance into the container. Replace existing instance with the same ID.
          *
-         * @param {string} obj_id - ID for (named) instance ("Vendor_Module_Object$", "Vendor_Module_Object$name").
+         * @param {string} depId - ID for (named) instance ('Vendor_Module_Object$', 'Vendor_Module_Object$name').
          * @param {Object} object
-         * @memberOf TeqFw_Di_Container.prototype
          */
-        this.set = function (obj_id, object) {
-            const parsed = Normalizer.parseId(obj_id);
+        this.set = function (depId, object) {
+            const parsed = $util.parseId(depId);
             if (parsed.is_instance) {
                 _instances.set(parsed.id, object);
             } else {
-                _modules_loader.set(parsed.id, object);
+                _modulesLoader.set(parsed.id, object);
             }
         };
     }

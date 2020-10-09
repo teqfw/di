@@ -7,7 +7,7 @@
   "scripts": {
     "example": "node --experimental-modules ./example/s001/s001.mjs",
     "test": "./node_modules/mocha/bin/mocha --require esm --recursive './test/**/*.test.js'",
-    "jsdoc": "./node_modules/jsdoc/jsdoc.js -d ./jsdoc/ -c ./.jsdoc.rc -r"
+    "jsdoc": "./node_modules/jsdoc/jsdoc.js -d ./jsdoc/ -a all -c ./.jsdoc"
   },
   "license": "GPL-3.0",
   "repository": {
@@ -15,11 +15,11 @@
     "url": "git+https://github.com/teqfw/di.git"
   },
   "devDependencies": {
-    "chai": "*",
+    "babel-eslint": "*",
+    "eslint": "*",
     "esm": "*",
     "jsdoc": "*",
-    "mocha": "*",
-    "nyc": "*"
+    "mocha": "*"
   },
   "esm": {
     "cjs": true

@@ -1,0 +1,21 @@
+{
+  "my-link-to-docs": "https://jsdoc.app/about-configuring-jsdoc.html",
+    "plugins": [
+        "plugins/markdown"
+    ],
+  "source": {
+    "include": [
+      "./src/"
+    ],
+    "includePattern": ".+\\.(m)?js(doc|x)?$",
+    "excludePattern": ""
+  },
+    "opts": {
+        "destination": "./jsdoc/",
+        "encoding": "utf8",
+        "private": true,
+        "recurse": true,
+        "note": "disable 'nav.width' in 'node_modules/minami/static/styles/jsdoc-default.css:225'",
+        "disable-template": "./node_modules/minami"
+    }
+}
