@@ -149,7 +149,7 @@ describe('TeqFw_Di_Container', function () {
             // set up source mapping
             /** @type {TeqFw_Di_Container} */
             const container = new Container();
-            container.addSourceMapping('Test_Container', __dirname + '/Container.test/d001', true);
+            container.addSourceMapping('Test_Container', __dirname + '/.data/d001', true);
             // main function factory with dependency been get from FunctionFactory
             const id = 'MainFactory';
             const mainFactory = ({Test_Container_DepFunc}) => {
@@ -167,7 +167,7 @@ describe('TeqFw_Di_Container', function () {
             // set up source mapping
             /** @type {TeqFw_Di_Container} */
             const container = new Container();
-            container.addSourceMapping('Test_Container', __dirname + '/Container.test/d001', true);
+            container.addSourceMapping('Test_Container', __dirname + '/.data/d001', true);
             // main function factory with dependency been get from FunctionFactory
             const id = 'MainFactory';
             const mainFactory = ({Test_Container_DepClass}) => {
@@ -185,7 +185,7 @@ describe('TeqFw_Di_Container', function () {
             /** @type {TeqFw_Di_Container} */
             const container = new Container();
             // set up source mapping
-            container.addSourceMapping('Test_Container', __dirname + '/Container.test/d003', true);
+            container.addSourceMapping('Test_Container', __dirname + '/.data/d003', true);
             container.get('Test_Container_MainClass')
                 .then((depOut) => {
                     assert.deepStrictEqual(depOut, {name: 'main', dep1: {name: 'dep'}, dep2: {name: 'dep'}});
@@ -198,7 +198,7 @@ describe('TeqFw_Di_Container', function () {
         it('circular dependencies', (done) => {
             const container = new Container();
             // set up source mapping
-            container.addSourceMapping('Test_Container', __dirname + '/Container.test/d002', true);
+            container.addSourceMapping('Test_Container', __dirname + '/.data/d002', true);
             container.get('Test_Container_MainClass').catch(
                 (e) => {
                     assert.strictEqual(
