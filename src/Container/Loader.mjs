@@ -3,12 +3,12 @@ import Util from '../Util.mjs';
 
 const $util = new Util();
 /**
- * Load JS sources and save module's `export` results inside.
+ * Load ES modules and store `export` results inside.
  */
 export default class TeqFw_Di_Container_Loader {
     /** @type {TeqFw_Di_Container_Loader_Resolver} */
     resolver
-    sources = {}
+    modules = {}
 
     /**
      *
@@ -25,20 +25,20 @@ export default class TeqFw_Di_Container_Loader {
 
     delete(depId) {
         const parsed = $util.parseId(depId);
-        delete this.sources[parsed.source_part];
+        delete this.modules[parsed.source_part];
     }
 
     async get(depId) {
         let result;
         const parsed = $util.parseId(depId);
         const sourceId = parsed.source_part;
-        if (this.sources[sourceId]) {
-            result = this.sources[sourceId];
+        if (this.modules[sourceId]) {
+            result = this.modules[sourceId];
         } else {
             const sourceFile = this.resolver.getSourceById(sourceId);
             const imported = await import(sourceFile);
-            this.sources[sourceId] = imported.default;
-            result = this.sources[sourceId];
+            this.modules[sourceId] = imported.default;
+            result = this.modules[sourceId];
         }
         return result;
     }
@@ -52,17 +52,17 @@ export default class TeqFw_Di_Container_Loader {
 
     has(depId) {
         const parsed = $util.parseId(depId);
-        return Object.prototype.hasOwnProperty.call(this.sources, parsed.source_part);
+        return Object.prototype.hasOwnProperty.call(this.modules, parsed.source_part);
     }
 
     list() {
-        const result = Array.from(Object.keys(this.sources));
+        const result = Array.from(Object.keys(this.modules));
         return result.sort();
     }
 
     set(depId, source) {
         const parsed = $util.parseId(depId);
         if (parsed.is_instance) throw new Error('Cannot load module source as instance (remove \'$\' from `id`).');
-        this.sources[depId] = source;
+        this.modules[depId] = source;
     }
 }

@@ -9,8 +9,8 @@ function main(dep1, dep2, dep3) {
 }
 
 // application level singletons
-const singleton = dependency("default");
-const singleton_named = dependency("named");
+const singleton = dependency('default');
+const singleton_named = dependency('named');
 
 // create deps then create main function and inject deps manually
 const dep1 = dependency();
