@@ -20,12 +20,13 @@ export default class TeqFw_Di_IdParser {
      */
     parse(id) {
         const result = new ParsedId();
-        result.source = id;
+        result.id = id;
         const objParts = REG_EXP_OBJECT_ID.exec(id);
         const modParts = REG_EXP_MODULE_ID.exec(id);
         if (!objParts && !modParts) throw new Error(`Invalid identifier: '${id}'. See 'https://github.com/teqfw/di/blob/master/docs/identifiers.md'.`);
         if (objParts) {
             result.isObjectId = true;
+            result.isSingleton = true;
         } else {
             result.moduleName = modParts[2];
             if (modParts[4]) {

@@ -4,7 +4,7 @@ export default class TeqFw_Di_Api_ParsedId {
      *
      * @type {String}
      */
-    source
+    id
     /**
      * 'true' if ID describes named singleton: 'dbConnection'.
      * @type {Boolean}

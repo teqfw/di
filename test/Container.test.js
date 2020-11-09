@@ -6,12 +6,11 @@ describe('TeqFw_Di_Container', function () {
     /** @type {TeqFw_Di_Container} */
     const container = new Container();
 
-    it('has right classname', (done) => {
+    it('has right classname', async () => {
         assert.strictEqual(container.constructor.name, 'TeqFw_Di_Container');
-        done();
     });
 
-    it('has all expected public methods', (done) => {
+    it('has all expected public methods', async () => {
         const methods = Object.getOwnPropertyNames(container)
             .filter(p => (typeof container[p] === 'function'));
         assert.deepStrictEqual(methods, [
@@ -23,84 +22,99 @@ describe('TeqFw_Di_Container', function () {
             'list',
             'set'
         ]);
-        done();
     });
 
-    it('contains itself inside', (done) => {
-        container.get('TeqFw_Di_Container$')
-            .then((obj) => {
-                assert.strictEqual(obj, container);
-                done();
-            });
+    it('contains itself inside', async () => {
+        const obj = await container.get('TeqFw_Di_Container$$');
+        assert.strictEqual(obj, container);
     });
 
     describe('allows to inspect itself:', () => {
-        it('access to modules loader', function (done) {
+        it('access to modules loader', async () => {
             const loader = container.getLoader();
             assert.strictEqual(loader.constructor.name, 'TeqFw_Di_Container_Loader');
-            done();
         });
 
-        it('lists contained instances and loaded modules', (done) => {
-            const depIdInstanceDefault = 'dbConfiguration$';
-            const depIdInstanceNamed = 'dbConfiguration$postgres';
+        it('lists contained instances and loaded modules', async () => {
+            const depIdNamedSingleton = 'dbConfiguration';
             const depIdModule = 'Vendor_Project_Module';
+            const depIdModConstructor = 'Vendor_Project_Module$';
+            const depIdModSingleton = 'Vendor_Project_Module$$';
             const obj = {name: 'one object for all deps'};
-            container.set(depIdInstanceDefault, obj);
-            container.set(depIdInstanceNamed, obj);
+            container.set(depIdNamedSingleton, obj);
             container.set(depIdModule, obj);
+            container.set(depIdModConstructor, obj);
+            container.set(depIdModSingleton, obj);
             const deps = container.list();
-            assert(deps.includes(depIdInstanceDefault));
-            assert(deps.includes(depIdInstanceNamed));
+            assert(deps.includes(depIdNamedSingleton));
             assert(deps.includes(depIdModule));
-            done();
+            assert(deps.includes(depIdModConstructor));
+            assert(deps.includes(depIdModSingleton));
         });
     });
 
     describe('allows to delete:', () => {
-        it('(named) instance from container', (done) => {
-            const depId = 'configuration$postgres';
+        it('named instance from container', async () => {
+            const depId = 'postgresConfiguration';
             const obj = {name: 'this is configuration for postgres DB'};
             container.set(depId, obj);
             assert(container.has(depId));
             container.delete(depId);
             assert(!container.has(depId));
-            done();
         });
 
-        it('loaded module from container', (done) => {
+        it('module from container', async () => {
             const depId = 'Vendor_Module_Source';
-            const loadedModule = {name: 'Module Source to delete'};
-            container.set(depId, loadedModule);
+            const module = {name: 'some module'};
+            container.set(depId, module);
             assert(container.has(depId));
             container.delete(depId);
             assert(!container.has(depId));
-            done();
+        });
+
+        it('constructors from container', async () => {
+            const depId = 'Vendor_Module_Source$';
+            const construct = {name: 'constructor function'};
+            container.set(depId, construct);
+            assert(container.has(depId));
+            container.delete(depId);
+            assert(!container.has(depId));
+        });
+
+        it('default export singletons from container', async () => {
+            const depId = 'Vendor_Module_Source$$';
+            const construct = {name: 'singleton object from module\'s default export'};
+            container.set(depId, construct);
+            assert(container.has(depId));
+            container.delete(depId);
+            assert(!container.has(depId));
         });
     });
 
     describe('allows to place:', () => {
-        it('(named) instance to container', (done) => {
-            const id = 'configuration$postgres';
+        it('named instance to container', async () => {
+            const id = 'dbConfiguration';
             const depIn = {name: 'this is configuration for postgres DB'};
             container.set(id, depIn);
-            container.get(id)
-                .then((depOut) => {
-                    assert(depOut === depIn); // is the same obect
-                    done();
-                });
+            const depOut = await container.get(id);
+            assert(depOut === depIn); // is the same object
         });
 
-        it('object template as factory to module loader', (done) => {
+        it('module to container', async () => {
+            const id = 'SomeImportedModule';
+            const depIn = {name: 'this is some imported module'};
+            container.set(id, depIn);
+            const depOut = await container.get(id);
+            assert(depOut === depIn); // is the same object
+        });
+
+        it('object template as factory to module loader', async () => {
             const id = 'ExportedObject';
             const depIn = {name: 'this template object is exported from outer source'};
             container.set(id, depIn);
-            container.get(id)
-                .then((depOut) => {
-                    assert(depOut !== depIn); // is not the same object
-                    assert.deepStrictEqual(depOut, depIn); // but both objects are equals
-                    done();
-                });
+            const depOut = await container.get(id);
+            assert(depOut !== depIn); // is not the same object
+            assert.deepStrictEqual(depOut, depIn); // but both objects are equals
         });
 
         it('function factory as factory to module loader', (done) => {

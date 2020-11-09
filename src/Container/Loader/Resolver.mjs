@@ -1,16 +1,8 @@
-/**
- * Resolving details.
- *
- * @typedef {Object} TeqFw_Di_Container_Loader_Resolver.ResolveDetailsData
- * @property {string} path
- * @property {string} ext
- * @property {boolean} is_absolute 'true' if path is absolute.
- */
+import TeqFw_Di_Api_ResolveDetails from '../../Api/ResolveDetails.mjs';
 /**
  * Tree-like structure of namespaces registry entry.
  *
- * @memberOf TeqFw_Di_Container_Loader_Resolver
- * @typedef {Object<string, TeqFw_Di_Container_Loader_Resolver.NamespaceData|TeqFw_Di_Container_Loader_Resolver.ResolveDetailsData>} TeqFw_Di_Container_Loader_Resolver.NamespaceData
+ * @typedef {Object<string, NamespaceDetails|TeqFw_Di_Api_ResolveDetails>} NamespaceDetails
  */
 
 /**
@@ -30,7 +22,7 @@ const NSS = '_';
 const KEY_DATA = '.data';
 
 /**
- * Map namespaces to files/URLs. Resolve and cache 'object ID to source path' mapping.
+ * Map codebase namespaces to files/URLs.
  */
 export default class TeqFw_Di_Container_Loader_Resolver {
     /**
@@ -41,7 +33,7 @@ export default class TeqFw_Di_Container_Loader_Resolver {
      * TeqFw_Prj_App_Mod => ./another/path/to/mod/files
      * TeqFw_Prj_App_Mod_Rewrite => ./rewrite/path/to/part/of/mod/files
      *
-     * @type {Object<string, TeqFw_Di_Container_Loader_Resolver.NamespaceData>}
+     * @type {Object<string, NamespaceDetails>}
      * @private
      */
     namespaces = {}
@@ -49,14 +41,14 @@ export default class TeqFw_Di_Container_Loader_Resolver {
     /**
      * Registry root path for the namespace.
      *
-     * @param {string} ns namespace (TeqFw_Di)
-     * @param {string} path absolute or relative to `TeqFw_Di_Container` sources (see `is_absolute` param)
-     * @param {string} [ext] extension to use in filename composition
-     * @param {boolean} [is_absolute] default: true
+     * @param {string} ns namespace (`Vendor_Project`)
+     * @param {string} path absolute or relative path to module sources (`https://vendor.com/lib/`)
+     * @param {string} [ext] extension to use in filename composition (`mjs`|`js`)
+     * @param {boolean} [isAbsolute] absolute or relative path (default: true)
      */
-    addNamespaceRoot({ns, path, ext = 'mjs', is_absolute = true}) {
-        /** @type {TeqFw_Di_Container_Loader_Resolver.ResolveDetailsData} */
-        const entry = {path, ext, is_absolute};
+    addNamespaceRoot({ns, path, ext = 'mjs', isAbsolute = true}) {
+        const entry = new TeqFw_Di_Api_ResolveDetails();
+        Object.assign(entry, {ns, path, ext, isAbsolute});
         const spaces = ns.split(NSS);
         let pointer = this.namespaces;
         for (const one of spaces) {
@@ -72,45 +64,55 @@ export default class TeqFw_Di_Container_Loader_Resolver {
     }
 
     /**
-     * Resolve path to module's source using `source_id`.
+     * Resolve path to module's source using `moduleId`:
+     *  - Vendor_Project_Module => './relative/path/to/vendor/Project/Module.mjs'
+     *  - Vendor_Project_Module => '/absolute/path/to/project/Module.js'
+     *  - Vendor_Project_Module => 'https://vendor.com/lib/Project/Module.js'
      *
-     * @param {string} sourceIid
+     * @param {string} moduleId
      * @return {*}
      */
-    getSourceById(sourceIid) {
+    getSourceById(moduleId) {
         let result;
-        const parts = sourceIid.split(NSS);
+        const parts = moduleId.split(NSS);
         let nsExplored = ''; // explored part of the object's full name
         let pointer = this.namespaces;
         for (const part of parts) {
             if (pointer[part]) {
                 pointer = pointer[part];
                 if (pointer[KEY_DATA]) {
+                    // compose path to root module of the current namespace (`index.[js|mjs]`)
+                    /** @type {TeqFw_Di_Api_ResolveDetails} */
                     const entry = pointer[KEY_DATA];
-                    const {path, ext, is_absolute} = entry;
                     // compose path to NS default root
-                    result = `${path}/../index.${ext}`;
-                    if (!is_absolute) result = `./${result}`;
+                    result = `${entry.path}/../index.${entry.ext}`;
+                    if (!entry.isAbsolute) result = `./${result}`;
                 }
             } else {
-                const {path, ext, is_absolute} = pointer[KEY_DATA];
-                const nsModule = nsExplored.substring(1);
-                const nsObject = sourceIid.substring(nsModule.length + 1);
-                const pathObject = nsObject.replace(new RegExp(NSS, 'g'), '/') + '.' + ext;
-                result = `${path}/${pathObject}`;
-                if (!is_absolute) result = `./${result}`;
-                break;
+                // compose path to requested module starting from namespace root
+                if (pointer[KEY_DATA]) {
+                    /** @type {TeqFw_Di_Api_ResolveDetails} */
+                    const entry = pointer[KEY_DATA];
+                    const nsModule = nsExplored.substring(1);
+                    const nsObject = moduleId.substring(nsModule.length + 1);
+                    const pathObject = nsObject.replace(new RegExp(NSS, 'g'), '/') + '.' + entry.ext;
+                    result = `${entry.path}/${pathObject}`;
+                    if (!entry.isAbsolute) result = `./${result}`;
+                    break;
+                }
             }
             nsExplored += NSS + part;
         }
-        if (result === undefined) throw new Error(`Cannot resolve path for id '${sourceIid}'.`);
+        if (result === undefined) throw new Error(`Cannot resolve path for id '${moduleId}'.`);
+        // strip '././' from result
+        result = result.replace('././', './');
         return result;
     }
 
     /**
-     * List all namespaces with mapping paths.
+     * List all namespaces with resolving details.
      *
-     * @return {Object}
+     * @return {Object.<string, TeqFw_Di_Api_ResolveDetails>}
      */
     list() {
         const result = {};

@@ -1,27 +1,31 @@
-import Util from '../Util.mjs';
+import IdParser from '../IdParser.mjs';
 
-const $util = new Util();
+const $parser = new IdParser();
 
 /**
- * Proxy object to analyze dependencies specification and to return required dependencies.
- * This proxy adds constructed instances into container's `_instances` object.
+ * Proxy object for constructors specification ('spec' argument in constructor) to analyze dependencies and to collect
+ * required dependencies. This proxy adds constructed instances into container's `_instances` object.
  *
  * This code is too much coupled to `TeqFw_Di_Container` and extracted to separate class just for decreasing
  * of nesting levels.
  *
  * @class
  */
-class TeqFw_Di_Container_SpecProxy {
+export default class TeqFw_Di_Container_SpecProxy {
+    /** Marker for construction exceptions that should be stolen. */
+    static EXCEPTION_TO_STEALTH = Symbol('exception_to_stealth')
 
     /**
-     * @param {string} mainId ID of the constructing object ('Vendor_Module_Class', 'dbCfg$pg', ...).
-     * @param {Set<string>} depsStack All incomplete dependencies in current construction process
+     * @param {string} mainId ID of the constructing object ('Vendor_Module$', 'Vendor_Module$$', 'dbCfg').
+     * @param {Object.<string, Boolean>} depsStack All incomplete dependencies in current construction process
      * (to prevent circular dependencies).
-     * @param {Map} containerInstances Container level registry with created instances (with ids '...$[...]').
+     * @param {Map} containerInstances Container level registry with created singletons (ids: 'dbCfg', 'Module$$').
+     * @param {Map} containerConstructors Container level registry with loaded constructors (ids: 'Module$').
+     * @param {Map} containerModules Container level registry with loaded modules (ids: 'Module').
      * @param {Object<string, Function>} makeFuncs constructing process level registry to save functions that
      * construct main object & nested dependencies.
-     * @param {Function} fnGetDependency `TeqFw_Di_Container.get_object` function to get/create required dependencies.
-     * @param {Function} fnGetObjectReject TeqFw_Di_Container.get_object@Promise.reject to interrupt
+     * @param {Function} fnGetObject `TeqFw_Di_Container.getObject` function to get/create required dependencies.
+     * @param {Function} fnMainObjectReject TeqFw_Di_Container.get_object@Promise.reject to interrupt
      * construction process on some error (import error or circular dependency, for example).
      * @return {{}} Proxy object to resolve dependencies.
      */
@@ -29,13 +33,15 @@ class TeqFw_Di_Container_SpecProxy {
         mainId,
         depsStack,
         containerInstances,
+        containerConstructors,
+        containerModules,
         makeFuncs,
-        fnGetDependency,
-        fnGetObjectReject
+        fnGetObject,
+        fnMainObjectReject
     ) {
 
         /**
-         * Resolved dependencies for currently constructing object.
+         * Resolved dependencies for currently constructing object (with `mainId`).
          *
          * @type {Object<string, Object>}
          */
@@ -52,32 +58,32 @@ class TeqFw_Di_Container_SpecProxy {
                 } else {
                     // we have no dependency in the local cache yet
                     // look up dependency in container's registry
-                    const parsed = $util.parseId(depId);
-                    if (parsed.is_instance && containerInstances.has(depId)) {
+                    const parsed = $parser.parse(depId);
+                    if (parsed.isSingleton && containerInstances.has(depId)) {
                         // requested dependency is an instance and is created before
                         // save dependency to local registry & return
                         deps[depId] = containerInstances.get(depId);
                         return deps[depId];
                     } else {
                         // check stack of incomplete dependencies
-                        if (depsStack.has(depId)) {
+                        if (depsStack[depId]) {
                             // `dep_id` is already requested to be created, so we report it as 'main'
                             throw new Error(`Circular dependencies (main: ${depId}; dep: ${mainId})`);
                         }
                         // ... and register new one
-                        depsStack.add(depId);
+                        depsStack[depId] = true;
                         // create new required dependency for this object
-                        fnGetDependency(depId, depsStack).then((obj) => {
+                        fnGetObject(depId, depsStack).then((obj) => {
                             // save created `dep_id` instance to local dependencies registry
                             deps[depId] = obj;
                             // remove created dependency from circular registry
-                            depsStack.delete(depId);
+                            depsStack[depId] = false;
                             // call to failed construction function to create main object
                             // see `fn_make` in `TeqFw_Di_Container.get`
                             const fnMakeMain = makeFuncs[mainId];
                             fnMakeMain();
                         }).catch(err => {
-                            fnGetObjectReject(err);
+                            fnMainObjectReject(err);
                         });
                     }
                     // interrupt construction process until new dependency will be created
@@ -88,13 +94,3 @@ class TeqFw_Di_Container_SpecProxy {
         });
     }
 }
-
-/**
- * Marker for construction exceptions that should be stolen.
- *
- * @type {string}
- * @memberOf TeqFw_Di_Container_SpecProxy
- */
-TeqFw_Di_Container_SpecProxy.EXCEPTION_TO_STEALTH = 'TeqFw_Di_Container_SpecProxy.exception_to_stealth';
-
-export default TeqFw_Di_Container_SpecProxy;

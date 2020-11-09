@@ -28,31 +28,20 @@ describe('TeqFw_Di_IdParser', () => {
         done();
     });
 
-    it('should parse object dependency ID', (done) => {
-        const parsed = obj.parse('dbConnection');
-        assert.strictEqual(parsed.source, 'dbConnection');
-        assert.strictEqual(parsed.isConstructor, false);
-        assert.strictEqual(parsed.isModule, false);
-        assert.strictEqual(parsed.isObjectId, true);
-        assert.strictEqual(parsed.isSingleton, false);
-        assert.strictEqual(parsed.moduleName, undefined);
-        done();
-    });
-
     it('should parse named object ID', (done) => {
         const parsed = obj.parse('dbConnection');
-        assert.strictEqual(parsed.source, 'dbConnection');
+        assert.strictEqual(parsed.id, 'dbConnection');
         assert.strictEqual(parsed.isConstructor, false);
         assert.strictEqual(parsed.isModule, false);
         assert.strictEqual(parsed.isObjectId, true);
-        assert.strictEqual(parsed.isSingleton, false);
+        assert.strictEqual(parsed.isSingleton, true);
         assert.strictEqual(parsed.moduleName, undefined);
         done();
     });
 
     it('should parse module ID', (done) => {
         const parsed = obj.parse('Vendor_Module');
-        assert.strictEqual(parsed.source, 'Vendor_Module');
+        assert.strictEqual(parsed.id, 'Vendor_Module');
         assert.strictEqual(parsed.isConstructor, false);
         assert.strictEqual(parsed.isModule, true);
         assert.strictEqual(parsed.isObjectId, false);
@@ -63,7 +52,7 @@ describe('TeqFw_Di_IdParser', () => {
 
     it('should parse new object constructor ID', (done) => {
         const parsed = obj.parse('Vendor_Module$');
-        assert.strictEqual(parsed.source, 'Vendor_Module$');
+        assert.strictEqual(parsed.id, 'Vendor_Module$');
         assert.strictEqual(parsed.isConstructor, true);
         assert.strictEqual(parsed.isModule, false);
         assert.strictEqual(parsed.isObjectId, false);
@@ -74,7 +63,7 @@ describe('TeqFw_Di_IdParser', () => {
 
     it('should parse default export singleton ID', (done) => {
         const parsed = obj.parse('Vendor_Module$$');
-        assert.strictEqual(parsed.source, 'Vendor_Module$$');
+        assert.strictEqual(parsed.id, 'Vendor_Module$$');
         assert.strictEqual(parsed.isConstructor, false);
         assert.strictEqual(parsed.isModule, false);
         assert.strictEqual(parsed.isObjectId, false);
