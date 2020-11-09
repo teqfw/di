@@ -1,15 +1,15 @@
-import Resolver from '../../../src/Container/Loader/Resolver';
-import TeqFw_Di_Api_ResolveDetails from '../../../src/Api/ResolveDetails.mjs';
+import Resolver from '../src/Resolver';
+import ResolveDetails from '../src/Api/ResolveDetails.mjs';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 
 
-describe('TeqFw_Di_Container_Loader_Resolver', () => {
-    /** @type {TeqFw_Di_Container_Loader_Resolver} */
+describe('TeqFw_Di_Container_Resolver', () => {
+    /** @type {TeqFw_Di_Container_Resolver} */
     const obj = new Resolver();
 
     it('has right classname', async () => {
-        assert.strictEqual(obj.constructor.name, 'TeqFw_Di_Container_Loader_Resolver');
+        assert.strictEqual(obj.constructor.name, 'TeqFw_Di_Container_Resolver');
     });
 
     it('has all expected public methods in prototype', async () => {
@@ -38,17 +38,15 @@ describe('TeqFw_Di_Container_Loader_Resolver', () => {
 
     it('lists namespaces mapping', async () => {
         const resolver = new Resolver();
-        const data = {
+        const details = Object.assign(new ResolveDetails(), {
             ns: 'Vendor_Project_Module_Class',
             path: '/path/to/sources',
             ext: 'mjs',
             isAbsolute: true
-        };
-        resolver.addNamespaceRoot(data);
+        });
+        resolver.addNamespaceRoot(details);
         const mapping = resolver.list();
-        const details = mapping.Vendor_Project_Module_Class;
-        assert(details instanceof TeqFw_Di_Api_ResolveDetails);
-        const props = Object.assign({}, details);
-        assert.deepStrictEqual(props, data);
+        const detailsOut = mapping.Vendor_Project_Module_Class;
+        assert.deepStrictEqual(details, detailsOut);
     });
 });

@@ -1,4 +1,3 @@
-import TeqFw_Di_Api_ResolveDetails from '../../Api/ResolveDetails.mjs';
 /**
  * Tree-like structure of namespaces registry entry.
  *
@@ -9,7 +8,7 @@ import TeqFw_Di_Api_ResolveDetails from '../../Api/ResolveDetails.mjs';
  * Namespace parts separator.
  *
  * @type {string}
- * @memberOf TeqFw_Di_Container_Loader_Resolver
+ * @memberOf TeqFw_Di_Container_Resolver
  */
 const NSS = '_';
 
@@ -17,14 +16,14 @@ const NSS = '_';
  * Key to save sources data in '_namespace' registry.
  *
  * @type {string}
- * @memberOf TeqFw_Di_Container_Loader_Resolver
+ * @memberOf TeqFw_Di_Container_Resolver
  */
 const KEY_DATA = '.data';
 
 /**
  * Map codebase namespaces to files/URLs.
  */
-export default class TeqFw_Di_Container_Loader_Resolver {
+export default class TeqFw_Di_Container_Resolver {
     /**
      * Registry for namespaces. Tree-like structure to save root paths (relative or absolute) to sources
      * by namespaces.
@@ -39,17 +38,12 @@ export default class TeqFw_Di_Container_Loader_Resolver {
     namespaces = {}
 
     /**
-     * Registry root path for the namespace.
+     * Registry sources path mapping details for namespace.
      *
-     * @param {string} ns namespace (`Vendor_Project`)
-     * @param {string} path absolute or relative path to module sources (`https://vendor.com/lib/`)
-     * @param {string} [ext] extension to use in filename composition (`mjs`|`js`)
-     * @param {boolean} [isAbsolute] absolute or relative path (default: true)
+     * @param {TeqFw_Di_Api_ResolveDetails} details namespace resolving details
      */
-    addNamespaceRoot({ns, path, ext = 'mjs', isAbsolute = true}) {
-        const entry = new TeqFw_Di_Api_ResolveDetails();
-        Object.assign(entry, {ns, path, ext, isAbsolute});
-        const spaces = ns.split(NSS);
+    addNamespaceRoot(details) {
+        const spaces = details.ns.split(NSS);
         let pointer = this.namespaces;
         for (const one of spaces) {
             if (!pointer[one]) {
@@ -60,7 +54,7 @@ export default class TeqFw_Di_Container_Loader_Resolver {
             }
         }
         // add source folder to the namespaces map
-        pointer[KEY_DATA] = entry;
+        pointer[KEY_DATA] = details;
     }
 
     /**

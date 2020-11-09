@@ -1,48 +1,59 @@
-/**
- * `TeqFw/DI` container.
- *
- * Root object for the package.
- */
 import IdParser from './IdParser.mjs';
-import Loader from './Container/Loader.mjs';
-import SpecProxy from './Container/SpecProxy.mjs';
-import Util from './Util.mjs';
+import ResolveDetails from './Api/ResolveDetails.mjs';
+import Resolver from './Resolver.mjs';
+import SpecProxy from './SpecProxy.mjs';
 
-const $util = new Util();
 const $parser = new IdParser();
 
 /**
  * Dependency Injection container.
- *
- * @param {Object} [spec]
- * @param {TeqFw_Di_Container_Loader} [spec.modules_loader]
- * @implements {TeqFw_Di_ContainerInterface}
  */
 export default class TeqFw_Di_Container {
+    /**
+     * @param {Object} [spec]
+     * @param {TeqFw_Di_Container_Resolver} [spec.namespaceResolver] custom resolver to map module names to file paths
+     */
     constructor(spec = {}) {
-        /** Storage for default exports (functions & classes) to construct new objects. */
+        /** @type {TeqFw_Di_Container_Resolver} Modules loader (given in constructor or empty one). */
+        const _resolver = spec.namespaceResolver || new Resolver();
+        /**
+         * Storage for default exports (functions & classes) to construct new objects.
+         * Module name ('Vendor_Project_Module') is a key in the map.
+         */
         const _constructors = new Map();
-        /** Storage for created instances (singletons). */
+        /**
+         * Storage for created instances (singletons).
+         * Module name ('Vendor_Project_Module') or singleton name ('dbConnection') is a key in the map.
+         */
         const _singletons = new Map();
-        /** Storage for loaded modules. **/
+        /**
+         * Storage for loaded modules.
+         * Module name ('Vendor_Project_Module') is a key in the map.
+         */
         const _modules = new Map();
-        /** Modules loader (given in constructor or empty one). */
-        const _modulesLoader = spec.modulesLoader || new Loader();
 
-        // set default instance of the DI container
+        // set default instance of the DI container (as named object and as default export singleton)
+        _singletons.set('container', this);
         _singletons.set('TeqFw_Di_Container$$', this);
 
         /**
-         * Get/create object by given object ID.
+         * Internal function to get/create object|function|class|module by given `id`.
          *
-         * @param {string} id
-         * @param {Set<string>} depsStack stack of dependencies to prevent circular loop.
+         * @param {string} mainId main object ID (named singleton, module, new object, default export singleton)
+         * @param {Object.<string, boolean>} depsReg dependencies registry to prevent circular loop.
          * @return {Promise<Object>}
          */
-        function getObject(id, depsStack) {
+        function getObject(mainId, depsReg) {
             return new Promise(function (resolve, reject) {
 
                 // DEFINE INNER FUNCTIONS
+                /**
+                 * Add 'spec' proxy as fnConstruct argument and create new object and all deps.
+                 *
+                 * @param {Function|Object} fnConstruct
+                 * @return {Promise<Object>} created object
+                 * @private
+                 */
                 async function _useConstructor(fnConstruct) {
                     // DEFINE INNER FUNCTIONS
                     /**
@@ -65,41 +76,46 @@ export default class TeqFw_Di_Container {
                     }
 
                     // MAIN FUNCTIONALITY
+                    let result;
                     const constructorType = typeof fnConstruct;
                     if (constructorType === 'object') {
                         // `constructor` is an object, clone this object and return new one on every call
-                        const result = Object.assign({}, fnConstruct);
-                        resolve(result); // `getObject` result promise's resolve
+                        result = Object.assign({}, fnConstruct);
                     } else if (constructorType === 'function') {
                         // `constructor` is simple function or class
                         // create spec proxy to analyze dependencies of the constructing object in current scope
-                        const spec = new SpecProxy(id, depsStack, _singletons, _constructors, _modules, makeFuncs, getObject, reject);
+                        const spec = new SpecProxy(mainId, depsReg, _singletons, _constructors, _modules, createFuncs, getObject, reject);
                         // create new function to resolve all deps and to make requested object
-                        const fnMake = function () {
+                        const fnCreate = function () {
                             try {
                                 const instNew = createInstance(fnConstruct, spec);
                                 // `parsed` is an dependency ID structure from closure where this function is defined
-                                if (parsed.isSingleton) _singletons.set(parsed.id, instNew);
-                                resolve(instNew); // `getObject` result promise's resolve
+                                if (parsed.isSingleton) {
+                                    const key = parsed.isNamedObject ? parsed.id : parsed.moduleName;
+                                    _singletons.set(key, instNew);
+                                }
+                                return instNew;
                             } catch (e) {
                                 // stealth constructor exceptions (for absent deps that should be made asyncly)
                                 if (e !== SpecProxy.EXCEPTION_TO_STEALTH) throw e;
                             }
                         };
-                        //register `make` function in the local context to re-call it later
+                        //register `create` function in the local context to re-call it later
                         // (when any un-existing dependency will be created)
-                        makeFuncs[parsed.id] = fnMake;
-                        fnMake();
+                        createFuncs[parsed.id] = fnCreate;
+                        result = fnCreate();
                     } else {
                         throw new Error('Unexpected type of loaded module.');
                     }
+                    return result;
                 }
 
-                // local registry to save make-functions for main object & its dependencies
-                const makeFuncs = {};
+                // MAIN FUNCTIONALITY
+                // local registry to save construct functions for main object & its dependencies
+                const createFuncs = {};
                 /** @type {TeqFw_Di_Api_ParsedId} */
-                const parsed = $parser.parse(id);
-                // get required instance from `_instances` or check sources import and create new dependency
+                const parsed = $parser.parse(mainId);
+                // get required instance from own registries or load sources and create new one
                 if ((parsed.isSingleton) && (_singletons.get(parsed.id) !== undefined)) {
                     // instance with required `id` was created before, just return it
                     const instById = _singletons.get(parsed.id);
@@ -113,10 +129,32 @@ export default class TeqFw_Di_Container {
                     const construct = _constructors.get(parsed.id);
                     _useConstructor(construct).then(resolve).catch(err => reject(err));
                 } else {
-                    // get `constructor` object from Loader then create new object
-                    _modulesLoader.get(parsed.id)
-                        .then(_useConstructor)
-                        .catch(err => reject(err));
+                    // Get path to sources by module name then load ES module
+                    const sourceFile = _resolver.getSourceById(parsed.moduleName);
+                    import(sourceFile)
+                        .then((module) => {
+                            _modules.set(parsed.moduleName, module);
+                            if (parsed.isModule) {
+                                resolve(module);
+                            } else {
+                                // use default export as constructor
+                                const construct = module.default;
+                                _constructors.set(parsed.moduleName, construct);
+                                _useConstructor(construct).then((object) => {
+                                    if (parsed.isSingleton) {
+                                        _singletons.set(parsed.moduleName, object);
+                                    }
+                                    resolve(object);
+                                }).catch((e) => {
+                                    console.error('@teqfw/di: ' + JSON.stringify(e));
+                                    throw e;
+                                });
+                            }
+                        })
+                        .catch((e) => {
+                            console.error('@teqfw/di: ' + JSON.stringify(e));
+                            throw e;
+                        });
                 }
             });
         }
@@ -129,9 +167,11 @@ export default class TeqFw_Di_Container {
          * @param {string} [ext]
          */
         this.addSourceMapping = function (namespace, path, is_absolute = false, ext = 'mjs') {
-            const parsed = $util.parseId(namespace);
-            if (parsed.is_instance) throw new Error('Namespace cannot contain \'$\' symbol.');
-            _modulesLoader.addNamespaceRoot({ns: parsed.source_part, path, ext, is_absolute});
+            const parsed = $parser.parse(namespace);
+            if (!parsed.isModule) throw new Error('Namespace cannot contain \'$\' symbol.');
+            const details = new ResolveDetails();
+            Object.assign(details, {ns: namespace, path, ext, isAbsolute: is_absolute});
+            _resolver.addNamespaceRoot(details);
         };
 
         /**
@@ -151,21 +191,20 @@ export default class TeqFw_Di_Container {
         };
 
         /**
-         * Get/create object by ID.
+         * Get/create object|function|class|module by dependency ID (wrapper for internal function).
          *
-         * @param {string} depId
+         * @param {string} depId 'namedDep', 'Vendor_Module', 'New_Object_From_Default$', 'Singleton_From_Default$$'
          * @return {Promise<Object>}
          */
         this.get = async function (depId) {
-            const depsStack = new Set([depId]);
-            return await getObject(depId, depsStack);
+            return await getObject(depId, {[depId]: true});
         };
 
         /**
-         * @return {TeqFw_Di_Container_Loader}
+         * @return {TeqFw_Di_Container_Resolver}
          */
-        this.getLoader = function () {
-            return _modulesLoader;
+        this.getNsResolver = function () {
+            return _resolver;
         };
         /**
          * Check existence of created instance or imported data in container.
@@ -186,27 +225,32 @@ export default class TeqFw_Di_Container {
 
         /**
          * Get list of contained dependencies (created instances and loaded modules).
-         *
-         * @return {Array<string>}
+         * @return {{constructors: string[], singletons: string[], modules: string[]}}
          */
         this.list = function () {
-            const singletons = Array.from(_singletons.keys());
-            const constructors = Array.from(_constructors.keys());
-            const modules = Array.from(_modules.keys());
-            const result = [...singletons, ...constructors, ...modules];
-            result.sort();
-            return result;
+            const singletons = Array.from(_singletons.keys()).sort();
+            const constructors = Array.from(_constructors.keys()).sort();
+            const modules = Array.from(_modules.keys()).sort();
+            return {singletons, constructors, modules};
         };
         /**
          * Place object into the container. Replace existing instance with the same ID.
          *
-         * @param {string} depId - ID for (named) instance ('Vendor_Module_Object$', 'Vendor_Module_Object$name').
+         * 'object' should correlate with 'depId':
+         *  - named singleton ('namedDep'): any object will be stored as singleton;
+         *  - ES module ('Vendor_Module'): will be stored as ES module;
+         *  - constructor ('New_Object_From_Default$'): will be stored as object constructor with key 'New_Object_From_Default';
+         *  - instance ('Singleton_From_Default$$'): will be stored as singleton with key 'Singleton_From_Default';
+         *
+         * @param {string} depId 'namedDep', 'Vendor_Module', 'New_Object_From_Default$', 'Singleton_From_Default$$'.
          * @param {Object} object
          */
         this.set = function (depId, object) {
             const parsed = $parser.parse(depId);
             if (parsed.isSingleton) {
-                _singletons.set(parsed.id, object);
+                // keys are without '$' chars: named object or module name
+                const key = (parsed.isNamedObject) ? parsed.id : parsed.moduleName;
+                _singletons.set(key, object);
             } else if (parsed.isConstructor) {
                 _constructors.set(parsed.id, object);
             } else if (parsed.isModule) {

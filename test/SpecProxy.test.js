@@ -1,4 +1,4 @@
-import SpecProxy from '../../src/Container/SpecProxy';
+import SpecProxy from '../src/SpecProxy';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 

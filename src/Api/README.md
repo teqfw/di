@@ -1,1 +1,1 @@
-Data structures available for client code (published API).
+Data structures available for consumers (external programs) code (published API).

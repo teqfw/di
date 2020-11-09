@@ -1,4 +1,4 @@
-import IdParser from '../IdParser.mjs';
+import IdParser from './IdParser.mjs';
 
 const $parser = new IdParser();
 

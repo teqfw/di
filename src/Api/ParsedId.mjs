@@ -1,6 +1,6 @@
 export default class TeqFw_Di_Api_ParsedId {
     /**
-     * Original identifier: 'Vendor_Project_Module$$'.
+     * Original identifier: 'dbConnection', 'Vendor_Project_Module$$'.
      *
      * @type {String}
      */
@@ -9,7 +9,7 @@ export default class TeqFw_Di_Api_ParsedId {
      * 'true' if ID describes named singleton: 'dbConnection'.
      * @type {Boolean}
      */
-    isObjectId = false
+    isNamedObject = false
     /**
      * Module name: 'Vendor_Project_Module'.
      *

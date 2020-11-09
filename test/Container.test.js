@@ -31,7 +31,7 @@ describe('TeqFw_Di_Container', function () {
 
     describe('allows to inspect itself:', () => {
         it('access to modules loader', async () => {
-            const loader = container.getLoader();
+            const loader = container.getNsResolver();
             assert.strictEqual(loader.constructor.name, 'TeqFw_Di_Container_Loader');
         });
 

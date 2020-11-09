@@ -1,6 +1,3 @@
-/**
- * Dependency identifiers parser.
- */
 import ParsedId from './Api/ParsedId.mjs';
 
 /** @type {RegExp} */
@@ -25,7 +22,7 @@ export default class TeqFw_Di_IdParser {
         const modParts = REG_EXP_MODULE_ID.exec(id);
         if (!objParts && !modParts) throw new Error(`Invalid identifier: '${id}'. See 'https://github.com/teqfw/di/blob/master/docs/identifiers.md'.`);
         if (objParts) {
-            result.isObjectId = true;
+            result.isNamedObject = true;
             result.isSingleton = true;
         } else {
             result.moduleName = modParts[2];

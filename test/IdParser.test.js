@@ -33,7 +33,7 @@ describe('TeqFw_Di_IdParser', () => {
         assert.strictEqual(parsed.id, 'dbConnection');
         assert.strictEqual(parsed.isConstructor, false);
         assert.strictEqual(parsed.isModule, false);
-        assert.strictEqual(parsed.isObjectId, true);
+        assert.strictEqual(parsed.isNamedObject, true);
         assert.strictEqual(parsed.isSingleton, true);
         assert.strictEqual(parsed.moduleName, undefined);
         done();
@@ -44,7 +44,7 @@ describe('TeqFw_Di_IdParser', () => {
         assert.strictEqual(parsed.id, 'Vendor_Module');
         assert.strictEqual(parsed.isConstructor, false);
         assert.strictEqual(parsed.isModule, true);
-        assert.strictEqual(parsed.isObjectId, false);
+        assert.strictEqual(parsed.isNamedObject, false);
         assert.strictEqual(parsed.isSingleton, false);
         assert.strictEqual(parsed.moduleName, 'Vendor_Module');
         done();
@@ -55,7 +55,7 @@ describe('TeqFw_Di_IdParser', () => {
         assert.strictEqual(parsed.id, 'Vendor_Module$');
         assert.strictEqual(parsed.isConstructor, true);
         assert.strictEqual(parsed.isModule, false);
-        assert.strictEqual(parsed.isObjectId, false);
+        assert.strictEqual(parsed.isNamedObject, false);
         assert.strictEqual(parsed.isSingleton, false);
         assert.strictEqual(parsed.moduleName, 'Vendor_Module');
         done();
@@ -66,7 +66,7 @@ describe('TeqFw_Di_IdParser', () => {
         assert.strictEqual(parsed.id, 'Vendor_Module$$');
         assert.strictEqual(parsed.isConstructor, false);
         assert.strictEqual(parsed.isModule, false);
-        assert.strictEqual(parsed.isObjectId, false);
+        assert.strictEqual(parsed.isNamedObject, false);
         assert.strictEqual(parsed.isSingleton, true);
         assert.strictEqual(parsed.moduleName, 'Vendor_Module');
         done();
