@@ -1,4 +1,4 @@
-# `TeqFw_Di_Container_SpecProxy` API
+# `TeqFw_Di_SpecProxy` API
 
 ## Overview
 

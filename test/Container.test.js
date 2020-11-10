@@ -3,60 +3,74 @@ import {describe, it} from 'mocha';
 import assert from 'assert';
 
 describe('TeqFw_Di_Container', function () {
-    /** @type {TeqFw_Di_Container} */
-    const container = new Container();
 
     it('has right classname', async () => {
+        const container = new Container();
         assert.strictEqual(container.constructor.name, 'TeqFw_Di_Container');
     });
 
     it('has all expected public methods', async () => {
+        const container = new Container();
         const methods = Object.getOwnPropertyNames(container)
             .filter(p => (typeof container[p] === 'function'));
         assert.deepStrictEqual(methods, [
             'addSourceMapping',
             'delete',
             'get',
-            'getLoader',
+            'getNsResolver',
             'has',
             'list',
-            'set'
+            'set',
         ]);
     });
 
     it('contains itself inside', async () => {
-        const obj = await container.get('TeqFw_Di_Container$$');
-        assert.strictEqual(obj, container);
+        const container = new Container();
+        const exportSingleton = await container.get('TeqFw_Di_Container$$');
+        assert.strictEqual(exportSingleton, container);
+        const namedSingleton = await container.get('container');
+        assert.strictEqual(namedSingleton, container);
     });
 
     describe('allows to inspect itself:', () => {
+        const container = new Container();
+
         it('access to modules loader', async () => {
             const loader = container.getNsResolver();
-            assert.strictEqual(loader.constructor.name, 'TeqFw_Di_Container_Loader');
+            assert.strictEqual(loader.constructor.name, 'TeqFw_Di_Resolver');
         });
 
         it('lists contained instances and loaded modules', async () => {
-            const depIdNamedSingleton = 'dbConfiguration';
-            const depIdModule = 'Vendor_Project_Module';
-            const depIdModConstructor = 'Vendor_Project_Module$';
-            const depIdModSingleton = 'Vendor_Project_Module$$';
             const obj = {name: 'one object for all deps'};
-            container.set(depIdNamedSingleton, obj);
-            container.set(depIdModule, obj);
-            container.set(depIdModConstructor, obj);
-            container.set(depIdModSingleton, obj);
-            const deps = container.list();
-            assert(deps.includes(depIdNamedSingleton));
-            assert(deps.includes(depIdModule));
-            assert(deps.includes(depIdModConstructor));
-            assert(deps.includes(depIdModSingleton));
+            container.set('namedSingleton', obj);
+            container.set('namedConstructor$', obj);
+            container.set('Vendor_Module', obj);
+            container.set('Vendor_Module$', obj);
+            container.set('Vendor_Module$$', obj);
+            const {singletons, constructors, modules} = container.list();
+            assert(constructors.includes('namedConstructor'));
+            assert(constructors.includes('Vendor_Module'));
+            assert(modules.includes('Vendor_Module'));
+            assert(singletons.includes('namedSingleton'));
+            assert(singletons.includes('Vendor_Module'));
         });
     });
 
     describe('allows to delete:', () => {
-        it('named instance from container', async () => {
-            const depId = 'postgresConfiguration';
-            const obj = {name: 'this is configuration for postgres DB'};
+        const container = new Container();
+
+        it('named singleton from container', async () => {
+            const depId = 'namedSingleton';
+            const obj = {name: 'named singleton'};
+            container.set(depId, obj);
+            assert(container.has(depId));
+            container.delete(depId);
+            assert(!container.has(depId));
+        });
+
+        it('named constructor from container', async () => {
+            const depId = 'namedConstructor$';
+            const obj = {name: 'named constructor'};
             container.set(depId, obj);
             assert(container.has(depId));
             container.delete(depId);
@@ -64,7 +78,7 @@ describe('TeqFw_Di_Container', function () {
         });
 
         it('module from container', async () => {
-            const depId = 'Vendor_Module_Source';
+            const depId = 'Vendor_Module';
             const module = {name: 'some module'};
             container.set(depId, module);
             assert(container.has(depId));
@@ -72,18 +86,18 @@ describe('TeqFw_Di_Container', function () {
             assert(!container.has(depId));
         });
 
-        it('constructors from container', async () => {
-            const depId = 'Vendor_Module_Source$';
-            const construct = {name: 'constructor function'};
+        it('default export constructor from container', async () => {
+            const depId = 'Vendor_Module$';
+            const construct = {name: 'default export constructor'};
             container.set(depId, construct);
             assert(container.has(depId));
             container.delete(depId);
             assert(!container.has(depId));
         });
 
-        it('default export singletons from container', async () => {
-            const depId = 'Vendor_Module_Source$$';
-            const construct = {name: 'singleton object from module\'s default export'};
+        it('default export singleton from container', async () => {
+            const depId = 'Vendor_Module$$';
+            const construct = {name: 'default export singleton'};
             container.set(depId, construct);
             assert(container.has(depId));
             container.delete(depId);
@@ -92,120 +106,135 @@ describe('TeqFw_Di_Container', function () {
     });
 
     describe('allows to place:', () => {
-        it('named instance to container', async () => {
-            const id = 'dbConfiguration';
-            const depIn = {name: 'this is configuration for postgres DB'};
+        const container = new Container();
+
+        it('named singleton to container', async () => {
+            const id = 'namedSingleton';
+            const depIn = {name: 'named singleton'};
             container.set(id, depIn);
             const depOut = await container.get(id);
             assert(depOut === depIn); // is the same object
+        });
+
+        it('named constructor to container', async () => {
+            const id = 'namedConstructor$';
+            const fnConstruct = function () {
+                return {name: 'new object'};
+            };
+            container.set(id, fnConstruct);
+            const dep1 = await container.get(id);
+            const dep2 = await container.get(id);
+            assert(dep1 !== dep2);  // is not the same object
+            assert.deepStrictEqual(dep1, dep2); // but both objects are equals
         });
 
         it('module to container', async () => {
-            const id = 'SomeImportedModule';
-            const depIn = {name: 'this is some imported module'};
+            const id = 'Vendor_Module';
+            const depIn = {name: 'some module'};
             container.set(id, depIn);
             const depOut = await container.get(id);
             assert(depOut === depIn); // is the same object
         });
 
-        it('object template as factory to module loader', async () => {
-            const id = 'ExportedObject';
-            const depIn = {name: 'this template object is exported from outer source'};
-            container.set(id, depIn);
-            const depOut = await container.get(id);
-            assert(depOut !== depIn); // is not the same object
-            assert.deepStrictEqual(depOut, depIn); // but both objects are equals
+        it('default export object duplicator to container', async () => {
+            const id = 'Vendor_Module$';
+            const modIn = {
+                default: {name: 'new object from other object'}
+            };
+            container.set(id, modIn);
+            const dep1 = await container.get(id);
+            const dep2 = await container.get(id);
+            assert(dep1 !== dep2); // is not the same object
+            assert.deepStrictEqual(dep1, dep2); // but both objects are equals
         });
 
-        it('function factory as factory to module loader', (done) => {
-            // function factory to create new instances
-            const depFactoryFunc = () => {
-                return {name: 'depFactoryFunc'};
-            };
-            container.set('DepFunc', depFactoryFunc);
-            // main function factory with dependency been get from FunctionFactory
-            const id = 'MainFactory';
-            const mainFactory = ({DepFunc}) => {
-                return {dep: DepFunc};
-            };
-            container.set(id, mainFactory);
-            container.get(id)
-                .then((depOut) => {
-                    assert.deepStrictEqual(depOut, {dep: {name: 'depFactoryFunc'}});
-                    done();
-                });
-        });
-
-        it('class factory as factory to module loader', (done) => {
-            // class factory to create new instances
-            const depFactoryClass = class {
-                constructor() {
-                    return {name: 'depFactoryClass'};
+        it('default export function constructor to container', async () => {
+            const id = 'Vendor_Module$';
+            const modIn = {
+                default: () => {
+                    return {name: 'new object from function'};
                 }
             };
-            container.set('DepClass', depFactoryClass);
-            // main function factory with dependency been get from FunctionFactory
-            const id = 'MainFactory';
-            const mainFactory = ({DepClass}) => {
-                return {dep: DepClass};
+            container.set(id, modIn);
+            const dep1 = await container.get(id);
+            const dep2 = await container.get(id);
+            assert(dep1 !== dep2); // is not the same object
+            assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+        });
+
+        it('default export class constructor to container', async () => {
+            const id = 'Vendor_Module$';
+            const modIn = {
+                default: class {
+                    name = 'new object from class'
+                }
             };
-            container.set(id, mainFactory);
-            container.get(id)
-                .then((depOut) => {
-                    assert.deepStrictEqual(depOut, {dep: {name: 'depFactoryClass'}});
-                    done();
-                });
+            container.set(id, modIn);
+            const dep1 = await container.get(id);
+            const dep2 = await container.get(id);
+            assert(dep1 !== dep2); // is not the same object
+            assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+        });
+
+        it('default export object singleton to container', async () => {
+            const id = 'Vendor_Module$$';
+            const modIn = {
+                default: () => {
+                    return {name: 'new object from function'};
+                }
+            };
+            container.set(id, modIn);
+            const dep1 = await container.get(id);
+            const dep2 = await container.get(id);
+            assert(dep1 !== modIn.default); // is not the same object (should be duplicated)
+            assert(dep1 === dep2);
+        });
+
+        it('default export function singleton to container', async () => {
+            const id = 'Vendor_Module$$';
+            const modIn = {
+                default: {name: 'new object from other object'}
+            };
+            container.set(id, modIn);
+            const dep1 = await container.get(id);
+            const dep2 = await container.get(id);
+            assert(dep1 === dep2);
+        });
+
+        it('default export class singleton to container', async () => {
+            const id = 'Vendor_Module$$';
+            const modIn = {
+                default: class {
+                    name = 'new object from class'
+                }
+            };
+            container.set(id, modIn);
+            const dep1 = await container.get(id);
+            const dep2 = await container.get(id);
+            assert(dep1 === dep2);
         });
     });
 
     describe('allows to import:', () => {
-        it('functional dependency from source', (done) => {
+        it('all from sources', async () => {
             // set up source mapping
             /** @type {TeqFw_Di_Container} */
             const container = new Container();
-            container.addSourceMapping('Test_Container', __dirname + '/.data/d001', true);
-            // main function factory with dependency been get from FunctionFactory
-            const id = 'MainFactory';
-            const mainFactory = ({Test_Container_DepFunc}) => {
-                return {dep: Test_Container_DepFunc};
-            };
-            container.set(id, mainFactory);
-            container.get(id)
-                .then((depOut) => {
-                    assert.deepStrictEqual(depOut, {dep: {name: 'Test_Container_DepFunc'}});
-                    done();
-                });
+            container.addSourceMapping('Test', __dirname + '/.data/d001', true);
+            // load ES module then get exported parts
+            const mod = await container.get('Test_DepModule');
+            const namedSingleton = mod.NAMED_SINGLETON;
+            const namedConstructFn = mod.namedConstructor;
+            const namedConstructClass = mod.NamedConstructor;
+            // place exported parts as objects to container
+            container.set('namedSingleton', namedSingleton);
+            container.set('namedConstructFn$', namedConstructFn);
+            container.set('namedConstructClass$', namedConstructClass);
+            // get Main and resolve all dependencies
+            const main = await container.get('Test_Main$');
+            assert.deepStrictEqual(main, {dep: {name: 'Test_Container_DepFunc'}});
         });
 
-        it('class dependency from source', (done) => {
-            // set up source mapping
-            /** @type {TeqFw_Di_Container} */
-            const container = new Container();
-            container.addSourceMapping('Test_Container', __dirname + '/.data/d001', true);
-            // main function factory with dependency been get from FunctionFactory
-            const id = 'MainFactory';
-            const mainFactory = ({Test_Container_DepClass}) => {
-                return {dep: Test_Container_DepClass};
-            };
-            container.set(id, mainFactory);
-            container.get(id)
-                .then((depOut) => {
-                    assert.deepStrictEqual(depOut, {dep: {name: 'Test_Container_DepClass'}});
-                    done();
-                });
-        });
-
-        it('create new named dependency from source', (done) => {
-            /** @type {TeqFw_Di_Container} */
-            const container = new Container();
-            // set up source mapping
-            container.addSourceMapping('Test_Container', __dirname + '/.data/d003', true);
-            container.get('Test_Container_MainClass')
-                .then((depOut) => {
-                    assert.deepStrictEqual(depOut, {name: 'main', dep1: {name: 'dep'}, dep2: {name: 'dep'}});
-                    done();
-                });
-        });
     });
 
     describe('handles the errors:', () => {

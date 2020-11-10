@@ -11,13 +11,13 @@ const $parser = new IdParser();
 export default class TeqFw_Di_Container {
     /**
      * @param {Object} [spec]
-     * @param {TeqFw_Di_Container_Resolver} [spec.namespaceResolver] custom resolver to map module names to file paths
+     * @param {TeqFw_Di_Resolver} [spec.namespaceResolver] custom resolver to map module names to file paths
      */
     constructor(spec = {}) {
-        /** @type {TeqFw_Di_Container_Resolver} Modules loader (given in constructor or empty one). */
+        /** @type {TeqFw_Di_Resolver} Modules loader (given in constructor or empty one). */
         const _resolver = spec.namespaceResolver || new Resolver();
         /**
-         * Storage for default exports (functions & classes) to construct new objects.
+         * Storage for constructors (named or default exports of ES modules) to create new objects.
          * Module name ('Vendor_Project_Module') is a key in the map.
          */
         const _constructors = new Map();
@@ -32,131 +32,137 @@ export default class TeqFw_Di_Container {
          */
         const _modules = new Map();
 
-        // set default instance of the DI container (as named object and as default export singleton)
+        // set default instance of the DI container (as named object and as ES module's singleton)
         _singletons.set('container', this);
-        _singletons.set('TeqFw_Di_Container$$', this);
+        _singletons.set('TeqFw_Di_Container', this);
 
         /**
          * Internal function to get/create object|function|class|module by given `id`.
          *
          * @param {string} mainId main object ID (named singleton, module, new object, default export singleton)
-         * @param {Object.<string, boolean>} depsReg dependencies registry to prevent circular loop.
+         * @param {Object.<string, boolean>} uplineDeps dependencies registry to prevent circular loop.
          * @return {Promise<Object>}
          */
-        function getObject(mainId, depsReg) {
-            return new Promise(function (resolve, reject) {
+        async function getObject(mainId, uplineDeps) {
+
+            // DEFINE INNER FUNCTIONS
+            /**
+             * Add 'spec' proxy as fnConstruct argument and create new object and all deps.
+             *
+             * @param {Function|Object} fnConstruct
+             * @return {Promise<Object>} created object
+             * @private
+             */
+            async function _useConstructor(fnConstruct) {
 
                 // DEFINE INNER FUNCTIONS
                 /**
-                 * Add 'spec' proxy as fnConstruct argument and create new object and all deps.
+                 * Try to create new object using `constructor` (object, function or class) and `spec` proxy
+                 * to resolve dependencies.
                  *
-                 * @param {Function|Object} fnConstruct
-                 * @return {Promise<Object>} created object
-                 * @private
+                 * @param {Object, Function} constructor
+                 * @param {TeqFw_Di_SpecProxy} spec
+                 * @return {Object}
                  */
-                async function _useConstructor(fnConstruct) {
-                    // DEFINE INNER FUNCTIONS
-                    /**
-                     * Try to create new object using `constructor` (object, function or class) and `spec` proxy
-                     * to resolve dependencies.
-                     *
-                     * @param {Object, Function} constructor
-                     * @param {TeqFw_Di_Container_SpecProxy} spec
-                     * @return {Object}
-                     */
-                    function createInstance(constructor, spec) {
-                        // https://stackoverflow.com/a/29094018/4073821
-                        const proto = Object.getOwnPropertyDescriptor(constructor, 'prototype');
-                        const isClass = proto && !proto.writable;
-                        if (isClass) {
-                            return new constructor(spec);
-                        } else {
-                            return constructor(spec);
-                        }
-                    }
-
-                    // MAIN FUNCTIONALITY
-                    let result;
-                    const constructorType = typeof fnConstruct;
-                    if (constructorType === 'object') {
-                        // `constructor` is an object, clone this object and return new one on every call
-                        result = Object.assign({}, fnConstruct);
-                    } else if (constructorType === 'function') {
-                        // `constructor` is simple function or class
-                        // create spec proxy to analyze dependencies of the constructing object in current scope
-                        const spec = new SpecProxy(mainId, depsReg, _singletons, _constructors, _modules, createFuncs, getObject, reject);
-                        // create new function to resolve all deps and to make requested object
-                        const fnCreate = function () {
-                            try {
-                                const instNew = createInstance(fnConstruct, spec);
-                                // `parsed` is an dependency ID structure from closure where this function is defined
-                                if (parsed.isSingleton) {
-                                    const key = parsed.isNamedObject ? parsed.id : parsed.moduleName;
-                                    _singletons.set(key, instNew);
-                                }
-                                return instNew;
-                            } catch (e) {
-                                // stealth constructor exceptions (for absent deps that should be made asyncly)
-                                if (e !== SpecProxy.EXCEPTION_TO_STEALTH) throw e;
-                            }
-                        };
-                        //register `create` function in the local context to re-call it later
-                        // (when any un-existing dependency will be created)
-                        createFuncs[parsed.id] = fnCreate;
-                        result = fnCreate();
+                function createInstance(constructor, spec) {
+                    // https://stackoverflow.com/a/29094018/4073821
+                    const proto = Object.getOwnPropertyDescriptor(constructor, 'prototype');
+                    const isClass = proto && !proto.writable;
+                    if (isClass) {
+                        return new constructor(spec);
                     } else {
-                        throw new Error('Unexpected type of loaded module.');
+                        return constructor(spec);
                     }
-                    return result;
                 }
 
                 // MAIN FUNCTIONALITY
-                // local registry to save construct functions for main object & its dependencies
-                const createFuncs = {};
-                /** @type {TeqFw_Di_Api_ParsedId} */
-                const parsed = $parser.parse(mainId);
-                // get required instance from own registries or load sources and create new one
-                if ((parsed.isSingleton) && (_singletons.get(parsed.id) !== undefined)) {
-                    // instance with required `id` was created before, just return it
-                    const instById = _singletons.get(parsed.id);
-                    resolve(instById);
-                } else if ((parsed.isModule) && (_modules.get(parsed.id) !== undefined)) {
-                    // module with required `id` was loaded before, just return it
-                    const modById = _modules.get(parsed.id);
-                    resolve(modById);
-                } else if ((parsed.isConstructor) && (_constructors.get(parsed.id) !== undefined)) {
-                    // default export constructor with required `id` was loaded before, create & return new object
-                    const construct = _constructors.get(parsed.id);
-                    _useConstructor(construct).then(resolve).catch(err => reject(err));
-                } else {
-                    // Get path to sources by module name then load ES module
-                    const sourceFile = _resolver.getSourceById(parsed.moduleName);
-                    import(sourceFile)
-                        .then((module) => {
-                            _modules.set(parsed.moduleName, module);
-                            if (parsed.isModule) {
-                                resolve(module);
-                            } else {
-                                // use default export as constructor
-                                const construct = module.default;
-                                _constructors.set(parsed.moduleName, construct);
-                                _useConstructor(construct).then((object) => {
-                                    if (parsed.isSingleton) {
-                                        _singletons.set(parsed.moduleName, object);
-                                    }
-                                    resolve(object);
-                                }).catch((e) => {
-                                    console.error('@teqfw/di: ' + JSON.stringify(e));
-                                    throw e;
-                                });
+                // This promise will be resolved after all dependencies in spec proxy will be created.
+                return new Promise(function (resolve) {
+                    // MAIN FUNCTIONALITY
+                    const constructorType = typeof fnConstruct;
+                    if (constructorType === 'object') {
+                        // `constructor` is an object, clone this fnConstruct and return cloned object
+                        const objClone = Object.assign({}, fnConstruct);
+                        resolve(objClone);
+                    } else if (constructorType === 'function') {
+                        // `constructor` is simple function or class
+
+                        /**
+                         * Create new function to resolve all deps and to create requested object.
+                         * This function will be called from spec proxy for every failed dependency.
+                         */
+                        const fnCreate = function () {
+                            try {
+                                const instNew = createInstance(fnConstruct, spec);
+                                resolve(instNew);
+                            } catch (e) {
+                                // stealth constructor exceptions to prevent execution interrupt on missed dependency
+                                // see SpecProxy.get() accessor
+                                if (e !== SpecProxy.EXCEPTION_TO_STEALTH) throw e;
                             }
-                        })
-                        .catch((e) => {
-                            console.error('@teqfw/di: ' + JSON.stringify(e));
-                            throw e;
-                        });
+                        };
+                        // create spec proxy to analyze dependencies of the constructing object in current scope
+                        const spec = new SpecProxy(mainId, uplineDeps, _singletons, fnCreate, getObject);
+                        // try to create object and start chain of deps resolving in SpecProxy
+                        fnCreate();
+                    } else {
+                        throw new Error('Unexpected type of loaded module.');
+                    }
+                    // `resolve` for this promise is called from fnCreate
+                    // (fnCreate is recalled from spec proxy on every dep failure)
+                });
+            }
+
+            /**
+             * Lookup for requested dependency in internal storages or create new one if dependency constructor
+             * is available.
+             * @param {TeqFw_Di_Api_ParsedId} parsed
+             * @return {*}
+             */
+            async function getFromStorages(parsed) {
+                let result;
+                // get required instance from own registries or load sources and create new one
+                if ((parsed.isSingleton) && (_singletons.get(parsed.mapKey) !== undefined)) {
+                    // singleton was created before, just return it
+                    result = _singletons.get(parsed.mapKey);
+                } else if ((parsed.isModule) && (_modules.get(parsed.mapKey) !== undefined)) {
+                    // module with required `id` was loaded before, just return it
+                    result = _modules.get(parsed.mapKey);
+                } else if ((parsed.isConstructor) && (_constructors.get(parsed.mapKey) !== undefined)) {
+                    // default export constructor with required `id` was loaded before, create & return new object
+                    const construct = _constructors.get(parsed.mapKey);
+                    result = await _useConstructor(construct);
                 }
-            });
+                return result;
+            }
+
+            // MAIN FUNCTIONALITY
+            let result;
+            /** @type {TeqFw_Di_Api_ParsedId} */
+            const parsed = $parser.parse(mainId);
+            // try to find requested dependency in local storages
+            result = await getFromStorages(parsed);
+            // if not found then try to load sources and create new one
+            if (result === undefined) {
+                // Sources for requested dependency are not imported before.
+                // Get path to sources by module name then load ES module.
+                const sourceFile = _resolver.getSourceById(parsed.moduleName);
+                const module = await import(sourceFile);
+                // save imported module in container storage
+                _modules.set(parsed.mapKey, module);
+                if (parsed.isModule) {
+                    result = module;
+                } else {
+                    // use default export of loaded module as constructor
+                    const construct = module.default;
+                    _constructors.set(parsed.mapKey, construct);
+                    const object = await _useConstructor(construct);
+                    // save singleton object in container storage
+                    if (parsed.isSingleton) _singletons.set(parsed.mapKey, object);
+                    result = object;
+                }
+            }
+            return result;
         }
 
         /**
@@ -182,11 +188,11 @@ export default class TeqFw_Di_Container {
         this.delete = function (depId) {
             const parsed = $parser.parse(depId);
             if (parsed.isSingleton) {
-                _singletons.delete(parsed.id);
+                _singletons.delete(parsed.mapKey);
             } else if (parsed.isConstructor) {
-                _constructors.delete(parsed.id);
+                _constructors.delete(parsed.mapKey);
             } else if (parsed.isModule) {
-                _modules.delete(parsed.id);
+                _modules.delete(parsed.mapKey);
             }
         };
 
@@ -197,11 +203,11 @@ export default class TeqFw_Di_Container {
          * @return {Promise<Object>}
          */
         this.get = async function (depId) {
-            return await getObject(depId, {[depId]: true});
+            return await getObject(depId, {});
         };
 
         /**
-         * @return {TeqFw_Di_Container_Resolver}
+         * @return {TeqFw_Di_Resolver}
          */
         this.getNsResolver = function () {
             return _resolver;
@@ -215,11 +221,11 @@ export default class TeqFw_Di_Container {
         this.has = function (depId) {
             const parsed = $parser.parse(depId);
             if (parsed.isSingleton) {
-                return _singletons.has(parsed.id);
+                return _singletons.has(parsed.mapKey);
             } else if (parsed.isConstructor) {
-                return _constructors.has(parsed.id);
+                return _constructors.has(parsed.mapKey);
             } else if (parsed.isModule) {
-                return _modules.has(parsed.id);
+                return _modules.has(parsed.mapKey);
             }
         };
 
@@ -248,13 +254,11 @@ export default class TeqFw_Di_Container {
         this.set = function (depId, object) {
             const parsed = $parser.parse(depId);
             if (parsed.isSingleton) {
-                // keys are without '$' chars: named object or module name
-                const key = (parsed.isNamedObject) ? parsed.id : parsed.moduleName;
-                _singletons.set(key, object);
+                _singletons.set(parsed.mapKey, object);
             } else if (parsed.isConstructor) {
-                _constructors.set(parsed.id, object);
+                _constructors.set(parsed.mapKey, object);
             } else if (parsed.isModule) {
-                _modules.set(parsed.id, object);
+                _modules.set(parsed.mapKey, object);
             }
         };
     }

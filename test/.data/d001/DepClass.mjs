@@ -1,5 +1,5 @@
-export default class Test_Container_DepClass {
+export default class Test_DepClass {
     constructor() {
-        return {name: "Test_Container_DepClass"};
+        return {name: 'Test_DepClass'};
     }
 }

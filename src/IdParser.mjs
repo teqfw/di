@@ -1,7 +1,7 @@
 import ParsedId from './Api/ParsedId.mjs';
 
 /** @type {RegExp} */
-const REG_EXP_OBJECT_ID = /^(([a-z])[A-Za-z0-9_]*)$/;
+const REG_EXP_OBJECT_ID = /^((([a-z])[A-Za-z0-9_]*)(\$)?)$/;
 const REG_EXP_MODULE_ID = /^((([A-Z])[A-Za-z0-9_]*)(\${1,2})?)$/;
 
 /**
@@ -17,15 +17,21 @@ export default class TeqFw_Di_IdParser {
      */
     parse(id) {
         const result = new ParsedId();
-        result.id = id;
+        result.orig = id;
         const objParts = REG_EXP_OBJECT_ID.exec(id);
         const modParts = REG_EXP_MODULE_ID.exec(id);
         if (!objParts && !modParts) throw new Error(`Invalid identifier: '${id}'. See 'https://github.com/teqfw/di/blob/master/docs/identifiers.md'.`);
         if (objParts) {
             result.isNamedObject = true;
-            result.isSingleton = true;
+            result.mapKey = objParts[2];
+            if (objParts[4] === '$') {
+                result.isConstructor = true;
+            } else {
+                result.isSingleton = true;
+            }
         } else {
             result.moduleName = modParts[2];
+            result.mapKey = modParts[2];
             if (modParts[4]) {
                 if (modParts[4] === '$') {
                     result.isConstructor = true;

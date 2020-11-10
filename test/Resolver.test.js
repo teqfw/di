@@ -4,12 +4,12 @@ import {describe, it} from 'mocha';
 import assert from 'assert';
 
 
-describe('TeqFw_Di_Container_Resolver', () => {
-    /** @type {TeqFw_Di_Container_Resolver} */
+describe('TeqFw_Di_Resolver', () => {
+    /** @type {TeqFw_Di_Resolver} */
     const obj = new Resolver();
 
     it('has right classname', async () => {
-        assert.strictEqual(obj.constructor.name, 'TeqFw_Di_Container_Resolver');
+        assert.strictEqual(obj.constructor.name, 'TeqFw_Di_Resolver');
     });
 
     it('has all expected public methods in prototype', async () => {

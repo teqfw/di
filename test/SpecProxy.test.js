@@ -8,7 +8,7 @@ import assert from 'assert';
  * New dependency `dbConfig` is added into `depsStack` before related code line call in SpecProxy,
  * so 'Circular dependencies ...' exception is thrown in debugger but not in console.
  */
-describe('TeqFw_Di_Container_SpecProxy', () => {
+describe('TeqFw_Di_SpecProxy', () => {
     // this is small entrance test, `SpecProxy` is tested mainly as part of `Container` object.
 
 
@@ -22,13 +22,9 @@ describe('TeqFw_Di_Container_SpecProxy', () => {
         const dependency = {name: 'dbConfig'};
         const mainId = 'Vendor_Module';
         const depsStack = {Vendor_Module_Class: true};
-        const containerInsts = new Map();
-        const containerMod = new Map();
-        const containerConstruct = new Map();
-        // make functions to create objects (main & deps)
-        const makeFuncs = {};
-        // add make function to call `spec_proxy[dep_id]` once again after dependency constructing
-        makeFuncs[mainId] = () => {
+        const containerSingletons = new Map();
+        // create function to call `spec_proxy[dep_id]` once again after dependency constructing
+        const fnCreate = () => {
             assert(firstException);
             assert(depConstructed);
             // dependency is returned on the second call
@@ -37,17 +33,14 @@ describe('TeqFw_Di_Container_SpecProxy', () => {
             done();
         };
         // Create dependency on demand (after first SpecProxy.EXCEPTION_TO_STEALTH exception)
-        const fnCreateDep = async () => {
+        const fnGetObect = async () => {
             depConstructed = true;
             return dependency;
         };
-        const fnReject = () => 'this function is not called';
 
 
-        /** @type {TeqFw_Di_Container_SpecProxy} */
-        const specProxy = new SpecProxy(
-            mainId, depsStack, containerInsts, containerConstruct, containerMod, makeFuncs, fnCreateDep, fnReject
-        );
+        /** @type {TeqFw_Di_SpecProxy} */
+        const specProxy = new SpecProxy(mainId, depsStack, containerSingletons, fnCreate, fnGetObect);
 
 
         try {

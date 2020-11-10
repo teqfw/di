@@ -1,5 +1,5 @@
 /**
- * Data structure for file paths resolver (@see TeqFw_Di_Container_Resolver).
+ * Data structure for file paths resolver (@see TeqFw_Di_Resolver).
  */
 export default class TeqFw_Di_Api_ResolveDetails {
     /** @type {String} extension for files in the namespace */

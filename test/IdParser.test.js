@@ -6,70 +6,78 @@ describe('TeqFw_Di_IdParser', () => {
     /** @type {TeqFw_Di_IdParser} */
     const obj = new IdParser();
 
-    it('has right classname', (done) => {
+    it('has right classname', async () => {
         assert.strictEqual(obj.constructor.name, 'TeqFw_Di_IdParser');
-        done();
     });
 
-    it('has all expected public methods in prototype', (done) => {
+    it('has all expected public methods in prototype', async () => {
         const methods = Object.getOwnPropertyNames(obj.__proto__)
             .filter(p => (typeof obj[p] === 'function' && p !== 'constructor'));
         assert.deepStrictEqual(methods, ['parse']);
-        done();
     });
 
-    it('should reject invalid IDs', (done) => {
+    it('should reject invalid IDs', async () => {
         assert.throws(
             () => {
                 obj.parse('1Vendor_Project_Module_Dependency');
             },
             /Invalid identifier: '1Vendor_Project_Module_Dependency'./
         );
-        done();
     });
 
-    it('should parse named object ID', (done) => {
-        const parsed = obj.parse('dbConnection');
-        assert.strictEqual(parsed.id, 'dbConnection');
+    it('should parse named singleton ID', async () => {
+        const parsed = obj.parse('namedSingleton');
         assert.strictEqual(parsed.isConstructor, false);
         assert.strictEqual(parsed.isModule, false);
         assert.strictEqual(parsed.isNamedObject, true);
         assert.strictEqual(parsed.isSingleton, true);
+        assert.strictEqual(parsed.mapKey, 'namedSingleton');
         assert.strictEqual(parsed.moduleName, undefined);
-        done();
+        assert.strictEqual(parsed.orig, 'namedSingleton');
     });
 
-    it('should parse module ID', (done) => {
+    it('should parse named constructor ID', async () => {
+        const parsed = obj.parse('namedConstructor$');
+        assert.strictEqual(parsed.isConstructor, true);
+        assert.strictEqual(parsed.isModule, false);
+        assert.strictEqual(parsed.isNamedObject, true);
+        assert.strictEqual(parsed.isSingleton, false);
+        assert.strictEqual(parsed.mapKey, 'namedConstructor');
+        assert.strictEqual(parsed.moduleName, undefined);
+        assert.strictEqual(parsed.orig, 'namedConstructor$');
+    });
+
+    it('should parse module ID', async () => {
         const parsed = obj.parse('Vendor_Module');
-        assert.strictEqual(parsed.id, 'Vendor_Module');
         assert.strictEqual(parsed.isConstructor, false);
         assert.strictEqual(parsed.isModule, true);
         assert.strictEqual(parsed.isNamedObject, false);
         assert.strictEqual(parsed.isSingleton, false);
+        assert.strictEqual(parsed.mapKey, 'Vendor_Module');
         assert.strictEqual(parsed.moduleName, 'Vendor_Module');
-        done();
+        assert.strictEqual(parsed.orig, 'Vendor_Module');
     });
 
-    it('should parse new object constructor ID', (done) => {
+    it('should parse default export constructor ID', async () => {
         const parsed = obj.parse('Vendor_Module$');
-        assert.strictEqual(parsed.id, 'Vendor_Module$');
         assert.strictEqual(parsed.isConstructor, true);
         assert.strictEqual(parsed.isModule, false);
         assert.strictEqual(parsed.isNamedObject, false);
         assert.strictEqual(parsed.isSingleton, false);
+        assert.strictEqual(parsed.mapKey, 'Vendor_Module');
         assert.strictEqual(parsed.moduleName, 'Vendor_Module');
-        done();
+        assert.strictEqual(parsed.orig, 'Vendor_Module$');
     });
 
-    it('should parse default export singleton ID', (done) => {
+    it('should parse default export singleton ID', async () => {
         const parsed = obj.parse('Vendor_Module$$');
-        assert.strictEqual(parsed.id, 'Vendor_Module$$');
         assert.strictEqual(parsed.isConstructor, false);
         assert.strictEqual(parsed.isModule, false);
         assert.strictEqual(parsed.isNamedObject, false);
         assert.strictEqual(parsed.isSingleton, true);
+        assert.strictEqual(parsed.mapKey, 'Vendor_Module');
         assert.strictEqual(parsed.moduleName, 'Vendor_Module');
-        done();
+        assert.strictEqual(parsed.orig, 'Vendor_Module$$');
     });
 
 });

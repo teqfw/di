@@ -1,3 +1,4 @@
-export default function Test_Container_DepFunc() {
-    return {name: "Test_Container_DepFunc"};
+export default function Test_DepFunc(spec) {
+    const namedSingleton = spec.namedSingleton;
+    return {name: 'Test_DepFunc'};
 }

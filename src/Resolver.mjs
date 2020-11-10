@@ -8,7 +8,7 @@
  * Namespace parts separator.
  *
  * @type {string}
- * @memberOf TeqFw_Di_Container_Resolver
+ * @memberOf TeqFw_Di_Resolver
  */
 const NSS = '_';
 
@@ -16,14 +16,14 @@ const NSS = '_';
  * Key to save sources data in '_namespace' registry.
  *
  * @type {string}
- * @memberOf TeqFw_Di_Container_Resolver
+ * @memberOf TeqFw_Di_Resolver
  */
 const KEY_DATA = '.data';
 
 /**
  * Map codebase namespaces to files/URLs.
  */
-export default class TeqFw_Di_Container_Resolver {
+export default class TeqFw_Di_Resolver {
     /**
      * Registry for namespaces. Tree-like structure to save root paths (relative or absolute) to sources
      * by namespaces.
