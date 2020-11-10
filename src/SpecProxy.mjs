@@ -31,7 +31,8 @@ export default class TeqFw_Di_SpecProxy {
         uplineDeps,
         containerSingletons,
         fnCreate,
-        fnGetObject
+        fnGetObject,
+        fnRejectUseConstruct
     ) {
 
         /**
@@ -62,7 +63,9 @@ export default class TeqFw_Di_SpecProxy {
                         // check stack of incomplete dependencies
                         if (uplineDeps[parsed.moduleName]) {
                             // `dep_id` is already requested to be created, so we report it as 'main'
-                            throw new Error(`Circular dependencies (main: ${depId}; dep: ${mainId})`);
+                            const err = new Error(`Circular dependencies (main: ${depId}; dep: ${mainId})`);
+                            fnRejectUseConstruct(err);  // reject async _useConstructor
+                            throw err;                  // break sync object's constructor
                         }
                         // ... and register new one
                         uplineDeps[parsed.moduleName] = true;
@@ -76,7 +79,7 @@ export default class TeqFw_Di_SpecProxy {
                             fnCreate();
                         }).catch(err => {
                             // re-throw error from promise
-                            throw  err;
+                            fnRejectUseConstruct(err);  // reject async _useConstructor
                         });
                     }
                     // interrupt construction process until new dependency will be created

@@ -55,7 +55,7 @@ export default class TeqFw_Di_Container {
              */
             function _useConstructor(fnConstruct) {
                 // This promise will be resolved after all dependencies in spec proxy will be created.
-                return new Promise(function (resolve) {
+                return new Promise(function (resolve, reject) {
                     // MAIN FUNCTIONALITY
                     const constructorType = typeof fnConstruct;
                     if (constructorType === 'object') {
@@ -80,12 +80,11 @@ export default class TeqFw_Di_Container {
                                 resolve(instNew);
                             } catch (e) {
                                 // stealth constructor exceptions to prevent execution interrupt on missed dependency
-                                // see SpecProxy.get() accessor
-                                if (e !== SpecProxy.EXCEPTION_TO_STEALTH) throw e;
+                                // SpecProxy rejects `_useConstructor` promise on any error
                             }
                         };
                         // create spec proxy to analyze dependencies of the constructing object in current scope
-                        const spec = new SpecProxy(mainId, uplineDeps, _singletons, fnCreate, getObject);
+                        const spec = new SpecProxy(mainId, uplineDeps, _singletons, fnCreate, getObject, reject);
                         // try to create object and start chain of deps resolving in SpecProxy
                         fnCreate();
                     } else {

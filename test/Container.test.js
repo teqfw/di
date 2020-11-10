@@ -232,25 +232,24 @@ describe('TeqFw_Di_Container', function () {
             container.set('namedConstructClass$', namedConstructClass);
             // get Main and resolve all dependencies
             const main = await container.get('Test_Main$');
-            assert.deepStrictEqual(main, {dep: {name: 'Test_Container_DepFunc'}});
+            assert.deepStrictEqual(main.depFn.namedSingleton.name, 'named singleton');
         });
 
     });
 
     describe('handles the errors:', () => {
-        it('circular dependencies', (done) => {
+        it('circular dependencies', async () => {
             const container = new Container();
             // set up source mapping
             container.addSourceMapping('Test_Container', __dirname + '/.data/d002', true);
-            container.get('Test_Container_MainClass').catch(
-                (e) => {
-                    assert.strictEqual(
-                        e.message,
-                        'Circular dependencies (main: Test_Container_MainClass; dep: Test_Container_DepClass)'
-                    );
-                    done();
-                }
-            );
+            try {
+                await container.get('Test_Container_MainClass$');
+            } catch (e) {
+                assert.strictEqual(
+                    e.message,
+                    'Circular dependencies (main: Test_Container_DepClass$; dep: Test_Container_MainClass$)'
+                );
+            }
         });
     });
 });

@@ -62,7 +62,7 @@ function construct(spec) {
 
 ## Spec Proxy
 
-Класс `TeqFw_Di_SpecProxy` описывает объект, передаваемый в конструктор создаваемого объекта. SpecProxy возвращает требуемые зависимости конструктору, если они найдены в хранилище контейнера, либо загружает ES-модули, соответствующие запрошенной зависимости, сохраняет их в хранилище, создаёт необходимый объект, а затем выбрасывает специальное исключение (`TeqFw_Di_SpecProxy.EXCEPTION_TO_STEALTH`), чтобы функция `_useConstruct` повторила попытку создания основного объекта и инициировала.
+Класс `TeqFw_Di_SpecProxy` описывает объект, передаваемый в конструктор создаваемого объекта. SpecProxy возвращает требуемые зависимости конструктору, если они найдены в хранилище контейнера, либо загружает ES-модули, соответствующие запрошенной зависимости, сохраняет их в хранилище, создаёт необходимый объект, а затем повторяет попытку создания основного объекта.
 
 Найденные и вновь созданные зависимости, необходимые для конструирования запрошенного объекта, SpecProxy сохраняет во внутреннем реестре:
 ```ecmascript 6
@@ -77,15 +77,16 @@ const deps = {};
 * `containerSingletons`: хранилище Контейнера для поиска уже созданных singleton-зависимостей;
 * `fnCreate`: функция для создания запрашиваемого объекта; функция определяется вне SpecProxy и передаётся в конструктор при создании объекта SpecProxy; функция используется для инициирования повторного конструирования запрашиваемого объекта;
 * `fnGetObject`: функция Контейнера для получения/создания зависимостей, требуемых для конструируемого объекта;
+* `fnRejectUseConstruct`: reject-функция из общения, созданного функцией `_useConstructor`; эта reject-функция нужна, чтобы отменить создание запрашиваемого объекта в случае обнаружения циклической зависимости;
 
 
 
-## `Container.getObject._useConstruct` function
+## `Container.getObject._useConstructor` function
 
 Данная функция создаёт окружение для конструирования объекта вместе со всеми его зависимостями. Основой функции является обещание, которое разрешается при удачном создании запрашиваемого объекта:
 ```ecmascript 6
 function _useConstructor(fnConstruct) {
-    return new Promise(function (resolve) {});
+    return new Promise(function (resolve, reject) {});
 }
 ```
 
@@ -105,7 +106,7 @@ if (constructorType === 'object') {
 
 Также создаётся SpecProxy-объект, который передаётся в конструктор запрашиваемого объекта для разрешения зависимостей. В конструктор SpecProxy-объекта передаётся функция `fnCreate`:
 ```ecmascript 6
-const spec = new SpecProxy(mainId, uplineDeps, _singletons, fnCreate, getObject);
+const spec = new SpecProxy(mainId, uplineDeps, _singletons, fnCreate, getObject, reject);
 ```
 
 
@@ -124,8 +125,6 @@ const fnCreate = function () {
         resolve(instNew);
     } catch (e) {
         // stealth constructor exceptions to prevent execution interrupt on missed dependency
-        // see SpecProxy.get() accessor
-        if (e !== SpecProxy.EXCEPTION_TO_STEALTH) throw e;
     }
 };
 ```
