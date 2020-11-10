@@ -53,29 +53,7 @@ export default class TeqFw_Di_Container {
              * @return {Promise<Object>} created object
              * @private
              */
-            async function _useConstructor(fnConstruct) {
-
-                // DEFINE INNER FUNCTIONS
-                /**
-                 * Try to create new object using `constructor` (object, function or class) and `spec` proxy
-                 * to resolve dependencies.
-                 *
-                 * @param {Object, Function} constructor
-                 * @param {TeqFw_Di_SpecProxy} spec
-                 * @return {Object}
-                 */
-                function createInstance(constructor, spec) {
-                    // https://stackoverflow.com/a/29094018/4073821
-                    const proto = Object.getOwnPropertyDescriptor(constructor, 'prototype');
-                    const isClass = proto && !proto.writable;
-                    if (isClass) {
-                        return new constructor(spec);
-                    } else {
-                        return constructor(spec);
-                    }
-                }
-
-                // MAIN FUNCTIONALITY
+            function _useConstructor(fnConstruct) {
                 // This promise will be resolved after all dependencies in spec proxy will be created.
                 return new Promise(function (resolve) {
                     // MAIN FUNCTIONALITY
@@ -93,7 +71,12 @@ export default class TeqFw_Di_Container {
                          */
                         const fnCreate = function () {
                             try {
-                                const instNew = createInstance(fnConstruct, spec);
+                                // https://stackoverflow.com/a/29094018/4073821
+                                const proto = Object.getOwnPropertyDescriptor(constructor, 'prototype');
+                                const isClass = proto && !proto.writable;
+                                const instNew = (isClass) ? new fnConstruct(spec) : fnConstruct(spec);
+                                // code line below will be inaccessible until all deps will be created in `spec`
+                                // SpecProxy.EXCEPTION_TO_STEALTH will be thrown for every missed dep in `spec`
                                 resolve(instNew);
                             } catch (e) {
                                 // stealth constructor exceptions to prevent execution interrupt on missed dependency
