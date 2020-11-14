@@ -26,7 +26,7 @@ describe('TeqFw_Di_Container', function () {
 
     it('contains itself inside', async () => {
         const container = new Container();
-        const exportSingleton = await container.get('TeqFw_Di_Container$$');
+        const exportSingleton = await container.get('TeqFw_Di_Container$');
         assert.strictEqual(exportSingleton, container);
         const namedSingleton = await container.get('container');
         assert.strictEqual(namedSingleton, container);
@@ -36,23 +36,17 @@ describe('TeqFw_Di_Container', function () {
         const container = new Container();
 
         it('access to modules loader', async () => {
-            const loader = container.getNsResolver();
-            assert.strictEqual(loader.constructor.name, 'TeqFw_Di_Resolver');
+            const resolver = container.getNsResolver();
+            assert.strictEqual(resolver.constructor.name, 'TeqFw_Di_Resolver');
         });
 
         it('lists contained instances and loaded modules', async () => {
             const obj = {name: 'one object for all deps'};
             container.set('namedSingleton', obj);
-            container.set('namedConstructor$', obj);
-            container.set('Vendor_Module', obj);
-            container.set('Vendor_Module$', obj);
-            container.set('Vendor_Module$$', obj);
-            const {singletons, constructors, modules} = container.list();
-            assert(constructors.includes('namedConstructor'));
-            assert(constructors.includes('Vendor_Module'));
-            assert(modules.includes('Vendor_Module'));
+            container.set('namedFactory$$', obj);
+            const {singletons, constructors} = container.list();
+            assert(constructors.includes('namedFactory'));
             assert(singletons.includes('namedSingleton'));
-            assert(singletons.includes('Vendor_Module'));
         });
     });
 
@@ -68,27 +62,18 @@ describe('TeqFw_Di_Container', function () {
             assert(!container.has(depId));
         });
 
-        it('named constructor from container', async () => {
-            const depId = 'namedConstructor$';
-            const obj = {name: 'named constructor'};
+        it('named factory from container', async () => {
+            const depId = 'namedFactory$$';
+            const obj = {name: 'named factory'};
             container.set(depId, obj);
             assert(container.has(depId));
             container.delete(depId);
             assert(!container.has(depId));
         });
 
-        it('module from container', async () => {
-            const depId = 'Vendor_Module';
-            const module = {name: 'some module'};
-            container.set(depId, module);
-            assert(container.has(depId));
-            container.delete(depId);
-            assert(!container.has(depId));
-        });
-
-        it('default export constructor from container', async () => {
-            const depId = 'Vendor_Module$';
-            const construct = {name: 'default export constructor'};
+        it('default export factory from container', async () => {
+            const depId = 'Vendor_Module$$';
+            const construct = {name: 'default export factory'};
             container.set(depId, construct);
             assert(container.has(depId));
             container.delete(depId);
@@ -106,113 +91,275 @@ describe('TeqFw_Di_Container', function () {
     });
 
     describe('allows to place:', () => {
-        const container = new Container();
 
-        it('named singleton to container', async () => {
-            const id = 'namedSingleton';
-            const depIn = {name: 'named singleton'};
-            container.set(id, depIn);
-            const depOut = await container.get(id);
-            assert(depOut === depIn); // is the same object
+        describe('manual DI IDs:', () => {
+            it('singleton (namedSingleton)', async () => {
+                const container = new Container();
+                const id = 'namedSingleton';
+                const depIn = {name: 'named singleton'};
+                container.set(id, depIn);
+                const depOut = await container.get(id);
+                assert(depOut === depIn); // is the same object
+            });
+
+            it('factory (namedFactory$$)', async () => {
+                const container = new Container();
+                const id = 'namedFactory$$';
+                const fnConstruct = function () {
+                    return {name: 'new object'};
+                };
+                container.set(id, fnConstruct);
+                const dep1 = await container.get(id);
+                const dep2 = await container.get(id);
+                assert(dep1 !== dep2);  // is not the same object
+                assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+            });
         });
 
-        it('named constructor to container', async () => {
-            const id = 'namedConstructor$';
-            const fnConstruct = function () {
-                return {name: 'new object'};
-            };
-            container.set(id, fnConstruct);
-            const dep1 = await container.get(id);
-            const dep2 = await container.get(id);
-            assert(dep1 !== dep2);  // is not the same object
-            assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+        describe('filepath based IDs:', () => {
+
+            describe('singletons:', () => {
+
+                it('default export singleton (@vendor/package!module$)', async () => {
+                    const container = new Container();
+                    const id = '@vendor/package!module$';
+                    const singleton = function () {
+                        return {name: 'new object from other object'};
+                    };
+                    container.set(id, singleton);
+                    const dep1 = await container.get(id);
+                    const dep2 = await container.get(id);
+                    assert(dep1 === dep2);
+                });
+
+                it('named export singleton (@vendor/package!module#export$)', async () => {
+                    const container = new Container();
+                    const id = '@vendor/package!module#export$';
+                    const singleton = function () {
+                        return {name: 'new object from other object'};
+                    };
+                    container.set(id, singleton);
+                    const dep1 = await container.get(id);
+                    const dep2 = await container.get(id);
+                    assert(dep1 === dep2);
+                });
+
+            });
+
+            describe('factories:', () => {
+
+                describe('default export:', () => {
+
+                    it('object (@vendor/package!module$$)', async () => {
+                        const container = new Container();
+                        const id = '@vendor/package!module$$';
+                        const factory = {name: 'primary object'};
+                        container.set(id, factory);
+                        const dep1 = await container.get(id);
+                        const dep2 = await container.get(id);
+                        assert(dep1 !== dep2);  // is not the same object
+                        assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+                    });
+
+                    it('function (@vendor/package!module$$)', async () => {
+                        const container = new Container();
+                        const id = '@vendor/package!module$$';
+                        const factory = function () {
+                            return {name: 'primary object'};
+                        };
+                        container.set(id, factory);
+                        const dep1 = await container.get(id);
+                        const dep2 = await container.get(id);
+                        assert(dep1 !== dep2);  // is not the same object
+                        assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+                        assert.deepStrictEqual(dep1, {name: 'primary object'}); // equals to primary
+                    });
+
+                    it('class (@vendor/package!module$$)', async () => {
+                        const container = new Container();
+                        const id = '@vendor/package!module$$';
+                        const factory = class Primary {
+                            name = 'primary object'
+                        };
+                        container.set(id, factory);
+                        const dep1 = await container.get(id);
+                        const dep2 = await container.get(id);
+                        assert(dep1 !== dep2);  // is not the same object
+                        assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+                        assert.deepStrictEqual(dep1, new factory()); // equals to primary
+                    });
+
+                });
+
+                describe('named export:', () => {
+
+                    it('object (@vendor/package!module#export$$)', async () => {
+                        const container = new Container();
+                        const id = '@vendor/package!module#export$$';
+                        const factory = {name: 'primary object'};
+                        container.set(id, factory);
+                        const dep1 = await container.get(id);
+                        const dep2 = await container.get(id);
+                        assert(dep1 !== dep2);  // is not the same object
+                        assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+                    });
+
+                    it('function (@vendor/package!module#export$$)', async () => {
+                        const container = new Container();
+                        const id = '@vendor/package!module#export$$';
+                        const factory = function () {
+                            return {name: 'primary object'};
+                        };
+                        container.set(id, factory);
+                        const dep1 = await container.get(id);
+                        const dep2 = await container.get(id);
+                        assert(dep1 !== dep2);  // is not the same object
+                        assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+                        assert.deepStrictEqual(dep1, {name: 'primary object'}); // equals to primary
+                    });
+
+                    it('class (@vendor/package!module#export$$)', async () => {
+                        const container = new Container();
+                        const id = '@vendor/package!module#export$$';
+                        const factory = class Primary {
+                            name = 'primary object'
+                        };
+                        container.set(id, factory);
+                        const dep1 = await container.get(id);
+                        const dep2 = await container.get(id);
+                        assert(dep1 !== dep2);  // is not the same object
+                        assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+                        assert.deepStrictEqual(dep1, new factory()); // equals to primary
+                    });
+
+                });
+
+            });
+
         });
 
-        it('module to container', async () => {
-            const id = 'Vendor_Module';
-            const depIn = {name: 'some module'};
-            container.set(id, depIn);
-            const depOut = await container.get(id);
-            assert(depOut === depIn); // is the same object
+        describe('logical namespaces IDs:', () => {
+
+            describe('singletons:', () => {
+
+                it('default export singleton (Ns_App_Mod$)', async () => {
+                    const container = new Container();
+                    const id = 'Ns_App_Mod$';
+                    const singleton = function () {
+                        return {name: 'new object from other object'};
+                    };
+                    container.set(id, singleton);
+                    const dep1 = await container.get(id);
+                    const dep2 = await container.get(id);
+                    assert(dep1 === dep2);
+                });
+
+                it('named export singleton (Ns_App_Mod#export$)', async () => {
+                    const container = new Container();
+                    const id = 'Ns_App_Mod#export$';
+                    const singleton = function () {
+                        return {name: 'new object from other object'};
+                    };
+                    container.set(id, singleton);
+                    const dep1 = await container.get(id);
+                    const dep2 = await container.get(id);
+                    assert(dep1 === dep2);
+                });
+
+            });
+
+            describe('factories:', () => {
+
+                describe('default export:', () => {
+
+                    it('object (Ns_App_Mod$$)', async () => {
+                        const container = new Container();
+                        const id = 'Ns_App_Mod$$';
+                        const factory = {name: 'primary object'};
+                        container.set(id, factory);
+                        const dep1 = await container.get(id);
+                        const dep2 = await container.get(id);
+                        assert(dep1 !== dep2);  // is not the same object
+                        assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+                    });
+
+
+                    it('function (Ns_App_Mod$$)', async () => {
+                        const container = new Container();
+                        const id = 'Ns_App_Mod$$';
+                        const factory = function () {
+                            return {name: 'primary object'};
+                        };
+                        container.set(id, factory);
+                        const dep1 = await container.get(id);
+                        const dep2 = await container.get(id);
+                        assert(dep1 !== dep2);  // is not the same object
+                        assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+                        assert.deepStrictEqual(dep1, {name: 'primary object'}); // equals to primary
+                    });
+
+                    it('class (Ns_App_Mod$$)', async () => {
+                        const container = new Container();
+                        const id = 'Ns_App_Mod$$';
+                        const factory = class Primary {
+                            name = 'primary object'
+                        };
+                        container.set(id, factory);
+                        const dep1 = await container.get(id);
+                        const dep2 = await container.get(id);
+                        assert(dep1 !== dep2);  // is not the same object
+                        assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+                        assert.deepStrictEqual(dep1, new factory()); // equals to primary
+                    });
+                });
+
+                describe('named export:', () => {
+
+                    it('object (Ns_App_Mod#export$$)', async () => {
+                        const container = new Container();
+                        const id = 'Ns_App_Mod#export$$';
+                        const factory = {name: 'primary object'};
+                        container.set(id, factory);
+                        const dep1 = await container.get(id);
+                        const dep2 = await container.get(id);
+                        assert(dep1 !== dep2);  // is not the same object
+                        assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+                    });
+
+                    it('function (Ns_App_Mod#export$$)', async () => {
+                        const container = new Container();
+                        const id = 'Ns_App_Mod#export$$';
+                        const factory = function () {
+                            return {name: 'primary object'};
+                        };
+                        container.set(id, factory);
+                        const dep1 = await container.get(id);
+                        const dep2 = await container.get(id);
+                        assert(dep1 !== dep2);  // is not the same object
+                        assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+                        assert.deepStrictEqual(dep1, {name: 'primary object'}); // equals to primary
+                    });
+
+                    it('class (Ns_App_Mod#export$$)', async () => {
+                        const container = new Container();
+                        const id = 'Ns_App_Mod#export$$';
+                        const factory = class Primary {
+                            name = 'primary object'
+                        };
+                        container.set(id, factory);
+                        const dep1 = await container.get(id);
+                        const dep2 = await container.get(id);
+                        assert(dep1 !== dep2);  // is not the same object
+                        assert.deepStrictEqual(dep1, dep2); // but both objects are equals
+                        assert.deepStrictEqual(dep1, new factory()); // equals to primary
+                    });
+
+                });
+
+            });
+
         });
 
-        it('default export object duplicator to container', async () => {
-            const id = 'Vendor_Module$';
-            const modIn = {
-                default: {name: 'new object from other object'}
-            };
-            container.set(id, modIn);
-            const dep1 = await container.get(id);
-            const dep2 = await container.get(id);
-            assert(dep1 !== dep2); // is not the same object
-            assert.deepStrictEqual(dep1, dep2); // but both objects are equals
-        });
-
-        it('default export function constructor to container', async () => {
-            const id = 'Vendor_Module$';
-            const modIn = {
-                default: () => {
-                    return {name: 'new object from function'};
-                }
-            };
-            container.set(id, modIn);
-            const dep1 = await container.get(id);
-            const dep2 = await container.get(id);
-            assert(dep1 !== dep2); // is not the same object
-            assert.deepStrictEqual(dep1, dep2); // but both objects are equals
-        });
-
-        it('default export class constructor to container', async () => {
-            const id = 'Vendor_Module$';
-            const modIn = {
-                default: class {
-                    name = 'new object from class'
-                }
-            };
-            container.set(id, modIn);
-            const dep1 = await container.get(id);
-            const dep2 = await container.get(id);
-            assert(dep1 !== dep2); // is not the same object
-            assert.deepStrictEqual(dep1, dep2); // but both objects are equals
-        });
-
-        it('default export object singleton to container', async () => {
-            const id = 'Vendor_Module$$';
-            const modIn = {
-                default: () => {
-                    return {name: 'new object from function'};
-                }
-            };
-            container.set(id, modIn);
-            const dep1 = await container.get(id);
-            const dep2 = await container.get(id);
-            assert(dep1 !== modIn.default); // is not the same object (should be duplicated)
-            assert(dep1 === dep2);
-        });
-
-        it('default export function singleton to container', async () => {
-            const id = 'Vendor_Module$$';
-            const modIn = {
-                default: {name: 'new object from other object'}
-            };
-            container.set(id, modIn);
-            const dep1 = await container.get(id);
-            const dep2 = await container.get(id);
-            assert(dep1 === dep2);
-        });
-
-        it('default export class singleton to container', async () => {
-            const id = 'Vendor_Module$$';
-            const modIn = {
-                default: class {
-                    name = 'new object from class'
-                }
-            };
-            container.set(id, modIn);
-            const dep1 = await container.get(id);
-            const dep2 = await container.get(id);
-            assert(dep1 === dep2);
-        });
     });
 
     describe('allows to import:', () => {
@@ -224,12 +371,12 @@ describe('TeqFw_Di_Container', function () {
             // load ES module then get exported parts
             const mod = await container.get('Test_DepModule');
             const namedSingleton = mod.NAMED_SINGLETON;
-            const namedConstructFn = mod.namedConstructor;
-            const namedConstructClass = mod.NamedConstructor;
+            const namedConstructFn = mod.namedFactory;
+            const namedConstructClass = mod.NamedFactory;
             // place exported parts as objects to container
             container.set('namedSingleton', namedSingleton);
-            container.set('namedConstructFn$', namedConstructFn);
-            container.set('namedConstructClass$', namedConstructClass);
+            container.set('namedConstructFn$$', namedConstructFn);
+            container.set('namedConstructClass$$', namedConstructClass);
             // get Main and resolve all dependencies
             const main = await container.get('Test_Main$');
             assert.deepStrictEqual(main.depFn.namedSingleton.name, 'named singleton');
@@ -238,17 +385,26 @@ describe('TeqFw_Di_Container', function () {
     });
 
     describe('handles the errors:', () => {
+
+        it('exception when wrong dependency is set', async () => {
+            const container = new Container();
+            try {
+                container.set('Ns_Module#namedExport');
+                assert(false);
+            } catch (e) {
+                assert(/^Dependency ID is not valid for factory or singleton.*$/.test(e.message));
+            }
+        });
+
         it('circular dependencies', async () => {
             const container = new Container();
             // set up source mapping
             container.addSourceMapping('Test_Container', __dirname + '/.data/d002', true);
             try {
-                await container.get('Test_Container_MainClass$');
+                await container.get('Test_Container_MainClass$$');
+                assert(false);
             } catch (e) {
-                assert.strictEqual(
-                    e.message,
-                    'Circular dependencies (main: Test_Container_DepClass$; dep: Test_Container_MainClass$)'
-                );
+                assert(/^Circular dependencies .*$/.test(e.message));
             }
         });
     });

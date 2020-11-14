@@ -1,4 +1,6 @@
 import IdParser from './IdParser.mjs';
+import ModuleLoader from './ModuleLoader.mjs';
+import ParsedId from './Api/ParsedId.mjs';
 import ResolveDetails from './Api/ResolveDetails.mjs';
 import Resolver from './Resolver.mjs';
 import SpecProxy from './SpecProxy.mjs';
@@ -16,21 +18,18 @@ export default class TeqFw_Di_Container {
     constructor(spec = {}) {
         /** @type {TeqFw_Di_Resolver} Modules loader (given in constructor or empty one). */
         const _resolver = spec.namespaceResolver || new Resolver();
+        /** @type {TeqFw_Di_ModuleLoader} */
+        const _moduleLoader = new ModuleLoader(_resolver);
         /**
          * Storage for constructors (named or default exports of ES modules) to create new objects.
          * Module name ('Vendor_Project_Module') is a key in the map.
          */
-        const _constructors = new Map();
+        const _factories = new Map();
         /**
          * Storage for created instances (singletons).
          * Module name ('Vendor_Project_Module') or singleton name ('dbConnection') is a key in the map.
          */
         const _singletons = new Map();
-        /**
-         * Storage for loaded modules.
-         * Module name ('Vendor_Project_Module') is a key in the map.
-         */
-        const _modules = new Map();
 
         // set default instance of the DI container (as named object and as ES module's singleton)
         _singletons.set('container', this);
@@ -53,7 +52,7 @@ export default class TeqFw_Di_Container {
              * @return {Promise<Object>} created object
              * @private
              */
-            function _useConstructor(fnConstruct) {
+            function _useFactory(fnConstruct) {
                 // This promise will be resolved after all dependencies in spec proxy will be created.
                 return new Promise(function (resolve, reject) {
                     // MAIN FUNCTIONALITY
@@ -104,16 +103,13 @@ export default class TeqFw_Di_Container {
             async function getFromStorages(parsed) {
                 let result;
                 // get required instance from own registries or load sources and create new one
-                if ((parsed.isSingleton) && (_singletons.get(parsed.mapKey) !== undefined)) {
+                if ((parsed.typeTarget === ParsedId.TYPE_TARGET_SINGLETON) && (_singletons.get(parsed.mapKey) !== undefined)) {
                     // singleton was created before, just return it
                     result = _singletons.get(parsed.mapKey);
-                } else if ((parsed.isModule) && (_modules.get(parsed.mapKey) !== undefined)) {
-                    // module with required `id` was loaded before, just return it
-                    result = _modules.get(parsed.mapKey);
-                } else if ((parsed.isFactory) && (_constructors.get(parsed.mapKey) !== undefined)) {
-                    // default export constructor with required `id` was loaded before, create & return new object
-                    const construct = _constructors.get(parsed.mapKey);
-                    result = await _useConstructor(construct);
+                } else if ((parsed.typeTarget === ParsedId.TYPE_TARGET_FACTORY) && (_factories.get(parsed.mapKey) !== undefined)) {
+                    // factory with required `id` was loaded before, create & return new object
+                    const factory = _factories.get(parsed.mapKey);
+                    result = await _useFactory(factory);
                 }
                 return result;
             }
@@ -126,21 +122,25 @@ export default class TeqFw_Di_Container {
             result = await getFromStorages(parsed);
             // if not found then try to load sources and create new one
             if (result === undefined) {
-                // Sources for requested dependency are not imported before.
-                // Get path to sources by module name then load ES module.
-                const sourceFile = _resolver.resolveModuleId(parsed.nameModule);
-                const module = await import(sourceFile);
-                // save imported module in container storage
-                _modules.set(parsed.mapKey, module);
-                if (parsed.isModule) {
+                // Sources for requested dependency are not imported or not set manually before.
+                // Get ES6 module from loader.
+                const moduleId = (parsed.typeId === ParsedId.TYPE_ID_FILEPATH) ?
+                    parsed.namePackage + '!' + parsed.nameModule :
+                    parsed.nameModule;
+                const module = await _moduleLoader.getModule(moduleId);
+                if (parsed.typeTarget === ParsedId.TYPE_TARGET_MODULE) {
+                    // result as ES6 module
                     result = module;
+                } else if (parsed.typeTarget === ParsedId.TYPE_TARGET_EXPORT) {
+                    // result as ES6 module export
+                    result = module[parsed.nameExport];
                 } else {
-                    // use default export of loaded module as constructor
-                    const construct = module.default;
-                    _constructors.set(parsed.mapKey, construct);
-                    const object = await _useConstructor(construct);
+                    // we need use module export as factory for new object or singleton for the first time
+                    const factory = module[parsed.nameExport];
+                    _factories.set(parsed.mapKey, factory);
+                    const object = await _useFactory(factory);
                     // save singleton object in container storage
-                    if (parsed.isSingleton) _singletons.set(parsed.mapKey, object);
+                    if (parsed.typeTarget === ParsedId.TYPE_TARGET_SINGLETON) _singletons.set(parsed.mapKey, object);
                     result = object;
                 }
             }
@@ -156,7 +156,8 @@ export default class TeqFw_Di_Container {
          */
         this.addSourceMapping = function (namespace, path, is_absolute = false, ext = 'mjs') {
             const parsed = $parser.parse(namespace);
-            if (!parsed.isModule) throw new Error('Namespace cannot contain \'$\' symbol.');
+            if (parsed.typeTarget !== ParsedId.TYPE_TARGET_MODULE)
+                throw new Error('Namespace cannot contain \'$\' symbol.');
             const details = new ResolveDetails();
             Object.assign(details, {ns: namespace, path, ext, isAbsolute: is_absolute});
             _resolver.addNamespaceRoot(details);
@@ -169,12 +170,14 @@ export default class TeqFw_Di_Container {
          */
         this.delete = function (depId) {
             const parsed = $parser.parse(depId);
-            if (parsed.isSingleton) {
+            if (parsed.typeTarget === ParsedId.TYPE_TARGET_SINGLETON) {
                 _singletons.delete(parsed.mapKey);
-            } else if (parsed.isFactory) {
-                _constructors.delete(parsed.mapKey);
-            } else if (parsed.isModule) {
-                _modules.delete(parsed.mapKey);
+            } else if (parsed.typeTarget === ParsedId.TYPE_TARGET_FACTORY) {
+                _factories.delete(parsed.mapKey);
+            } else {
+                const errMsg = `Dependency ID is not manually inserted factory or singleton: ${depId}. `
+                    + 'See \'https://github.com/teqfw/di/blob/master/docs/identifiers.md\'.';
+                throw new Error(errMsg);
             }
         };
 
@@ -202,12 +205,14 @@ export default class TeqFw_Di_Container {
          */
         this.has = function (depId) {
             const parsed = $parser.parse(depId);
-            if (parsed.isSingleton) {
+            if (parsed.typeTarget === ParsedId.TYPE_TARGET_SINGLETON) {
                 return _singletons.has(parsed.mapKey);
-            } else if (parsed.isFactory) {
-                return _constructors.has(parsed.mapKey);
-            } else if (parsed.isModule) {
-                return _modules.has(parsed.mapKey);
+            } else if (parsed.typeTarget === ParsedId.TYPE_TARGET_FACTORY) {
+                return _factories.has(parsed.mapKey);
+            } else {
+                const errMsg = `Dependency ID is not manually inserted factory or singleton: ${depId}. `
+                    + 'See \'https://github.com/teqfw/di/blob/master/docs/identifiers.md\'.';
+                throw new Error(errMsg);
             }
         };
 
@@ -217,9 +222,8 @@ export default class TeqFw_Di_Container {
          */
         this.list = function () {
             const singletons = Array.from(_singletons.keys()).sort();
-            const constructors = Array.from(_constructors.keys()).sort();
-            const modules = Array.from(_modules.keys()).sort();
-            return {singletons, constructors, modules};
+            const constructors = Array.from(_factories.keys()).sort();
+            return {singletons, constructors};
         };
         /**
          * Place object into the container. Replace existing instance with the same ID.
@@ -235,12 +239,14 @@ export default class TeqFw_Di_Container {
          */
         this.set = function (depId, object) {
             const parsed = $parser.parse(depId);
-            if (parsed.isSingleton) {
+            if (parsed.typeTarget === ParsedId.TYPE_TARGET_SINGLETON) {
                 _singletons.set(parsed.mapKey, object);
-            } else if (parsed.isFactory) {
-                _constructors.set(parsed.mapKey, object);
-            } else if (parsed.isModule) {
-                _modules.set(parsed.mapKey, object);
+            } else if (parsed.typeTarget === ParsedId.TYPE_TARGET_FACTORY) {
+                _factories.set(parsed.mapKey, object);
+            } else {
+                const errMsg = `Dependency ID is not valid for factory or singleton: ${depId}. `
+                    + 'See \'https://github.com/teqfw/di/blob/master/docs/identifiers.md\'.';
+                throw new Error(errMsg);
             }
         };
     }

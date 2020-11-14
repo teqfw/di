@@ -1,8 +1,8 @@
-export function namedConstructor() {
+export function namedFactory() {
     return {name: 'module object (func)'}
 }
 
-export class NamedConstructor {
+export class NamedFactory {
     name = 'module object (class)'
 }
 
