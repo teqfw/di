@@ -1,7 +1,7 @@
 import ParsedId from './Api/ParsedId.mjs';
 
 /** @type {RegExp} expression for filepath based IDs (@vendor/package!module#export$$) */
-const FILEPATH_ID = /^(([A-Za-z0-9_\-/@]*)!(([A-Za-z0-9_\-/@]*))?((#)?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
+const FILEPATH_ID = /^(((([a-z@])([A-Za-z0-9_\-/@]*))!([A-Za-z0-9_\-/@]*)?)((#)?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
 /** @type {RegExp} expression for logical namespace IDs (Ns_Module#export$$) */
 const LOGICAL_NS_ID = /^((([A-Z])[A-Za-z0-9_]*)(#?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
 /** @type {RegExp} expression for objects that manually added to DI container (singleton, namedFactory$$)  */
@@ -66,24 +66,24 @@ export default class TeqFw_Di_IdParser {
             }
         } else {
             result.typeId = ParsedId.TYPE_ID_FILEPATH;
-            result.namePackage = nsFileParts[2];
-            result.nameModule = nsFileParts[3];
-            result.mapKey = nsFileParts[1];
+            result.namePackage = nsFileParts[3];
+            result.nameModule = nsFileParts[6];
+            result.mapKey = nsFileParts[2];
             result.typeTarget = ParsedId.TYPE_TARGET_MODULE;
-            if (nsFileParts[6] === '#') {
+            if (nsFileParts[8] === '#') {
                 result.nameExport = 'default';
                 result.typeTarget = ParsedId.TYPE_TARGET_EXPORT;
                 result.mapKey = undefined;
             }
-            if (nsFileParts[7]) {
-                result.nameExport = nsFileParts[7];
+            if (nsFileParts[9]) {
+                result.nameExport = nsFileParts[9];
                 result.typeTarget = ParsedId.TYPE_TARGET_EXPORT;
                 result.mapKey = undefined;
             }
-            if (nsFileParts[8]) {
-                if (nsFileParts[8] === '$$') {
+            if (nsFileParts[10]) {
+                if (nsFileParts[10] === '$$') {
                     result.typeTarget = ParsedId.TYPE_TARGET_FACTORY;
-                } else if (nsFileParts[8] === '$') {
+                } else if (nsFileParts[10] === '$') {
                     result.typeTarget = ParsedId.TYPE_TARGET_SINGLETON;
                 }
                 if (result.nameExport === undefined) {

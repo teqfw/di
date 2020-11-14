@@ -13,7 +13,7 @@ describe('TeqFw_Di_Container', function () {
         const container = new Container();
         const methods = Object.getOwnPropertyNames(container)
             .filter(p => (typeof container[p] === 'function'));
-        assert.deepStrictEqual(methods, [
+        assert.deepStrictEqual(methods.sort(), [
             'addSourceMapping',
             'delete',
             'get',

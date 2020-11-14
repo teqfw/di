@@ -6,7 +6,7 @@
 /** @type {RegExp} expression for objects that manually added to DI container (singleton, namedFactory$$)  */
 const MANUAL_DI_ID = /^((([a-z])[A-Za-z0-9_]*)(\$\$)?)$/;
 /** @type {RegExp} expression for filepath based IDs (@vendor/package!module#export$$) */
-const FILEPATH_ID = /^(([A-Za-z0-9_\-/@]*)!(([A-Za-z0-9_\-/@]*))?((#)?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
+const FILEPATH_ID = /^(((([a-z@])([A-Za-z0-9_\-/@]*))!([A-Za-z0-9_\-/@]*)?)((#)?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
 /** @type {RegExp} expression for logical namespace IDs (Ns_Module#export$$) */
 const LOGICAL_NS_ID = /^((([A-Z])[A-Za-z0-9_]*)(#?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
 ```

@@ -14,7 +14,7 @@ describe('TeqFw_Di_IdParser', () => {
     it('has all expected public methods in prototype', async () => {
         const methods = Object.getOwnPropertyNames(obj.__proto__)
             .filter(p => (typeof obj[p] === 'function' && p !== 'constructor'));
-        assert.deepStrictEqual(methods, ['parse']);
+        assert.deepStrictEqual(methods.sort(), ['parse']);
     });
 
     it('should reject invalid IDs', async () => {
