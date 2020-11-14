@@ -1,54 +1,59 @@
-# Dependencies Identifiers
+# DI Identifiers
 
 ## Regexp
 
 ```ecmascript 6
-const REG_EXP_OBJECT_ID = /^(([a-z])[A-Za-z0-9_]*)$/;
-const REG_EXP_MODULE_ID = /^((([A-Z])[A-Za-z0-9_]*)(\${1,2})?)$/;
+/** @type {RegExp} expression for objects that manually added to DI container (singleton, namedFactory$$)  */
+const MANUAL_DI_ID = /^((([a-z])[A-Za-z0-9_]*)(\$\$)?)$/;
+/** @type {RegExp} expression for filepath based IDs (@vendor/package!module#export$$) */
+const FILEPATH_ID = /^(([A-Za-z0-9_\-/@]*)!(([A-Za-z0-9_\-/@]*))?((#)?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
+/** @type {RegExp} expression for logical namespace IDs (Ns_Module#export$$) */
+const LOGICAL_NS_ID = /^((([A-Z])[A-Za-z0-9_]*)(#?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
 ```
 
 
-## Possible values
+## Manual DI
 
-```ecmascript 6
-dbConnection                // to get singleton object by name
-Vendor_Proect_Module        // to get whole module
-Vendor_Proect_Module$       // to get new object from default export (function or class result)
-Vendor_Proect_Module$$      // to get singleton for default export
+ID for dependencies being manually added to the container:
 ```
-
-## Named singletons
-
-Identifier should start with a lowercase letter and should not contain `$`:
-```ecmascript 6
-dbConnection
-dbConnectionMain
-db_connection_main
+dbConnection                // singleton
+dbTransaction$$             // factory to create new obects
 ```
 
 
-## Module
+## Filepath based
 
-Identifier should start with an uppercase letter and should not contain `$`:
-```ecmascript 6
-Module
-Vendor_Project_Module
+ID for dynamic imports based on file paths:
+```
+package!path/to/module              // import ES6 module 'path/to/module' from 'package'
+@vendor/package!path/to/module      // import ES6 module 'path/to/module' from '@vendor/package'
+@vendor/package!module#             // get default export from 'path/to/module' of '@vendor/package'
+@vendor/package!module#fnName       // get export with name 'fnName' from 'path/to/module' of '@vendor/package'
+```
+
+ID for dependency injection based on file paths:
+```
+@vendor/package!module$             // get singleton object created with default export
+@vendor/package!module$$            // get new object created with default export
+@vendor/package!module#fnName$      // get singleton object created with 'fnName' export
+@vendor/package!module#fnName$$     // get new object created with 'fnName' export
 ```
 
 
-## New object from default export
 
-Identifier should start with an uppercase letter and should end with `$`:
-```ecmascript 6
-ModuleDefault$
-Vendor_Project_Module$
+## Logical namespaces
+
+ID for dynamic imports based:
+```
+Ns_App_Module              // import ES6 module from logical namespace
+Ns_App_Module#             // get default export for ES6 module
+Ns_App_Module#fnName       // get export with name 'fnName' for ES6 module
 ```
 
-
-## Singleton object from default export
-
-Identifier should start with an uppercase letter and should end with `$$`:
-```ecmascript 6
-ModuleDefault$$
-Vendor_Project_Module$$
+ID for dependency injection:
+```
+Ns_App_Module$             // get singleton object created with default export
+Ns_App_Module$$            // get new object created with default export
+Ns_App_Module#fnName$      // get singleton object created with 'fnName' export
+Ns_App_Module#fnName$$     // get new object created with 'fnName' export
 ```

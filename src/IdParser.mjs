@@ -1,11 +1,12 @@
 import ParsedId from './Api/ParsedId.mjs';
 
-/** @type {RegExp} expression for objects that manually added to DI container (singleton, namedFactory$$)  */
-const DI_ID = /^((([a-z])[A-Za-z0-9_]*)(\$\$)?)$/;
-/** @type {RegExp} expression for logical namespace IDs (Ns_Module#export$$) */
-const NS_LOGIC_ID = /^((([A-Z])[A-Za-z0-9_]*)(#?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
 /** @type {RegExp} expression for filepath based IDs (@vendor/package!module#export$$) */
-const NS_FILE_ID = /^(([A-Za-z0-9_\-/@]*)!(([A-Za-z0-9_\-/@]*))?((#)?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
+const FILEPATH_ID = /^(([A-Za-z0-9_\-/@]*)!(([A-Za-z0-9_\-/@]*))?((#)?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
+/** @type {RegExp} expression for logical namespace IDs (Ns_Module#export$$) */
+const LOGICAL_NS_ID = /^((([A-Z])[A-Za-z0-9_]*)(#?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
+/** @type {RegExp} expression for objects that manually added to DI container (singleton, namedFactory$$)  */
+const MANUAL_DI_ID = /^((([a-z])[A-Za-z0-9_]*)(\$\$)?)$/;
+
 
 
 /**
@@ -22,9 +23,9 @@ export default class TeqFw_Di_IdParser {
     parse(id) {
         const result = new ParsedId();
         result.orig = id;
-        const diObjParts = DI_ID.exec(id);
-        const nsLogicParts = NS_LOGIC_ID.exec(id);
-        const nsFileParts = NS_FILE_ID.exec(id);
+        const diObjParts = MANUAL_DI_ID.exec(id);
+        const nsLogicParts = LOGICAL_NS_ID.exec(id);
+        const nsFileParts = FILEPATH_ID.exec(id);
         if (!diObjParts && !nsLogicParts && !nsFileParts)
             throw new Error(`Invalid identifier: '${id}'. See 'https://github.com/teqfw/di/blob/master/docs/identifiers.md'.`);
         if (diObjParts) {
