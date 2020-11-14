@@ -1,15 +1,19 @@
 import ParsedId from './Api/ParsedId.mjs';
 
-/** @type {RegExp} */
-const REG_EXP_OBJECT_ID = /^((([a-z])[A-Za-z0-9_]*)(\$)?)$/;
-const REG_EXP_MODULE_ID = /^((([A-Z])[A-Za-z0-9_]*)(\${1,2})?)$/;
+/** @type {RegExp} expression for objects that manually added to DI container (singleton, namedFactory$$)  */
+const DI_ID = /^((([a-z])[A-Za-z0-9_]*)(\$\$)?)$/;
+/** @type {RegExp} expression for logical namespace IDs (Ns_Module#export$$) */
+const NS_LOGIC_ID = /^((([A-Z])[A-Za-z0-9_]*)(#?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
+/** @type {RegExp} expression for filepath based IDs (@vendor/package!module#export$$) */
+const NS_FILE_ID = /^(([A-Za-z0-9_\-/@]*)!(([A-Za-z0-9_\-/@]*))?((#)?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
+
 
 /**
  * Dependency identifiers parser.
  */
 export default class TeqFw_Di_IdParser {
     /**
-     * Validate dependency identifier, parse and return parts of identifier.
+     * Validate dependency identifier, parse and return parts of the identifier.
      *
      * @param {string} id Dependency identifier to validate and parse.
      * @return {TeqFw_Di_Api_ParsedId} Parsed data for given ID.
@@ -18,28 +22,75 @@ export default class TeqFw_Di_IdParser {
     parse(id) {
         const result = new ParsedId();
         result.orig = id;
-        const objParts = REG_EXP_OBJECT_ID.exec(id);
-        const modParts = REG_EXP_MODULE_ID.exec(id);
-        if (!objParts && !modParts) throw new Error(`Invalid identifier: '${id}'. See 'https://github.com/teqfw/di/blob/master/docs/identifiers.md'.`);
-        if (objParts) {
-            result.isNamedObject = true;
-            result.mapKey = objParts[2];
-            if (objParts[4] === '$') {
-                result.isConstructor = true;
+        const diObjParts = DI_ID.exec(id);
+        const nsLogicParts = NS_LOGIC_ID.exec(id);
+        const nsFileParts = NS_FILE_ID.exec(id);
+        if (!diObjParts && !nsLogicParts && !nsFileParts)
+            throw new Error(`Invalid identifier: '${id}'. See 'https://github.com/teqfw/di/blob/master/docs/identifiers.md'.`);
+        if (diObjParts) {
+            result.typeId = ParsedId.TYPE_ID_MANUAL;
+            result.mapKey = diObjParts[2];
+            if (diObjParts[4] === '$$') {
+                result.typeTarget = ParsedId.TYPE_TARGET_FACTORY;
             } else {
-                result.isSingleton = true;
+                result.typeTarget = ParsedId.TYPE_TARGET_SINGLETON;
+            }
+        } else if (nsLogicParts) {
+            result.typeId = ParsedId.TYPE_ID_LOGICAL;
+            result.nameModule = nsLogicParts[2];
+            result.mapKey = result.nameModule;
+            result.typeTarget = ParsedId.TYPE_TARGET_MODULE;
+            if (nsLogicParts[4] === '#') {
+                result.nameExport = 'default';
+                result.typeTarget = ParsedId.TYPE_TARGET_EXPORT;
+                result.mapKey = undefined;
+            }
+            if (nsLogicParts[5]) {
+                result.nameExport = nsLogicParts[5];
+                result.typeTarget = ParsedId.TYPE_TARGET_EXPORT;
+                result.mapKey = undefined;
+            }
+            if (nsLogicParts[6]) {
+                if (nsLogicParts[6] === '$$') {
+                    result.typeTarget = ParsedId.TYPE_TARGET_FACTORY;
+                } else if (nsLogicParts[6] === '$') {
+                    result.typeTarget = ParsedId.TYPE_TARGET_SINGLETON;
+                }
+                if (result.nameExport === undefined) {
+                    result.nameExport = 'default';
+                    result.mapKey = result.nameModule;
+                } else {
+                    result.mapKey = result.nameModule + '#' + result.nameExport;
+                }
             }
         } else {
-            result.moduleName = modParts[2];
-            result.mapKey = modParts[2];
-            if (modParts[4]) {
-                if (modParts[4] === '$') {
-                    result.isConstructor = true;
-                } else if (modParts[4] === '$$') {
-                    result.isSingleton = true;
+            result.typeId = ParsedId.TYPE_ID_FILEPATH;
+            result.namePackage = nsFileParts[2];
+            result.nameModule = nsFileParts[3];
+            result.mapKey = nsFileParts[1];
+            result.typeTarget = ParsedId.TYPE_TARGET_MODULE;
+            if (nsFileParts[6] === '#') {
+                result.nameExport = 'default';
+                result.typeTarget = ParsedId.TYPE_TARGET_EXPORT;
+                result.mapKey = undefined;
+            }
+            if (nsFileParts[7]) {
+                result.nameExport = nsFileParts[7];
+                result.typeTarget = ParsedId.TYPE_TARGET_EXPORT;
+                result.mapKey = undefined;
+            }
+            if (nsFileParts[8]) {
+                if (nsFileParts[8] === '$$') {
+                    result.typeTarget = ParsedId.TYPE_TARGET_FACTORY;
+                } else if (nsFileParts[8] === '$') {
+                    result.typeTarget = ParsedId.TYPE_TARGET_SINGLETON;
                 }
-            } else {
-                result.isModule = true;
+                if (result.nameExport === undefined) {
+                    result.nameExport = 'default';
+                    result.mapKey = result.namePackage + '!' + result.nameModule;
+                } else {
+                    result.mapKey = result.namePackage + '!' + result.nameModule + '#' + result.nameExport;
+                }
             }
         }
         return result;

@@ -1,4 +1,5 @@
 import IdParser from '../src/IdParser.mjs';
+import ParsedId from '../src/Api/ParsedId.mjs';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 
@@ -25,59 +26,192 @@ describe('TeqFw_Di_IdParser', () => {
         );
     });
 
-    it('should parse named singleton ID', async () => {
-        const parsed = obj.parse('namedSingleton');
-        assert.strictEqual(parsed.isConstructor, false);
-        assert.strictEqual(parsed.isModule, false);
-        assert.strictEqual(parsed.isNamedObject, true);
-        assert.strictEqual(parsed.isSingleton, true);
-        assert.strictEqual(parsed.mapKey, 'namedSingleton');
-        assert.strictEqual(parsed.moduleName, undefined);
-        assert.strictEqual(parsed.orig, 'namedSingleton');
+    describe('should parse manual DI IDs:', () => {
+        it('named singleton ID (namedSingleton)', async () => {
+            const parsed = obj.parse('namedSingleton');
+            assert.strictEqual(parsed.mapKey, 'namedSingleton');
+            assert.strictEqual(parsed.nameExport, undefined);
+            assert.strictEqual(parsed.nameModule, undefined);
+            assert.strictEqual(parsed.namePackage, undefined);
+            assert.strictEqual(parsed.orig, 'namedSingleton');
+            assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_MANUAL);
+            assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_SINGLETON);
+        });
+
+        it('named constructor ID (namedFactory$$)', async () => {
+            const parsed = obj.parse('namedFactory$$');
+            assert.strictEqual(parsed.mapKey, 'namedFactory');
+            assert.strictEqual(parsed.nameExport, undefined);
+            assert.strictEqual(parsed.nameModule, undefined);
+            assert.strictEqual(parsed.namePackage, undefined);
+            assert.strictEqual(parsed.orig, 'namedFactory$$');
+            assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_MANUAL);
+            assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_FACTORY);
+        });
     });
 
-    it('should parse named constructor ID', async () => {
-        const parsed = obj.parse('namedConstructor$');
-        assert.strictEqual(parsed.isConstructor, true);
-        assert.strictEqual(parsed.isModule, false);
-        assert.strictEqual(parsed.isNamedObject, true);
-        assert.strictEqual(parsed.isSingleton, false);
-        assert.strictEqual(parsed.mapKey, 'namedConstructor');
-        assert.strictEqual(parsed.moduleName, undefined);
-        assert.strictEqual(parsed.orig, 'namedConstructor$');
+    describe('should parse Logical NS:', () => {
+        describe('module ID:', () => {
+            it('simple (Ns_Module)', async () => {
+                const parsed = obj.parse('Ns_Module');
+                assert.strictEqual(parsed.mapKey, 'Ns_Module');
+                assert.strictEqual(parsed.nameExport, undefined);
+                assert.strictEqual(parsed.nameModule, 'Ns_Module');
+                assert.strictEqual(parsed.namePackage, undefined);
+                assert.strictEqual(parsed.orig, 'Ns_Module');
+                assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_LOGICAL);
+                assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_MODULE);
+            });
+
+            describe('named export:', () => {
+                it('simple (Ns_Module#name)', async () => {
+                    const parsed = obj.parse('Ns_Module#name');
+                    assert.strictEqual(parsed.mapKey, undefined);
+                    assert.strictEqual(parsed.nameExport, 'name');
+                    assert.strictEqual(parsed.nameModule, 'Ns_Module');
+                    assert.strictEqual(parsed.namePackage, undefined);
+                    assert.strictEqual(parsed.orig, 'Ns_Module#name');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_LOGICAL);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_EXPORT);
+                });
+                it('singleton (Ns_Module#name$)', async () => {
+                    const parsed = obj.parse('Ns_Module#name$');
+                    assert.strictEqual(parsed.mapKey, 'Ns_Module#name');
+                    assert.strictEqual(parsed.nameExport, 'name');
+                    assert.strictEqual(parsed.nameModule, 'Ns_Module');
+                    assert.strictEqual(parsed.namePackage, undefined);
+                    assert.strictEqual(parsed.orig, 'Ns_Module#name$');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_LOGICAL);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_SINGLETON);
+                });
+                it('factory (Ns_Module#name$$)', async () => {
+                    const parsed = obj.parse('Ns_Module#name$$');
+                    assert.strictEqual(parsed.mapKey, 'Ns_Module#name');
+                    assert.strictEqual(parsed.nameExport, 'name');
+                    assert.strictEqual(parsed.nameModule, 'Ns_Module');
+                    assert.strictEqual(parsed.namePackage, undefined);
+                    assert.strictEqual(parsed.orig, 'Ns_Module#name$$');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_LOGICAL);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_FACTORY);
+                });
+            });
+
+            describe('default export:', () => {
+                it('simple (Ns_Module#)', async () => {
+                    const parsed = obj.parse('Ns_Module#');
+                    assert.strictEqual(parsed.mapKey, undefined);
+                    assert.strictEqual(parsed.nameExport, 'default');
+                    assert.strictEqual(parsed.nameModule, 'Ns_Module');
+                    assert.strictEqual(parsed.namePackage, undefined);
+                    assert.strictEqual(parsed.orig, 'Ns_Module#');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_LOGICAL);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_EXPORT);
+                });
+                it('singleton (Ns_Module$)', async () => {
+                    const parsed = obj.parse('Ns_Module$');
+                    assert.strictEqual(parsed.mapKey, 'Ns_Module');
+                    assert.strictEqual(parsed.nameExport, 'default');
+                    assert.strictEqual(parsed.nameModule, 'Ns_Module');
+                    assert.strictEqual(parsed.namePackage, undefined);
+                    assert.strictEqual(parsed.orig, 'Ns_Module$');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_LOGICAL);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_SINGLETON);
+                });
+                it('factory (Ns_Module$$)', async () => {
+                    const parsed = obj.parse('Ns_Module$$');
+                    assert.strictEqual(parsed.mapKey, 'Ns_Module');
+                    assert.strictEqual(parsed.nameExport, 'default');
+                    assert.strictEqual(parsed.nameModule, 'Ns_Module');
+                    assert.strictEqual(parsed.namePackage, undefined);
+                    assert.strictEqual(parsed.orig, 'Ns_Module$$');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_LOGICAL);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_FACTORY);
+                });
+            });
+
+        });
     });
 
-    it('should parse module ID', async () => {
-        const parsed = obj.parse('Vendor_Module');
-        assert.strictEqual(parsed.isConstructor, false);
-        assert.strictEqual(parsed.isModule, true);
-        assert.strictEqual(parsed.isNamedObject, false);
-        assert.strictEqual(parsed.isSingleton, false);
-        assert.strictEqual(parsed.mapKey, 'Vendor_Module');
-        assert.strictEqual(parsed.moduleName, 'Vendor_Module');
-        assert.strictEqual(parsed.orig, 'Vendor_Module');
-    });
+    describe('should parse Filesystem NS:', () => {
+        describe('module ID:', () => {
+            it('simple (@vendor/package!module)', async () => {
+                const parsed = obj.parse('@vendor/package!module');
+                assert.strictEqual(parsed.mapKey, '@vendor/package!module');
+                assert.strictEqual(parsed.nameExport, undefined);
+                assert.strictEqual(parsed.nameModule, 'module');
+                assert.strictEqual(parsed.namePackage, '@vendor/package');
+                assert.strictEqual(parsed.orig, '@vendor/package!module');
+                assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_FILEPATH);
+                assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_MODULE);
+            });
 
-    it('should parse default export constructor ID', async () => {
-        const parsed = obj.parse('Vendor_Module$');
-        assert.strictEqual(parsed.isConstructor, true);
-        assert.strictEqual(parsed.isModule, false);
-        assert.strictEqual(parsed.isNamedObject, false);
-        assert.strictEqual(parsed.isSingleton, false);
-        assert.strictEqual(parsed.mapKey, 'Vendor_Module');
-        assert.strictEqual(parsed.moduleName, 'Vendor_Module');
-        assert.strictEqual(parsed.orig, 'Vendor_Module$');
-    });
+            describe('named export:', () => {
+                it('simple (@vendor/package!module#name)', async () => {
+                    const parsed = obj.parse('@vendor/package!module#name');
+                    assert.strictEqual(parsed.mapKey, undefined);
+                    assert.strictEqual(parsed.nameExport, 'name');
+                    assert.strictEqual(parsed.nameModule, 'module');
+                    assert.strictEqual(parsed.namePackage, '@vendor/package');
+                    assert.strictEqual(parsed.orig, '@vendor/package!module#name');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_FILEPATH);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_EXPORT);
+                });
+                it('singleton (@vendor/package!module#name$)', async () => {
+                    const parsed = obj.parse('@vendor/package!module#name$');
+                    assert.strictEqual(parsed.mapKey, '@vendor/package!module#name');
+                    assert.strictEqual(parsed.nameExport, 'name');
+                    assert.strictEqual(parsed.nameModule, 'module');
+                    assert.strictEqual(parsed.namePackage, '@vendor/package');
+                    assert.strictEqual(parsed.orig, '@vendor/package!module#name$');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_FILEPATH);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_SINGLETON);
+                });
+                it('factory (@vendor/package!module#name$$)', async () => {
+                    const parsed = obj.parse('@vendor/package!module#name$$');
+                    assert.strictEqual(parsed.mapKey, '@vendor/package!module#name');
+                    assert.strictEqual(parsed.nameExport, 'name');
+                    assert.strictEqual(parsed.nameModule, 'module');
+                    assert.strictEqual(parsed.namePackage, '@vendor/package');
+                    assert.strictEqual(parsed.orig, '@vendor/package!module#name$$');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_FILEPATH);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_FACTORY);
+                });
+            });
 
-    it('should parse default export singleton ID', async () => {
-        const parsed = obj.parse('Vendor_Module$$');
-        assert.strictEqual(parsed.isConstructor, false);
-        assert.strictEqual(parsed.isModule, false);
-        assert.strictEqual(parsed.isNamedObject, false);
-        assert.strictEqual(parsed.isSingleton, true);
-        assert.strictEqual(parsed.mapKey, 'Vendor_Module');
-        assert.strictEqual(parsed.moduleName, 'Vendor_Module');
-        assert.strictEqual(parsed.orig, 'Vendor_Module$$');
+            describe('default export:', () => {
+                it('simple (@vendor/package!module#)', async () => {
+                    const parsed = obj.parse('@vendor/package!module#');
+                    assert.strictEqual(parsed.mapKey, undefined);
+                    assert.strictEqual(parsed.nameExport, 'default');
+                    assert.strictEqual(parsed.nameModule, 'module');
+                    assert.strictEqual(parsed.namePackage, '@vendor/package');
+                    assert.strictEqual(parsed.orig, '@vendor/package!module#');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_FILEPATH);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_EXPORT);
+                });
+                it('singleton (@vendor/package!module$)', async () => {
+                    const parsed = obj.parse('@vendor/package!module$');
+                    assert.strictEqual(parsed.mapKey, '@vendor/package!module');
+                    assert.strictEqual(parsed.nameExport, 'default');
+                    assert.strictEqual(parsed.nameModule, 'module');
+                    assert.strictEqual(parsed.namePackage, '@vendor/package');
+                    assert.strictEqual(parsed.orig, '@vendor/package!module$');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_FILEPATH);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_SINGLETON);
+                });
+                it('factory (@vendor/package!module$$)', async () => {
+                    const parsed = obj.parse('@vendor/package!module$$');
+                    assert.strictEqual(parsed.mapKey, '@vendor/package!module');
+                    assert.strictEqual(parsed.nameExport, 'default');
+                    assert.strictEqual(parsed.nameModule, 'module');
+                    assert.strictEqual(parsed.namePackage, '@vendor/package');
+                    assert.strictEqual(parsed.orig, '@vendor/package!module$$');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_FILEPATH);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_FACTORY);
+                });
+            });
+
+        });
     });
 
 });

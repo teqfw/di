@@ -110,7 +110,7 @@ export default class TeqFw_Di_Container {
                 } else if ((parsed.isModule) && (_modules.get(parsed.mapKey) !== undefined)) {
                     // module with required `id` was loaded before, just return it
                     result = _modules.get(parsed.mapKey);
-                } else if ((parsed.isConstructor) && (_constructors.get(parsed.mapKey) !== undefined)) {
+                } else if ((parsed.isFactory) && (_constructors.get(parsed.mapKey) !== undefined)) {
                     // default export constructor with required `id` was loaded before, create & return new object
                     const construct = _constructors.get(parsed.mapKey);
                     result = await _useConstructor(construct);
@@ -128,7 +128,7 @@ export default class TeqFw_Di_Container {
             if (result === undefined) {
                 // Sources for requested dependency are not imported before.
                 // Get path to sources by module name then load ES module.
-                const sourceFile = _resolver.getSourceById(parsed.moduleName);
+                const sourceFile = _resolver.getSourceById(parsed.nameModule);
                 const module = await import(sourceFile);
                 // save imported module in container storage
                 _modules.set(parsed.mapKey, module);
@@ -171,7 +171,7 @@ export default class TeqFw_Di_Container {
             const parsed = $parser.parse(depId);
             if (parsed.isSingleton) {
                 _singletons.delete(parsed.mapKey);
-            } else if (parsed.isConstructor) {
+            } else if (parsed.isFactory) {
                 _constructors.delete(parsed.mapKey);
             } else if (parsed.isModule) {
                 _modules.delete(parsed.mapKey);
@@ -204,7 +204,7 @@ export default class TeqFw_Di_Container {
             const parsed = $parser.parse(depId);
             if (parsed.isSingleton) {
                 return _singletons.has(parsed.mapKey);
-            } else if (parsed.isConstructor) {
+            } else if (parsed.isFactory) {
                 return _constructors.has(parsed.mapKey);
             } else if (parsed.isModule) {
                 return _modules.has(parsed.mapKey);
@@ -237,7 +237,7 @@ export default class TeqFw_Di_Container {
             const parsed = $parser.parse(depId);
             if (parsed.isSingleton) {
                 _singletons.set(parsed.mapKey, object);
-            } else if (parsed.isConstructor) {
+            } else if (parsed.isFactory) {
                 _constructors.set(parsed.mapKey, object);
             } else if (parsed.isModule) {
                 _modules.set(parsed.mapKey, object);

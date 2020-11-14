@@ -2,9 +2,9 @@
 
 <span style="color:red">**THIS IS MY OWN PET PROJECT. PLEASE, USE IT JUST FOR YOU OWN FUN.**</span>
 
-Dependency Injection container based on ES6 modules (works for browsers &amp; nodejs).
+"_DI_" means both "_Dynamic Import_" and "_Dependency Injection_". This package allows defining namespaces in your projects, dynamically importing ES6-modules from these namespaces, creating new objects from imported functions/classes and resolving dependencies in constructors. This works both for browsers &amp; nodejs apps.
 
-Proxy object for `constructor` specification is inspired by [awilix](https://github.com/jeffijoe/awilix).
+The '_proxy object_' for `constructor` specification is inspired by [awilix](https://github.com/jeffijoe/awilix). Thanks, guys.
 
 
 

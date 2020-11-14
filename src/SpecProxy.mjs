@@ -61,20 +61,20 @@ export default class TeqFw_Di_SpecProxy {
                         return deps[depId];
                     } else {
                         // check stack of incomplete dependencies
-                        if (uplineDeps[parsed.moduleName]) {
+                        if (uplineDeps[parsed.nameModule]) {
                             // `dep_id` is already requested to be created, so we report it as 'main'
                             const err = new Error(`Circular dependencies (main: ${depId}; dep: ${mainId})`);
                             fnRejectUseConstruct(err);  // reject async _useConstructor
                             throw err;                  // break sync object's constructor
                         }
                         // ... and register new one
-                        uplineDeps[parsed.moduleName] = true;
+                        uplineDeps[parsed.nameModule] = true;
                         // create new required dependency for this object
                         fnGetObject(depId, uplineDeps).then((obj) => {
                             // save created `dep_id` instance to local dependencies registry
                             deps[depId] = obj;
                             // remove created dependency from circular registry
-                            uplineDeps[parsed.moduleName] = false;
+                            uplineDeps[parsed.nameModule] = false;
                             // re-call main object construction function
                             fnCreate();
                         }).catch(err => {
