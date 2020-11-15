@@ -155,8 +155,12 @@ export default class TeqFw_Di_Container {
          * @param {string} [ext]
          */
         this.addSourceMapping = function (namespace, path, is_absolute = false, ext = 'mjs') {
-            const parsed = $parser.parse(namespace);
-            if (parsed.typeTarget !== ParsedId.TYPE_TARGET_MODULE)
+            let parsed = $parser.parseLogicalNsId(namespace);
+            if (!parsed) parsed = $parser.parseFilepathId(namespace);
+            if (
+                (parsed.typeTarget !== ParsedId.TYPE_TARGET_MODULE) &&
+                (parsed.typeTarget !== ParsedId.TYPE_TARGET_PACKAGE)
+            )
                 throw new Error('Namespace cannot contain \'$\' symbol.');
             const details = new ResolveDetails();
             Object.assign(details, {ns: namespace, path, ext, isAbsolute: is_absolute});

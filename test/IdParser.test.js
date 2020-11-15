@@ -14,7 +14,12 @@ describe('TeqFw_Di_IdParser', () => {
     it('has all expected public methods in prototype', async () => {
         const methods = Object.getOwnPropertyNames(obj.__proto__)
             .filter(p => (typeof obj[p] === 'function' && p !== 'constructor'));
-        assert.deepStrictEqual(methods.sort(), ['parse']);
+        assert.deepStrictEqual(methods.sort(), [
+            'parse',
+            'parseFilepathId',
+            'parseLogicalNsId',
+            'parseManualDiId',
+        ]);
     });
 
     it('should reject invalid IDs', async () => {
@@ -28,7 +33,7 @@ describe('TeqFw_Di_IdParser', () => {
 
     describe('should parse manual DI IDs:', () => {
         it('named singleton ID (namedSingleton)', async () => {
-            const parsed = obj.parse('namedSingleton');
+            const parsed = obj.parseManualDiId('namedSingleton');
             assert.strictEqual(parsed.mapKey, 'namedSingleton');
             assert.strictEqual(parsed.nameExport, undefined);
             assert.strictEqual(parsed.nameModule, undefined);
@@ -39,7 +44,7 @@ describe('TeqFw_Di_IdParser', () => {
         });
 
         it('named constructor ID (namedFactory$$)', async () => {
-            const parsed = obj.parse('namedFactory$$');
+            const parsed = obj.parseManualDiId('namedFactory$$');
             assert.strictEqual(parsed.mapKey, 'namedFactory');
             assert.strictEqual(parsed.nameExport, undefined);
             assert.strictEqual(parsed.nameModule, undefined);
@@ -53,7 +58,7 @@ describe('TeqFw_Di_IdParser', () => {
     describe('should parse Logical NS:', () => {
         describe('module ID:', () => {
             it('simple (Ns_Module)', async () => {
-                const parsed = obj.parse('Ns_Module');
+                const parsed = obj.parseLogicalNsId('Ns_Module');
                 assert.strictEqual(parsed.mapKey, 'Ns_Module');
                 assert.strictEqual(parsed.nameExport, undefined);
                 assert.strictEqual(parsed.nameModule, 'Ns_Module');
@@ -65,7 +70,7 @@ describe('TeqFw_Di_IdParser', () => {
 
             describe('named export:', () => {
                 it('simple (Ns_Module#name)', async () => {
-                    const parsed = obj.parse('Ns_Module#name');
+                    const parsed = obj.parseLogicalNsId('Ns_Module#name');
                     assert.strictEqual(parsed.mapKey, undefined);
                     assert.strictEqual(parsed.nameExport, 'name');
                     assert.strictEqual(parsed.nameModule, 'Ns_Module');
@@ -75,7 +80,7 @@ describe('TeqFw_Di_IdParser', () => {
                     assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_EXPORT);
                 });
                 it('singleton (Ns_Module#name$)', async () => {
-                    const parsed = obj.parse('Ns_Module#name$');
+                    const parsed = obj.parseLogicalNsId('Ns_Module#name$');
                     assert.strictEqual(parsed.mapKey, 'Ns_Module#name');
                     assert.strictEqual(parsed.nameExport, 'name');
                     assert.strictEqual(parsed.nameModule, 'Ns_Module');
@@ -85,7 +90,7 @@ describe('TeqFw_Di_IdParser', () => {
                     assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_SINGLETON);
                 });
                 it('factory (Ns_Module#name$$)', async () => {
-                    const parsed = obj.parse('Ns_Module#name$$');
+                    const parsed = obj.parseLogicalNsId('Ns_Module#name$$');
                     assert.strictEqual(parsed.mapKey, 'Ns_Module#name');
                     assert.strictEqual(parsed.nameExport, 'name');
                     assert.strictEqual(parsed.nameModule, 'Ns_Module');
@@ -98,7 +103,7 @@ describe('TeqFw_Di_IdParser', () => {
 
             describe('default export:', () => {
                 it('simple (Ns_Module#)', async () => {
-                    const parsed = obj.parse('Ns_Module#');
+                    const parsed = obj.parseLogicalNsId('Ns_Module#');
                     assert.strictEqual(parsed.mapKey, undefined);
                     assert.strictEqual(parsed.nameExport, 'default');
                     assert.strictEqual(parsed.nameModule, 'Ns_Module');
@@ -108,7 +113,7 @@ describe('TeqFw_Di_IdParser', () => {
                     assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_EXPORT);
                 });
                 it('singleton (Ns_Module$)', async () => {
-                    const parsed = obj.parse('Ns_Module$');
+                    const parsed = obj.parseLogicalNsId('Ns_Module$');
                     assert.strictEqual(parsed.mapKey, 'Ns_Module');
                     assert.strictEqual(parsed.nameExport, 'default');
                     assert.strictEqual(parsed.nameModule, 'Ns_Module');
@@ -118,7 +123,7 @@ describe('TeqFw_Di_IdParser', () => {
                     assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_SINGLETON);
                 });
                 it('factory (Ns_Module$$)', async () => {
-                    const parsed = obj.parse('Ns_Module$$');
+                    const parsed = obj.parseLogicalNsId('Ns_Module$$');
                     assert.strictEqual(parsed.mapKey, 'Ns_Module');
                     assert.strictEqual(parsed.nameExport, 'default');
                     assert.strictEqual(parsed.nameModule, 'Ns_Module');
@@ -132,10 +137,32 @@ describe('TeqFw_Di_IdParser', () => {
         });
     });
 
-    describe('should parse Filesystem NS:', () => {
+    describe('should parse Filepath based NS:', () => {
         describe('module ID:', () => {
+            it('package only (package)', async () => {
+                const parsed = obj.parseFilepathId('package');
+                assert.strictEqual(parsed.mapKey, undefined);
+                assert.strictEqual(parsed.nameExport, undefined);
+                assert.strictEqual(parsed.nameModule, undefined);
+                assert.strictEqual(parsed.namePackage, 'package');
+                assert.strictEqual(parsed.orig, 'package');
+                assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_FILEPATH);
+                assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_PACKAGE);
+            });
+
+            it('vendor/package only (@vendor/package)', async () => {
+                const parsed = obj.parseFilepathId('@vendor/package');
+                assert.strictEqual(parsed.mapKey, undefined);
+                assert.strictEqual(parsed.nameExport, undefined);
+                assert.strictEqual(parsed.nameModule, undefined);
+                assert.strictEqual(parsed.namePackage, '@vendor/package');
+                assert.strictEqual(parsed.orig, '@vendor/package');
+                assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_FILEPATH);
+                assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_PACKAGE);
+            });
+
             it('simple (@vendor/package!module)', async () => {
-                const parsed = obj.parse('@vendor/package!module');
+                const parsed = obj.parseFilepathId('@vendor/package!module');
                 assert.strictEqual(parsed.mapKey, '@vendor/package!module');
                 assert.strictEqual(parsed.nameExport, undefined);
                 assert.strictEqual(parsed.nameModule, 'module');
@@ -147,7 +174,7 @@ describe('TeqFw_Di_IdParser', () => {
 
             describe('named export:', () => {
                 it('simple (@vendor/package!module#name)', async () => {
-                    const parsed = obj.parse('@vendor/package!module#name');
+                    const parsed = obj.parseFilepathId('@vendor/package!module#name');
                     assert.strictEqual(parsed.mapKey, undefined);
                     assert.strictEqual(parsed.nameExport, 'name');
                     assert.strictEqual(parsed.nameModule, 'module');
@@ -157,7 +184,7 @@ describe('TeqFw_Di_IdParser', () => {
                     assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_EXPORT);
                 });
                 it('singleton (@vendor/package!module#name$)', async () => {
-                    const parsed = obj.parse('@vendor/package!module#name$');
+                    const parsed = obj.parseFilepathId('@vendor/package!module#name$');
                     assert.strictEqual(parsed.mapKey, '@vendor/package!module#name');
                     assert.strictEqual(parsed.nameExport, 'name');
                     assert.strictEqual(parsed.nameModule, 'module');
@@ -167,7 +194,7 @@ describe('TeqFw_Di_IdParser', () => {
                     assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_SINGLETON);
                 });
                 it('factory (@vendor/package!module#name$$)', async () => {
-                    const parsed = obj.parse('@vendor/package!module#name$$');
+                    const parsed = obj.parseFilepathId('@vendor/package!module#name$$');
                     assert.strictEqual(parsed.mapKey, '@vendor/package!module#name');
                     assert.strictEqual(parsed.nameExport, 'name');
                     assert.strictEqual(parsed.nameModule, 'module');
@@ -180,7 +207,7 @@ describe('TeqFw_Di_IdParser', () => {
 
             describe('default export:', () => {
                 it('simple (@vendor/package!module#)', async () => {
-                    const parsed = obj.parse('@vendor/package!module#');
+                    const parsed = obj.parseFilepathId('@vendor/package!module#');
                     assert.strictEqual(parsed.mapKey, undefined);
                     assert.strictEqual(parsed.nameExport, 'default');
                     assert.strictEqual(parsed.nameModule, 'module');
@@ -190,7 +217,7 @@ describe('TeqFw_Di_IdParser', () => {
                     assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_EXPORT);
                 });
                 it('singleton (@vendor/package!module$)', async () => {
-                    const parsed = obj.parse('@vendor/package!module$');
+                    const parsed = obj.parseFilepathId('@vendor/package!module$');
                     assert.strictEqual(parsed.mapKey, '@vendor/package!module');
                     assert.strictEqual(parsed.nameExport, 'default');
                     assert.strictEqual(parsed.nameModule, 'module');
@@ -200,7 +227,7 @@ describe('TeqFw_Di_IdParser', () => {
                     assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_SINGLETON);
                 });
                 it('factory (@vendor/package!module$$)', async () => {
-                    const parsed = obj.parse('@vendor/package!module$$');
+                    const parsed = obj.parseFilepathId('@vendor/package!module$$');
                     assert.strictEqual(parsed.mapKey, '@vendor/package!module');
                     assert.strictEqual(parsed.nameExport, 'default');
                     assert.strictEqual(parsed.nameModule, 'module');

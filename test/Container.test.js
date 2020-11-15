@@ -32,6 +32,28 @@ describe('TeqFw_Di_Container', function () {
         assert.strictEqual(namedSingleton, container);
     });
 
+    describe('allows to add mapping:', () => {
+        const container = new Container();
+
+        it('for logical namespaces', async () => {
+            container.addSourceMapping('Ns_App', 'path/to/package');
+            const path = container.getNsResolver().resolveModuleId('Ns_App_Sub_Module');
+            assert.strictEqual(path, './path/to/package/Sub/Module.mjs');
+        });
+
+        it('for simple filepath based namespaces', async () => {
+            container.addSourceMapping('package', 'path/to/package');
+            const path = container.getNsResolver().resolveModuleId('package!sub/module');
+            assert.strictEqual(path, 'path/to/package/sub/module.mjs');
+        });
+
+        it('for complex filepath based namespaces', async () => {
+            container.addSourceMapping('@vendor/package', 'path/to/package');
+            const path = container.getNsResolver().resolveModuleId('@vendor/package!sub/module');
+            assert.strictEqual(path, 'path/to/package/sub/module.mjs');
+        });
+    });
+
     describe('allows to inspect itself:', () => {
         const container = new Container();
 

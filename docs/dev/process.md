@@ -23,7 +23,7 @@ result = await getFromStorages(parsed);
 if (result === undefined) {
     // Sources for requested dependency are not imported before.
     // Get path to sources by module name then load ES module.
-    const sourceFile = _resolver.resolveModuleId(parsed.moduleName);
+    const sourceFile = _resolver.resolveModuleId(parsed.nameModule);
     const module = await import(sourceFile);
     // save imported module in container storage
     _modules.set(parsed.mapKey, module);
