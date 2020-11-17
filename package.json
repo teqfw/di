@@ -1,6 +1,6 @@
 {
   "name": "@teqfw/di",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Dependency Injection container based on ES6 modules (works for browsers & nodejs).",
   "type": "module",
   "main": "./src/Container.mjs",
