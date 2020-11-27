@@ -1,7 +1,5 @@
 # @teqfw/di
 
-<span style="color:red">**THIS IS MY OWN PET PROJECT. PLEASE, USE IT JUST FOR YOU OWN FUN.**</span>
-
 <span style="color:red">**IT WORKS WITH ES6 MODULES WITH "\*.mjs" EXT ONLY AND DOES NOT SUPPORT 'extends' IN CLASSES.**</span>
 
 "_DI_" means both "_Dynamic Import_" and "_Dependency Injection_". This package allows defining namespaces in your projects, dynamically importing ES6-modules from these namespaces, creating new objects from imported functions/classes and resolving dependencies in constructors. This works both for browsers &amp; nodejs apps.
