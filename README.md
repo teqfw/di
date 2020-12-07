@@ -53,7 +53,7 @@ This `spec` argument is a proxy analyzes request to `spec` props and creates dep
 
 
 ## Namespaces
-[More](./docs/namespaces.md)
+[More](doc/namespaces.md)
 
 This library uses [Zend1-like](https://framework.zend.com/manual/2.4/en/migration/namespacing-old-classes.html) namespaces (old style):
 ```ecmascript 6
@@ -78,7 +78,7 @@ Demo_Main_Plugin_Path_To_Module => https://.../node/@package2/plugin/src/Path/To
 
 
 ## Identifiers
-[More](./docs/identifiers.md)
+[More](doc/identifiers.md)
 
 ID for dependencies being manually added to the container (w/o namespaces):
 ```
