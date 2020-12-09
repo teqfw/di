@@ -1,4 +1,5 @@
 import IdParser from './IdParser.mjs';
+import ParsedId from './Api/ParsedId.mjs';
 
 const $parser = new IdParser();
 
@@ -55,11 +56,20 @@ export default class TeqFw_Di_SpecProxy {
                     // we have no dependency in the local cache yet
                     // look up dependency in container's registry
                     const parsed = $parser.parse(depId);
-                    if (parsed.isSingleton && containerSingletons.has(parsed.mapKey)) {
+                    if (
+                        (parsed.typeTarget === ParsedId.TYPE_TARGET_SINGLETON) &&
+                        containerSingletons.has(parsed.mapKey)
+                    ) {
                         // requested dependency is an instance and is created before
                         // save dependency to local registry & return
                         deps[depId] = containerSingletons.get(parsed.mapKey);
                         return deps[depId];
+                    } else if (
+                        (parsed.typeId === ParsedId.TYPE_ID_MANUAL) &&
+                        (parsed.typeTarget === ParsedId.TYPE_TARGET_SINGLETON) &&
+                        !containerSingletons.has(parsed.mapKey)
+                    ) {
+                        throw new Error(`There is no '${parsed.mapKey}' singleton in the container.`);
                     } else {
                         // check stack of incomplete dependencies
                         if (parsed.nameModule) { // don't process manually inserted singletons
