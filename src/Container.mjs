@@ -40,7 +40,7 @@ export default class TeqFw_Di_Container {
          *
          * @param {string} mainId main object ID (named singleton, module, new object, default export singleton)
          * @param {Object.<string, boolean>} uplineDeps dependencies registry to prevent circular loop.
-         * @return {Promise<Object>}
+         * @return {Promise<*>}
          */
         async function getObject(mainId, uplineDeps) {
 
@@ -49,7 +49,7 @@ export default class TeqFw_Di_Container {
              * Add 'spec' proxy as fnConstruct argument and create new object and all deps.
              *
              * @param {Function|Object} fnConstruct
-             * @return {Promise<Object>} created object
+             * @return {Promise<*>} created object
              * @private
              */
             function _useFactory(fnConstruct) {
@@ -193,7 +193,7 @@ export default class TeqFw_Di_Container {
          * Get/create object|function|class|module by dependency ID (wrapper for internal function).
          *
          * @param {string} depId 'namedDep', 'Vendor_Module', 'New_Object_From_Default$', 'Singleton_From_Default$$'
-         * @return {Promise<Object>}
+         * @return {Promise<*>}
          */
         this.get = async function (depId) {
             return await getObject(depId, {});
