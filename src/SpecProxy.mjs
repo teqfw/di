@@ -24,6 +24,7 @@ export default class TeqFw_Di_SpecProxy {
      * construct main object & nested dependencies.
      * @param {Function} fnGetObject `TeqFw_Di_Container.getObject` function to get/create required dependencies.
      * construction process on some error (import error or circular dependency, for example).
+     * @param {Function} fnRejectUseFactory 'reject' function from 'TeqFw_Di_Container.getObject._useFactory' result.
      * @return {{}} Proxy object to resolve dependencies as `constructor(spec)`.
      */
     constructor(
@@ -32,7 +33,7 @@ export default class TeqFw_Di_SpecProxy {
         containerSingletons,
         fnCreate,
         fnGetObject,
-        fnRejectUseConstruct
+        fnRejectUseFactory
     ) {
 
         /**
@@ -65,7 +66,7 @@ export default class TeqFw_Di_SpecProxy {
                             if (uplineDeps[parsed.nameModule]) {
                                 // `dep_id` is already requested to be created, so we report it as 'main'
                                 const err = new Error(`Circular dependencies (main: ${depId}; dep: ${mainId})`);
-                                fnRejectUseConstruct(err);  // reject async _useConstructor
+                                fnRejectUseFactory(err);  // reject async _useFactory
                                 throw err;                  // break sync object's constructor
                             }
                             // ... and register new one
@@ -81,7 +82,7 @@ export default class TeqFw_Di_SpecProxy {
                             fnCreate();
                         }).catch(err => {
                             // re-throw error from promise
-                            fnRejectUseConstruct(err);  // reject async _useConstructor
+                            fnRejectUseFactory(err);  // reject async _useFactory
                         });
                     }
                     // interrupt construction process until new dependency will be created

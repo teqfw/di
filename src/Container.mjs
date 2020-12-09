@@ -71,15 +71,19 @@ export default class TeqFw_Di_Container {
                         const fnCreate = function () {
                             try {
                                 // https://stackoverflow.com/a/29094018/4073821
-                                const proto = Object.getOwnPropertyDescriptor(constructor, 'prototype');
+                                const proto = Object.getOwnPropertyDescriptor(fnConstruct, 'prototype');
                                 const isClass = proto && !proto.writable;
                                 const instNew = (isClass) ? new fnConstruct(spec) : fnConstruct(spec);
                                 // code line below will be inaccessible until all deps will be created in `spec`
                                 // SpecProxy.EXCEPTION_TO_STEALTH will be thrown for every missed dep in `spec`
                                 resolve(instNew);
                             } catch (e) {
-                                // stealth constructor exceptions to prevent execution interrupt on missed dependency
-                                // SpecProxy rejects `_useConstructor` promise on any error
+                                // SpecProxy rejects `_useFactory` promise on any error
+                                if (e === SpecProxy.EXCEPTION_TO_STEALTH) {
+                                    // stealth constructor exceptions to prevent execution interrupt on missed dependency
+                                } else {
+                                    throw e;
+                                }
                             }
                         };
                         // create spec proxy to analyze dependencies of the constructing object in current scope
