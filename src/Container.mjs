@@ -33,7 +33,7 @@ export default class TeqFw_Di_Container {
 
         // set default instance of the DI container (as named object and as ES module's singleton)
         _singletons.set('container', this);
-        _singletons.set('TeqFw_Di_Container', this);
+        _singletons.set('TeqFw_Di_Container$', this);
 
         /**
          * Internal function to get/create object|function|class|module by given `id`.
