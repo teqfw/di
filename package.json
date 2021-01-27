@@ -23,5 +23,11 @@
   },
   "esm": {
     "cjs": true
+  },
+  "teqfw": {
+    "autoload": {
+      "ns": "TeqFw_Di",
+      "path": "./src"
+    }
   }
 }

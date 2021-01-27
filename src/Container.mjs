@@ -33,6 +33,7 @@ export default class TeqFw_Di_Container {
 
         // set default instance of the DI container (as named object and as ES module's singleton)
         _singletons.set('container', this);
+        _singletons.set('TeqFw_Di_Container', this); // TODO: should be ES6 module, not object
         _singletons.set('TeqFw_Di_Container$', this);
 
         /**
@@ -193,9 +194,10 @@ export default class TeqFw_Di_Container {
          * Get/create object|function|class|module by dependency ID (wrapper for internal function).
          *
          * @param {string} depId 'namedDep', 'Vendor_Module', 'New_Object_From_Default$', 'Singleton_From_Default$$'
+         * @param {String} context ID of the main object for whom container retrieves the dependency (TODO)
          * @return {Promise<*>}
          */
-        this.get = async function (depId) {
+        this.get = async function (depId, context = null) {
             return await getObject(depId, {});
         };
 
