@@ -58,7 +58,7 @@ export default class TeqFw_Di_Resolver_LogicalNs {
     /**
      * List all namespaces with resolving details.
      *
-     * @return {Object.<string, TeqFw_Di_Api_ResolveDetails>}
+     * @returns {Object.<string, TeqFw_Di_Api_ResolveDetails>}
      */
     list() {
         const result = {};
@@ -92,7 +92,7 @@ export default class TeqFw_Di_Resolver_LogicalNs {
      *  - Vendor_Project_Module => 'https://vendor.com/lib/Project/Module.js'
      *
      * @param {string} moduleId
-     * @return {*}
+     * @returns {*}
      */
     resolveModuleId(moduleId) {
         let result;

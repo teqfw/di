@@ -20,7 +20,7 @@ export default class TeqFw_Di_Resolver_FilepathNs {
     /**
      * List all registered packages with resolving details.
      *
-     * @return {Object.<string, TeqFw_Di_Api_ResolveDetails>}
+     * @returns {Object.<string, TeqFw_Di_Api_ResolveDetails>}
      */
     list() {
         return this.packages;
@@ -29,7 +29,7 @@ export default class TeqFw_Di_Resolver_FilepathNs {
     /**
      * Resolve module id to module source path.
      * @param {string} moduleId '@vendor/package!path/to/module'
-     * @return {string} './@vendor/package/dist/path/to/module.mjs'
+     * @returns {string} './@vendor/package/dist/path/to/module.mjs'
      */
     resolveModuleId(moduleId) {
         let result;

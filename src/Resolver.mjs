@@ -34,7 +34,7 @@ export default class TeqFw_Di_Resolver {
      *  - 'Vendor_Project_Module' => 'https://vendor.com/lib/Project/Module.js'
      *
      * @param {string} moduleId
-     * @return {string}
+     * @returns {string}
      */
     resolveModuleId(moduleId) {
         let result;
@@ -52,7 +52,7 @@ export default class TeqFw_Di_Resolver {
     /**
      * List all namespaces with resolving details.
      *
-     * @return {{filepathNs: Object<string, TeqFw_Di_Api_ResolveDetails>, logicalNs: Object<string, TeqFw_Di_Api_ResolveDetails>}}
+     * @returns {{filepathNs: Object<string, TeqFw_Di_Api_ResolveDetails>, logicalNs: Object<string, TeqFw_Di_Api_ResolveDetails>}}
      */
     list() {
         const filepathNs = this.filepathNs.list();

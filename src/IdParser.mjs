@@ -16,7 +16,7 @@ export default class TeqFw_Di_IdParser {
      * Validate dependency identifier, parse and return parts of the identifier.
      *
      * @param {string} id Dependency identifier to validate and parse.
-     * @return {TeqFw_Di_Api_ParsedId} Parsed data for given ID.
+     * @returns {TeqFw_Di_Api_ParsedId} Parsed data for given ID.
      * @throws {Error} if `id` is not valid.
      */
     parse(id) {
@@ -31,7 +31,7 @@ export default class TeqFw_Di_IdParser {
     /**
      * Parse filepath based identifiers (@vendor/package!module#exportedFactory$$).
      * @param {string} id
-     * @return {null|TeqFw_Di_Api_ParsedId}
+     * @returns {null|TeqFw_Di_Api_ParsedId}
      */
     parseFilepathId(id) {
         let result = null;
@@ -78,7 +78,7 @@ export default class TeqFw_Di_IdParser {
     /**
      * Parse logical namespaces identifiers (Ns_Module#exportedFactory$$).
      * @param {string} id
-     * @return {null|TeqFw_Di_Api_ParsedId}
+     * @returns {null|TeqFw_Di_Api_ParsedId}
      */
     parseLogicalNsId(id) {
         let result = null;
@@ -120,7 +120,7 @@ export default class TeqFw_Di_IdParser {
     /**
      * Parse manually inserted identifiers (singleton, factory$$).
      * @param {string} id
-     * @return {null|TeqFw_Di_Api_ParsedId}
+     * @returns {null|TeqFw_Di_Api_ParsedId}
      */
     parseManualDiId(id) {
         let result = null;

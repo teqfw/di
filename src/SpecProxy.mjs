@@ -26,7 +26,7 @@ export default class TeqFw_Di_SpecProxy {
      * @param {Function} fnGetObject `TeqFw_Di_Container.getObject` function to get/create required dependencies.
      * construction process on some error (import error or circular dependency, for example).
      * @param {Function} fnRejectUseFactory 'reject' function from 'TeqFw_Di_Container.getObject._useFactory' result.
-     * @return {{}} Proxy object to resolve dependencies as `constructor(spec)`.
+     * @returns {{}} Proxy object to resolve dependencies as `constructor(spec)`.
      */
     constructor(
         mainId,

@@ -41,7 +41,7 @@ export default class TeqFw_Di_Container {
          *
          * @param {string} mainId main object ID (named singleton, module, new object, default export singleton)
          * @param {Object.<string, boolean>} uplineDeps dependencies registry to prevent circular loop.
-         * @return {Promise<*>}
+         * @returns {Promise<*>}
          */
         async function getObject(mainId, uplineDeps) {
 
@@ -50,7 +50,7 @@ export default class TeqFw_Di_Container {
              * Add 'spec' proxy as fnConstruct argument and create new object and all deps.
              *
              * @param {Function|Object} fnConstruct
-             * @return {Promise<*>} created object
+             * @returns {Promise<*>} created object
              * @private
              */
             function _useFactory(fnConstruct) {
@@ -103,7 +103,7 @@ export default class TeqFw_Di_Container {
              * Lookup for requested dependency in internal storages or create new one if dependency constructor
              * is available.
              * @param {TeqFw_Di_Api_ParsedId} parsed
-             * @return {*}
+             * @returns {*}
              */
             async function getFromStorages(parsed) {
                 let result;
@@ -195,14 +195,14 @@ export default class TeqFw_Di_Container {
          *
          * @param {string} depId 'namedDep', 'Vendor_Module', 'New_Object_From_Default$', 'Singleton_From_Default$$'
          * @param {String} context ID of the main object for whom container retrieves the dependency (TODO)
-         * @return {Promise<*>}
+         * @returns {Promise<*>}
          */
         this.get = async function (depId, context = null) {
             return await getObject(depId, {});
         };
 
         /**
-         * @return {TeqFw_Di_Resolver}
+         * @returns {TeqFw_Di_Resolver}
          */
         this.getNsResolver = function () {
             return _resolver;
@@ -211,7 +211,7 @@ export default class TeqFw_Di_Container {
          * Check existence of created instance or imported data in container.
          *
          * @param {string} depId
-         * @return {boolean}
+         * @returns {boolean}
          */
         this.has = function (depId) {
             const parsed = $parser.parse(depId);
@@ -228,7 +228,7 @@ export default class TeqFw_Di_Container {
 
         /**
          * Get list of contained dependencies (created instances and loaded modules).
-         * @return {{constructors: string[], singletons: string[], modules: string[]}}
+         * @returns {{constructors: string[], singletons: string[], modules: string[]}}
          */
         this.list = function () {
             const singletons = Array.from(_singletons.keys()).sort();
