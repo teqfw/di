@@ -1,12 +1,16 @@
+// MODULE'S IMPORT
 import FilepathNs from './Resolver/FilepathNs.mjs';
 import LogicalNs from './Resolver/LogicalNs.mjs';
 
+// MODULE'S VARS
 /** @type {RegExp} expression for logical namespace IDs w/o dep. injection fraction (Ns_Module) */
 const LOGICAL_NS = /^((([A-Z])[A-Za-z0-9_]*)?)$/;
+
+// MODULE'S CLASSES
 /**
  * Map codebase namespaces to files/URLs.
  */
-export default class TeqFw_Di_Resolver {
+class TeqFw_Di_Resolver {
     /** @type {TeqFw_Di_Resolver_LogicalNs} */
     logicalNs = new LogicalNs()
     /** @type {TeqFw_Di_Resolver_FilepathNs} */
@@ -60,4 +64,9 @@ export default class TeqFw_Di_Resolver {
         return {filepathNs, logicalNs};
     }
 
+}
+
+// MODULE'S EXPORT
+export {
+    TeqFw_Di_Resolver as default
 }

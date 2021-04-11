@@ -1,5 +1,7 @@
+// MODULE'S IMPORT
 import ParsedId from './Api/ParsedId.mjs';
 
+// MODULE'S VARS
 /** @type {RegExp} expression for filepath based IDs (@vendor/package!module#export$$) */
 const FILEPATH_ID = /^((([a-z@])([A-Za-z0-9_\-/@]*))(!([A-Za-z0-9_\-/@]*)?((#)?([A-Za-z0-9_]*)(\${1,2})?)?)?)$/;
 /** @type {RegExp} expression for logical namespace IDs (Ns_Module#export$$) */
@@ -7,11 +9,11 @@ const LOGICAL_NS_ID = /^((([A-Z])[A-Za-z0-9_]*)(#?([A-Za-z0-9_]*)(\${1,2})?)?)$/
 /** @type {RegExp} expression for objects that manually added to DI container (singleton, namedFactory$$)  */
 const MANUAL_DI_ID = /^((([a-z])[A-Za-z0-9_]*)(\$\$)?)$/;
 
-
+// MODULE'S CLASSES
 /**
  * Dependency identifiers parser.
  */
-export default class TeqFw_Di_IdParser {
+class TeqFw_Di_IdParser {
     /**
      * Validate dependency identifier, parse and return parts of the identifier.
      *
@@ -138,4 +140,9 @@ export default class TeqFw_Di_IdParser {
         }
         return result;
     }
+}
+
+// MODULE'S EXPORT
+export {
+    TeqFw_Di_IdParser as default
 }

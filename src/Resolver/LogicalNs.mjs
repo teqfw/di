@@ -4,13 +4,13 @@
  * @typedef {Object<string, NamespaceDetails|TeqFw_Di_Api_ResolveDetails>} NamespaceDetails
  */
 
+// MODULE'S VARS
 /**
  * Namespace parts separator.
  *
  * @type {string}
  */
 const NSS = '_';
-
 /**
  * Key to save sources data in namespaces registry.
  *
@@ -18,10 +18,11 @@ const NSS = '_';
  */
 const KEY_DATA = '.data';
 
+// MODULE'S CLASSES
 /**
  * Map codebase logical namespaces to files/URLs.
  */
-export default class TeqFw_Di_Resolver_LogicalNs {
+class TeqFw_Di_Resolver_LogicalNs {
     /**
      * Registry for logical namespaces. Tree-like structure to save root paths (relative or absolute) to sources
      * by namespaces.
@@ -33,7 +34,7 @@ export default class TeqFw_Di_Resolver_LogicalNs {
      * @type {Object<string, NamespaceDetails>}
      * @private
      */
-    namespaces = {}
+    namespaces = {};
 
     /**
      * Register sources path mapping details for namespace.
@@ -131,5 +132,9 @@ export default class TeqFw_Di_Resolver_LogicalNs {
         return result;
     }
 
+}
 
+// MODULE'S EXPORT
+export {
+    TeqFw_Di_Resolver_LogicalNs as default
 }

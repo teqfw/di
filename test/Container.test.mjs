@@ -1,6 +1,11 @@
-import Container from '../src/Container';
-import {describe, it} from 'mocha';
 import assert from 'assert';
+import Container from '../src/Container.mjs';
+import {describe, it} from 'mocha';
+import {dirname} from 'path';
+import {fileURLToPath} from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 describe('TeqFw_Di_Container', function () {
 

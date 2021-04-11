@@ -1,8 +1,13 @@
+import assert from 'assert';
 import ModuleLoader from '../src/ModuleLoader.mjs';
 import ResolveDetails from '../src/Api/ResolveDetails.mjs';
 import Resolver from '../src/Resolver.mjs';
 import {describe, it} from 'mocha';
-import assert from 'assert';
+import {dirname} from 'path';
+import {fileURLToPath} from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 describe('TeqFw_Di_ModuleLoader', function () {
 

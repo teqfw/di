@@ -1,3 +1,4 @@
+// MODULE'S IMPORT
 import IdParser from './IdParser.mjs';
 import ModuleLoader from './ModuleLoader.mjs';
 import ParsedId from './Api/ParsedId.mjs';
@@ -5,12 +6,14 @@ import ResolveDetails from './Api/ResolveDetails.mjs';
 import Resolver from './Resolver.mjs';
 import SpecProxy from './SpecProxy.mjs';
 
+// MODULE'S VARS
 const $parser = new IdParser();
 
+// MODULE'S CLASSES
 /**
  * Dependency Injection container.
  */
-export default class TeqFw_Di_Container {
+class TeqFw_Di_Container {
     /**
      * @param {Object} [spec]
      * @param {TeqFw_Di_Resolver} [spec.namespaceResolver] custom resolver to map module names to file paths
@@ -260,4 +263,9 @@ export default class TeqFw_Di_Container {
             }
         };
     }
+}
+
+// MODULE'S EXPORT
+export {
+    TeqFw_Di_Container as default
 }

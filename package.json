@@ -6,7 +6,7 @@
   "main": "./src/Container.mjs",
   "scripts": {
     "example": "node --experimental-modules ./example/s001/s001.mjs",
-    "test": "./node_modules/mocha/bin/mocha --require esm --recursive './test/**/*.test.js'",
+    "test": "./node_modules/mocha/bin/mocha --recursive './test/**/*.test.mjs'",
     "jsdoc": "./node_modules/jsdoc/jsdoc.js -d ./jsdoc/ -a all -c ./.jsdoc"
   },
   "license": "GPL-3.0",
@@ -16,10 +16,10 @@
   },
   "devDependencies": {
     "babel-eslint": "*",
-    "eslint": "*",
+    "eslint": "^7.24.0",
     "esm": "*",
     "jsdoc": "*",
-    "mocha": "*"
+    "mocha": "^8.3.2"
   },
   "esm": {
     "cjs": true

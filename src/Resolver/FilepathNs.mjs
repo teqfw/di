@@ -1,10 +1,13 @@
+// MODULE'S IMPORT
 import IdParser from '../IdParser.mjs';
 
+// MODULE'S VARS
 const $parser = new IdParser();
+
 /**
  * Map codebase file path namespaces to files/URLs.
  */
-export default class TeqFw_Di_Resolver_FilepathNs {
+class TeqFw_Di_Resolver_FilepathNs {
     /** @type {Object.<string, TeqFw_Di_Api_ResolveDetails>} */
     packages = {}
 
@@ -45,4 +48,9 @@ export default class TeqFw_Di_Resolver_FilepathNs {
         }
         return result;
     }
+}
+
+// MODULE'S EXPORT
+export {
+    TeqFw_Di_Resolver_FilepathNs as default
 }

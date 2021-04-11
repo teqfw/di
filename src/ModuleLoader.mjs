@@ -1,7 +1,8 @@
+// MODULE'S CLASSES
 /**
  * Load ES6 module sources and save it to internal registry.
  */
-export default class TeqFw_Di_ModuleLoader {
+class TeqFw_Di_ModuleLoader {
     /** @type {TeqFw_Di_Resolver} */
     resolver
 
@@ -28,4 +29,9 @@ export default class TeqFw_Di_ModuleLoader {
             return result;
         };
     }
+}
+
+// MODULE'S EXPORT
+export {
+    TeqFw_Di_ModuleLoader as default
 }

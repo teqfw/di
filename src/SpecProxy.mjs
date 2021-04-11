@@ -1,8 +1,11 @@
+// MODULE'S IMPORT
 import IdParser from './IdParser.mjs';
 import ParsedId from './Api/ParsedId.mjs';
 
+// MODULE'S VARS
 const $parser = new IdParser();
 
+// MODULE'S CLASSES
 /**
  * Proxy object for constructors specification ('spec' argument in constructor) to analyze dependencies and to collect
  * required dependencies. This proxy adds constructed instances into container's `_instances` object.
@@ -12,7 +15,7 @@ const $parser = new IdParser();
  *
  * @class
  */
-export default class TeqFw_Di_SpecProxy {
+class TeqFw_Di_SpecProxy {
     /** Marker for construction exceptions that should be stolen. */
     static EXCEPTION_TO_STEALTH = Symbol('exception_to_stealth')
 
@@ -102,4 +105,9 @@ export default class TeqFw_Di_SpecProxy {
             }
         });
     }
+}
+
+// MODULE'S EXPORT
+export {
+    TeqFw_Di_SpecProxy as default
 }
