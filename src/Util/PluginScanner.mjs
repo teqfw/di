@@ -12,12 +12,14 @@ const DESCRIPTOR = 'teqfw.json';
 
 // MODULE'S CLASSES
 class TeqFw_Di_Util_PluginScanner {
-    constructor() {
-
-    }
 
     // DEFINE PROTO METHODS
 
+    /**
+     * Scan given 'path' to get JSON descriptors for TeqFW plugins.
+     * @param {String} path
+     * @return {Promise<Object.<string, Object>>} Object-to-path map for found plugins
+     */
     async scanDescriptors(path) {
         // PARSE INPUT & DEFINE WORKING VARS
         /**
@@ -74,6 +76,28 @@ class TeqFw_Di_Util_PluginScanner {
             }
         }
 
+        return result;
+    }
+
+    /**
+     *  Scan given 'path' to get namespaces mapping for TeqFW plugins.
+     * @param {String} path
+     * @return {Promise<Object.<string, TeqFw_Di_Api_ResolveDetails>>}
+     */
+    async scanNamespaces(path) {
+        const result = {};
+        const descriptors = await this.scanDescriptors(path);
+        for (const [path, one] of Object.entries(descriptors)) {
+            if (one.autoload?.ns && one.autoload?.path) {
+                const item = new Details();
+                item.path = join(path, one.autoload.path);
+                item.ns = one.autoload.ns;
+                // default values (would be overwritten in descriptor)
+                item.isAbsolute = one.autoload.isAbsolute ?? true;
+                item.ext = one.autoload.ext ?? 'mjs';
+                result[item.ns] = item;
+            }
+        }
         return result;
     }
 
