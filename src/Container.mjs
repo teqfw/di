@@ -1,4 +1,5 @@
 // MODULE'S IMPORT
+/* don't import ES-modules with nodejs dependencies (will not work in browsers) */
 import IdParser from './IdParser.mjs';
 import ModuleLoader from './ModuleLoader.mjs';
 import ParsedId from './Api/ParsedId.mjs';
@@ -34,10 +35,9 @@ class TeqFw_Di_Container {
          */
         const _singletons = new Map();
 
-        // set default instance of the DI container (as named object and as ES module's singleton)
-        _singletons.set('container', this);
-        _singletons.set('TeqFw_Di_Container', this); // TODO: should be ES6 module, not object
-        _singletons.set('TeqFw_Di_Container$', this);
+        // set default instance of the DI container
+        _singletons.set('container', this); // as named singleton
+        _singletons.set('TeqFw_Di_Container', this); // as instance singleton of the class
 
         /**
          * Internal function to get/create object|function|class|module by given `id`.

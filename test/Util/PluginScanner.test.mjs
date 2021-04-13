@@ -20,14 +20,14 @@ describe('TeqFw_Di_Util_PluginScanner', () => {
         it('normally', async () => {
             const scanner = new PluginScanner();
             const path = join(root, 'd01.scan');
-            const descriptors = await scanner.scanDescriptors(path);
+            const descriptors = await scanner.scanFilesystem(path);
             assert(Object.keys(descriptors).length === 3);
         });
 
         it('in folders w/o descriptors', async () => {
             const scanner = new PluginScanner();
             const path = join(root, 'd02.empty');
-            const descriptors = await scanner.scanDescriptors(path);
+            const descriptors = await scanner.scanFilesystem(path);
             assert(Object.keys(descriptors).length === 0);
         });
 
@@ -35,7 +35,7 @@ describe('TeqFw_Di_Util_PluginScanner', () => {
             const scanner = new PluginScanner();
             const path = join(root, 'd03.error');
             try {
-                await scanner.scanDescriptors(path);
+                await scanner.scanFilesystem(path);
             } catch (e) {
                 assert.strictEqual(e.message, 'Unexpected token W in JSON at position 0');
             }
@@ -49,7 +49,7 @@ describe('TeqFw_Di_Util_PluginScanner', () => {
         it('normally', async () => {
             const scanner = new PluginScanner();
             const path = join(root, 'd10.ns.data');
-            const namespaces = await scanner.scanNamespaces(path);
+            const namespaces = await scanner.getNamespaces(path);
             assert(Object.keys(namespaces).length === 3);
         });
     });
