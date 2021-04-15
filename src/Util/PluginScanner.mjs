@@ -24,15 +24,15 @@ class TeqFw_Di_Util_PluginScanner {
      */
     async getNamespaces(path) {
         const result = {};
-        const descriptors = await this.scanFilesystem(path);
-        for (const [path, one] of Object.entries(descriptors)) {
-            if (one.autoload?.ns && one.autoload?.path) {
+        const plugins = await this.scanFilesystem(path);
+        for (const [path, one] of Object.entries(plugins)) {
+            if (one.teqfw?.autoload?.ns && one.teqfw.autoload.path) {
                 const item = new Details();
-                item.path = join(path, one.autoload.path);
-                item.ns = one.autoload.ns;
+                item.path = join(path, one.teqfw.autoload.path);
+                item.ns = one.teqfw.autoload.ns;
                 // default values (would be overwritten in descriptor)
-                item.isAbsolute = one.autoload.isAbsolute ?? true;
-                item.ext = one.autoload.ext ?? 'mjs';
+                item.isAbsolute = one.teqfw.autoload.isAbsolute ?? true;
+                item.ext = one.teqfw.autoload.ext ?? 'mjs';
                 result[item.ns] = item;
             }
         }
