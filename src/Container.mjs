@@ -80,7 +80,23 @@ class TeqFw_Di_Container {
                                 const instNew = (isClass) ? new fnConstruct(spec) : fnConstruct(spec);
                                 // code line below will be inaccessible until all deps will be created in `spec`
                                 // SpecProxy.EXCEPTION_TO_STEALTH will be thrown for every missed dep in `spec`
-                                resolve(instNew);
+                                if (instNew instanceof Promise) {
+                                    instNew
+                                        .then((asyncInst) => {
+                                                resolve(asyncInst)
+                                            }
+                                        ).catch((e) => {
+                                            // SpecProxy rejects `_useFactory` promise on any error
+                                            if (e === SpecProxy.EXCEPTION_TO_STEALTH) {
+                                                // stealth constructor exceptions to prevent execution interrupt on missed dependency
+                                            } else {
+                                                throw e;
+                                            }
+                                        }
+                                    );
+                                } else {
+                                    resolve(instNew);
+                                }
                             } catch (e) {
                                 // SpecProxy rejects `_useFactory` promise on any error
                                 if (e === SpecProxy.EXCEPTION_TO_STEALTH) {
