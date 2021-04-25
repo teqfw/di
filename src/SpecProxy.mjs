@@ -87,6 +87,7 @@ class TeqFw_Di_SpecProxy {
                         }
                         // create new required dependency for this object
                         fnGetObject(depId, uplineDeps).then((obj) => {
+                            if (obj === undefined) throw new Error(`Cannot resolve dependency '${depId}'.`);
                             // save created `dep_id` instance to local dependencies registry
                             deps[depId] = obj;
                             // remove created dependency from circular registry
