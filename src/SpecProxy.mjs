@@ -16,9 +16,6 @@ const $parser = new IdParser();
  * @class
  */
 class TeqFw_Di_SpecProxy {
-    /** Marker for construction exceptions that should be stolen. */
-    static EXCEPTION_TO_STEALTH = Symbol('exception_to_stealth')
-
     /**
      * @param {string} mainId ID of the constructing object ('Vendor_Module$', 'Vendor_Module$$', 'dbCfg').
      * @param {Object.<string, Boolean>} uplineDeps All incomplete dependencies in current construction process
@@ -107,6 +104,10 @@ class TeqFw_Di_SpecProxy {
         });
     }
 }
+
+// static properties (compatible with Safari "< 14.1", "iOS < 14.5" form)
+/** Marker for construction exceptions that should be stolen. */
+TeqFw_Di_SpecProxy.EXCEPTION_TO_STEALTH = Symbol('exception_to_stealth')
 
 // MODULE'S EXPORT
 export {
