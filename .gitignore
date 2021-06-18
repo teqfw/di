@@ -1,6 +1,11 @@
+/.eslintrc.js
 /.idea/
+/.jsdoc
 /.nyc_output/
+/doc/
+/example/
 /jsdoc/
 /node_modules/
 /package-lock.json
+/test/
 /tmp/
