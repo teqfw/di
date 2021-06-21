@@ -6,4 +6,4 @@ export class NamedFactory {
     name = 'module object (class)'
 }
 
-export const NAMED_SINGLETON = {name: 'named singleton'};
+export const NAMED_SINGLETON = {name: 'singleton'};

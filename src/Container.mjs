@@ -36,13 +36,13 @@ class TeqFw_Di_Container {
         const _singletons = new Map();
 
         // set default instance of the DI container
-        _singletons.set('container', this); // as named singleton
-        _singletons.set('TeqFw_Di_Container', this); // as instance singleton of the class
+        _singletons.set('container', this); // as singleton
+        _singletons.set('TeqFw_Di_Container', this); // as singleton of the class
 
         /**
          * Internal function to get/create object|function|class|module by given `id`.
          *
-         * @param {string} mainId main object ID (named singleton, module, new object, default export singleton)
+         * @param {string} mainId main object ID (singleton, module, new object, default export singleton)
          * @param {Object.<string, boolean>} uplineDeps dependencies registry to prevent circular loop.
          * @returns {Promise<*>}
          */
@@ -258,7 +258,7 @@ class TeqFw_Di_Container {
          * Place object into the container. Replace existing instance with the same ID.
          *
          * 'object' should correlate with 'depId':
-         *  - named singleton ('namedDep'): any object will be stored as singleton;
+         *  - singleton ('namedDep'): any object will be stored as singleton;
          *  - ES module ('Vendor_Module'): will be stored as ES module;
          *  - constructor ('New_Object_From_Default$'): will be stored as object constructor with key 'New_Object_From_Default';
          *  - instance ('Singleton_From_Default$$'): will be stored as singleton with key 'Singleton_From_Default';

@@ -80,9 +80,9 @@ describe('TeqFw_Di_Container', function () {
     describe('allows to delete:', () => {
         const container = new Container();
 
-        it('named singleton from container', async () => {
+        it('singleton from container', async () => {
             const depId = 'namedSingleton';
-            const obj = {name: 'named singleton'};
+            const obj = {name: 'singleton'};
             container.set(depId, obj);
             assert(container.has(depId));
             container.delete(depId);
@@ -123,7 +123,7 @@ describe('TeqFw_Di_Container', function () {
             it('singleton (namedSingleton)', async () => {
                 const container = new Container();
                 const id = 'namedSingleton';
-                const depIn = {name: 'named singleton'};
+                const depIn = {name: 'singleton'};
                 container.set(id, depIn);
                 const depOut = await container.get(id);
                 assert(depOut === depIn); // is the same object
@@ -406,7 +406,7 @@ describe('TeqFw_Di_Container', function () {
             container.set('namedConstructClass$$', namedConstructClass);
             // get Main and resolve all dependencies
             const main = await container.get('Test_Main$');
-            assert.deepStrictEqual(main.depFn.namedSingleton.name, 'named singleton');
+            assert.deepStrictEqual(main.depFn.namedSingleton.name, 'singleton');
         });
 
     });
