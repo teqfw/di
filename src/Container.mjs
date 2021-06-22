@@ -215,6 +215,9 @@ class TeqFw_Di_Container {
          * @param {string} depId 'namedDep', 'Vendor_Module', 'New_Object_From_Default$', 'Singleton_From_Default$$'
          * @param {String} context ID of the main object for whom container retrieves the dependency (TODO)
          * @returns {Promise<*>}
+         *
+         * TODO: we can use context to get significant info from requester (requester depId or prepared deps
+         * TODO: /bootstrap path, for example/).
          */
         this.get = async function (depId, context = null) {
             return await getObject(depId, {});
