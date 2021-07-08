@@ -25,9 +25,11 @@
     "cjs": true
   },
   "teqfw": {
-    "autoload": {
-      "ns": "TeqFw_Di",
-      "path": "./src"
+    "di": {
+      "autoload": {
+        "ns": "TeqFw_Di",
+        "path": "./src"
+      }
     }
   }
 }

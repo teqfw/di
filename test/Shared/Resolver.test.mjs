@@ -1,5 +1,5 @@
 import Resolver from '../../src/Shared/Resolver.mjs';
-import ResolveDetails from '../../src/Back/Api/Dto/Resolve.mjs';
+import DAutoload from '../../src/Shared/Api/Dto/Plugin/Desc/Autoload.mjs';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 
@@ -23,25 +23,25 @@ describe('TeqFw_Di_Shared_Resolver', () => {
     });
 
     it('allows to registry and to resolve namespaces', async () => {
-        obj.addNamespaceRoot(Object.assign(new ResolveDetails(), {
+        obj.addNamespaceRoot(Object.assign(new DAutoload(), {
             ns: 'package',
             path: './path/to/package/src',
             ext: 'js',
             isAbsolute: false
         }));
-        obj.addNamespaceRoot(Object.assign(new ResolveDetails(), {
+        obj.addNamespaceRoot(Object.assign(new DAutoload(), {
             ns: '@vendor/package',
             path: 'https://domain.com/lib/@vendor/package/dist',
             ext: 'mjs',
             isAbsolute: true
         }));
-        obj.addNamespaceRoot(Object.assign(new ResolveDetails(), {
+        obj.addNamespaceRoot(Object.assign(new DAutoload(), {
             ns: 'Ns_App',
             path: './path/to/package/src',
             ext: 'js',
             isAbsolute: false
         }));
-        obj.addNamespaceRoot(Object.assign(new ResolveDetails(), {
+        obj.addNamespaceRoot(Object.assign(new DAutoload(), {
             ns: 'Ns_App_Project',
             path: './path/to/other/pkg/src',
             ext: 'mjs',
@@ -59,13 +59,13 @@ describe('TeqFw_Di_Shared_Resolver', () => {
 
     it('lists namespaces mapping', async () => {
         const resolver = new Resolver();
-        const detailsFile = Object.assign(new ResolveDetails(), {
+        const detailsFile = Object.assign(new DAutoload(), {
             ns: '@vendor/package',
             path: '/path/to/sources',
             ext: 'mjs',
             isAbsolute: true
         });
-        const detailsLogical = Object.assign(new ResolveDetails(), {
+        const detailsLogical = Object.assign(new DAutoload(), {
             ns: 'Ns_App',
             path: '/path/to/sources',
             ext: 'mjs',

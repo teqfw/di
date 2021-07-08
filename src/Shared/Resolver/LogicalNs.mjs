@@ -1,7 +1,7 @@
 /**
  * Tree-like structure of namespaces registry entry.
  *
- * @typedef {Object<string, NamespaceDetails|TeqFw_Di_Back_Api_Dto_Resolve>} NamespaceDetails
+ * @typedef {Object<string, NamespaceDetails|TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload>} NamespaceDetails
  */
 
 // MODULE'S VARS
@@ -39,7 +39,7 @@ export default class TeqFw_Di_Shared_Resolver_LogicalNs {
     /**
      * Register sources path mapping details for namespace.
      *
-     * @param {TeqFw_Di_Back_Api_Dto_Resolve} details namespace resolving details
+     * @param {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload} details namespace resolving details
      */
     addNamespaceRoot(details) {
         const spaces = details.ns.split(NSS);
@@ -59,7 +59,7 @@ export default class TeqFw_Di_Shared_Resolver_LogicalNs {
     /**
      * List all namespaces with resolving details.
      *
-     * @returns {Object.<string, TeqFw_Di_Back_Api_Dto_Resolve>}
+     * @returns {Object.<string, TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload>}
      */
     list() {
         const result = {};
@@ -105,7 +105,7 @@ export default class TeqFw_Di_Shared_Resolver_LogicalNs {
                 pointer = pointer[part];
                 if (pointer[KEY_DATA]) {
                     // compose path to root module of the current namespace (`index.[js|mjs]`)
-                    /** @type {TeqFw_Di_Back_Api_Dto_Resolve} */
+                    /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload} */
                     const entry = pointer[KEY_DATA];
                     // compose path to NS default root
                     result = `${entry.path}/../index.${entry.ext}`;
@@ -114,7 +114,7 @@ export default class TeqFw_Di_Shared_Resolver_LogicalNs {
             } else {
                 // compose path to requested module starting from namespace root
                 if (pointer[KEY_DATA]) {
-                    /** @type {TeqFw_Di_Back_Api_Dto_Resolve} */
+                    /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload} */
                     const entry = pointer[KEY_DATA];
                     const nsModule = nsExplored.substring(1);
                     const nsObject = moduleId.substring(nsModule.length + 1);

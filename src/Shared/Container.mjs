@@ -1,9 +1,9 @@
 // MODULE'S IMPORT
 /* don't import ES-modules with nodejs dependencies (will not work in browsers) */
+import DAutoload from './Api/Dto/Plugin/Desc/Autoload.mjs';
 import IdParser from './IdParser.mjs';
 import ModuleLoader from './ModuleLoader.mjs';
 import ParsedId from './IdParser/Dto.mjs';
-import ResolveDetails from '../Back/Api/Dto/Resolve.mjs';
 import Resolver from './Resolver.mjs';
 import SpecProxy from './SpecProxy.mjs';
 
@@ -186,7 +186,7 @@ export default class TeqFw_Di_Shared_Container {
                 (parsed.typeTarget !== ParsedId.TYPE_TARGET_PACKAGE)
             )
                 throw new Error('Namespace cannot contain \'$\' symbol.');
-            const details = new ResolveDetails();
+            const details = new DAutoload();
             Object.assign(details, {ns: namespace, path, ext, isAbsolute: is_absolute});
             _resolver.addNamespaceRoot(details);
         };

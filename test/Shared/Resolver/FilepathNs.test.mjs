@@ -1,5 +1,5 @@
 import FilepathNs from '../../../src/Shared/Resolver/FilepathNs.mjs';
-import ResolveDetails from '../../../src/Back/Api/Dto/Resolve.mjs';
+import DAutoload from '../../../src/Shared/Api/Dto/Plugin/Desc/Autoload.mjs';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 
@@ -23,13 +23,13 @@ describe('TeqFw_Di_Shared_Resolver_FilepathNs', () => {
     });
 
     it('allows to registry and to resolve namespaces', async () => {
-        obj.addNamespaceRoot(Object.assign(new ResolveDetails(), {
+        obj.addNamespaceRoot(Object.assign(new DAutoload(), {
             ns: 'package',
             path: './path/to/package/src',
             ext: 'js',
             isAbsolute: false
         }));
-        obj.addNamespaceRoot(Object.assign(new ResolveDetails(), {
+        obj.addNamespaceRoot(Object.assign(new DAutoload(), {
             ns: '@vendor/package',
             path: 'https://domain.com/lib/@vendor/package/dist',
             ext: 'mjs',
@@ -43,7 +43,7 @@ describe('TeqFw_Di_Shared_Resolver_FilepathNs', () => {
 
     it('lists namespaces mapping', async () => {
         const resolver = new FilepathNs();
-        const details = Object.assign(new ResolveDetails(), {
+        const details = Object.assign(new DAutoload(), {
             ns: '@vendor/package',
             path: '/path/to/sources',
             ext: 'mjs',

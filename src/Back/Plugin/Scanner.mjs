@@ -1,9 +1,8 @@
 /**
  * Scanner to lookup for Teq-plugins in given folder and 'node_modules' subfolder and to compose array with
- * 'TeqFw_Di_Back_Api_Dto_Resolve' data.
+ * 'TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload' data.
  */
 // MODULE'S IMPORT
-import Details from '../Api/Dto/Resolve.mjs';
 import ScanData from '../Api/Dto/Scanned.mjs';
 import {readdirSync, readFileSync, statSync} from 'fs';
 import {join} from 'path';
@@ -15,29 +14,44 @@ const TEQFW = 'teqfw.json';
 // MODULE'S CLASSES
 export default class TeqFw_Di_Back_Plugin_Scanner {
 
-    // DEFINE PROTO METHODS
+    constructor(spec) {
+        // EXTRACT DEPS
+        /** @type {TeqFw_Di_Back_Defaults} */
+        const DEF = spec['TeqFw_Di_Back_Defaults$'];
+        /** @type {TeqFw_Di_Back_Api_Dto_Plugin_Desc.Factory} */
+        const fDesc = spec['TeqFw_Di_Back_Api_Dto_Plugin_Desc#Factory$'];
+        /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload.Factory} */
+        const fAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload#Factory$'];
 
-    /**
-     *  Scan given 'path' to get namespaces mapping for TeqFW plugins.
-     * @param {String} path
-     * @return {Promise<Object.<string, TeqFw_Di_Back_Api_Dto_Resolve>>}
-     */
-    async getNamespaces(path) {
-        const result = {};
-        const plugins = await this.scanFilesystem(path);
-        for (const [path, one] of Object.entries(plugins)) {
-            if (one.teqfw?.autoload?.ns && one.teqfw.autoload.path) {
-                const item = new Details();
-                item.path = join(path, one.teqfw.autoload.path);
-                item.ns = one.teqfw.autoload.ns;
-                // default values (would be overwritten in descriptor)
-                item.isAbsolute = one.teqfw.autoload.isAbsolute ?? true;
-                item.ext = one.teqfw.autoload.ext ?? 'mjs';
-                result[item.ns] = item;
+        // DEFINE INSTANCE METHODS
+
+        /**
+         *  Scan given 'path' to get namespaces mapping for TeqFW plugins.
+         * @param {String} path
+         * @return {Promise<Object.<string, TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload>>}
+         */
+        this.getNamespaces = async function (path) {
+            const result = {};
+            const plugins = await this.scanFilesystem(path);
+            for (const [path, one] of Object.entries(plugins)) {
+                if (one.teqfw?.[DEF.DESC_NODE]) {
+                    /** @type {TeqFw_Di_Back_Api_Dto_Plugin_Desc} */
+                    const desc = fDesc.create(one.teqfw[DEF.DESC_NODE]);
+                    if (desc?.autoload?.ns) {
+                        // make a copy, setup and freeze it
+                        /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload} */
+                        const item = fAutoload.create(desc.autoload);
+                        item.path = join(path, item.path);
+                        Object.freeze(item);
+                        result[item.ns] = item;
+                    }
+                }
             }
+            return result;
         }
-        return result;
     }
+
+    // DEFINE PROTO METHODS
 
     /**
      * Scan given 'path' to get JSON descriptors for TeqFW plugins ('teqfw.json')

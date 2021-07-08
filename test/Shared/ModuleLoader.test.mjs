@@ -1,6 +1,6 @@
 import assert from 'assert';
 import ModuleLoader from '../../src/Shared/ModuleLoader.mjs';
-import ResolveDetails from '../../src/Back/Api/Dto/Resolve.mjs';
+import DAutoload from '../../src/Shared/Api/Dto/Plugin/Desc/Autoload.mjs';
 import Resolver from '../../src/Shared/Resolver.mjs';
 import {describe, it} from 'mocha';
 import {dirname, join} from 'path';
@@ -30,7 +30,7 @@ describe('TeqFw_Di_Shared_ModuleLoader', function () {
 
     it('allows to load modules', async () => {
         const resolver = new Resolver();
-        const nsMap = new ResolveDetails();
+        const nsMap = new DAutoload();
         nsMap.ns = '@flancer64/test';
         nsMap.ext = 'mjs';
         nsMap.path = join(DATA_ROOT, 'ModuleLoader');
@@ -44,7 +44,7 @@ describe('TeqFw_Di_Shared_ModuleLoader', function () {
 
     it('throws exception on unknown module', async () => {
         const resolver = new Resolver();
-        const nsMap = new ResolveDetails();
+        const nsMap = new DAutoload();
         nsMap.ns = '@flancer64/test';
         nsMap.ext = 'mjs';
         nsMap.path = join(DATA_ROOT, 'ModuleLoader');

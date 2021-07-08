@@ -19,7 +19,7 @@ export default class TeqFw_Di_Shared_Resolver {
     /**
      * Registry sources path mapping details for namespace.
      *
-     * @param {TeqFw_Di_Back_Api_Dto_Resolve} details namespace resolving details
+     * @param {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload} details namespace resolving details
      */
     addNamespaceRoot(details) {
         const parsed = LOGICAL_NS.exec(details.ns);
@@ -56,7 +56,7 @@ export default class TeqFw_Di_Shared_Resolver {
     /**
      * List all namespaces with resolving details.
      *
-     * @returns {{filepathNs: Object<string, TeqFw_Di_Back_Api_Dto_Resolve>, logicalNs: Object<string, TeqFw_Di_Back_Api_Dto_Resolve>}}
+     * @returns {{filepathNs: Object<string, TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload>, logicalNs: Object<string, TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload>}}
      */
     list() {
         const filepathNs = this.filepathNs.list();

@@ -1,5 +1,5 @@
 import LogicalNs from '../../../src/Shared/Resolver/LogicalNs.mjs';
-import ResolveDetails from '../../../src/Back/Api/Dto/Resolve.mjs';
+import DAutoload from '../../../src/Shared/Api/Dto/Plugin/Desc/Autoload.mjs';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 
@@ -23,13 +23,13 @@ describe('TeqFw_Di_Shared_Resolver_LogicalNs', () => {
     });
 
     it('allows to registry and to resolve namespaces', async () => {
-        obj.addNamespaceRoot(Object.assign(new ResolveDetails(), {
+        obj.addNamespaceRoot(Object.assign(new DAutoload(), {
             ns: 'Ns_App',
             path: './path/to/package/src',
             ext: 'js',
             isAbsolute: false
         }));
-        obj.addNamespaceRoot(Object.assign(new ResolveDetails(), {
+        obj.addNamespaceRoot(Object.assign(new DAutoload(), {
             ns: 'Ns_App_Project',
             path: './path/to/other/pkg/src',
             ext: 'mjs',
@@ -43,7 +43,7 @@ describe('TeqFw_Di_Shared_Resolver_LogicalNs', () => {
 
     it('lists namespaces mapping', async () => {
         const resolver = new LogicalNs();
-        const details = Object.assign(new ResolveDetails(), {
+        const details = Object.assign(new DAutoload(), {
             ns: 'Ns_App',
             path: '/path/to/sources',
             ext: 'mjs',
