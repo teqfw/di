@@ -36,7 +36,7 @@ export class Factory {
         this.create = function (data = null) {
             const res = new TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload();
             res.ext = data?.ext ?? 'mjs';
-            res.isAbsolute = data?.isAbsolute ?? true;
+            res.isAbsolute = data?.isAbsolute ?? false;
             res.ns = data?.ns;
             res.path = data?.path;
             return res;
