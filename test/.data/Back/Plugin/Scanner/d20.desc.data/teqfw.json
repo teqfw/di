@@ -1,0 +1,11 @@
+{
+  "di": {
+    "autoload": {
+      "ns": "TeqFw_Di",
+      "path": "./src"
+    },
+    "replace": [
+      {"orig": "TeqFw_Di_Interface", "alter": "TeqFw_Di_Impl"}
+    ]
+  }
+}

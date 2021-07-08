@@ -24,6 +24,21 @@ describe('TeqFw_Di_Back_Plugin_Scanner', () => {
         assert(scanner instanceof PluginScanner);
     });
 
+    it('has all expected public methods', async () => {
+        const scanner = await container.get('TeqFw_Di_Back_Plugin_Scanner$$');
+        const methodsOwn = Object.getOwnPropertyNames(scanner)
+            .filter(p => (typeof scanner[p] === 'function'));
+        const methodsProto = Object.getOwnPropertyNames(scanner.__proto__)
+            .filter(p => (typeof scanner[p] === 'function'));
+        const methods = [...methodsOwn, ...methodsProto];
+        assert.deepStrictEqual(methods.sort(), [
+            'constructor',
+            'getDescriptors',
+            'getNamespaces',
+            'scanFilesystem',
+        ]);
+    });
+
     describe('scans descriptors', () => {
 
         it('normally', async () => {
@@ -53,13 +68,23 @@ describe('TeqFw_Di_Back_Plugin_Scanner', () => {
 
     });
 
-
     describe('scans namespaces', () => {
         it('normally', async () => {
             const scanner = await container.get('TeqFw_Di_Back_Plugin_Scanner$$');
             const path = join(root, 'd10.ns.data');
             const namespaces = await scanner.getNamespaces(path);
             assert(Object.keys(namespaces).length === 3);
+        });
+    });
+
+    describe('scans plugins for DI descriptors', () => {
+        it('normally', async () => {
+            const scanner = await container.get('TeqFw_Di_Back_Plugin_Scanner$$');
+            const path = join(root, 'd20.desc.data');
+            const descriptors = await scanner.getDescriptors(path);
+            assert(Object.keys(descriptors).length === 1);
+            const [first] = descriptors;
+            assert(Array.isArray(first.replace) && first.replace.length === 1);
         });
     });
 

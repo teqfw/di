@@ -4,7 +4,7 @@
  */
 // MODULE'S IMPORT
 import ScanData from '../Api/Dto/Scanned.mjs';
-import {readdirSync, readFileSync, statSync} from 'fs';
+import {existsSync, readdirSync, readFileSync, statSync} from 'fs';
 import {join} from 'path';
 
 // MODULE'S VARS
@@ -24,6 +24,20 @@ export default class TeqFw_Di_Back_Plugin_Scanner {
         const fAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload#Factory$'];
 
         // DEFINE INSTANCE METHODS
+
+        this.getDescriptors = async function (path) {
+            const result = [];
+            const plugins = await this.scanFilesystem(path);
+            for (const [path, one] of Object.entries(plugins)) {
+                if (one.teqfw?.[DEF.DESC_NODE]) {
+                    /** @type {TeqFw_Di_Back_Api_Dto_Plugin_Desc} */
+                    const desc = fDesc.create(one.teqfw[DEF.DESC_NODE]);
+                    Object.freeze(desc);
+                    result.push(desc);
+                }
+            }
+            return result;
+        }
 
         /**
          *  Scan given 'path' to get namespaces mapping for TeqFW plugins.
@@ -114,25 +128,26 @@ export default class TeqFw_Di_Back_Plugin_Scanner {
         if (dataRoot !== null) result[path] = dataRoot;
         // scan 'node modules' packages for TeqFW plugins
         const pathNodeMods = join(path, 'node_modules');
-        const packages = readdirSync(pathNodeMods);
-        for (const pack of packages) {
-            if (pack[0] === '@') {
-                // scan scope for nested packages
-                const pathScope = join(pathNodeMods, pack);
-                const scopedPackages = readdirSync(pathScope);
-                for (const sub of scopedPackages) {
-                    const pathNested = join(pathScope, sub);
+        if (existsSync(pathNodeMods)) {
+            const packages = readdirSync(pathNodeMods);
+            for (const pack of packages) {
+                if (pack[0] === '@') {
+                    // scan scope for nested packages
+                    const pathScope = join(pathNodeMods, pack);
+                    const scopedPackages = readdirSync(pathScope);
+                    for (const sub of scopedPackages) {
+                        const pathNested = join(pathScope, sub);
+                        const dataNested = readData(pathNested);
+                        if (dataNested !== null) result[pathNested] = dataNested;
+                    }
+                } else {
+                    // check package
+                    const pathNested = join(pathNodeMods, pack);
                     const dataNested = readData(pathNested);
                     if (dataNested !== null) result[pathNested] = dataNested;
                 }
-            } else {
-                // check package
-                const pathNested = join(pathNodeMods, pack);
-                const dataNested = readData(pathNested);
-                if (dataNested !== null) result[pathNested] = dataNested;
             }
         }
-
         return result;
     }
 

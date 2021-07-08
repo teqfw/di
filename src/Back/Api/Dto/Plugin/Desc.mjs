@@ -9,6 +9,8 @@ const NS = 'TeqFw_Di_Back_Api_Dto_Plugin_Desc';
 export default class TeqFw_Di_Back_Api_Dto_Plugin_Desc {
     /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload} */
     autoload;
+    /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace[]} */
+    replace;
 }
 
 // attributes names to use as aliases in queries to object props
@@ -25,6 +27,11 @@ export class Factory {
         const DAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload#'];
         /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload.Factory} */
         const fAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload#Factory$'];
+        /** @type {typeof TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace} */
+        const DReplace = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace#'];
+        /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace.Factory} */
+        const fReplace = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace#Factory$'];
+
 
         /**
          * @param {TeqFw_Di_Back_Api_Dto_Plugin_Desc|null} data
@@ -33,6 +40,9 @@ export class Factory {
         this.create = function (data = null) {
             const res = new TeqFw_Di_Back_Api_Dto_Plugin_Desc();
             res.autoload = (data?.autoload instanceof DAutoload) ? data.autoload : fAutoload.create(data?.autoload);
+            res.replace = Array.isArray(data?.replace)
+                ? data.replace.map((one) => (one instanceof DReplace) ? one : fReplace.create(one))
+                : [];
             return res;
         }
     }

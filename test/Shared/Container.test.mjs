@@ -20,6 +20,7 @@ describe('TeqFw_Di_Shared_Container', function () {
         const methods = Object.getOwnPropertyNames(container)
             .filter(p => (typeof container[p] === 'function'));
         assert.deepStrictEqual(methods.sort(), [
+            'addModuleReplacement',
             'addSourceMapping',
             'delete',
             'get',
@@ -38,7 +39,7 @@ describe('TeqFw_Di_Shared_Container', function () {
         assert.strictEqual(namedSingleton, container);
     });
 
-    describe('allows to add mapping:', () => {
+    describe('allows to add source mapping:', () => {
         const container = new Container();
 
         it('for logical namespaces', async () => {
@@ -57,6 +58,18 @@ describe('TeqFw_Di_Shared_Container', function () {
             container.addSourceMapping('@vendor/package', 'path/to/package');
             const path = container.getNsResolver().resolveModuleId('@vendor/package!sub/module');
             assert.strictEqual(path, 'path/to/package/sub/module.mjs');
+        });
+    });
+
+    describe('allows to add replacements:', () => {
+        const container = new Container();
+
+        it('normally', async () => {
+            container.addSourceMapping('Vnd_Plugin', join(DATA_ROOT, 'Shared/Container/ModuleReplacement'), true);
+            container.addModuleReplacement('Vnd_Plugin_Interface', 'Vnd_Plugin_Impl');
+            const factory = await container.get('Vnd_Plugin_Interface#Factory$');
+            const obj = factory.create();
+            assert.strictEqual(obj.constructor.name, 'Vnd_Plugin_Impl');
         });
     });
 
