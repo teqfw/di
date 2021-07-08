@@ -32,7 +32,7 @@ describe('TeqFw_Di_IdParser', () => {
     });
 
     describe('should parse manual DI IDs:', () => {
-        it('singleton ID (namedSingleton)', async () => {
+        it('named singleton ID (namedSingleton)', async () => {
             const parsed = obj.parseManualDiId('namedSingleton');
             assert.strictEqual(parsed.mapKey, 'namedSingleton');
             assert.strictEqual(parsed.nameExport, undefined);
