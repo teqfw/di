@@ -10,16 +10,16 @@ const LOGICAL_NS = /^((([A-Z])[A-Za-z0-9_]*)?)$/;
 /**
  * Map codebase namespaces to files/URLs.
  */
-class TeqFw_Di_Resolver {
-    /** @type {TeqFw_Di_Resolver_LogicalNs} */
+export default class TeqFw_Di_Shared_Resolver {
+    /** @type {TeqFw_Di_Shared_Resolver_LogicalNs} */
     logicalNs = new LogicalNs()
-    /** @type {TeqFw_Di_Resolver_FilepathNs} */
+    /** @type {TeqFw_Di_Shared_Resolver_FilepathNs} */
     filepathNs = new FilepathNs()
 
     /**
      * Registry sources path mapping details for namespace.
      *
-     * @param {TeqFw_Di_Api_ResolveDetails} details namespace resolving details
+     * @param {TeqFw_Di_Back_Api_Dto_Resolve} details namespace resolving details
      */
     addNamespaceRoot(details) {
         const parsed = LOGICAL_NS.exec(details.ns);
@@ -56,7 +56,7 @@ class TeqFw_Di_Resolver {
     /**
      * List all namespaces with resolving details.
      *
-     * @returns {{filepathNs: Object<string, TeqFw_Di_Api_ResolveDetails>, logicalNs: Object<string, TeqFw_Di_Api_ResolveDetails>}}
+     * @returns {{filepathNs: Object<string, TeqFw_Di_Back_Api_Dto_Resolve>, logicalNs: Object<string, TeqFw_Di_Back_Api_Dto_Resolve>}}
      */
     list() {
         const filepathNs = this.filepathNs.list();
@@ -64,9 +64,4 @@ class TeqFw_Di_Resolver {
         return {filepathNs, logicalNs};
     }
 
-}
-
-// MODULE'S EXPORT
-export {
-    TeqFw_Di_Resolver as default
 }

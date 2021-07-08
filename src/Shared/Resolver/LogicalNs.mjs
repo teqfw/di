@@ -1,7 +1,7 @@
 /**
  * Tree-like structure of namespaces registry entry.
  *
- * @typedef {Object<string, NamespaceDetails|TeqFw_Di_Api_ResolveDetails>} NamespaceDetails
+ * @typedef {Object<string, NamespaceDetails|TeqFw_Di_Back_Api_Dto_Resolve>} NamespaceDetails
  */
 
 // MODULE'S VARS
@@ -22,7 +22,7 @@ const KEY_DATA = '.data';
 /**
  * Map codebase logical namespaces to files/URLs.
  */
-class TeqFw_Di_Resolver_LogicalNs {
+export default class TeqFw_Di_Shared_Resolver_LogicalNs {
     /**
      * Registry for logical namespaces. Tree-like structure to save root paths (relative or absolute) to sources
      * by namespaces.
@@ -39,7 +39,7 @@ class TeqFw_Di_Resolver_LogicalNs {
     /**
      * Register sources path mapping details for namespace.
      *
-     * @param {TeqFw_Di_Api_ResolveDetails} details namespace resolving details
+     * @param {TeqFw_Di_Back_Api_Dto_Resolve} details namespace resolving details
      */
     addNamespaceRoot(details) {
         const spaces = details.ns.split(NSS);
@@ -59,7 +59,7 @@ class TeqFw_Di_Resolver_LogicalNs {
     /**
      * List all namespaces with resolving details.
      *
-     * @returns {Object.<string, TeqFw_Di_Api_ResolveDetails>}
+     * @returns {Object.<string, TeqFw_Di_Back_Api_Dto_Resolve>}
      */
     list() {
         const result = {};
@@ -105,7 +105,7 @@ class TeqFw_Di_Resolver_LogicalNs {
                 pointer = pointer[part];
                 if (pointer[KEY_DATA]) {
                     // compose path to root module of the current namespace (`index.[js|mjs]`)
-                    /** @type {TeqFw_Di_Api_ResolveDetails} */
+                    /** @type {TeqFw_Di_Back_Api_Dto_Resolve} */
                     const entry = pointer[KEY_DATA];
                     // compose path to NS default root
                     result = `${entry.path}/../index.${entry.ext}`;
@@ -114,7 +114,7 @@ class TeqFw_Di_Resolver_LogicalNs {
             } else {
                 // compose path to requested module starting from namespace root
                 if (pointer[KEY_DATA]) {
-                    /** @type {TeqFw_Di_Api_ResolveDetails} */
+                    /** @type {TeqFw_Di_Back_Api_Dto_Resolve} */
                     const entry = pointer[KEY_DATA];
                     const nsModule = nsExplored.substring(1);
                     const nsObject = moduleId.substring(nsModule.length + 1);
@@ -134,7 +134,3 @@ class TeqFw_Di_Resolver_LogicalNs {
 
 }
 
-// MODULE'S EXPORT
-export {
-    TeqFw_Di_Resolver_LogicalNs as default
-}

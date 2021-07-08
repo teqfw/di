@@ -1,20 +1,21 @@
 import assert from 'assert';
-import ModuleLoader from '../src/ModuleLoader.mjs';
-import ResolveDetails from '../src/Api/ResolveDetails.mjs';
-import Resolver from '../src/Resolver.mjs';
+import ModuleLoader from '../../src/Shared/ModuleLoader.mjs';
+import ResolveDetails from '../../src/Back/Api/Dto/Resolve.mjs';
+import Resolver from '../../src/Shared/Resolver.mjs';
 import {describe, it} from 'mocha';
-import {dirname} from 'path';
+import {dirname, join} from 'path';
 import {fileURLToPath} from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const DATA_ROOT = join(__dirname, '../.data');
 
-describe('TeqFw_Di_ModuleLoader', function () {
+describe('TeqFw_Di_Shared_ModuleLoader', function () {
 
     it('has right classname', async () => {
         const resolver = new Resolver();
         const loader = new ModuleLoader(resolver);
-        assert.strictEqual(loader.constructor.name, 'TeqFw_Di_ModuleLoader');
+        assert.strictEqual(loader.constructor.name, 'TeqFw_Di_Shared_ModuleLoader');
     });
 
     it('has all expected public methods', async () => {
@@ -32,7 +33,7 @@ describe('TeqFw_Di_ModuleLoader', function () {
         const nsMap = new ResolveDetails();
         nsMap.ns = '@flancer64/test';
         nsMap.ext = 'mjs';
-        nsMap.path = __dirname + '/.data/ModuleLoader';
+        nsMap.path = join(DATA_ROOT, 'ModuleLoader');
         nsMap.isAbsolute = true;
         resolver.addNamespaceRoot(nsMap);
         const loader = new ModuleLoader(resolver);
@@ -46,7 +47,7 @@ describe('TeqFw_Di_ModuleLoader', function () {
         const nsMap = new ResolveDetails();
         nsMap.ns = '@flancer64/test';
         nsMap.ext = 'mjs';
-        nsMap.path = __dirname + '/.data/ModuleLoader';
+        nsMap.path = join(DATA_ROOT, 'ModuleLoader');
         nsMap.isAbsolute = true;
         resolver.addNamespaceRoot(nsMap);
         const loader = new ModuleLoader(resolver);

@@ -48,7 +48,7 @@ export default class FactoryClass {
 }
 ```  
 
-This `spec` argument is a proxy analyzes request to `spec` props and creates dependencies on demand (see [SpecProxy.mjs](./src/SpecProxy.mjs)). So we can interrupt factory for every unresolved dependency, create requested dependency and return it to the factory.
+This `spec` argument is a proxy analyzes request to `spec` props and creates dependencies on demand (see [SpecProxy.mjs](src/Shared/SpecProxy.mjs)). So we can interrupt factory for every unresolved dependency, create requested dependency and return it to the factory.
 
 
 
@@ -153,7 +153,7 @@ server.all('*/node_modules/*', function (req, res, next) {
     // load DI container as ES6 module (w/o namespaces)
     import(baseUrl + 'node_modules/@teqfw/di/src/Container.mjs').then(async (modContainer) => {
         // init container and setup namespaces mapping
-        /** @type {TeqFw_Di_Container} */
+        /** @type {TeqFw_Di_Shared_Container} */
         const container = new modContainer.default();
         const pathMain = baseUrl + 'node_modules/@flancer64/demo_teqfw_di_mod_main/src';
         const pathPlugin = baseUrl + 'node_modules/@flancer64/demo_teqfw_di_mod_plugin/src';

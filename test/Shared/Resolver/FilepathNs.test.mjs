@@ -1,15 +1,15 @@
-import FilepathNs from '../../src/Resolver/FilepathNs.mjs';
-import ResolveDetails from '../../src/Api/ResolveDetails.mjs';
+import FilepathNs from '../../../src/Shared/Resolver/FilepathNs.mjs';
+import ResolveDetails from '../../../src/Back/Api/Dto/Resolve.mjs';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 
 
-describe('TeqFw_Di_Resolver_FilepathNs', () => {
-    /** @type {TeqFw_Di_Resolver_FilepathNs} */
+describe('TeqFw_Di_Shared_Resolver_FilepathNs', () => {
+    /** @type {TeqFw_Di_Shared_Resolver_FilepathNs} */
     const obj = new FilepathNs();
 
     it('has right classname', async () => {
-        assert.strictEqual(obj.constructor.name, 'TeqFw_Di_Resolver_FilepathNs');
+        assert.strictEqual(obj.constructor.name, 'TeqFw_Di_Shared_Resolver_FilepathNs');
     });
 
     it('has all expected public methods in prototype', async () => {

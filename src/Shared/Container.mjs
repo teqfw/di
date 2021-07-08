@@ -2,8 +2,8 @@
 /* don't import ES-modules with nodejs dependencies (will not work in browsers) */
 import IdParser from './IdParser.mjs';
 import ModuleLoader from './ModuleLoader.mjs';
-import ParsedId from './Api/ParsedId.mjs';
-import ResolveDetails from './Api/ResolveDetails.mjs';
+import ParsedId from './IdParser/Dto.mjs';
+import ResolveDetails from '../Back/Api/Dto/Resolve.mjs';
 import Resolver from './Resolver.mjs';
 import SpecProxy from './SpecProxy.mjs';
 
@@ -14,15 +14,15 @@ const $parser = new IdParser();
 /**
  * Dependency Injection container.
  */
-class TeqFw_Di_Container {
+export default class TeqFw_Di_Shared_Container {
     /**
      * @param {Object} [spec]
-     * @param {TeqFw_Di_Resolver} [spec.namespaceResolver] custom resolver to map module names to file paths
+     * @param {TeqFw_Di_Shared_Resolver} [spec.namespaceResolver] custom resolver to map module names to file paths
      */
     constructor(spec = {}) {
-        /** @type {TeqFw_Di_Resolver} Modules loader (given in constructor or empty one). */
+        /** @type {TeqFw_Di_Shared_Resolver} Modules loader (given in constructor or empty one). */
         const _resolver = spec.namespaceResolver || new Resolver();
-        /** @type {TeqFw_Di_ModuleLoader} */
+        /** @type {TeqFw_Di_Shared_ModuleLoader} */
         const _moduleLoader = new ModuleLoader(_resolver);
         /**
          * Storage for constructors (named or default exports of ES modules) to create new objects.
@@ -37,7 +37,7 @@ class TeqFw_Di_Container {
 
         // set default instance of the DI container
         _singletons.set('container', this); // as singleton
-        _singletons.set('TeqFw_Di_Container', this); // as singleton of the class
+        _singletons.set('TeqFw_Di_Shared_Container', this); // as singleton of the class
 
         /**
          * Internal function to get/create object|function|class|module by given `id`.
@@ -121,7 +121,7 @@ class TeqFw_Di_Container {
             /**
              * Lookup for requested dependency in internal storages or create new one if dependency constructor
              * is available.
-             * @param {TeqFw_Di_Api_ParsedId} parsed
+             * @param {TeqFw_Di_Shared_IdParser_Dto} parsed
              * @returns {*}
              */
             async function getFromStorages(parsed) {
@@ -140,7 +140,7 @@ class TeqFw_Di_Container {
 
             // MAIN FUNCTIONALITY
             let result;
-            /** @type {TeqFw_Di_Api_ParsedId} */
+            /** @type {TeqFw_Di_Shared_IdParser_Dto} */
             const parsed = $parser.parse(mainId);
             // try to find requested dependency in local storages
             result = await getFromStorages(parsed);
@@ -224,7 +224,7 @@ class TeqFw_Di_Container {
         };
 
         /**
-         * @returns {TeqFw_Di_Resolver}
+         * @returns {TeqFw_Di_Shared_Resolver}
          */
         this.getNsResolver = function () {
             return _resolver;
@@ -282,9 +282,4 @@ class TeqFw_Di_Container {
             }
         };
     }
-}
-
-// MODULE'S EXPORT
-export {
-    TeqFw_Di_Container as default
 }

@@ -1,11 +1,11 @@
 /**
  * Scanner to lookup for Teq-plugins in given folder and 'node_modules' subfolder and to compose array with
- * 'TeqFw_Di_Api_ResolveDetails' data.
+ * 'TeqFw_Di_Back_Api_Dto_Resolve' data.
  */
 // MODULE'S IMPORT
-import Details from '../Api/ResolveDetails.mjs';
-import ScanData from '../Api/ScanData.mjs';
-import {existsSync, readdirSync, readFileSync, statSync} from 'fs';
+import Details from '../Api/Dto/Resolve.mjs';
+import ScanData from '../Api/Dto/Scanned.mjs';
+import {readdirSync, readFileSync, statSync} from 'fs';
 import {join} from 'path';
 
 // MODULE'S VARS
@@ -13,14 +13,14 @@ const PACKAGE = 'package.json';
 const TEQFW = 'teqfw.json';
 
 // MODULE'S CLASSES
-class TeqFw_Di_Util_PluginScanner {
+export default class TeqFw_Di_Back_Plugin_Scanner {
 
     // DEFINE PROTO METHODS
 
     /**
      *  Scan given 'path' to get namespaces mapping for TeqFW plugins.
      * @param {String} path
-     * @return {Promise<Object.<string, TeqFw_Di_Api_ResolveDetails>>}
+     * @return {Promise<Object.<string, TeqFw_Di_Back_Api_Dto_Resolve>>}
      */
     async getNamespaces(path) {
         const result = {};
@@ -44,7 +44,7 @@ class TeqFw_Di_Util_PluginScanner {
      * and for corresponded 'package.json' files.
      *
      * @param {String} path
-     * @return {Promise<Object.<string, TeqFw_Di_Api_ScanData>>} Object-to-path map for found plugins
+     * @return {Promise<Object.<string, TeqFw_Di_Back_Api_Dto_Scanned>>} Object-to-path map for found plugins
      */
     async scanFilesystem(path) {
         // DEFINE INNER FUNCTIONS
@@ -122,11 +122,4 @@ class TeqFw_Di_Util_PluginScanner {
         return result;
     }
 
-}
-
-// MODULE'S FUNCTIONS
-// MODULE'S FUNCTIONALITY
-// MODULE'S EXPORT
-export {
-    TeqFw_Di_Util_PluginScanner as default
 }

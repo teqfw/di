@@ -1,4 +1,4 @@
-# `TeqFw_Di_Container` API
+# `TeqFw_Di_Shared_Container` API
 
 ## Overview
 

@@ -1,14 +1,14 @@
 import assert from 'assert';
-import PluginScanner from '../../src/Util/PluginScanner.mjs';
+import PluginScanner from '../../../src/Back/Plugin/Scanner.mjs';
 import {describe, it} from 'mocha';
 import {join, dirname} from 'path';
 import {fileURLToPath} from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const root = join(__dirname, '../.data/PluginScanner');
+const root = join(__dirname, '../../.data/Back/Plugin/Scanner');
 
-describe('TeqFw_Di_Util_PluginScanner', () => {
+describe('TeqFw_Di_Back_Plugin_Scanner', () => {
 
     it('can be created', async () => {
         const scanner = new PluginScanner();

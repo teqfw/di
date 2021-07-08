@@ -1,11 +1,11 @@
-import SpecProxy from '../src/SpecProxy.mjs';
+import SpecProxy from '../../src/Shared/SpecProxy.mjs';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 
 /**
  * This is small entrance test, `SpecProxy` is tested mainly as part of `Container` object.
  */
-describe('TeqFw_Di_SpecProxy', () => {
+describe('TeqFw_Di_Shared_SpecProxy', () => {
 
     it('allows to get dependency by id', (done) => {
         // environment for SpecProxy: main object 'Vendor_Module' depends from 'dbConfig'
@@ -19,7 +19,7 @@ describe('TeqFw_Di_SpecProxy', () => {
         const fnGetObect = () => { };
         const fnRejectUseFactory = () => { };
 
-        /** @type {TeqFw_Di_SpecProxy} */
+        /** @type {TeqFw_Di_Shared_SpecProxy} */
         const specProxy = new SpecProxy(
             mainId, uplineDeps, containerSingletons,
             fnCreate, fnGetObect, fnRejectUseFactory

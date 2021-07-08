@@ -1,15 +1,15 @@
-import Resolver from '../src/Resolver.mjs';
-import ResolveDetails from '../src/Api/ResolveDetails.mjs';
+import Resolver from '../../src/Shared/Resolver.mjs';
+import ResolveDetails from '../../src/Back/Api/Dto/Resolve.mjs';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 
 
-describe('TeqFw_Di_Resolver', () => {
-    /** @type {TeqFw_Di_Resolver} */
+describe('TeqFw_Di_Shared_Resolver', () => {
+    /** @type {TeqFw_Di_Shared_Resolver} */
     const obj = new Resolver();
 
     it('has right classname', async () => {
-        assert.strictEqual(obj.constructor.name, 'TeqFw_Di_Resolver');
+        assert.strictEqual(obj.constructor.name, 'TeqFw_Di_Shared_Resolver');
     });
 
     it('has all expected public methods in prototype', async () => {

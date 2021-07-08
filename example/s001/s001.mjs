@@ -6,10 +6,10 @@
  *  "nodejs --experimental-modules ./s001.mjs"
  */
 // load DI container sources (use relative path both for front & back)
-import Container from "../../src/Container.mjs";
+import Container from "../../src/Shared/Container.mjs";
 
 // create new container and configure it
-/** @type {TeqFw_Di_Container} */
+/** @type {TeqFw_Di_Shared_Container} */
 const container = new Container();
 // relative sources are mapped relatively to this script
 container.addSourceMapping("Sample", "../../example/s001/src");

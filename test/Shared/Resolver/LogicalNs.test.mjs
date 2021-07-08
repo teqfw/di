@@ -1,15 +1,15 @@
-import LogicalNs from '../../src/Resolver/LogicalNs.mjs';
-import ResolveDetails from '../../src/Api/ResolveDetails.mjs';
+import LogicalNs from '../../../src/Shared/Resolver/LogicalNs.mjs';
+import ResolveDetails from '../../../src/Back/Api/Dto/Resolve.mjs';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 
 
-describe('TeqFw_Di_Resolver_LogicalNs', () => {
-    /** @type {TeqFw_Di_Resolver_LogicalNs} */
+describe('TeqFw_Di_Shared_Resolver_LogicalNs', () => {
+    /** @type {TeqFw_Di_Shared_Resolver_LogicalNs} */
     const obj = new LogicalNs();
 
     it('has right classname', async () => {
-        assert.strictEqual(obj.constructor.name, 'TeqFw_Di_Resolver_LogicalNs');
+        assert.strictEqual(obj.constructor.name, 'TeqFw_Di_Shared_Resolver_LogicalNs');
     });
 
     it('has all expected public methods in prototype', async () => {

@@ -1,17 +1,18 @@
 import assert from 'assert';
-import Container from '../src/Container.mjs';
+import Container from '../../src/Shared/Container.mjs';
 import {describe, it} from 'mocha';
-import {dirname} from 'path';
+import {dirname, join} from 'path';
 import {fileURLToPath} from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const DATA_ROOT = join(__dirname, '../.data');
 
-describe('TeqFw_Di_Container', function () {
+describe('TeqFw_Di_Shared_Container', function () {
 
     it('has right classname', async () => {
         const container = new Container();
-        assert.strictEqual(container.constructor.name, 'TeqFw_Di_Container');
+        assert.strictEqual(container.constructor.name, 'TeqFw_Di_Shared_Container');
     });
 
     it('has all expected public methods', async () => {
@@ -31,7 +32,7 @@ describe('TeqFw_Di_Container', function () {
 
     it('contains itself inside', async () => {
         const container = new Container();
-        const exportSingleton = await container.get('TeqFw_Di_Container$');
+        const exportSingleton = await container.get('TeqFw_Di_Shared_Container$');
         assert.strictEqual(exportSingleton, container);
         const namedSingleton = await container.get('container');
         assert.strictEqual(namedSingleton, container);
@@ -64,7 +65,7 @@ describe('TeqFw_Di_Container', function () {
 
         it('access to modules loader', async () => {
             const resolver = container.getNsResolver();
-            assert.strictEqual(resolver.constructor.name, 'TeqFw_Di_Resolver');
+            assert.strictEqual(resolver.constructor.name, 'TeqFw_Di_Shared_Resolver');
         });
 
         it('lists contained instances and loaded modules', async () => {
@@ -392,9 +393,9 @@ describe('TeqFw_Di_Container', function () {
     describe('allows to import:', () => {
         it('all from sources', async () => {
             // set up source mapping
-            /** @type {TeqFw_Di_Container} */
+            /** @type {TeqFw_Di_Shared_Container} */
             const container = new Container();
-            container.addSourceMapping('Test', __dirname + '/.data/d001', true);
+            container.addSourceMapping('Test', join(DATA_ROOT, 'd001'), true);
             // load ES module then get exported parts
             const mod = await container.get('Test_DepModule');
             const namedSingleton = mod.NAMED_SINGLETON;
@@ -426,7 +427,7 @@ describe('TeqFw_Di_Container', function () {
         it('circular dependencies', async () => {
             const container = new Container();
             // set up source mapping
-            container.addSourceMapping('Test_Container', __dirname + '/.data/d002', true);
+            container.addSourceMapping('Test_Container', join(DATA_ROOT, 'd002'), true);
             try {
                 await container.get('Test_Container_MainClass$$');
                 assert(false);

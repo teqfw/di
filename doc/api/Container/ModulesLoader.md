@@ -1,4 +1,4 @@
-# `TeqFw_Di_Container_ModulesLoader` API
+# `TeqFw_Di_Shared_Container_ModulesLoader` API
 
 ## Overview
 

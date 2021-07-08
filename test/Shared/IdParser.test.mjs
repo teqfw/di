@@ -1,14 +1,14 @@
-import IdParser from '../src/IdParser.mjs';
-import ParsedId from '../src/Api/ParsedId.mjs';
+import IdParser from '../../src/Shared/IdParser.mjs';
+import ParsedId from '../../src/Shared/IdParser/Dto.mjs';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 
-describe('TeqFw_Di_IdParser', () => {
-    /** @type {TeqFw_Di_IdParser} */
+describe('TeqFw_Di_Shared_IdParser', () => {
+    /** @type {TeqFw_Di_Shared_IdParser} */
     const obj = new IdParser();
 
     it('has right classname', async () => {
-        assert.strictEqual(obj.constructor.name, 'TeqFw_Di_IdParser');
+        assert.strictEqual(obj.constructor.name, 'TeqFw_Di_Shared_IdParser');
     });
 
     it('has all expected public methods in prototype', async () => {
