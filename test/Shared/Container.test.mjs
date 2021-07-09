@@ -67,9 +67,9 @@ describe('TeqFw_Di_Shared_Container', function () {
         it('normally', async () => {
             container.addSourceMapping('Vnd_Plugin', join(DATA_ROOT, 'Shared/Container/ModuleReplacement'), true);
             container.addModuleReplacement('Vnd_Plugin_Interface', 'Vnd_Plugin_Impl');
-            const factory = await container.get('Vnd_Plugin_Interface#Factory$');
-            const obj = factory.create();
+            const obj = await container.get('Vnd_Plugin_Interface$');
             assert.strictEqual(obj.constructor.name, 'Vnd_Plugin_Impl');
+            assert.strictEqual(obj.getName(), 'this is implementation');
         });
     });
 

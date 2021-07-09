@@ -3,7 +3,7 @@
 "_DI_" means both "_Dynamic Import_" and "_Dependency Injection_" here. This package allows defining logical namespaces
 in your projects, dynamically importing ES6-modules from these namespaces, creating new objects from imported
 functions/classes and resolving dependencies in constructors. It uses pure ECMAScript 2015+ (ES6+) and works both for
-modern browsers &amp; nodejs apps.
+modern browsers &amp; nodejs apps. You can share the same code between your frontend (browser) and your backend (nodejs) without TypeScript and preprocessors. Code in the browser's debugger will be the same as in your editor. Finally, you even can use interfaces in you projects and replace it with implementations.
 
 The '_proxy object_' for `constructor` specification is inspired by [awilix](https://github.com/jeffijoe/awilix).
 Thanks, guys.
@@ -123,7 +123,48 @@ Vnd_Pkg_Module#fnName$$     // get new object created with 'fnName' export facto
 
 
 
-## Usage in ES6 Modules
+## Interfaces
+
+Define interface in a module:
+```ecmascript 6
+/** @interface */
+export default class Vnd_Plugin_Interface {
+    /** @return {string} */
+    getName() {}
+}
+```
+
+Use this interface in other module:
+```ecmascript 6
+export default class Vnd2_Pkg2_Consumer {
+    name;
+    constructor(spec) {
+        /** @type {Vnd_Plugin_Interface} */
+        const service = spec['Vnd_Plugin_Interface$']; // singleton from default export
+        this.name = service.getName();
+    }
+}
+```
+
+Implement the interface in third module:
+```ecmascript 6
+/** @implements Vnd_Plugin_Interface */
+export default class Vnd2_Plugin_Impl {
+    getName() {
+        return 'this is implementation';
+    }
+}
+```
+
+Setup replacement in DI container:
+```ecmascript 6
+container.addModuleReplacement('Vnd_Plugin_Interface', 'Vnd2_Plugin_Impl');
+const consumer = await container.get('Vnd2_Pkg2_Consumer$');
+console.log(consumer.name); // 'this is implementation'
+```
+
+
+## Usage in ES Modules
 
 ### Function
 ```ecmascript 6

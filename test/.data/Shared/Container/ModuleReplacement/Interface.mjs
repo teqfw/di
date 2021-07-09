@@ -1,7 +1,5 @@
-export default class Vnd_Plugin_Interface {}
-
-export class Factory {
-    create() {
-        return new Vnd_Plugin_Interface();
-    }
+/** @interface */
+export default class Vnd_Plugin_Interface {
+    /** @return {string} */
+    getName() {}
 }
