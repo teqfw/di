@@ -1,6 +1,6 @@
 // MODULE'S IMPORT
 import IdParser from './IdParser.mjs';
-import ParsedId from './Api/ParsedId.mjs';
+import ParsedId from './IdParser/Dto.mjs';
 
 // MODULE'S VARS
 const $parser = new IdParser();
@@ -10,12 +10,12 @@ const $parser = new IdParser();
  * Proxy object for constructors specification ('spec' argument in constructor) to analyze dependencies and to collect
  * required dependencies. This proxy adds constructed instances into container's `_instances` object.
  *
- * This code is too much coupled to `TeqFw_Di_Container` and extracted to separate class just for decreasing
+ * This code is too much coupled to `TeqFw_Di_Shared_Container` and extracted to separate class just for decreasing
  * of nesting levels.
  *
  * @class
  */
-class TeqFw_Di_SpecProxy {
+export default class TeqFw_Di_Shared_SpecProxy {
     /**
      * @param {string} mainId ID of the constructing object ('Vendor_Module$', 'Vendor_Module$$', 'dbCfg').
      * @param {Object.<string, Boolean>} uplineDeps All incomplete dependencies in current construction process
@@ -23,9 +23,9 @@ class TeqFw_Di_SpecProxy {
      * @param {Map} containerSingletons Container level registry with created singletons (ids: 'dbCfg', 'Module$$').
      * @param {Function} fnCreate constructing process level registry to save functions that
      * construct main object & nested dependencies.
-     * @param {Function} fnGetObject `TeqFw_Di_Container.getObject` function to get/create required dependencies.
+     * @param {Function} fnGetObject `TeqFw_Di_Shared_Container.getObject` function to get/create required dependencies.
      * construction process on some error (import error or circular dependency, for example).
-     * @param {Function} fnRejectUseFactory 'reject' function from 'TeqFw_Di_Container.getObject._useFactory' result.
+     * @param {Function} fnRejectUseFactory 'reject' function from 'TeqFw_Di_Shared_Container.getObject._useFactory' result.
      * @returns {{}} Proxy object to resolve dependencies as `constructor(spec)`.
      */
     constructor(
@@ -98,7 +98,7 @@ class TeqFw_Di_SpecProxy {
                     }
                     // interrupt construction process until new dependency will be created
                     // and new construction process will be started (see try-catch block in `fnCreate`)
-                    throw TeqFw_Di_SpecProxy.EXCEPTION_TO_STEALTH;
+                    throw TeqFw_Di_Shared_SpecProxy.EXCEPTION_TO_STEALTH;
                 }
             }
         });
@@ -107,9 +107,4 @@ class TeqFw_Di_SpecProxy {
 
 // static properties (compatible with Safari "< 14.1", "iOS < 14.5" form)
 /** Marker for construction exceptions that should be stolen. */
-TeqFw_Di_SpecProxy.EXCEPTION_TO_STEALTH = Symbol('exception_to_stealth')
-
-// MODULE'S EXPORT
-export {
-    TeqFw_Di_SpecProxy as default
-}
+TeqFw_Di_Shared_SpecProxy.EXCEPTION_TO_STEALTH = Symbol('exception_to_stealth')

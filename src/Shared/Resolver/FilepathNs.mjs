@@ -7,14 +7,14 @@ const $parser = new IdParser();
 /**
  * Map codebase file path namespaces to files/URLs.
  */
-class TeqFw_Di_Resolver_FilepathNs {
-    /** @type {Object.<string, TeqFw_Di_Api_ResolveDetails>} */
+export default class TeqFw_Di_Shared_Resolver_FilepathNs {
+    /** @type {Object.<string, TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload>} */
     packages = {}
 
     /**
      * Register 'package to sources root' mapping.
      *
-     * @param {TeqFw_Di_Api_ResolveDetails} details namespace resolving details
+     * @param {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload} details namespace resolving details
      */
     addNamespaceRoot(details) {
         this.packages[details.ns] = details;
@@ -23,7 +23,7 @@ class TeqFw_Di_Resolver_FilepathNs {
     /**
      * List all registered packages with resolving details.
      *
-     * @returns {Object.<string, TeqFw_Di_Api_ResolveDetails>}
+     * @returns {Object.<string, TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload>}
      */
     list() {
         return this.packages;
@@ -36,11 +36,11 @@ class TeqFw_Di_Resolver_FilepathNs {
      */
     resolveModuleId(moduleId) {
         let result;
-        /** @type {TeqFw_Di_Api_ParsedId} */
+        /** @type {TeqFw_Di_Shared_IdParser_Dto} */
         const parsed = $parser.parse(moduleId);
         const pkg = parsed.namePackage;
         if (this.packages[pkg]) {
-            /** @type {TeqFw_Di_Api_ResolveDetails} */
+            /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload} */
             const details = this.packages[pkg];
             result = `${details.path}/${parsed.nameModule}.${details.ext}`;
         } else {
@@ -48,9 +48,4 @@ class TeqFw_Di_Resolver_FilepathNs {
         }
         return result;
     }
-}
-
-// MODULE'S EXPORT
-export {
-    TeqFw_Di_Resolver_FilepathNs as default
 }

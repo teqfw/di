@@ -1,12 +1,12 @@
 # @teqfw/di
 
-<span style="color:red">**IT WORKS WITH ES6 MODULES WITH "\*.mjs" EXT ONLY AND DOES NOT SUPPORT 'extends' IN CLASSES.**</span>
+"_DI_" means both "_Dynamic Import_" and "_Dependency Injection_" here. This package allows defining logical namespaces
+in your projects, dynamically importing ES6-modules from these namespaces, creating new objects from imported
+functions/classes and resolving dependencies in constructors. It uses pure ECMAScript 2015+ (ES6+) and works both for
+modern browsers &amp; nodejs apps. You can share the same code between your frontend (browser) and your backend (nodejs) without TypeScript and preprocessors. Code in the browser's debugger will be the same as in your editor. Finally, you even can use interfaces in you projects and replace it with implementations.
 
-"_DI_" means both "_Dynamic Import_" and "_Dependency Injection_". This package allows defining namespaces in your projects, dynamically importing ES6-modules from these namespaces, creating new objects from imported functions/classes and resolving dependencies in constructors. This works both for browsers &amp; nodejs apps.
-
-The '_proxy object_' for `constructor` specification is inspired by [awilix](https://github.com/jeffijoe/awilix). Thanks, guys.
-
-
+The '_proxy object_' for `constructor` specification is inspired by [awilix](https://github.com/jeffijoe/awilix).
+Thanks guys.
 
 ## Installation
 
@@ -14,73 +14,90 @@ The '_proxy object_' for `constructor` specification is inspired by [awilix](htt
 $ npm i @teqfw/di --save
 ```
 
+## Introduction
 
+Container
+uses [dynamic import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#dynamic_imports)
+to load source files. Each file must be a
+valid [ES-module](https://nodejs.org/api/esm.html#esm_modules_ecmascript_modules). Every ES-module forms a namespace for
+all nested components (constants, functions, classes). This namespace must have unique name across all other
+namespaces (ES-modules) in the application - DI container uses these namespaces to lookup for files with sources.
 
-## The Problem
-
-ES6 `import` statement does not work both in browser and nodes without changes. This works in a nodejs app:
 ```ecmascript 6
-import ClassA from 'packageA/ClassA.mjs'
-``` 
-but will fail in a browser:
-```
-Uncaught (in promise) TypeError: Failed to resolve module specifier "packageA/ClassA.mjs". 
-Relative references must start with either "/", "./", or "../".
+/**
+ * @namespace Vendor_Package_Module_Name
+ */
 ```
 
-This works in a browser:
+ES-modules can use regular import statements in code:
+
 ```ecmascript 6
-import ClassA from './packageA/ClassA.mjs'
+import ScanData from '../Api/Dto/Scanned.mjs';
+import {existsSync, readdirSync, readFileSync, statSync} from 'fs';
 ```
-but will fail in nodejs app because `packageA` is placed under `./node_modules/` folder.
 
+but DI container cannot process these imports. Function or class should have this interface to be compatible with DI container:
 
-
-## Solution
-
-Use container to load ES6-modules, import modules stuff and create objects on demand.
-
-We can use `factory` function to create objects with one argument only:
 ```ecmascript 6
-export default function FactoryFn(spec) {/* ... */}
-export default class FactoryClass {
+export default function ObjectFactory(spec) {/* ... */}
+export default class SomeClass {
     constructor(spec) {/* ... */}
 }
-```  
+``` 
 
-This `spec` argument is a proxy analyzes request to `spec` props and creates dependencies on demand (see [SpecProxy.mjs](./src/SpecProxy.mjs)). So we can interrupt factory for every unresolved dependency, create requested dependency and return it to the factory.
+Factory function or class constructor must have one only input argument - `spec` (specification). This `spec` argument
+is a proxy that analyzes requests to `spec` props and creates dependencies on demand (
+see [SpecProxy.mjs](src/Shared/SpecProxy.mjs)). So we can interrupt factory for every unresolved dependency, create
+requested dependency and return it to the factory.
 
+Typical code for ES-module compatible with DI container:
 
+```ecmascript 6
+export default class Vnd1_Pkg1_Prj1_Mod1 {
+    constructor(spec) {
+        const Mod2 = spec['Vnd2_Pkg2_Prj2_Mod2#']; // get as class
+        const mod3 = spec['Vnd3_Pkg3_Prj3_Mod3$']; // get as singleton
+        const mod4 = spec['Vnd4_Pkg4_Prj4_Mod4$$']; // get as new instance
+    }
+}
+```
+
+You don't need filenames anymore, use logical namespaces instead (like in
+PHP [Zend 1](https://framework.zend.com/manual/2.4/en/migration/namespacing-old-classes.html)).
 
 ## Namespaces
+
 [More](doc/namespaces.md)
 
-This library uses [Zend1-like](https://framework.zend.com/manual/2.4/en/migration/namespacing-old-classes.html) namespaces (old style):
+To resolve namespace
+
 ```ecmascript 6
 Demo_Main_Plugin_Path_To_Module
 ```
 
-and 'namespace-to-source' mapping:
+'_namespace-to-source_' mapping is used:
+
 ```ecmascript 6
-container.addSourceMapping('Demo_Main', '/.../node_modules/@package1/main/src', true, 'mjs');
-container.addSourceMapping('Demo_Main_Plugin', '/.../node_modules/@package2/plugin/src', true, 'mjs');
-// or
-container.addSourceMapping('Demo_Main', 'https://.../node/@package1/main/src', true, 'mjs');
-container.addSourceMapping('Demo_Main_Plugin', 'https://.../node/@package2/plugin/src', true, 'mjs');
+// node js apps
+container.addSourceMapping('Vnd_Pkg', '/.../node_modules/@vnd/package/src', true, 'mjs');
+container.addSourceMapping('Vnd_Pkg_Plugin', '/.../node_modules/@vnd/plugin/src', true, 'mjs');
+// browsers
+container.addSourceMapping('Vnd_Pkg', 'https://.../node/@vnd/package/src', true, 'mjs');
+container.addSourceMapping('Vnd_Pkg_Plugin', 'https://.../node/@vnd/plugin/src', true, 'mjs');
 ```
 
-With namespaces we can address any ES6-module in our application (browser or nodes):
+Using namespaces we can address any ES-module in our application (browser or nodes):
+
 ```
-Demo_Main_Plugin_Path_To_Module => /.../node_modules/@package2/plugin/src/Path/To/Module.mjs
-Demo_Main_Plugin_Path_To_Module => https://.../node/@package2/plugin/src/Path/To/Module.mjs
+Vnd_Pkg_Plugin_Path_To_Module => /.../node_modules/@vnd/plugin/src/Path/To/Module.mjs
+Vnd_Pkg_Plugin_Path_To_Module => https://.../node/@vnd/plugin/src/Path/To/Module.mjs
 ```
 
 
 
 ## Identifiers
-[More](doc/identifiers.md)
 
-ID for dependencies being manually added to the container (w/o namespaces):
+ID for manually added dependencies:
 ```
 dbConnection                // singleton
 dbTransaction$$             // get new instance using saved factory
@@ -88,41 +105,82 @@ dbTransaction$$             // get new instance using saved factory
 
 ID for dynamic imports:
 ```
-Demo_Main_Module              // import whole ES6 module
-Demo_Main_Module#             // get default export for ES6 module
-Demo_Main_Module#fnName       // get export with name 'fnName' for ES6 module
+Vnd_Pkg_Module              // import whole ES6 module
+Vnd_Pkg_Module#             // get default export for ES6 module
+Vnd_Pkg_Module#fnName       // get export with name 'fnName' for ES6 module
 ```
 
-ID for dependency injection:
+ID for singletons and instances:
 ```
-Demo_Main_Module$             // get singleton object created with default export factory
-Demo_Main_Module$$            // get new object created with default export factory
-Demo_Main_Module#fnName$      // get singleton object created with 'fnName' export factory
-Demo_Main_Module#fnName$$     // get new object created with 'fnName' export factory
+Vnd_Pkg_Module$             // get singleton object created with default export factory
+Vnd_Pkg_Module$$            // get new object created with default export factory
+Vnd_Pkg_Module#fnName$      // get singleton object created with 'fnName' export factory
+Vnd_Pkg_Module#fnName$$     // get new object created with 'fnName' export factory
 ```
 
 
 
-## Usage in ES6 Modules
+## Interfaces
+
+Define interface in a module:
+```ecmascript 6
+/** @interface */
+export default class Vnd_Plugin_Interface {
+    /** @return {string} */
+    getName() {}
+}
+```
+
+Use this interface in other module:
+```ecmascript 6
+export default class Vnd2_Pkg2_Consumer {
+    name;
+    constructor(spec) {
+        /** @type {Vnd_Plugin_Interface} */
+        const service = spec['Vnd_Plugin_Interface$']; // singleton from default export
+        this.name = service.getName();
+    }
+}
+```
+
+Implement the interface in third module:
+```ecmascript 6
+/** @implements Vnd_Plugin_Interface */
+export default class Vnd2_Plugin_Impl {
+    getName() {
+        return 'this is implementation';
+    }
+}
+```
+
+Setup replacement in DI container:
+```ecmascript 6
+container.addModuleReplacement('Vnd_Plugin_Interface', 'Vnd2_Plugin_Impl');
+const consumer = await container.get('Vnd2_Pkg2_Consumer$');
+console.log(consumer.name); // 'this is implementation'
+```
+
+
+## Usage in ES Modules
 
 ### Function
 ```ecmascript 6
-export default function Demo_Main_Plugin_Fn(spec) {
-    const singleton = spec.dbConfig;
-    const newInstance = spec.dbTransaction$$;
-    const module = spec.Demo_Main_Plugin_Shared_Util;
-    const defExport = spec['Demo_Main_Plugin_Shared_Util#'];
-    const defExportSingleton = spec.Demo_Main_Plugin_Shared_Util$;
-    const defExportNewInstance = spec.Demo_Main_Plugin_Shared_Util$$;
+export default function Vnd_Pkg_Plugin_Fn(spec) {
+    const singleton = spec['dbConfig'];
+    const newInstance = spec['dbTransaction$$'];
+    const module = spec['Vnd_Pkg_Plugin_Shared_Util'];
+    const defExport = spec['Vnd_Pkg_Plugin_Shared_Util#'];
+    const defExportSingleton = spec['Vnd_Pkg_Plugin_Shared_Util$'];
+    const defExportNewInstance = spec['Vnd_Pkg_Plugin_Shared_Util$$'];
     // ...
 }
 ```
 
 ### Class
 ```ecmascript 6
-export default class Demo_Main_Plugin_Class {
+export default class Vnd_Pkg_Plugin_Class {
     constructor(spec) {
-        const singleton = spec.dbConfig;
+        const singleton = spec['dbConfig'];
         // ...
     }
 }
@@ -153,16 +211,16 @@ server.all('*/node_modules/*', function (req, res, next) {
     // load DI container as ES6 module (w/o namespaces)
     import(baseUrl + 'node_modules/@teqfw/di/src/Container.mjs').then(async (modContainer) => {
         // init container and setup namespaces mapping
-        /** @type {TeqFw_Di_Container} */
+        /** @type {TeqFw_Di_Shared_Container} */
         const container = new modContainer.default();
         const pathMain = baseUrl + 'node_modules/@flancer64/demo_teqfw_di_mod_main/src';
         const pathPlugin = baseUrl + 'node_modules/@flancer64/demo_teqfw_di_mod_plugin/src';
-        container.addSourceMapping('Demo_Main', pathMain, true, 'mjs');
-        container.addSourceMapping('Demo_Main_Plugin', pathPlugin, true, 'mjs');
+        container.addSourceMapping('Vnd_Pkg', pathMain, true, 'mjs');
+        container.addSourceMapping('Vnd_Pkg_Plugin', pathPlugin, true, 'mjs');
         // get main front as singleton
-        /** @type {Demo_Main_Front} */
-        const frontMain = await container.get('Demo_Main_Front$');
-        frontMain.out('#main', '#plugin');
+        /** @type {Vnd_Pkg_Front} */
+        const frontMain = await container.get('Vnd_Pkg_Front$');
+        frontMain.run();
     });
 </script>
 ```
@@ -184,29 +242,38 @@ const mainHandler = await container.get('Demo_Main_Server$$');
 const pluginHandler = await container.get('Demo_Main_Plugin_Server$$');
 ```
 
-
 ## Demo
 
 [flancer64/demo_teqfw_di](https://github.com/flancer64/demo_teqfw_di)
 
+## Class extending
 
+It is not trivial, but it's possible.
 
-## Limitations
+Base class:
 
-### Class extending
-
-This container cannot create instances for class with 'extends' statement:
 ```ecmascript 6
-export default class Demo_Main_Mod extends Demo_Main_Base {}
+export default class Test_BaseClass {
+    name = 'base';
+}
 ```
 
+Use factory in child ES-module to load base class and to extend it:
 
-### '*.mjs' extensions
+```ecmascript 6
+export default function Factory(spec) {
+    const BaseClass = spec['Test_BaseClass#'];
 
-We always need to use `*.mjs` extension to prevent this error: 
+    class Test_ChildClass extends BaseClass {}
+
+    return Test_ChildClass;
+}
 ```
-(node:506150) Warning: To load an ES module, set "type": "module" in the package.json or use the .mjs extension.
-/home/alex/.../src/Server.js:2
-import $path from 'path';
-^^^^^^
+
+Use it:
+
+```ecmascript 6
+const ChildClass = await container.get('Test_ChildClass$'); // create class definition and save it as singleton
+const obj = new ChildClass();
+console.log('name: ' + obj.name);
 ```

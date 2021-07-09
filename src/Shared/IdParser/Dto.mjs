@@ -1,5 +1,5 @@
 /**
- * Structure to store parsing results of identifiers for imports and injects:
+ * Data transfer object to store parsing results of identifiers for imports and injects:
  *
  * Manually inserted into dependency injection container:
  *  - 'namedSingleton': singleton object stored in container (dependency injection);
@@ -25,35 +25,34 @@
  *
  *  @see https://github.com/teqfw/di/blob/master/docs/identifiers.md
  */
-
 // MODULE'S CLASSES
 /**
  * Structure to store parsing results of identifiers for imports and injects.
  */
-class TeqFw_Di_Api_ParsedId {
+export default class TeqFw_Di_Shared_IdParser_Dto {
     /**
      * Key to map object in container's store (singletons, constructors, modules) - original id w/o '$' chars.
-     * @type {String}
+     * @type {string}
      */
     mapKey;
     /**
      * Name of an export in the ES6-module (export default fn() {}).
-     * @type {String}
+     * @type {string}
      */
     nameExport;
     /**
      * Module name: 'module', 'Ns_Module'.
-     * @type {String}
+     * @type {string}
      */
     nameModule;
     /**
      * Package name: '@vendor/package'.
-     * @type {String}
+     * @type {string}
      */
     namePackage;
     /**
      * Original identifier: namedSingleton, namedConstructor$$, @vendor/package!module#export$$, Ns_Module#export$$.
-     * @type {String}
+     * @type {string}
      */
     orig;
     /**
@@ -70,23 +69,23 @@ class TeqFw_Di_Api_ParsedId {
 
 // ES2015 (ES6) 'static' is not compatible with Safari, so add as class props
 /**  @type {symbol} marker for filepath based IDs (@vendor/package!module#exportName$$) */
-TeqFw_Di_Api_ParsedId.TYPE_ID_FILEPATH = Symbol('TYPE_ID_FILEPATH');
+TeqFw_Di_Shared_IdParser_Dto.TYPE_ID_FILEPATH = Symbol('TYPE_ID_FILEPATH');
 /**  @type {symbol} marker for logical namespace IDs (Ns_Module#exportName$$) */
-TeqFw_Di_Api_ParsedId.TYPE_ID_LOGICAL = Symbol('TYPE_ID_LOGICAL');
+TeqFw_Di_Shared_IdParser_Dto.TYPE_ID_LOGICAL = Symbol('TYPE_ID_LOGICAL');
 /**  @type {symbol} marker for IDs for manually inserted objects into DI container (singleton, factory$$) */
-TeqFw_Di_Api_ParsedId.TYPE_ID_MANUAL = Symbol('TYPE_ID_MANUAL');
+TeqFw_Di_Shared_IdParser_Dto.TYPE_ID_MANUAL = Symbol('TYPE_ID_MANUAL');
 /**  @type {symbol} marker for export targets (@vendor/package!module#exportName) */
-TeqFw_Di_Api_ParsedId.TYPE_TARGET_EXPORT = Symbol('TYPE_TARGET_EXPORT');
+TeqFw_Di_Shared_IdParser_Dto.TYPE_TARGET_EXPORT = Symbol('TYPE_TARGET_EXPORT');
 /**  @type {symbol} marker for factory targets (@vendor/package!module#exportName$$) */
-TeqFw_Di_Api_ParsedId.TYPE_TARGET_FACTORY = Symbol('TYPE_TARGET_FACTORY');
+TeqFw_Di_Shared_IdParser_Dto.TYPE_TARGET_FACTORY = Symbol('TYPE_TARGET_FACTORY');
 /**  @type {symbol} marker for module targets (@vendor/package!module) */
-TeqFw_Di_Api_ParsedId.TYPE_TARGET_MODULE = Symbol('TYPE_TARGET_MODULE');
+TeqFw_Di_Shared_IdParser_Dto.TYPE_TARGET_MODULE = Symbol('TYPE_TARGET_MODULE');
 /**  @type {symbol} marker for package targets (@vendor/package! - RESERVED, NOT USED) */
-TeqFw_Di_Api_ParsedId.TYPE_TARGET_PACKAGE = Symbol('TYPE_TARGET_PACKAGE');
+TeqFw_Di_Shared_IdParser_Dto.TYPE_TARGET_PACKAGE = Symbol('TYPE_TARGET_PACKAGE');
 /**  @type {symbol} marker for singleton targets (@vendor/package!module#exportName$) */
-TeqFw_Di_Api_ParsedId.TYPE_TARGET_SINGLETON = Symbol('TYPE_TARGET_SINGLETON');
+TeqFw_Di_Shared_IdParser_Dto.TYPE_TARGET_SINGLETON = Symbol('TYPE_TARGET_SINGLETON');
 
-// MODULE'S EXPORT
-export {
-    TeqFw_Di_Api_ParsedId as default
-}
+// This DTO does not contain Factory class because it is used internally.
+
+// freeze class to deny attributes changes
+Object.freeze(TeqFw_Di_Shared_IdParser_Dto);

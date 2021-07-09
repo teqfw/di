@@ -1,5 +1,5 @@
 // MODULE'S IMPORT
-import ParsedId from './Api/ParsedId.mjs';
+import ParsedId from './IdParser/Dto.mjs';
 
 // MODULE'S VARS
 /** @type {RegExp} expression for filepath based IDs (@vendor/package!module#export$$) */
@@ -13,12 +13,12 @@ const MANUAL_DI_ID = /^((([a-z])[A-Za-z0-9_]*)(\$\$)?)$/;
 /**
  * Dependency identifiers parser.
  */
-class TeqFw_Di_IdParser {
+export default class TeqFw_Di_Shared_IdParser {
     /**
      * Validate dependency identifier, parse and return parts of the identifier.
      *
      * @param {string} id Dependency identifier to validate and parse.
-     * @returns {TeqFw_Di_Api_ParsedId} Parsed data for given ID.
+     * @returns {TeqFw_Di_Shared_IdParser_Dto} Parsed data for given ID.
      * @throws {Error} if `id` is not valid.
      */
     parse(id) {
@@ -33,7 +33,7 @@ class TeqFw_Di_IdParser {
     /**
      * Parse filepath based identifiers (@vendor/package!module#exportedFactory$$).
      * @param {string} id
-     * @returns {null|TeqFw_Di_Api_ParsedId}
+     * @returns {null|TeqFw_Di_Shared_IdParser_Dto}
      */
     parseFilepathId(id) {
         let result = null;
@@ -80,7 +80,7 @@ class TeqFw_Di_IdParser {
     /**
      * Parse logical namespaces identifiers (Ns_Module#exportedFactory$$).
      * @param {string} id
-     * @returns {null|TeqFw_Di_Api_ParsedId}
+     * @returns {null|TeqFw_Di_Shared_IdParser_Dto}
      */
     parseLogicalNsId(id) {
         let result = null;
@@ -122,7 +122,7 @@ class TeqFw_Di_IdParser {
     /**
      * Parse manually inserted identifiers (singleton, factory$$).
      * @param {string} id
-     * @returns {null|TeqFw_Di_Api_ParsedId}
+     * @returns {null|TeqFw_Di_Shared_IdParser_Dto}
      */
     parseManualDiId(id) {
         let result = null;
@@ -140,9 +140,4 @@ class TeqFw_Di_IdParser {
         }
         return result;
     }
-}
-
-// MODULE'S EXPORT
-export {
-    TeqFw_Di_IdParser as default
 }

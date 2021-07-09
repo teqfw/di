@@ -1,18 +1,20 @@
 {
   "name": "@teqfw/di",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Dependency Injection container based on ES6 modules (works for browsers & nodejs).",
   "type": "module",
-  "main": "./src/Container.mjs",
+  "main": "src/Shared/Container.mjs",
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/teqfw/di.git"
   },
   "teqfw": {
-    "autoload": {
-      "ns": "TeqFw_Di",
-      "path": "./src"
+    "di": {
+      "autoload": {
+        "ns": "TeqFw_Di",
+        "path": "./src"
+      }
     }
   }
 }

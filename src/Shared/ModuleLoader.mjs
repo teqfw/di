@@ -2,12 +2,12 @@
 /**
  * Load ES6 module sources and save it to internal registry.
  */
-class TeqFw_Di_ModuleLoader {
-    /** @type {TeqFw_Di_Resolver} */
+export default class TeqFw_Di_Shared_ModuleLoader {
+    /** @type {TeqFw_Di_Shared_Resolver} */
     resolver
 
     /**
-     * @param {TeqFw_Di_Resolver} resolver
+     * @param {TeqFw_Di_Shared_Resolver} resolver
      */
     constructor(resolver) {
         this.resolver = resolver;
@@ -29,9 +29,4 @@ class TeqFw_Di_ModuleLoader {
             return result;
         };
     }
-}
-
-// MODULE'S EXPORT
-export {
-    TeqFw_Di_ModuleLoader as default
 }
