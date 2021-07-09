@@ -7,15 +7,31 @@ const NS = 'TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace';
 
 // MODULE'S CLASSES
 export default class TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace {
-    /** @type {string} logical name for ES6 module with replacement code (Vnd_Plug_Implementation)  */
+    /**
+     * Logical name for ES6 module with replacement code (Vnd_Plug_Implementation).
+     * @type {string}
+     */
     alter;
-    /** @type {string} logical name for original ES6 module (Vnd_Plug_Interface) */
+    /**
+     * App area to use replacement ('back', 'front', 'shared').
+     * @type {string}
+     */
+    area;
+    /**
+     * Logical name for original ES6 module (Vnd_Plug_Interface).
+     * @type {string}
+     */
     orig;
 }
 
 // attributes names to use as aliases in queries to object props
 TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace.ALTER = 'alter';
+TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace.AREA = 'area';
 TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace.ORIG = 'orig';
+
+TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace.DATA_AREA_BACK = 'back';
+TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace.DATA_AREA_FRONT = 'front';
+TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace.DATA_AREA_SHARED = 'shared';
 
 /**
  * Factory to create new DTO instances.
@@ -29,7 +45,13 @@ export class Factory {
          */
         this.create = function (data = null) {
             const res = new TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace();
+            const clazz = TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace;
             res.alter = data?.alter;
+            res.area = (
+                (data?.area === clazz.DATA_AREA_BACK) ||
+                (data?.area === clazz.DATA_AREA_FRONT)
+            )
+                ? data.area : clazz.DATA_AREA_SHARED;
             res.orig = data?.orig;
             return res;
         }
