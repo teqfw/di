@@ -14,15 +14,22 @@
     "type": "git",
     "url": "git+https://github.com/teqfw/di.git"
   },
+  "keywords": [
+    "dependency injection",
+    "di",
+    "dynamic import",
+    "ecmascript 2015",
+    "es6+",
+    "teqfw",
+    "tequila framework"
+  ],
+  "author": "Alex Gusev <alex@flancer64.com>",
   "devDependencies": {
     "babel-eslint": "*",
     "eslint": "^7.24.0",
     "esm": "*",
     "jsdoc": "*",
     "mocha": "^8.3.2"
-  },
-  "esm": {
-    "cjs": true
   },
   "teqfw": {
     "di": {
