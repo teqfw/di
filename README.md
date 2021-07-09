@@ -6,7 +6,7 @@ functions/classes and resolving dependencies in constructors. It uses pure ECMAS
 modern browsers &amp; nodejs apps. You can share the same code between your frontend (browser) and your backend (nodejs) without TypeScript and preprocessors. Code in the browser's debugger will be the same as in your editor. Finally, you even can use interfaces in you projects and replace it with implementations.
 
 The '_proxy object_' for `constructor` specification is inspired by [awilix](https://github.com/jeffijoe/awilix).
-Thanks, guys.
+Thanks guys.
 
 ## Installation
 
@@ -29,15 +29,14 @@ namespaces (ES-modules) in the application - DI container uses these namespaces 
  */
 ```
 
-ES-modules can use regular import statements in their code:
+ES-modules can use regular import statements in code:
 
 ```ecmascript 6
 import ScanData from '../Api/Dto/Scanned.mjs';
 import {existsSync, readdirSync, readFileSync, statSync} from 'fs';
 ```
 
-but DI container cannot process these imports. Function or class should have this form to be compatible with DI
-container:
+but DI container cannot process these imports. Function or class should have this interface to be compatible with DI container:
 
 ```ecmascript 6
 export default function ObjectFactory(spec) {/* ... */}
@@ -97,8 +96,6 @@ Vnd_Pkg_Plugin_Path_To_Module => https://.../node/@vnd/plugin/src/Path/To/Module
 
 
 ## Identifiers
-
-[More](doc/identifiers.md)
 
 ID for manually added dependencies:
 ```
