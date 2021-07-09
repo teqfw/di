@@ -449,4 +449,17 @@ describe('TeqFw_Di_Shared_Container', function () {
             }
         });
     });
+
+    describe('class extending:', () => {
+
+
+        it('is possible', async () => {
+            const container = new Container();
+            // set up source mapping
+            container.addSourceMapping('Test', join(DATA_ROOT, 'ClassExtends'), true);
+            const ChildClass = await container.get('Test_ChildClass$');
+            const obj = new ChildClass();
+            assert(obj.name === 'base');
+        });
+    });
 });
