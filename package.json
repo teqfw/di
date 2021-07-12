@@ -3,6 +3,7 @@
   "version": "0.6.0",
   "description": "Dependency Injection container based on ES6 modules (works for browsers & nodejs).",
   "type": "module",
+  "main": "src/Shared/Container.mjs",
   "keywords": [
     "dependency injection",
     "di",
