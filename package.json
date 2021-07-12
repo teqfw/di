@@ -2,18 +2,6 @@
   "name": "@teqfw/di",
   "version": "0.6.0",
   "description": "Dependency Injection container based on ES6 modules (works for browsers & nodejs).",
-  "type": "module",
-  "main": "src/Shared/Container.mjs",
-  "scripts": {
-    "example": "node --experimental-modules ./example/s001/s001.mjs",
-    "test": "./node_modules/mocha/bin/mocha --recursive './test/**/*.test.mjs'",
-    "jsdoc": "./node_modules/jsdoc/jsdoc.js -d ./jsdoc/ -a all -c ./.jsdoc"
-  },
-  "license": "GPL-3.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/teqfw/di.git"
-  },
   "keywords": [
     "dependency injection",
     "di",
@@ -23,20 +11,30 @@
     "teqfw",
     "tequila framework"
   ],
-  "author": "Alex Gusev <alex@flancer64.com>",
+  "homepage": "https://github.com/teqfw/di#readme",
+  "bugs": {
+    "url": "https://github.com/teqfw/di/issues"
+  },
+  "license": "AGPL-3.0-only",
+  "author": {
+    "name": "Alex Gusev",
+    "email": "alex@flancer64.com",
+    "url": "https://github.com/flancer64"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teqfw/di.git"
+  },
+  "scripts": {
+    "example": "node --experimental-modules ./example/s001/s001.mjs",
+    "test": "./node_modules/mocha/bin/mocha --recursive './test/**/*.test.mjs'",
+    "jsdoc": "./node_modules/jsdoc/jsdoc.js -d ./jsdoc/ -a all -c ./.jsdoc"
+  },
   "devDependencies": {
     "babel-eslint": "*",
-    "eslint": "^7.24.0",
+    "eslint": "*",
     "esm": "*",
     "jsdoc": "*",
-    "mocha": "^8.3.2"
-  },
-  "teqfw": {
-    "di": {
-      "autoload": {
-        "ns": "TeqFw_Di",
-        "path": "./src"
-      }
-    }
+    "mocha": "*"
   }
 }
