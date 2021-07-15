@@ -1,8 +1,5 @@
 {
-  "di": {
-    "autoload": {
-      "ns": "TeqFw_Di",
-      "path": "./src"
-    }
-  }
+  "factoryId": "Vnd_Prj_Hndl",
+  "before": ["Vnd1_Prj1_Hndl1", "Vnd2_Prj2_Hndl2"],
+  "after": ["Vnd3_Prj3_Hndl3", "Vnd4_Prj4_Hndl4"]
 }
