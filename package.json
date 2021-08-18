@@ -1,21 +1,9 @@
 {
   "name": "@teqfw/di",
-  "version": "0.6.0",
-  "description": "Dependency Injection container based on ES6 modules (works for browsers & nodejs).",
+  "version": "0.7.0",
+  "description": "Dependency Injection container based on logical namespaces for ES6 modules.",
   "type": "module",
   "main": "src/Shared/Container.mjs",
-  "license": "GPL-3.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/teqfw/di.git"
-  },
-  "teqfw": {
-    "di": {
-      "autoload": {
-        "ns": "TeqFw_Di",
-        "path": "./src"
-      }
-    }
   "keywords": [
     "dependency injection",
     "di",
@@ -38,17 +26,5 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/teqfw/di.git"
-  },
-  "scripts": {
-    "example": "node --experimental-modules ./example/s001/s001.mjs",
-    "test": "./node_modules/mocha/bin/mocha --recursive './test/**/*.test.mjs'",
-    "jsdoc": "./node_modules/jsdoc/jsdoc.js -d ./jsdoc/ -a all -c ./.jsdoc"
-  },
-  "devDependencies": {
-    "babel-eslint": "*",
-    "eslint": "*",
-    "esm": "*",
-    "jsdoc": "*",
-    "mocha": "*"
   }
 }
