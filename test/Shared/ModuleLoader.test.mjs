@@ -55,7 +55,7 @@ describe('TeqFw_Di_Shared_ModuleLoader', function () {
             await loader.getModule('@flancer64/test!path/to/unknown');
             assert(false);
         } catch (e) {
-            assert(/^Cannot find module \.*/.test(e.message));
+            assert(/^Cannot load source file \.*/.test(e.message));
         }
     });
 
