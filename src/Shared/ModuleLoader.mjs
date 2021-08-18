@@ -18,13 +18,19 @@ export default class TeqFw_Di_Shared_ModuleLoader {
         const _modules = new Map();
 
         this.getModule = async function (moduleId) {
-            let result;
+            let result, sourceFile;
             if (_modules[moduleId]) {
                 result = _modules[moduleId];
             } else {
-                const sourceFile = this.resolver.resolveModuleId(moduleId);
-                result = await import(sourceFile);
-                _modules.set(moduleId, result);
+                try {
+                    sourceFile = this.resolver.resolveModuleId(moduleId);
+                    result = await import(sourceFile);
+                    _modules.set(moduleId, result);
+                } catch (e) {
+                    let msg = `Cannot load source file '${sourceFile}' (module id: ${moduleId}).`;
+                    if (e.message) msg = `${msg} Error: ${e.message}`;
+                    throw new Error(msg);
+                }
             }
             return result;
         };
