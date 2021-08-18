@@ -28,10 +28,10 @@ export default class TeqFw_Di_Back_Plugin_Scanner {
         this.getDescriptors = async function (path) {
             const result = [];
             const plugins = await this.scanFilesystem(path);
-            for (const [path, one] of Object.entries(plugins)) {
-                if (one.teqfw?.[DEF.DESC_NODE]) {
+            for (const [, one] of Object.entries(plugins)) {
+                if (one.teqfw?.[DEF.NAME]) {
                     /** @type {TeqFw_Di_Back_Api_Dto_Plugin_Desc} */
-                    const desc = fDesc.create(one.teqfw[DEF.DESC_NODE]);
+                    const desc = fDesc.create(one.teqfw[DEF.NAME]);
                     Object.freeze(desc);
                     result.push(desc);
                 }
@@ -48,9 +48,9 @@ export default class TeqFw_Di_Back_Plugin_Scanner {
             const result = {};
             const plugins = await this.scanFilesystem(path);
             for (const [path, one] of Object.entries(plugins)) {
-                if (one.teqfw?.[DEF.DESC_NODE]) {
+                if (one.teqfw?.[DEF.NAME]) {
                     /** @type {TeqFw_Di_Back_Api_Dto_Plugin_Desc} */
-                    const desc = fDesc.create(one.teqfw[DEF.DESC_NODE]);
+                    const desc = fDesc.create(one.teqfw[DEF.NAME]);
                     if (desc?.autoload?.ns) {
                         // make a copy, setup and freeze it
                         /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload} */
