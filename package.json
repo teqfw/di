@@ -1,7 +1,7 @@
 {
   "name": "@teqfw/di",
   "version": "0.6.0",
-  "description": "Dependency Injection container based on ES6 modules (works for browsers & nodejs).",
+  "description": "Dependency Injection container based on logical namespaces for ES6 modules.",
   "type": "module",
   "main": "src/Shared/Container.mjs",
   "keywords": [
