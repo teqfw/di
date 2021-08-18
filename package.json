@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/teqfw/di/issues"
   },
-  "license": "AGPL-3.0-only",
+  "license": "Apache-2.0",
   "author": {
     "name": "Alex Gusev",
     "email": "alex@flancer64.com",
