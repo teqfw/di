@@ -6,6 +6,9 @@
     },
     "replace": [
       {"orig": "TeqFw_Di_Interface", "alter": "TeqFw_Di_Impl"}
-    ]
+    ],
+    "replaceNew": {
+      "TeqFw_Di_Interface": {"ns": "TeqFw_Di_Impl"}
+    }
   }
 }
