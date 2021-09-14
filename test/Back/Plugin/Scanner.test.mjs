@@ -84,7 +84,8 @@ describe('TeqFw_Di_Back_Plugin_Scanner', () => {
             const descriptors = await scanner.getDescriptors(path);
             assert(Object.keys(descriptors).length === 1);
             const [first] = descriptors;
-            assert(Array.isArray(first.replace) && first.replace.length === 1);
+            const replace = first.replace;
+            assert((typeof replace === 'object') && Object.keys(replace).length > 0);
         });
     });
 

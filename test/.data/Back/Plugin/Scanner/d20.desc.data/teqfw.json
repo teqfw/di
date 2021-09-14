@@ -4,10 +4,7 @@
       "ns": "TeqFw_Di",
       "path": "./src"
     },
-    "replace": [
-      {"orig": "TeqFw_Di_Interface", "alter": "TeqFw_Di_Impl"}
-    ],
-    "replaceNew": {
+    "replace": {
       "TeqFw_Di_Interface": {"ns": "TeqFw_Di_Impl"}
     }
   }
