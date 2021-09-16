@@ -9,7 +9,7 @@ const NS = 'TeqFw_Di_Back_Api_Dto_Plugin_Desc';
 export default class TeqFw_Di_Back_Api_Dto_Plugin_Desc {
     /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload} */
     autoload;
-    /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace[]} */
+    /** @type {Object<string, TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace>} */
     replace;
 }
 
@@ -24,12 +24,8 @@ TeqFw_Di_Back_Api_Dto_Plugin_Desc.REPLACE = 'replace';
 export class Factory {
     constructor(spec) {
         // EXTRACT DEPS
-        /** @type {typeof TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload} */
-        const TAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload#'];
         /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload.Factory} */
         const fAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload#Factory$'];
-        /** @type {typeof TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace} */
-        const TReplace = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace#'];
         /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace.Factory} */
         const fReplace = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace#Factory$'];
 
@@ -38,12 +34,20 @@ export class Factory {
          * @return {TeqFw_Di_Back_Api_Dto_Plugin_Desc}
          */
         this.create = function (data = null) {
+
+            // DEFINE INNER FUNCTIONS
+            function parseReplace(data) {
+                const res = {};
+                if (typeof data === 'object')
+                    for (const ns of Object.keys(data))
+                        res[ns] = fReplace.create(data[ns]);
+                return res;
+            }
+
+            // MAIN FUNCTIONALITY
             const res = new TeqFw_Di_Back_Api_Dto_Plugin_Desc();
-            res.autoload = (data?.autoload instanceof TAutoload)
-                ? data.autoload : fAutoload.create(data?.autoload);
-            res.replace = Array.isArray(data?.replace)
-                ? data.replace.map((one) => (one instanceof TReplace) ? one : fReplace.create(one))
-                : [];
+            res.autoload = fAutoload.create(data?.autoload);
+            res.replace = parseReplace(data?.replace);
             return res;
         }
     }

@@ -18,7 +18,7 @@ const $parser = new IdParser();
 export default class TeqFw_Di_Shared_SpecProxy {
     /**
      * @param {string} mainId ID of the constructing object ('Vendor_Module$', 'Vendor_Module$$', 'dbCfg').
-     * @param {Object.<string, Boolean>} uplineDeps All incomplete dependencies in current construction process
+     * @param {string[]} uplineDeps All incomplete dependencies in current construction process
      * (to prevent circular dependencies).
      * @param {Map} containerSingletons Container level registry with created singletons (ids: 'dbCfg', 'Module$$').
      * @param {Function} fnCreate constructing process level registry to save functions that
@@ -73,14 +73,14 @@ export default class TeqFw_Di_Shared_SpecProxy {
                     } else {
                         // check stack of incomplete dependencies
                         if (parsed.nameModule) { // don't process manually inserted singletons
-                            if (uplineDeps[parsed.nameModule]) {
+                            if (uplineDeps.includes(parsed.nameModule)) {
                                 // `dep_id` is already requested to be created, so we report it as 'main'
                                 const err = new Error(`Circular dependencies (main: ${depId}; dep: ${mainId})`);
                                 fnRejectUseFactory(err);  // reject async _useFactory
                                 throw err;                  // break sync object's constructor
                             }
                             // ... and register new one
-                            uplineDeps[parsed.nameModule] = true;
+                            uplineDeps.push(parsed.nameModule);
                         }
                         // create new required dependency for this object
                         fnGetObject(depId, uplineDeps).then((obj) => {
@@ -88,7 +88,7 @@ export default class TeqFw_Di_Shared_SpecProxy {
                             // save created `dep_id` instance to local dependencies registry
                             deps[depId] = obj;
                             // remove created dependency from circular registry
-                            uplineDeps[parsed.nameModule] = false;
+                            uplineDeps.splice(uplineDeps.indexOf(parsed.nameModule), 1);
                             // re-call main object construction function
                             fnCreate();
                         }).catch(err => {

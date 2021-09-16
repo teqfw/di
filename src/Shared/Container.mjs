@@ -54,7 +54,7 @@ export default class TeqFw_Di_Shared_Container {
          * Internal function to get/create object|function|class|module by given `id`.
          *
          * @param {string} mainId main object ID (singleton, module, new object, default export singleton)
-         * @param {Object.<string, boolean>} uplineDeps dependencies registry to prevent circular loop.
+         * @param {string[]} uplineDeps dependencies registry to prevent circular loop.
          * @returns {Promise<*>}
          */
         async function getObject(mainId, uplineDeps) {
@@ -252,7 +252,7 @@ export default class TeqFw_Di_Shared_Container {
          * TODO: /bootstrap path, for example/).
          */
         this.get = async function (depId, context = null) {
-            return await getObject(depId, {});
+            return await getObject(depId, []);
         };
 
         /**
