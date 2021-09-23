@@ -23,7 +23,6 @@ TeqFw_Di_Back_Api_Dto_Plugin_Desc.REPLACE = 'replace';
  */
 export class Factory {
     constructor(spec) {
-        // EXTRACT DEPS
         /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload.Factory} */
         const fAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload#Factory$'];
         /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace.Factory} */
