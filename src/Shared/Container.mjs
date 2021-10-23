@@ -122,7 +122,7 @@ export default class TeqFw_Di_Shared_Container {
                         // try to create object and start chain of deps resolving in SpecProxy
                         fnCreate();
                     } else {
-                        throw new Error('Unexpected type of loaded module.');
+                        throw new Error(`Unexpected type of factory function for '${mainId}'.`);
                     }
                     // `resolve` for this promise is called from fnCreate
                     // (fnCreate is recalled from spec proxy on every dep failure)
