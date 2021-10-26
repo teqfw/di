@@ -5,9 +5,21 @@ import ParsedId from './IdParser/Dto.mjs';
 /** @type {RegExp} expression for filepath based IDs (@vendor/package!module#export$$) */
 const FILEPATH_ID = /^((([a-z@])([A-Za-z0-9_\-/@]*))(!([A-Za-z0-9_\-/@]*)?((#)?([A-Za-z0-9_]*)(\${1,2})?)?)?)$/;
 /** @type {RegExp} expression for logical namespace IDs (Ns_Module#export$$) */
-const LOGICAL_NS_ID = /^((([A-Z])[A-Za-z0-9_]*)(#?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
+const LOGICAL_NS_ID = /^((([A-Z])[A-Za-z0-9_]*)((#|.)?([A-Za-z0-9_]*)(\${1,2})?)?)$/;
 /** @type {RegExp} expression for objects that manually added to DI container (singleton, namedFactory$$)  */
 const MANUAL_DI_ID = /^((([a-z])[A-Za-z0-9_]*)(\$\$)?)$/;
+/** @type {string} default export keyword */
+const KED = 'default';
+/** @type {string} filesystem export mark (@vendor/package!module#export$$) and old logical export mark */
+const MEF = '#';
+/** @type {string} filesystem module mark (@vendor/package!module#export$$) */
+const MMF = '!';
+/** @type {string} logical namespace export mark (Ns_Mod.export) */
+const MEL = '.';
+/** @type {string} new instance mark (Ns_Mod.export$$) */
+const MI = '$$';
+/** @type {string} singleton mark (Ns_Mod.export$) */
+const MS = '$';
 
 // MODULE'S CLASSES
 /**
@@ -49,8 +61,8 @@ export default class TeqFw_Di_Shared_IdParser {
                 result.nameModule = parts[6];
                 result.mapKey = parts[1];
                 result.typeTarget = ParsedId.TYPE_TARGET_MODULE;
-                if (parts[8] === '#') {
-                    result.nameExport = 'default';
+                if (parts[8] === MEF) {
+                    result.nameExport = KED;
                     result.typeTarget = ParsedId.TYPE_TARGET_EXPORT;
                     result.mapKey = undefined;
                 }
@@ -60,16 +72,16 @@ export default class TeqFw_Di_Shared_IdParser {
                     result.mapKey = undefined;
                 }
                 if (parts[10]) {
-                    if (parts[10] === '$$') {
+                    if (parts[10] === MI) {
                         result.typeTarget = ParsedId.TYPE_TARGET_FACTORY;
-                    } else if (parts[10] === '$') {
+                    } else if (parts[10] === MS) {
                         result.typeTarget = ParsedId.TYPE_TARGET_SINGLETON;
                     }
                     if (result.nameExport === undefined) {
-                        result.nameExport = 'default';
-                        result.mapKey = result.namePackage + '!' + result.nameModule;
+                        result.nameExport = KED;
+                        result.mapKey = result.namePackage + MMF + result.nameModule;
                     } else {
-                        result.mapKey = result.namePackage + '!' + result.nameModule + '#' + result.nameExport;
+                        result.mapKey = result.namePackage + MMF + result.nameModule + MEF + result.nameExport;
                     }
                 }
             }
@@ -90,30 +102,53 @@ export default class TeqFw_Di_Shared_IdParser {
             result.orig = id;
             result.typeId = ParsedId.TYPE_ID_LOGICAL;
             result.nameModule = parts[2];
-            result.mapKey = result.nameModule;
+            result.mapKey = result.nameModule; // init mapKey with module's name
             result.typeTarget = ParsedId.TYPE_TARGET_MODULE;
-            if (parts[4] === '#') {
-                result.nameExport = 'default';
+            // Ns_Module.name$$ - named instance
+            if (
+                ((parts[5] === MEL) || (parts[5] === MEF))
+                && (parts[7] === MI)
+            ) {
+                result.nameExport = parts[6];
+                result.typeTarget = ParsedId.TYPE_TARGET_FACTORY;
+                result.mapKey = result.nameModule + MEL + result.nameExport;
+            }
+            // Ns_Module.name$ - named singleton
+            else if (
+                ((parts[5] === MEL) || (parts[5] === MEF))
+                && (parts[7] === MS)
+            ) {
+                result.nameExport = parts[6];
+                result.typeTarget = ParsedId.TYPE_TARGET_SINGLETON;
+                result.mapKey = result.nameModule + MEL + result.nameExport;
+            }
+            // Ns_Module#name - named export
+            else if (
+                ((parts[5] === MEL) || (parts[5] === MEF))
+                && ((parts[6] !== undefined) && (parts[6] !== ''))
+            ) {
+                result.nameExport = parts[6];
                 result.typeTarget = ParsedId.TYPE_TARGET_EXPORT;
                 result.mapKey = undefined;
             }
-            if (parts[5]) {
-                result.nameExport = parts[5];
+            // Ns_Module$$ - default instance
+            else if (parts[4] === MI) {
+                result.nameExport = KED;
+                result.typeTarget = ParsedId.TYPE_TARGET_FACTORY;
+            }
+            // Ns_Module$ - default singleton
+            else if (parts[4] === MS) {
+                result.nameExport = KED;
+                result.typeTarget = ParsedId.TYPE_TARGET_SINGLETON;
+            }
+            // Ns_Module# - default export
+            else if (
+                ((parts[5] === MEL) || (parts[5] === MEF))
+                && (parts[7] === undefined)
+            ) {
+                result.nameExport = KED;
                 result.typeTarget = ParsedId.TYPE_TARGET_EXPORT;
                 result.mapKey = undefined;
-            }
-            if (parts[6]) {
-                if (parts[6] === '$$') {
-                    result.typeTarget = ParsedId.TYPE_TARGET_FACTORY;
-                } else if (parts[6] === '$') {
-                    result.typeTarget = ParsedId.TYPE_TARGET_SINGLETON;
-                }
-                if (result.nameExport === undefined) {
-                    result.nameExport = 'default';
-                    result.mapKey = result.nameModule;
-                } else {
-                    result.mapKey = result.nameModule + '#' + result.nameExport;
-                }
             }
         }
         return result;
