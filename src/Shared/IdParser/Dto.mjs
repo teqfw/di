@@ -31,6 +31,11 @@
  */
 export default class TeqFw_Di_Shared_IdParser_Dto {
     /**
+     * 'true' if dependency should be a proxy.
+     * @type {boolean}
+     */
+    isProxy;
+    /**
      * Key to map object in container's store (singletons, constructors, modules) - original id w/o '$' chars.
      * @type {string}
      */
