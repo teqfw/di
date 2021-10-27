@@ -50,6 +50,9 @@ export default class TeqFw_Di_Shared_Container {
         singletons.set('container', this); // as singleton
         singletons.set('TeqFw_Di_Shared_Container', this); // as singleton of the class
 
+        // pin itself for nested functions
+        const me = this;
+
         /**
          * Internal function to get/create object|function|class|module by given `id`.
          *
@@ -165,7 +168,7 @@ export default class TeqFw_Di_Shared_Container {
             const parsed = $parser.parse(mainId);
             parsed.nameModule = checkReplacements(parsed.nameModule);
             // try to find requested dependency in local storages
-            result = await getFromStorages(parsed);
+            if (!parsed.isProxy) result = await getFromStorages(parsed);
             // if not found then try to load sources and create new one
             if (result === undefined) {
                 // Sources for requested dependency are not imported or not set manually before.
@@ -181,13 +184,25 @@ export default class TeqFw_Di_Shared_Container {
                     // result as ES6 module export
                     result = module[parsed.nameExport];
                 } else {
-                    // we need use module export as factory for new object or singleton for the first time
-                    const factory = module[parsed.nameExport];
-                    factories.set(parsed.mapKey, factory);
-                    const object = await _useFactory(factory);
-                    // save singleton object in container storage
-                    if (parsed.typeTarget === ParsedId.TYPE_TARGET_SINGLETON) singletons.set(parsed.mapKey, object);
-                    result = object;
+                    // create new object (singleton or instance) using factory
+                    if (parsed.isProxy) {
+                        // we need to create proxy to resolve deps for the object later
+                        const depId = parsed.orig.replace(/@/gi, '$');
+                        result = new Proxy({dep: undefined, depId}, {
+                            get: async function (base, name) {
+                                if (name === 'create') base.dep = await me.get(base.depId);
+                                return base.dep;
+                            }
+                        });
+                    } else {
+                        // we need use module export as factory for new object or singleton for the first time
+                        const factory = module[parsed.nameExport];
+                        factories.set(parsed.mapKey, factory);
+                        const object = await _useFactory(factory);
+                        // save singleton object in container storage
+                        if (parsed.typeTarget === ParsedId.TYPE_TARGET_SINGLETON) singletons.set(parsed.mapKey, object);
+                        result = object;
+                    }
                 }
             }
             return result;
