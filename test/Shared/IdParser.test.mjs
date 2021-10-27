@@ -103,11 +103,34 @@ describe('TeqFw_Di_Shared_IdParser', () => {
                     assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_LOGICAL);
                     assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_FACTORY);
                 });
+                it('singleton proxy (Ns_Module@)', async () => {
+                    const parsed = obj.parseLogicalNsId('Ns_Module@');
+                    assert.strictEqual(parsed.isProxy, true);
+                    assert.strictEqual(parsed.mapKey, 'Ns_Module');
+                    assert.strictEqual(parsed.nameExport, 'default');
+                    assert.strictEqual(parsed.nameModule, 'Ns_Module');
+                    assert.strictEqual(parsed.namePackage, undefined);
+                    assert.strictEqual(parsed.orig, 'Ns_Module@');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_LOGICAL);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_SINGLETON);
+                });
+                it('factory proxy (Ns_Module@@)', async () => {
+                    const parsed = obj.parseLogicalNsId('Ns_Module@@');
+                    assert.strictEqual(parsed.isProxy, true);
+                    assert.strictEqual(parsed.mapKey, 'Ns_Module');
+                    assert.strictEqual(parsed.nameExport, 'default');
+                    assert.strictEqual(parsed.nameModule, 'Ns_Module');
+                    assert.strictEqual(parsed.namePackage, undefined);
+                    assert.strictEqual(parsed.orig, 'Ns_Module@@');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_LOGICAL);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_FACTORY);
+                });
             });
 
             describe('named export:', () => {
                 it('simple (Ns_Module.name)', async () => {
                     const parsed = obj.parseLogicalNsId('Ns_Module.name');
+                    assert.strictEqual(parsed.isProxy, false);
                     assert.strictEqual(parsed.mapKey, undefined);
                     assert.strictEqual(parsed.nameExport, 'name');
                     assert.strictEqual(parsed.nameModule, 'Ns_Module');
@@ -118,6 +141,7 @@ describe('TeqFw_Di_Shared_IdParser', () => {
                 });
                 it('singleton (Ns_Module.name$)', async () => {
                     const parsed = obj.parseLogicalNsId('Ns_Module.name$');
+                    assert.strictEqual(parsed.isProxy, false);
                     assert.strictEqual(parsed.mapKey, 'Ns_Module.name');
                     assert.strictEqual(parsed.nameExport, 'name');
                     assert.strictEqual(parsed.nameModule, 'Ns_Module');
@@ -128,11 +152,34 @@ describe('TeqFw_Di_Shared_IdParser', () => {
                 });
                 it('factory (Ns_Module.name$$)', async () => {
                     const parsed = obj.parseLogicalNsId('Ns_Module.name$$');
+                    assert.strictEqual(parsed.isProxy, false);
                     assert.strictEqual(parsed.mapKey, 'Ns_Module.name');
                     assert.strictEqual(parsed.nameExport, 'name');
                     assert.strictEqual(parsed.nameModule, 'Ns_Module');
                     assert.strictEqual(parsed.namePackage, undefined);
                     assert.strictEqual(parsed.orig, 'Ns_Module.name$$');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_LOGICAL);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_FACTORY);
+                });
+                it('singleton proxy (Ns_Module.name@)', async () => {
+                    const parsed = obj.parseLogicalNsId('Ns_Module.name@');
+                    assert.strictEqual(parsed.isProxy, true);
+                    assert.strictEqual(parsed.mapKey, 'Ns_Module.name');
+                    assert.strictEqual(parsed.nameExport, 'name');
+                    assert.strictEqual(parsed.nameModule, 'Ns_Module');
+                    assert.strictEqual(parsed.namePackage, undefined);
+                    assert.strictEqual(parsed.orig, 'Ns_Module.name@');
+                    assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_LOGICAL);
+                    assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_SINGLETON);
+                });
+                it('factory proxy (Ns_Module.name@@)', async () => {
+                    const parsed = obj.parseLogicalNsId('Ns_Module.name@@');
+                    assert.strictEqual(parsed.isProxy, true);
+                    assert.strictEqual(parsed.mapKey, 'Ns_Module.name');
+                    assert.strictEqual(parsed.nameExport, 'name');
+                    assert.strictEqual(parsed.nameModule, 'Ns_Module');
+                    assert.strictEqual(parsed.namePackage, undefined);
+                    assert.strictEqual(parsed.orig, 'Ns_Module.name@@');
                     assert.strictEqual(parsed.typeId, ParsedId.TYPE_ID_LOGICAL);
                     assert.strictEqual(parsed.typeTarget, ParsedId.TYPE_TARGET_FACTORY);
                 });
