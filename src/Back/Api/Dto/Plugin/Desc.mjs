@@ -9,7 +9,12 @@ const NS = 'TeqFw_Di_Back_Api_Dto_Plugin_Desc';
 export default class TeqFw_Di_Back_Api_Dto_Plugin_Desc {
     /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload} */
     autoload;
-    /** @type {Object<string, TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace>} */
+    /**
+     * Replacements for IDs:
+     *  - {'Interface_Name': 'Impl_Name'}: replace es6-module 'Interface_Name' with 'Impl_Name' on injection;
+     *  - {'front': {'Interface_Name': 'Impl_Name'}}: do the same for 'front' area only (should be implemented outside this plugin)
+     * @type {Object<string, string>|Object<string, Object<string, string>>}
+     */
     replace;
 }
 
@@ -25,11 +30,9 @@ export class Factory {
     constructor(spec) {
         /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload.Factory} */
         const fAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload#Factory$'];
-        /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace.Factory} */
-        const fReplace = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Replace#Factory$'];
 
         /**
-         * @param {TeqFw_Di_Back_Api_Dto_Plugin_Desc|null} data
+         * @param {*} data
          * @return {TeqFw_Di_Back_Api_Dto_Plugin_Desc}
          */
         this.create = function (data = null) {
@@ -38,8 +41,17 @@ export class Factory {
             function parseReplace(data) {
                 const res = {};
                 if (typeof data === 'object')
-                    for (const ns of Object.keys(data))
-                        res[ns] = fReplace.create(data[ns]);
+                    for (const ns of Object.keys(data)) {
+                        const node = data[ns];
+                        if (typeof node === 'string') {
+                            res[ns] = data[ns]; // {"interface": "impl"}
+                        } else if (typeof node === 'object') {
+                            res[ns] = {}; // {"interface": {"area": "impl"}}
+                            for (const area of Object.keys(node))
+                                if (typeof node[area] === 'string')
+                                    res[ns][area] = node[area];
+                        }
+                    }
                 return res;
             }
 

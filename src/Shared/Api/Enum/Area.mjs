@@ -1,5 +1,7 @@
 /**
  * Enumeration for application areas.
+ *
+ * @deprecated areas should be defined outside this plugin.
  */
 const TeqFw_Di_Shared_Api_Enum_Area = {
     BACK: 'back', // nodejs compatible 'import' is allowed

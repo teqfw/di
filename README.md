@@ -3,10 +3,12 @@
 "_DI_" means both "_Dynamic Import_" and "_Dependency Injection_" here. This package allows defining logical namespaces
 in your projects, dynamically importing ES6-modules from these namespaces, creating new objects from imported
 functions/classes and resolving dependencies in constructors. It uses pure ECMAScript 2015+ (ES6+) and works both for
-modern browsers &amp; nodejs apps. You can share the same code between your frontend (browser) and your backend (nodejs) without TypeScript and preprocessors. Code in the browser's debugger will be the same as in your editor. Finally, you even can use interfaces in you projects and replace it with implementations.
+modern browsers &amp; nodejs apps. You can share the same code between your frontend (browser) and your backend (nodejs)
+without TypeScript and preprocessors. Code in the browser's debugger will be the same as in your editor. Finally, you
+even can use interfaces in you projects and replace it with implementations.
 
-The '_proxy object_' for `constructor` specification is inspired by [awilix](https://github.com/jeffijoe/awilix).
-Thanks guys.
+The '_proxy object_' for `constructor` specification is inspired by [awilix](https://github.com/jeffijoe/awilix). Thanks
+guys.
 
 ## Installation
 
@@ -36,7 +38,8 @@ import ScanData from '../Api/Dto/Scanned.mjs';
 import {existsSync, readdirSync, readFileSync, statSync} from 'fs';
 ```
 
-but DI container cannot process these imports. Function or class should have this interface to be compatible with DI container:
+but DI container cannot process these imports. Function or class should have this interface to be compatible with DI
+container:
 
 ```ecmascript 6
 export default function ObjectFactory(spec) {/* ... */}
@@ -93,17 +96,17 @@ Vnd_Pkg_Plugin_Path_To_Module => /.../node_modules/@vnd/plugin/src/Path/To/Modul
 Vnd_Pkg_Plugin_Path_To_Module => https://.../node/@vnd/plugin/src/Path/To/Module.mjs
 ```
 
-
-
 ## Identifiers
 
 ID for manually added dependencies:
+
 ```
 dbConnection                // singleton
 dbTransaction$$             // get new instance using saved factory
 ```
 
 ID for dynamic imports:
+
 ```
 Vnd_Pkg_Module              // import whole ES6 module
 Vnd_Pkg_Module#             // get default export for ES6 module
@@ -111,6 +114,7 @@ Vnd_Pkg_Module#fnName       // get export with name 'fnName' for ES6 module
 ```
 
 ID for singletons and instances:
+
 ```
 Vnd_Pkg_Module$             // get singleton object created with default export factory
 Vnd_Pkg_Module$$            // get new object created with default export factory
@@ -118,11 +122,10 @@ Vnd_Pkg_Module#fnName$      // get singleton object created with 'fnName' export
 Vnd_Pkg_Module#fnName$$     // get new object created with 'fnName' export factory
 ```
 
-
-
 ## Interfaces
 
 Define interface in a module:
+
 ```ecmascript 6
 /** @interface */
 export default class Vnd_Plugin_Interface {
@@ -132,9 +135,11 @@ export default class Vnd_Plugin_Interface {
 ```
 
 Use this interface in other module:
+
 ```ecmascript 6
 export default class Vnd2_Pkg2_Consumer {
     name;
+
     constructor(spec) {
         /** @type {Vnd_Plugin_Interface} */
         const service = spec['Vnd_Plugin_Interface$']; // singleton from default export
@@ -144,6 +149,7 @@ export default class Vnd2_Pkg2_Consumer {
 ```
 
 Implement the interface in third module:
+
 ```ecmascript 6
 /** @implements Vnd_Plugin_Interface */
 export default class Vnd2_Plugin_Impl {
@@ -154,16 +160,17 @@ export default class Vnd2_Plugin_Impl {
 ```
 
 Setup replacement in DI container:
+
 ```ecmascript 6
 container.addModuleReplacement('Vnd_Plugin_Interface', 'Vnd2_Plugin_Impl');
 const consumer = await container.get('Vnd2_Pkg2_Consumer$');
 console.log(consumer.name); // 'this is implementation'
 ```
 
-
 ## Usage in ES Modules
 
 ### Function
+
 ```ecmascript 6
 export default function Vnd_Pkg_Plugin_Fn(spec) {
     const singleton = spec['dbConfig'];
@@ -177,6 +184,7 @@ export default function Vnd_Pkg_Plugin_Fn(spec) {
 ```
 
 ### Class
+
 ```ecmascript 6
 export default class Vnd_Pkg_Plugin_Class {
     constructor(spec) {
@@ -186,10 +194,10 @@ export default class Vnd_Pkg_Plugin_Class {
 }
 ```
 
-
 ## Frontend Bootstrap
 
 We need to proxy our `node_modules` scripts to browser (`express` example):
+
 ```ecmascript 6
 // map all './node_modules/' requests to './node_modules/' folder as static resources requests
 server.all('*/node_modules/*', function (req, res, next) {
@@ -205,7 +213,9 @@ server.all('*/node_modules/*', function (req, res, next) {
 ```
 
 `index.html`:
+
 ```html
+
 <script type="module">
     const baseUrl = location.href;
     // load DI container as ES6 module (w/o namespaces)
@@ -224,8 +234,6 @@ server.all('*/node_modules/*', function (req, res, next) {
     });
 </script>
 ```
-
-
 
 ## Server Bootstrap
 
