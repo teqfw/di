@@ -5,7 +5,7 @@
       "path": "./src"
     },
     "replace": {
-      "TeqFw_Di_Interface": {"ns": "TeqFw_Di_Impl"}
+      "TeqFw_Di_Interface": "TeqFw_Di_Impl"
     }
   }
 }
