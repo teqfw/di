@@ -14,7 +14,7 @@ describe('TeqFw_Di_Shared_Container (proxy)', function () {
     container.addSourceMapping('Test', DATA_ROOT, true);
 
     it('singleton (Test_Obj@)', async () => {
-        /** @type {TeqFw_Di_Shared_Api_IFactory} */
+        /** @type {TeqFw_Di_Shared_Api_IProxy} */
         const factory = await container.get('Test_Obj@');
         /** @type {Test_Obj} */
         const snglt1 = await factory.create;
@@ -26,7 +26,7 @@ describe('TeqFw_Di_Shared_Container (proxy)', function () {
     });
 
     it('instances (Test_Obj@@)', async () => {
-        /** @type {TeqFw_Di_Shared_Api_IFactory} */
+        /** @type {TeqFw_Di_Shared_Api_IProxy} */
         const factory = await container.get('Test_Obj@@');
         /** @type {Test_Obj} */
         const inst1 = await factory.create;
