@@ -57,7 +57,7 @@ const obj = new Proxy({depId}, handler);
 ```js
 constructor(spec)
 {
-    /** @type {TeqFw_Di_Shared_Api_IFactory} */
+    /** @type {TeqFw_Di_Shared_Api_IProxy} */
     const factRouteLogin = spec['Fl32_Bwl_Front_Door_Pub_Widget_Dev_Login_Route@'];
     // ...
     /** @type {Fl32_Bwl_Front_Door_Pub_Widget_Dev_Login_Route} */
@@ -67,8 +67,9 @@ constructor(spec)
 
 ## Proxy factory to create objects
 
-В таком случае прокси объект и его использование выглядело бы так:
+В таком случае прокси объект и его использование выглядели бы так.
 
+Создание прокси в контейнере (реализовано):
 ```js
 const handler = {
     get: async function (base) {
@@ -76,8 +77,18 @@ const handler = {
     }
 };
 
-/** @type {TeqFw_Di_Shared_Api_IFactory} */
+/** @type {TeqFw_Di_Shared_Api_IProxy} */
 const factory = new Proxy({id: 'Test_Product$'}, handler);
+```
+
+Получение фабрики для создания проксируемого объекта (в конструкторе класса или фабричной функции):
+```javascript
+/** @type {TeqFw_Di_Shared_Api_IProxy} */
+const factory = container.get('Test_Product@');
+```
+
+Получение нужного объекта через фабрику (в рабочем коде):
+```javascript
 /** @type {Test_Product} */
 const obj = await factory.create;
 obj.act();

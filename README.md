@@ -3,10 +3,12 @@
 "_DI_" means both "_Dynamic Import_" and "_Dependency Injection_" here. This package allows defining logical namespaces
 in your projects, dynamically importing ES6-modules from these namespaces, creating new objects from imported
 functions/classes and resolving dependencies in constructors. It uses pure ECMAScript 2015+ (ES6+) and works both for
-modern browsers &amp; nodejs apps. You can share the same code between your frontend (browser) and your backend (nodejs) without TypeScript and preprocessors. Code in the browser's debugger will be the same as in your editor. Finally, you even can use interfaces in you projects and replace it with implementations.
+modern browsers &amp; nodejs apps. You can share the same code between your frontend (browser) and your backend (nodejs)
+without TypeScript and preprocessors. Code in the browser's debugger will be the same as in your editor. Finally, you
+even can use interfaces in you projects and replace it with implementations.
 
-The '_proxy object_' for `constructor` specification is inspired by [awilix](https://github.com/jeffijoe/awilix).
-Thanks guys.
+The '_proxy object_' for `constructor` specification is inspired by [awilix](https://github.com/jeffijoe/awilix). Thanks
+guys.
 
 ## Installation
 
@@ -36,7 +38,8 @@ import ScanData from '../Api/Dto/Scanned.mjs';
 import {existsSync, readdirSync, readFileSync, statSync} from 'fs';
 ```
 
-but DI container cannot process these imports. Function or class should have this interface to be compatible with DI container:
+but DI container cannot process these imports. Function or class should have this interface to be compatible with DI
+container:
 
 ```ecmascript 6
 export default function ObjectFactory(spec) {/* ... */}
