@@ -3,7 +3,8 @@
 ## 0.11.0
 
 * Restructure `/@teqfw/di/replace` node in `teqfw.json`.
-* `TeqFw_Di_Shared_Api_Enum_Area` enumeration is removed;
+* Remove `TeqFw_Di_Shared_Api_Enum_Area` enumeration.
+* Fix example code (`npm run example`).
 
 ## 0.10.0
 

@@ -14,4 +14,6 @@ const container = new Container();
 // relative sources are mapped relatively to this script
 container.addSourceMapping("Sample", "../../example/s001/src");
 // get object by ID from container then run
-container.get("Sample_App").then(app => app.run());
+container.get("Sample_App$")
+    .then(app => app.run())
+    .catch((e) => {console.dir(e)});
