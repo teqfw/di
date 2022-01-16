@@ -27,6 +27,8 @@ TeqFw_Di_Back_Api_Dto_Plugin_Desc.REPLACE = 'replace';
  * @memberOf TeqFw_Di_Back_Api_Dto_Plugin_Desc
  */
 export class Factory {
+    static namespace = NS;
+
     constructor(spec) {
         /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload.Factory} */
         const fAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload#Factory$'];
@@ -66,4 +68,3 @@ export class Factory {
 
 // freeze DTO class to deny attributes changes and pin namespace
 Object.freeze(TeqFw_Di_Back_Api_Dto_Plugin_Desc);
-Object.defineProperty(Factory, 'name', {value: `${NS}.${Factory.constructor.name}`});
