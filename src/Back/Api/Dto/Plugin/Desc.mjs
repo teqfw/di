@@ -39,7 +39,7 @@ export class Factory {
          */
         this.create = function (data = null) {
 
-            // DEFINE INNER FUNCTIONS
+            // ENCLOSED FUNCS
             function parseReplace(data) {
                 const res = {};
                 if (typeof data === 'object')
@@ -57,7 +57,7 @@ export class Factory {
                 return res;
             }
 
-            // MAIN FUNCTIONALITY
+            // MAIN
             const res = new TeqFw_Di_Back_Api_Dto_Plugin_Desc();
             res.autoload = fAutoload.create(data?.autoload);
             res.replace = parseReplace(data?.replace);

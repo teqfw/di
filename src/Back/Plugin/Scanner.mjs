@@ -15,7 +15,7 @@ const TEQFW = 'teqfw.json';
 export default class TeqFw_Di_Back_Plugin_Scanner {
 
     constructor(spec) {
-        // EXTRACT DEPS
+        // DEPS
         /** @type {TeqFw_Di_Back_Defaults} */
         const DEF = spec['TeqFw_Di_Back_Defaults$'];
         /** @type {TeqFw_Di_Back_Api_Dto_Plugin_Desc.Factory} */
@@ -75,9 +75,9 @@ export default class TeqFw_Di_Back_Plugin_Scanner {
      * @return {Promise<Object.<string, TeqFw_Di_Back_Api_Dto_Scanned>>} Object-to-path map for found plugins
      */
     async scanFilesystem(path) {
-        // DEFINE INNER FUNCTIONS
+        // ENCLOSED FUNCS
         function readData(path) {
-            // DEFINE INNER FUNCTIONS
+            // ENCLOSED FUNCS
             /**
              * Check existence of JSON file, read content, parse JSON and return data.
              *
@@ -106,7 +106,7 @@ export default class TeqFw_Di_Back_Plugin_Scanner {
                 return result;
             }
 
-            // MAIN FUNCTIONALITY
+            // MAIN
             let result = null;
             const pathTeqfw = join(path, TEQFW);
             const pathPkg = join(path, PACKAGE);
@@ -121,7 +121,7 @@ export default class TeqFw_Di_Back_Plugin_Scanner {
             return result;
         }
 
-        // MAIN FUNCTIONALITY
+        // MAIN
         const result = {};
         // get scan data for root folder (application itself)
         const dataRoot = readData(path);
