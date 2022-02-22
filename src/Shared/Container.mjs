@@ -62,7 +62,7 @@ export default class TeqFw_Di_Shared_Container {
          */
         async function getObject(mainId, uplineDeps) {
 
-            // ENCLOSED FUNCS
+            // FUNCS
             /**
              * Add 'spec' proxy as fnConstruct argument and create new object and all deps.
              *

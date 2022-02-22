@@ -75,9 +75,9 @@ export default class TeqFw_Di_Back_Plugin_Scanner {
      * @return {Promise<Object.<string, TeqFw_Di_Back_Api_Dto_Scanned>>} Object-to-path map for found plugins
      */
     async scanFilesystem(path) {
-        // ENCLOSED FUNCS
+        // FUNCS
         function readData(path) {
-            // ENCLOSED FUNCS
+            // FUNCS
             /**
              * Check existence of JSON file, read content, parse JSON and return data.
              *

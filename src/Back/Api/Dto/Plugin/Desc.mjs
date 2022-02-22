@@ -39,7 +39,7 @@ export class Factory {
          */
         this.create = function (data = null) {
 
-            // ENCLOSED FUNCS
+            // FUNCS
             function parseReplace(data) {
                 const res = {};
                 if (typeof data === 'object')
