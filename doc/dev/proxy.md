@@ -14,7 +14,7 @@ constructor(spec)
     // ...
     router.addRoute({
         path: DEF.DOOR_PUB_ROUTE_DEV_LOGIN,
-        component: () => container.get('Fl32_Bwl_Front_Door_Pub_Widget_Dev_Login_Route$')
+        component: () => container.get('Fl32_Bwl_Front_Door_Pub_Ui_Dev_Login_Route$')
     });
 }
 ```
@@ -58,9 +58,9 @@ const obj = new Proxy({depId}, handler);
 constructor(spec)
 {
     /** @type {TeqFw_Di_Shared_Api_IProxy} */
-    const factRouteLogin = spec['Fl32_Bwl_Front_Door_Pub_Widget_Dev_Login_Route@'];
+    const factRouteLogin = spec['Fl32_Bwl_Front_Door_Pub_Ui_Dev_Login_Route@'];
     // ...
-    /** @type {Fl32_Bwl_Front_Door_Pub_Widget_Dev_Login_Route} */
+    /** @type {Fl32_Bwl_Front_Door_Pub_Ui_Dev_Login_Route} */
     const routeLogin = await factRouteLogin.create(opt);
 }
 ```
