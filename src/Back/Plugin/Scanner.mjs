@@ -19,9 +19,9 @@ export default class TeqFw_Di_Back_Plugin_Scanner {
         /** @type {TeqFw_Di_Back_Defaults} */
         const DEF = spec['TeqFw_Di_Back_Defaults$'];
         /** @type {TeqFw_Di_Back_Api_Dto_Plugin_Desc.Factory} */
-        const fDesc = spec['TeqFw_Di_Back_Api_Dto_Plugin_Desc#Factory$'];
+        const fDesc = spec['TeqFw_Di_Back_Api_Dto_Plugin_Desc.Factory$'];
         /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload.Factory} */
-        const fAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload#Factory$'];
+        const fAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload.Factory$'];
 
         // INSTANCE METHODS
 

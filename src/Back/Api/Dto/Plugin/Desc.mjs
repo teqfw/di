@@ -31,7 +31,7 @@ export class Factory {
 
     constructor(spec) {
         /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload.Factory} */
-        const fAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload#Factory$'];
+        const fAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload.Factory$'];
 
         /**
          * @param {*} data
