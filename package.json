@@ -1,6 +1,6 @@
 {
   "name": "@teqfw/di",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Dependency Injection container based on logical namespaces for ES6 modules.",
   "keywords": [
     "dependency injection",
@@ -29,7 +29,7 @@
   },
   "scripts": {
     "example": "node --experimental-modules ./example/s001/s001.mjs",
-    "test": "./node_modules/mocha/bin/mocha --recursive './test/**/*.test.mjs'",
+    "test": "./node_modules/mocha/bin/_mocha --recursive './test/**/*.test.mjs'",
     "jsdoc": "./node_modules/jsdoc/jsdoc.js -d ./jsdoc/ -a all -c ./.jsdoc"
   },
   "devDependencies": {

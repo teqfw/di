@@ -13,8 +13,8 @@ constructor(spec)
     const container = spec['TeqFw_Di_Shared_Container$'];
     // ...
     router.addRoute({
-        path: DEF.DOOR_PUB_ROUTE_DEV_LOGIN,
-        component: () => container.get('Fl32_Bwl_Front_Door_Pub_Ui_Dev_Login_Route$')
+        path: DEF.ROUTE_HOME,
+        component: () => container.get('App_Front_Ui_Route_Home$')
     });
 }
 ```
@@ -58,9 +58,9 @@ const obj = new Proxy({depId}, handler);
 constructor(spec)
 {
     /** @type {TeqFw_Di_Shared_Api_IProxy} */
-    const factRouteLogin = spec['Fl32_Bwl_Front_Door_Pub_Ui_Dev_Login_Route@'];
+    const factRouteLogin = spec['App_Front_Ui_Route_Login@'];
     // ...
-    /** @type {Fl32_Bwl_Front_Door_Pub_Ui_Dev_Login_Route} */
+    /** @type {App_Front_Ui_Route_Login} */
     const routeLogin = await factRouteLogin.create(opt);
 }
 ```
