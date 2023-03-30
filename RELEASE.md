@@ -1,5 +1,11 @@
 # @teqfw/di releases
 
+## 0.13.0 - NEW
+
+## 0.12.0
+
+* Standardized comments style for improved code readability and maintenance.
+
 ## 0.11.0
 
 * Restructure `/@teqfw/di/replace` node in `teqfw.json`.

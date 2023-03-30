@@ -1,6 +1,6 @@
 {
   "name": "@teqfw/di",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Dependency Injection container based on logical namespaces for ES6 modules.",
   "keywords": [
     "dependency injection",
