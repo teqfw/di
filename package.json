@@ -26,17 +26,5 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/teqfw/di.git"
-  },
-  "scripts": {
-    "example": "node --experimental-modules ./example/s001/s001.mjs",
-    "test": "./node_modules/mocha/bin/mocha --recursive './test/**/*.test.mjs'",
-    "jsdoc": "./node_modules/jsdoc/jsdoc.js -d ./jsdoc/ -a all -c ./.jsdoc"
-  },
-  "devDependencies": {
-    "babel-eslint": "*",
-    "eslint": "*",
-    "esm": "*",
-    "jsdoc": "*",
-    "mocha": "*"
   }
 }
