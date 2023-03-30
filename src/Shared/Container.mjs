@@ -62,7 +62,7 @@ export default class TeqFw_Di_Shared_Container {
          */
         async function getObject(mainId, uplineDeps) {
 
-            // DEFINE INNER FUNCTIONS
+            // FUNCS
             /**
              * Add 'spec' proxy as fnConstruct argument and create new object and all deps.
              *
@@ -73,7 +73,7 @@ export default class TeqFw_Di_Shared_Container {
             function _useFactory(fnConstruct) {
                 // This promise will be resolved after all dependencies in spec proxy will be created.
                 return new Promise(function (resolve, reject) {
-                    // MAIN FUNCTIONALITY
+                    // MAIN
                     const constructorType = typeof fnConstruct;
                     if (constructorType === 'object') {
                         // `constructor` is an object, clone this fnConstruct and return cloned object
@@ -162,7 +162,7 @@ export default class TeqFw_Di_Shared_Container {
                 return orig;
             }
 
-            // MAIN FUNCTIONALITY
+            // MAIN
             let result;
             /** @type {TeqFw_Di_Shared_IdParser_Dto} */
             const parsed = $parser.parse(mainId);

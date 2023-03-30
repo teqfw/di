@@ -28,6 +28,8 @@ TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload.PATH = 'path';
  * @memberOf TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload
  */
 export class Factory {
+    static namespace = NS;
+
     constructor() {
         /**
          * @param {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload|null} data
@@ -46,4 +48,3 @@ export class Factory {
 
 // freeze DTO class to deny attributes changes and pin namespace
 Object.freeze(TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload);
-Object.defineProperty(Factory, 'name', {value: `${NS}.${Factory.constructor.name}`});

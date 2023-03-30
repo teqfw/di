@@ -27,9 +27,11 @@ TeqFw_Di_Back_Api_Dto_Plugin_Desc.REPLACE = 'replace';
  * @memberOf TeqFw_Di_Back_Api_Dto_Plugin_Desc
  */
 export class Factory {
+    static namespace = NS;
+
     constructor(spec) {
         /** @type {TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload.Factory} */
-        const fAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload#Factory$'];
+        const fAutoload = spec['TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload.Factory$'];
 
         /**
          * @param {*} data
@@ -37,7 +39,7 @@ export class Factory {
          */
         this.create = function (data = null) {
 
-            // DEFINE INNER FUNCTIONS
+            // FUNCS
             function parseReplace(data) {
                 const res = {};
                 if (typeof data === 'object')
@@ -55,7 +57,7 @@ export class Factory {
                 return res;
             }
 
-            // MAIN FUNCTIONALITY
+            // MAIN
             const res = new TeqFw_Di_Back_Api_Dto_Plugin_Desc();
             res.autoload = fAutoload.create(data?.autoload);
             res.replace = parseReplace(data?.replace);
@@ -66,4 +68,3 @@ export class Factory {
 
 // freeze DTO class to deny attributes changes and pin namespace
 Object.freeze(TeqFw_Di_Back_Api_Dto_Plugin_Desc);
-Object.defineProperty(Factory, 'name', {value: `${NS}.${Factory.constructor.name}`});
