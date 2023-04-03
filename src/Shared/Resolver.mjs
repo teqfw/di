@@ -12,9 +12,12 @@ const LOGICAL_NS = /^((([A-Z])[A-Za-z0-9_]*)?)$/;
  */
 export default class TeqFw_Di_Shared_Resolver {
     /** @type {TeqFw_Di_Shared_Resolver_LogicalNs} */
-    logicalNs = new LogicalNs()
+    logicalNs = new LogicalNs();
     /** @type {TeqFw_Di_Shared_Resolver_FilepathNs} */
-    filepathNs = new FilepathNs()
+    filepathNs = new FilepathNs();
+    // TODO: this is a hotfix
+    /** @type {boolean} */
+    isWindows = false;
 
     /**
      * Registry sources path mapping details for namespace.
@@ -49,6 +52,10 @@ export default class TeqFw_Di_Shared_Resolver {
         } else {
             // this is file path based namespace
             result = this.filepathNs.resolveModuleId(moduleId);
+        }
+        // TODO: tmp fix for windows
+        if (this.isWindows) {
+            result = 'file://' + result.replace(/\//g, '\\');
         }
         return result;
     }
