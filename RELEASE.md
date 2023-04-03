@@ -1,6 +1,9 @@
 # @teqfw/di releases
 
-## 0.13.0 - NEW
+
+## 0.12.1
+
+* Hotfix for Windows delimiters.
 
 ## 0.12.0
 
