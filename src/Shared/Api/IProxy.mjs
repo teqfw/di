@@ -6,6 +6,7 @@ export default class TeqFw_Di_Shared_Api_IProxy {
     /**
      * Get target object asynchronously.
      * @return {Promise<*>}
+     * TODO: rename to 'instance' or 'target'
      */
     get create() { }
 }

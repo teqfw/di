@@ -97,7 +97,7 @@ export default class TeqFw_Di_Shared_Container {
                                 if (instNew instanceof Promise) {
                                     instNew
                                         .then((asyncInst) => {
-                                                resolve(asyncInst)
+                                                resolve(asyncInst);
                                             }
                                         ).catch((e) => {
                                             // SpecProxy rejects `_useFactory` promise on any error
@@ -167,6 +167,7 @@ export default class TeqFw_Di_Shared_Container {
             /** @type {TeqFw_Di_Shared_IdParser_Dto} */
             const parsed = $parser.parse(mainId);
             parsed.nameModule = checkReplacements(parsed.nameModule);
+            // TODO for 'Proxy@': if singleton was created before than this singleton is returned (IProxy must)
             // try to find requested dependency in local storages
             if (!parsed.isProxy) result = await getFromStorages(parsed);
             // if not found then try to load sources and create new one
@@ -216,7 +217,7 @@ export default class TeqFw_Di_Shared_Container {
          */
         this.addModuleReplacement = function (orig, alter) {
             replacements[orig] = alter;
-        }
+        };
 
         /**
          *
