@@ -1,5 +1,7 @@
 /.idea/
 /.nyc_output/
+/.vscode/
+/dist/
 /jsdoc/
 /node_modules/
 /package-lock.json
