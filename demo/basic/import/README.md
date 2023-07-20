@@ -61,3 +61,5 @@ serv({name: 'The Basics of Import'});
 When the export of our modules is unified, we can pass to factory functions not dependencies, but paths to ES6 modules
 that contain our dependencies. All paths are defined in the composition root (which is good), but the DI code is
 distributed across all modules with dependencies (which is not good).
+
+Next: [proxy](../proxy/README.md)

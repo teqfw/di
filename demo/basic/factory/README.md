@@ -52,3 +52,5 @@ const logger = await fLogger();
 const serv = await fService({logger});
 serv({name: 'The Basics of Factories'});
 ```
+
+Next: [import](../import/README.md)

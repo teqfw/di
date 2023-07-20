@@ -139,3 +139,5 @@ export default async function Factory({['./logger.js']: logger, ['./config.js']:
     // ...
 }
 ```
+
+Next: [resolve](../resolve/README.md)

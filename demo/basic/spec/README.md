@@ -56,3 +56,5 @@ function Factory({dep1, dep2, ...}) {
     return function (opts) {/* use deps here */};
 }
 ```
+
+Next: [factory](../factory/README.md)

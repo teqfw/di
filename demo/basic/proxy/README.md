@@ -84,3 +84,5 @@ objects is yet to be considered).
 
 Ideally, we can end up with a situation where the proxy parses dependency paths through factory function specifications,
 dynamically imports the required modules, creates the necessary dependencies, and returns them to the factory functions.
+
+Next: [container](../container/README.md)

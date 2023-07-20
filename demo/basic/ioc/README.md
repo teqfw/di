@@ -56,3 +56,5 @@ srv.exec({name: 'The Basics of IoC'});
 
 In the composition root, all services and their dependencies are imported, and all dependencies are injected into their
 respective services. The composition root is the (almost) only place where the `import` statement can be used.
+
+Next: [spec](../spec/README.md)
