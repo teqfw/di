@@ -1,7 +1,7 @@
 # The Basics of IoC
 
-There is a lot of information on the Internet about the Inversion of Control principle. Here, I will briefly discuss IoC
-in JavaScript (ES6+).
+There is a lot of information on the Internet about the "Inversion of Control" principle. Here, I will briefly discuss
+IoC in JavaScript (ES6+).
 
 ## What is "direct control"?
 
@@ -18,7 +18,7 @@ export default class Service {
 }
 ```
 
-All dependencies for the service are directly loaded in the service's source with the `import`.
+All dependencies for the service are directly loaded in the service's source with the static `import`.
 
 ## What is "inversion of control"?
 
@@ -51,7 +51,7 @@ import logger from './logger.js';
 import Service from './service.js';
 
 const srv = new Service(logger);
-srv.exec({name: 'Inverted control'});
+srv.exec({name: 'The Basics of IoC'});
 ```
 
 In the composition root, all services and their dependencies are imported, and all dependencies are injected into their
