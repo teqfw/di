@@ -50,7 +50,7 @@ And set the resolver to the container before usage:
 import resolver from './resolver.js';
 import container from './container.js';
 
-container.setResolver(resolver);
+container.setMap(resolver);
 ```
 
 Here are the changes in the container:
