@@ -5,7 +5,7 @@ IoC in JavaScript (ES6+).
 
 ## What is "direct control"?
 
-This is the regular way of composing JS code with the `import` statement (
+This is the conventional way of composing JS code using the `import` statement (
 see [./direct/service.js](direct/service.js)):
 
 ```javascript
@@ -18,12 +18,13 @@ export default class Service {
 }
 ```
 
-All dependencies for the service are directly loaded in the service's source with the static `import`.
+In this approach, all dependencies for the service are directly bound in the service's source through the
+static `import`.
 
 ## What is "inversion of control"?
 
-The service does not load dependencies itself but provides the ability to inject dependencies into itself (
-see [./inverted/service.js](inverted/service.js)).
+In inversion of control, the service does not load its dependencies itself, but it provides the ability to inject
+dependencies into itself (see [./inverted/service.js](inverted/service.js)).
 
 ```javascript
 export default class Service {
@@ -43,7 +44,7 @@ The main difference is that inverted ES6 modules don't have import statements at
 
 ## Composition root
 
-How do we assemble all modules into one program in this case? It occurs in one place, which is named the "_composition
+How do we assemble all modules into one program in this case? It happens in one place, which is called the "_composition
 root_" (see [inverted.js](inverted.js)):
 
 ```javascript
@@ -57,4 +58,4 @@ srv.exec({name: 'The Basics of IoC'});
 In the composition root, all services and their dependencies are imported, and all dependencies are injected into their
 respective services. The composition root is the (almost) only place where the `import` statement can be used.
 
-Next: [spec](../spec/README.md)
+Next: [factory](../factory/README.md)

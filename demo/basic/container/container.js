@@ -1,50 +1,25 @@
-const DEP_KEY = 'depKey'; // key for exception to transfer dependency key (path for import)
+import parser from './parser.js';
+
 const deps = {}; // all created deps
 
-const proxy = new Proxy({}, {
-    get(target, prop) {
-        if (deps[prop]) return deps[prop];
-        else {
-            const e = new Error('Unresolved dependency');
-            e[DEP_KEY] = prop;
-            throw e;
-        }
-    }
-});
-
-async function useFactory(fnFactory) {
-    let res;
-    // try to create the Object
-    do {
-        try {
-            // Object is created when all deps are created
-            res = await fnFactory(proxy);
-        } catch (e) {
-            if (e[DEP_KEY]) {
-                // we need to import another module to create dependency
-                const depKey = e[DEP_KEY];
-                const {default: factory} = await import(depKey);
-                deps[depKey] = await useFactory(factory);
-            } else {
-                // this is a third-party exception, just re-throw
-                throw e;
-            }
-        }
-        // if Object is not created then retry (some dep was not imported yet)
-    } while (!res);
-    return res;
-}
-
-export default {
-    /**
-     * Get some object from the Container.
-     * @param {string} key
-     * @return {Promise<*>}
-     */
-    get: async function (key) {
+/**
+ * Get some object from the Container or import sources and create new one.
+ * @param {string} key
+ * @return {Promise<*>}
+ */
+async function get(key) {
+    if (deps[key]) return deps[key];
+    else {
         const {default: factory} = await import(key);
-        const res = await useFactory(factory);
+        const def = factory.toString();
+        const paths = parser(def);
+        const spec = {};
+        for (const path of paths)
+            spec[path] = await get(path);
+        const res = factory(spec);
         deps[key] = res;
         return res;
     }
-};
+}
+
+export default {get};

@@ -1,21 +1,20 @@
 # The Basics of Factories
 
-* [spec](../spec/README.md)
+* [root](../root/README.md)
 
-The main idea of the Dependencies Specification is that all our construction functions always have only one argument -
-an object with dependencies:
+The essence of Inversion of Control is that we inject dependencies into an object during construction:
 
 ```javascript
 class Service {
-    constructor({dep1, dep2, ...}) { }
+    constructor(dep1, dep2) { }
 }
 ```
 
-or
+Classes are syntactic sugar, and object creation can be done with normal functions (factories):
 
 ```javascript
-function Factory({dep1, dep2, ...}) {
-    return function (opts) {/* use deps here */};
+function Factory(dep1, dep2) {
+    return /* something */;
 }
 ```
 
@@ -23,18 +22,8 @@ Let's imagine that all objects in our application, except for the composition ro
 functions, which are the default export of modules:
 
 ```javascript
-// ./logger.js
-export default async function Factory() {
-    return {
-        error: (msg) => console.error(msg),
-        info: (msg) => console.info(msg),
-    };
-};
-```
-
-```javascript
 // ./service.js
-export default async function Factory({logger}) {
+export default async function Factory(logger) {
     return function (opts) {
         logger.info(`Service is running with: ${JSON.stringify(opts)}`);
     };
@@ -49,8 +38,8 @@ import fLogger from './logger.js';
 import fService from './service.js';
 
 const logger = await fLogger();
-const serv = await fService({logger});
+const serv = await fService(logger);
 serv({name: 'The Basics of Factories'});
 ```
 
-Next: [import](../import/README.md)
+Next: [spec](../spec/README.md)

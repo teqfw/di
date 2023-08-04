@@ -1,56 +1,35 @@
-const DEP_KEY = 'depKey'; // key for exception to transfer dependency key (path for import)
 const deps = {}; // all created deps
-const map = {}; // objectKey-to-importPath map
+const map = {}; // abstractions-to-details map
 
-const proxy = new Proxy({}, {
-    get(target, prop) {
-        if (deps[prop]) return deps[prop];
-        else {
-            const e = new Error('Unresolved dependency');
-            e[DEP_KEY] = prop;
-            throw e;
-        }
+function parser(def) {
+    const res = [];
+    const parts = /function Factory\s*\(\{(.*)}\).*/s.exec(def);
+    if (parts?.[1]) {  //  {logger, config}
+        const deps = parts[1].split(',');
+        for (const dep of deps)
+            res.push(dep.trim());
     }
-});
-
-async function useFactory(fnFactory) {
-    let res;
-    // try to create the Object
-    do {
-        try {
-            // Object is created when all deps are created
-            res = await fnFactory(proxy);
-        } catch (e) {
-            if (e[DEP_KEY]) {
-                // we need to import another module to create dependency
-                const depKey = e[DEP_KEY];
-                const path = map[depKey] ?? depKey;
-                const {default: factory} = await import(path);
-                deps[depKey] = await useFactory(factory);
-            } else {
-                // this is a third-party exception, just re-throw
-                throw e;
-            }
-        }
-        // if Object is not created then retry (some dep was not imported yet)
-    } while (!res);
     return res;
 }
 
-export default {
-    /**
-     * Get some object from the Container.
-     * @param {string} key
-     * @return {Promise<*>}
-     */
-    get: async function (key) {
-        const path = map[key] ?? key;
+/**
+ * @param {string} key - logical name of the object
+ * @return {Promise<*>}
+ */
+async function get(key) {
+    if (deps[key]) return deps[key];
+    else {
+        const path = map[key];
         const {default: factory} = await import(path);
-        const res = await useFactory(factory);
+        const def = factory.toString();
+        const names = parser(def);
+        const spec = {};
+        for (const name of names)
+            spec[name] = await get(name);
+        const res = factory(spec);
         deps[key] = res;
         return res;
-    },
-    setMap: function (data) {
-        Object.assign(map, data);
-    },
-};
+    }
+}
+
+export default {get, setMap: (data) => Object.assign(map, data)};

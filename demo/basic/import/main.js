@@ -1,3 +1,6 @@
-const {default: fService} = await import('./service.js');
-const serv = await fService({logger: './logger.js'});
+import fLogger from './logger.js';
+import fService from './service.js';
+
+const logger = await fLogger();
+const serv = await fService({['./logger.js']: logger});
 serv({name: 'The Basics of Import'});

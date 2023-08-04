@@ -1,3 +1,4 @@
+// ./main.js
 import container from './container.js';
 
 const map = {

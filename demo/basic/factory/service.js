@@ -1,8 +1,4 @@
-export default async function Factory({logger}) {
-    // this code should be in the Container
-    // const mod = await import(logger);
-    // const depLogger = mod.default;
-    // end of Container code
+export default async function Factory(logger) {
     return function (opts) {
         logger.info(`Service is running with: ${JSON.stringify(opts)}`);
     };
