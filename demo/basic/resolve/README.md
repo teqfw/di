@@ -1,6 +1,6 @@
 # The Basics of Resolver
 
-* [container](../container/README.md)
+Previous:  [container](../container/README.md)
 
 The main idea behind the container is that our composition root is encapsulated within a special object that utilizes a
 parser to extract paths to dependencies from string definitions of the factory functions. We use this special object (

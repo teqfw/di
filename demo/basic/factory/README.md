@@ -1,6 +1,6 @@
 # The Basics of Factories
 
-* [root](../root/README.md)
+Previous: [root](../root/README.md)
 
 The essence of Inversion of Control is that we inject dependencies into an object during construction:
 

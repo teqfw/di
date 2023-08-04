@@ -1,6 +1,6 @@
 # The Basics of Specification Parser
 
-* [spec](../spec/README.md)
+Previous:  [spec](../spec/README.md)
 
 The main idea of the Dependencies Specification is that all our factory functions always have only one argument -
 an object with dependencies, where keys are the paths to import the sources:

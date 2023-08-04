@@ -1,6 +1,6 @@
 # The Basics of Dependencies Specification
 
-* [factory](../factory/README.md)
+Previous:  [factory](../factory/README.md)
 
 The main idea of factories is that all ES6 modules in our app are exported as asynchronous factories that accept a
 dependencies as input arguments and create the required object:

@@ -1,6 +1,6 @@
 # The Basics of Container
 
-* [parser](../parser/README.md)
+Previous:  [parser](../parser/README.md)
 
 The main idea of the spec parser is to get dependencies from the text definition of a factory function:
 
@@ -39,3 +39,5 @@ export default {get};
 ```
 
 This container is our composition root now.
+
+Next: [resolve](../resolve/README.md)
