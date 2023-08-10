@@ -9,7 +9,7 @@
 * Wrappers to use for the result;
 * Others (depending on the developer's imagination);
 
-Base DTO for the `depId` see in [./Api/DepId](../src/Api/DepId.mjs).
+Base DTO for the `depId` see in [./Api/DepId](../src/Api/ObjectKey.mjs).
 
 The exact structure of the `depId` depends on the conventions followed in the project, and as a result, on the parser,
 mapper, module loader, and container used in the project.

@@ -6,7 +6,7 @@
 /**
  * @memberOf Api
  */
-export class DepId {
+export class ObjectKey {
     /**
      * Use a wrapper (adapter) for the dependency. 'Proxy', for example.
      * @type {string}

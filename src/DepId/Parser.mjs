@@ -1,9 +1,9 @@
 /**
  * This is default parser that converts dependency ID to the `depId` DTO.
- * @namespace DepId.Parser
+ * @namespace ObjectKey.Parser
  */
 // IMPORTS
-import {DepId} from '../Api/DepId.mjs';
+import {ObjectKey} from '../Api/ObjectKey.mjs';
 
 // VARS
 /** @type {RegExp} expression for depId (Ns_Module.export$$#adapter) */
@@ -12,7 +12,7 @@ const TMPL = /^(([A-Z])[A-Za-z0-9_]*)((.)([A-Za-z0-9_]*)?((\$|\$\$)?((#)([A-Za-z
 // FUNCS
 /**
  * @param {string} depId
- * @return {Api.DepId}
+ * @return {Api.ObjectKey}
  */
 export default function (depId) {
     let res;
@@ -23,7 +23,7 @@ export default function (depId) {
         const sepExp = parts[6]; // after-export separator
         const sepLife = parts[9]; // after-life separator
 
-        res = new DepId();
+        res = new ObjectKey();
         // always presents
         res.nameModule = nameMod;
         if (sepLife === '#') {
