@@ -15,7 +15,7 @@ const EXP_OLD = '#';
 /** @type {string} new instance mark (Ns_Mod.export$$) */
 const INST = '$$';
 /** @type {RegExp} expression for logical namespace IDs (Ns_Module[.|#]export$$@@) */
-const LOGICAL = /^((([A-Z])[A-Za-z0-9_]*)((#|.)?([A-Za-z0-9_]*)(\${1,2}|@{1,2})?)?)$/;
+const REGEXP = /^((([A-Z])[A-Za-z0-9_]*)((#|.)?([A-Za-z0-9_]*)(\${1,2}|@{1,2})?)?)$/;
 /** @type {RegExp} expression for objects that manually added to DI container (singleton, namedFactory$$)  */
 const MANUAL = /^((([a-z])[A-Za-z0-9_]*)(\$\$)?)$/s;
 /** @type {string} new instance proxy mark (Ns_Mod.export@@) */
@@ -29,7 +29,7 @@ const SNGLT = '$';
 export default function TeqFw_Di_Parser_Old(objectKey) {
     const res = new Dto();
     res.value = objectKey;
-    const parts = LOGICAL.exec(objectKey);
+    const parts = REGEXP.exec(objectKey);
     if (parts) {
         res.moduleName = parts[2];
         // Ns_Module.name$$[@@] - named instance [proxy]

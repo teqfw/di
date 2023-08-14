@@ -6,6 +6,7 @@ import {fileURLToPath} from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const ROOT = join(__dirname, '_data', 'Container', 'src');
 
 describe('TeqFw_Di_Shared_Container', function () {
 
@@ -33,10 +34,13 @@ describe('TeqFw_Di_Shared_Container', function () {
 
     describe('creates objects', function () {
 
-        it('named export singleton (Ns_App_Mod.name$FS)', async () => {
+        it('named export singleton (App_Service.default$FS)', async () => {
             const container = new Container();
-            const dep = await container.get('Ns_App_Mod.name$FS');
+            const resolver = container.getResolver();
+            resolver.addNamespaceRoot('App_', ROOT, 'js');
+            const dep = await container.get('App_Service.default$FS');
             assert(dep);
+            dep({boobs: 'big'});
         });
 
     });
