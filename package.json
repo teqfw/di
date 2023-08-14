@@ -1,13 +1,12 @@
 {
   "name": "@teqfw/di",
-  "version": "0.12.1",
+  "version": "1.0.0",
   "description": "Dependency Injection container based on logical namespaces for ES6 modules.",
   "keywords": [
     "dependency injection",
     "di",
     "dynamic import",
-    "ecmascript 2015",
-    "es6+",
+    "es6 modules",
     "teqfw",
     "tequila framework"
   ],
@@ -29,14 +28,12 @@
   },
   "scripts": {
     "example": "node --experimental-modules ./example/s001/s001.mjs",
-    "test": "./node_modules/mocha/bin/_mocha --recursive './test/**/*.test.mjs'",
-    "jsdoc": "./node_modules/jsdoc/jsdoc.js -d ./jsdoc/ -a all -c ./.jsdoc"
+    "test": "./node_modules/mocha/bin/_mocha --recursive './test.v1/**/*.test.mjs'"
   },
   "devDependencies": {
     "babel-eslint": "*",
     "eslint": "*",
     "esm": "*",
-    "jsdoc": "*",
     "mocha": "*"
   }
 }
