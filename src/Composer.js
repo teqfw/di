@@ -12,6 +12,12 @@ export default class TeqFw_Di_Composer {
 
     constructor() {
         // VARS
+        let _debug = false;
+
+        // FUNCS
+        function log(msg) {
+            if (_debug) console.log(msg);
+        }
 
         // INSTANCE METHODS
 
@@ -28,6 +34,7 @@ export default class TeqFw_Di_Composer {
                 if (typeof exp === 'function') {
                     // create deps for factory function
                     const deps = specAnalyser(exp);
+                    if (deps.length) log(`Deps for object '${key.value}' are: ${JSON.stringify(deps)}`);
                     const spec = {};
                     for (const dep of deps)
                         spec[dep] = await container.get(dep);
@@ -39,6 +46,10 @@ export default class TeqFw_Di_Composer {
                     return Object.assign({}, exp);
             } else
                 return exp;
+        };
+
+        this.setDebug = function (data) {
+            _debug = data;
         };
 
         // MAIN

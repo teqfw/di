@@ -22,6 +22,11 @@ describe('TeqFw_Di_Shared_Container', function () {
                 .filter(p => (typeof container[p] === 'function'));
             assert.deepStrictEqual(methods.sort(), [
                 'get',
+                'getParser',
+                'getResolver',
+                'setDebug',
+                'setParser',
+                'setResolver',
             ]);
         });
 
@@ -34,11 +39,12 @@ describe('TeqFw_Di_Shared_Container', function () {
 
     describe('creates objects', function () {
 
-        it('named export singleton (App_Service.default$FS)', async () => {
+        it('named export singleton (App_Service$I)', async () => {
             const container = new Container();
+            container.setDebug(true);
             const resolver = container.getResolver();
             resolver.addNamespaceRoot('App_', ROOT, 'js');
-            const dep = await container.get('App_Service.default$FS');
+            const dep = await container.get('App_Service$I');
             assert(dep);
             dep({boobs: 'big'});
         });

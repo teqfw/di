@@ -1,6 +1,6 @@
 export default async function (
     {
-        App_Logger$FS: logger,
+        App_Logger$: logger,
         App_Config: config,
     }
 ) {
