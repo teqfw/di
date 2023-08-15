@@ -46,7 +46,7 @@ export default class TeqFw_Di_Container {
 
         // INSTANCE METHODS
 
-        this.get = async function (objectKey) {
+        this.get = async function (objectKey, stack = []) {
             log(`Object '${objectKey}' is requested.`);
             // return container itself if requested
             if (objectKey === Defs.KEY_CONTAINER) {
@@ -74,7 +74,7 @@ export default class TeqFw_Di_Container {
 
             }
             // create object using the composer
-            const res = await _composer.create(key, _regModules[key.moduleName], this);
+            const res = await _composer.create(key, _regModules[key.moduleName], stack, this);
             log(`Object '${objectKey}' is created.`);
             // TODO: wrappers should be here
             if (key.life === Defs.LIFE_SINGLETON) {

@@ -8,9 +8,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = join(__dirname, '_data', 'Container');
 
-describe('TeqFw_Di_Shared_Container', function () {
+describe('TeqFw_Di_Shared_Container', () => {
 
-    describe('basic tests', function () {
+    describe('basic tests', () => {
         it('has right classname', async () => {
             const container = new Container();
             assert.strictEqual(container.constructor.name, 'TeqFw_Di_Container');
@@ -37,7 +37,7 @@ describe('TeqFw_Di_Shared_Container', function () {
         });
     });
 
-    describe('creates objects', function () {
+    describe('creates objects', () => {
 
         it('named export singleton (App_Service$I)', async () => {
             const container = new Container();
@@ -46,6 +46,21 @@ describe('TeqFw_Di_Shared_Container', function () {
             const src = join(ROOT, 'classes');
             resolver.addNamespaceRoot('App_', src, 'js');
             const dep = await container.get('App_Service$I');
+            assert(dep);
+            dep({boobs: 'big'});
+        });
+
+    });
+
+    describe('prevents loops', () => {
+
+        it('simple loop', async () => {
+            const container = new Container();
+            container.setDebug(true);
+            const resolver = container.getResolver();
+            const src = join(ROOT, 'loop');
+            resolver.addNamespaceRoot('App_', src, 'js');
+            const dep = await container.get('App_Service$');
             assert(dep);
             dep({boobs: 'big'});
         });
