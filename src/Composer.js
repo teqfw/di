@@ -4,8 +4,7 @@
 import Defs from './Defs.js';
 import specAnalyser from './SpecAnalyser.js';
 
-// VARS
-
+// FUNCS
 
 // MAIN
 export default class TeqFw_Di_Composer {
@@ -39,8 +38,11 @@ export default class TeqFw_Di_Composer {
                     for (const dep of deps)
                         spec[dep] = await container.get(dep);
                     // create a new object with the factory function
-                    // TODO: add await for Promises
-                    return await exp(spec);
+                    const res = (Defs.isClass(exp)) ? new exp(spec) : exp(spec);
+                    if (res instanceof Promise)
+                        return await res;
+                    else
+                        return res;
                 } else
                     // just clone the export
                     return Object.assign({}, exp);

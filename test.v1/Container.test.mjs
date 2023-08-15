@@ -6,7 +6,7 @@ import {fileURLToPath} from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const ROOT = join(__dirname, '_data', 'Container', 'src');
+const ROOT = join(__dirname, '_data', 'Container');
 
 describe('TeqFw_Di_Shared_Container', function () {
 
@@ -43,7 +43,8 @@ describe('TeqFw_Di_Shared_Container', function () {
             const container = new Container();
             container.setDebug(true);
             const resolver = container.getResolver();
-            resolver.addNamespaceRoot('App_', ROOT, 'js');
+            const src = join(ROOT, 'classes');
+            resolver.addNamespaceRoot('App_', src, 'js');
             const dep = await container.get('App_Service$I');
             assert(dep);
             dep({boobs: 'big'});
