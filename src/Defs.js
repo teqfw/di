@@ -4,7 +4,7 @@
 export default {
     COMPOSE_AS_IS: 'A',
     COMPOSE_FACTORY: 'F',
-    KEY_CONTAINER: '__container',
+    KEY_CONTAINER: 'container',
     LIFE_INSTANCE: 'I',
     LIFE_SINGLETON: 'S',
 

@@ -5,7 +5,7 @@ import Defs from './Defs.js';
 
 // VARS
 const FUNC = /function\s*\w*\s*\(([^)]+)\)/s;
-const CLASS = /class\s*\w*\s*\{\s*\w*\s*constructor\s*\(([^)]+)\)/s;
+const CLASS = /constructor\s*\(([^)]+)\)/s;
 // FUNCS
 
 // MAIN
