@@ -7,6 +7,7 @@ export default {
     KEY_CONTAINER: 'container',
     LIFE_INSTANCE: 'I',
     LIFE_SINGLETON: 'S',
+    WRAP_PROXY: 'proxy',
 
     /**
      * Return 'true' if function is a class definition.

@@ -21,17 +21,19 @@ export default function (exp) {
      * @return {string[]}
      */
     function analyzeClass(exp) {
+        const res = [];
         // extract arguments from constructor
         const def = exp.toString();
         const parts = CLASS.exec(def);
-        // create wrapper for arguments and collect dependencies using Proxy
-        const fn = new Function(parts[1], 'return');
-        const res = [];
-        const spec = new Proxy({}, {
-            get: (target, prop) => res.push(prop),
-        });
-        // run wrapper and return dependencies
-        fn(spec);
+        if (parts) {
+            // create wrapper for arguments and collect dependencies using Proxy
+            const fn = new Function(parts[1], 'return');
+            const spec = new Proxy({}, {
+                get: (target, prop) => res.push(prop),
+            });
+            // run wrapper and return dependencies
+            fn(spec);
+        } // else: constructor does not have arguments
         return res;
     }
 

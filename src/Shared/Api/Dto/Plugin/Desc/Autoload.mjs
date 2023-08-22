@@ -1,6 +1,8 @@
 /**
  * DTO to represent plugin descriptor (teqfw.json) structure
  * that is related to 'di/autoload' node:
+ * @deprecated
+ * @see TeqFw_Core_Back_Plugin_Dto_Desc_Di_Autoload
  */
 // MODULE'S VARS
 const NS = 'TeqFw_Di_Shared_Api_Dto_Plugin_Desc_Autoload';

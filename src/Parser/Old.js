@@ -38,7 +38,7 @@ export default function TeqFw_Di_Parser_Old(objectKey) {
             && ((parts[7] === INST) || (parts[7] === P_INST))
         ) {
             if (parts[7] === P_INST)
-                res.wrappers.push('proxy');
+                res.wrappers.push(Defs.WRAP_PROXY);
             res.composition = Defs.COMPOSE_FACTORY;
             res.life = Defs.LIFE_INSTANCE;
             res.exportName = parts[6];
@@ -49,7 +49,7 @@ export default function TeqFw_Di_Parser_Old(objectKey) {
             && ((parts[7] === SNGLT) || (parts[7] === P_SNGLT))
         ) {
             if (parts[7] === P_SNGLT)
-                res.wrappers.push('proxy');
+                res.wrappers.push(Defs.WRAP_PROXY);
             res.composition = Defs.COMPOSE_FACTORY;
             res.life = Defs.LIFE_SINGLETON;
             res.exportName = parts[6];
@@ -66,7 +66,7 @@ export default function TeqFw_Di_Parser_Old(objectKey) {
         // Ns_Module$$[@@]- default instance [proxy]
         else if ((parts[4] === INST) || (parts[4] === P_INST)) {
             if (parts[4] === P_INST)
-                res.wrappers.push('proxy');
+                res.wrappers.push(Defs.WRAP_PROXY);
             res.composition = Defs.COMPOSE_FACTORY;
             res.life = Defs.LIFE_INSTANCE;
             res.exportName = DEF_EXP;
@@ -74,7 +74,7 @@ export default function TeqFw_Di_Parser_Old(objectKey) {
         // Ns_Module$[@] - default singleton [proxy]
         else if ((parts[4] === SNGLT) || (parts[4] === P_SNGLT)) {
             if (parts[4] === P_SNGLT)
-                res.wrappers.push('proxy');
+                res.wrappers.push(Defs.WRAP_PROXY);
             res.composition = Defs.COMPOSE_FACTORY;
             res.life = Defs.LIFE_SINGLETON;
             res.exportName = DEF_EXP;

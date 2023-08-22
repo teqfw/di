@@ -20,7 +20,7 @@
     "email": "alex@flancer64.com",
     "url": "https://github.com/flancer64"
   },
-  "main": "src/Shared/Container.mjs",
+  "main": "src/Container.js",
   "type": "module",
   "repository": {
     "type": "git",

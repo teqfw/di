@@ -4,6 +4,8 @@
 import Composer from './Composer.js';
 import Defs from './Defs.js';
 import Parser from './Parser.js';
+import PreProcessor from './PreProcessor.js';
+import NewReplace from './PreProcessor/Replace.js';
 import Resolver from './Resolver.js';
 
 // VARS
@@ -26,6 +28,9 @@ export default class TeqFw_Di_Container {
         let _composer = new Composer();
         let _debug = false;
         let _parser = new Parser();
+        let _preProcessor = new PreProcessor();
+        _preProcessor.addHandler(NewReplace()); // create new instance of the replacement handler
+
         /**
          * Registry for loaded es6 modules.
          * @type {Object<string, Module>}
@@ -39,8 +44,12 @@ export default class TeqFw_Di_Container {
         let _resolver = new Resolver();
 
         // FUNCS
-        function log(msg) {
-            if (_debug) console.log(msg);
+        function error() {
+            console.error(...arguments);
+        }
+
+        function log() {
+            if (_debug) console.log(...arguments);
         }
 
 
@@ -54,8 +63,9 @@ export default class TeqFw_Di_Container {
                 return _regSingles[Defs.KEY_CONTAINER];
             }
             // parse the `objectKey` and get the structured DTO
-            const key = _parser.parse(objectKey);
-            // TODO: key preprocessing here (replacements)
+            const parsed = _parser.parse(objectKey);
+            // modify original key according to some rules (replacements, etc.)
+            const key = _preProcessor.process(parsed);
             // return existing singleton
             if (key.life === Defs.LIFE_SINGLETON) {
                 const singleId = getSingletonId(key);
@@ -69,14 +79,35 @@ export default class TeqFw_Di_Container {
                 log(`ES6 module '${key.moduleName}' is not loaded yet`);
                 // convert module name to the path to es6-module file with a sources
                 const path = _resolver.resolve(key.moduleName);
-                _regModules[key.moduleName] = await import(path);
-                log(`ES6 module '${key.moduleName}' is loaded from '${path}'.`);
+                try {
+                    _regModules[key.moduleName] = await import(path);
+                    log(`ES6 module '${key.moduleName}' is loaded from '${path}'.`);
+                } catch (e) {
+                    console.error(
+                        e?.message,
+                        `Object key: "${objectKey}".`,
+                        `Path: "${path}".`,
+                        `Stack: ${JSON.stringify(stack)}`
+                    );
+                    throw e;
+                }
 
             }
             // create object using the composer
-            const res = await _composer.create(key, _regModules[key.moduleName], stack, this);
+            let res = await _composer.create(key, _regModules[key.moduleName], stack, this);
             log(`Object '${objectKey}' is created.`);
-            // TODO: wrappers should be here
+
+            // TODO: refactor this code to use wrappers w/o hardcode
+            if (key.wrappers.includes(Defs.WRAP_PROXY)) {
+                const me = this;
+                res = new Proxy({dep: undefined, objectKey}, {
+                    get: async function (base, name) {
+                        if (name === 'create') base.dep = await me.get(base.objectKey);
+                        return base.dep;
+                    }
+                });
+            }
+
             if (key.life === Defs.LIFE_SINGLETON) {
                 const singleId = getSingletonId(key);
                 _regSingles[singleId] = res;
@@ -87,6 +118,8 @@ export default class TeqFw_Di_Container {
 
         this.getParser = () => _parser;
 
+        this.getPreProcessor = () => _preProcessor
+        ;
         this.getResolver = () => _resolver;
 
         this.setDebug = function (data) {
@@ -95,6 +128,8 @@ export default class TeqFw_Di_Container {
         };
 
         this.setParser = (data) => _parser = data;
+
+        this.setPreProcessor = (data) => _preProcessor = data;
 
         this.setResolver = (data) => _resolver = data;
 

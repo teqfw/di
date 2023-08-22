@@ -1,6 +1,8 @@
 /**
  * DTO to represent plugin descriptor (teqfw.json) structure
  * that is related to 'di' node:
+ * @deprecated
+ * @see TeqFw_Core_Back_Plugin_Dto_Desc_Di.Dto
  */
 // MODULE'S VARS
 const NS = 'TeqFw_Di_Back_Api_Dto_Plugin_Desc';

@@ -29,7 +29,7 @@ export default class TeqFw_Di_Parser {
 
         /**
          *
-         * @param {function:boolean} validator
+         * @param {function(string):boolean} validator
          * @param {function(string):TeqFw_Di_Api_ObjectKey} parser
          */
         this.addParser = function (validator, parser) {

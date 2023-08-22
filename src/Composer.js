@@ -31,27 +31,32 @@ export default class TeqFw_Di_Composer {
         this.create = async function (key, module, stack, container) {
             if (stack.includes(key.value))
                 throw new Error(`Circular dependency for '${key.value}'. Parents are: ${JSON.stringify(stack)}`);
-            const stackNew = [...stack, key.value];
-            const {[key.exportName]: exp} = module;
-            if (key.composition === Defs.COMPOSE_FACTORY) {
-                if (typeof exp === 'function') {
-                    // create deps for factory function
-                    const deps = specAnalyser(exp);
-                    if (deps.length) log(`Deps for object '${key.value}' are: ${JSON.stringify(deps)}`);
-                    const spec = {};
-                    for (const dep of deps)
-                        spec[dep] = await container.get(dep, stackNew);
-                    // create a new object with the factory function
-                    const res = (Defs.isClass(exp)) ? new exp(spec) : exp(spec);
-                    if (res instanceof Promise)
-                        return await res;
-                    else
-                        return res;
+            if (key.exportName) {
+                // use export from the es6-module
+                const stackNew = [...stack, key.value];
+                const {[key.exportName]: exp} = module;
+                if (key.composition === Defs.COMPOSE_FACTORY) {
+                    if (typeof exp === 'function') {
+                        // create deps for factory function
+                        const deps = specAnalyser(exp);
+                        if (deps.length) log(`Deps for object '${key.value}' are: ${JSON.stringify(deps)}`);
+                        const spec = {};
+                        for (const dep of deps)
+                            spec[dep] = await container.get(dep, stackNew);
+                        // create a new object with the factory function
+                        const res = (Defs.isClass(exp)) ? new exp(spec) : exp(spec);
+                        if (res instanceof Promise)
+                            return await res;
+                        else
+                            return res;
+                    } else
+                        // just clone the export
+                        return Object.assign({}, exp);
                 } else
-                    // just clone the export
-                    return Object.assign({}, exp);
-            } else
-                return exp;
+                    return exp;
+            } else {
+                return module;
+            }
         };
 
         this.setDebug = function (data) {
