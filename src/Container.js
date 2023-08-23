@@ -58,7 +58,10 @@ export default class TeqFw_Di_Container {
         this.get = async function (objectKey, stack = []) {
             log(`Object '${objectKey}' is requested.`);
             // return container itself if requested
-            if (objectKey === Defs.KEY_CONTAINER) {
+            if (
+                (objectKey === Defs.KEY_CONTAINER) ||
+                (objectKey === Defs.KEY_CONTAINER_NS)
+            ) {
                 log(`Container itself is returned.`);
                 return _regSingles[Defs.KEY_CONTAINER];
             }
