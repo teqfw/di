@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BiSex Sample</title>
+    <script type="module" src="./main.mjs"></script>
+</head>
+<body>
+<h1>BiSex Sample for JS Code</h1>
+<p><a href="https://github.com/teqfw/di/tree/main/example/bisex/">sources</a></p>
+
+<h2>Overview</h2>
+
+<p>This is a demo of the JS code (not TS!) that runs both in a browser and as a Node.js application without
+    transpilation. Therefore, I called this sample as 'BiSex'.</p>
+
+<p>There is one only static import in the code - for DI container in the `<a href="./main.mjs">main.mjs</a>` script. All
+    other sources are injected in the runtime:</p>
+<pre>
+export default class Sample_App {
+    /**
+     * @param {Sample_App_Config} config
+     * @param {Sample_App_Service} service
+     */
+    constructor(
+        {
+            Sample_App_Config: config, // default export is an object (singleton)
+            Sample_App_Service$: service, // construct a singleton from default export
+        }
+    ) {...}
+}
+</pre>
+
+<h2>Running</h2>
+<p>Open browser console to see console log. Expected output:</p>
+<pre>
+Sample App: Creating logger for 'Sample App'.
+Sample App: Service 'Sample_App_Service' is created for app 'Sample App'.
+The BiSex App: Service running with 'Running...' param.
+</pre>
+</body>
+</html>

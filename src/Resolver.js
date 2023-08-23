@@ -7,6 +7,7 @@
  *  - every package has sources with the same extensions (*.js, *.mjs, *.es6, ...)
  *  - namespaces can be nested (App_Web_ => ./@app/web/..., App_Web_Api_ => ./@app/web_api/...)
  */
+import Defs from './Defs.js';
 
 // VARS
 const KEY_EXT = 'ext';
@@ -32,7 +33,7 @@ export default class TeqFw_Di_Resolver {
 
         this.addNamespaceRoot = function (ns, path, ext) {
             _regNs[ns] = {
-                [KEY_EXT]: ext,
+                [KEY_EXT]: ext ?? Defs.EXT,
                 [KEY_NS]: ns,
                 [KEY_PATH]: path,
             };

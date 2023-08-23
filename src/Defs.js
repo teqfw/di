@@ -4,6 +4,7 @@
 export default {
     COMPOSE_AS_IS: 'A',
     COMPOSE_FACTORY: 'F',
+    EXT: 'js',
     KEY_CONTAINER: 'container',
     KEY_CONTAINER_NS: 'TeqFw_Di_Container$',
     LIFE_INSTANCE: 'I',
