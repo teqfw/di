@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = join(__dirname, '_data', 'Container');
 
-describe('TeqFw_Di_Shared_Container', () => {
+describe('TeqFw_Di_Container', () => {
 
     describe('basic tests', () => {
         it('has right classname', async () => {

@@ -5,7 +5,7 @@ export default {
     COMPOSE_AS_IS: 'A',
     COMPOSE_FACTORY: 'F',
     KEY_CONTAINER: 'container',
-    KEY_CONTAINER_NS: 'TeqFw_Di_Shared_Container$',
+    KEY_CONTAINER_NS: 'TeqFw_Di_Container$',
     LIFE_INSTANCE: 'I',
     LIFE_SINGLETON: 'S',
     WRAP_PROXY: 'proxy',

@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const DATA_ROOT = join(__dirname, '../.data/Container/proxy');
 
-describe('TeqFw_Di_Shared_Container (proxy)', function () {
+describe('TeqFw_Di_Container (proxy)', function () {
 
     const container = new Container();
     container.addSourceMapping('Test', DATA_ROOT, true);

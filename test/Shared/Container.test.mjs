@@ -8,11 +8,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const DATA_ROOT = join(__dirname, '../.data');
 
-describe('TeqFw_Di_Shared_Container', function () {
+describe('TeqFw_Di_Container', function () {
 
     it('has right classname', async () => {
         const container = new Container();
-        assert.strictEqual(container.constructor.name, 'TeqFw_Di_Shared_Container');
+        assert.strictEqual(container.constructor.name, 'TeqFw_Di_Container');
     });
 
     it('has all expected public methods', async () => {
@@ -33,7 +33,7 @@ describe('TeqFw_Di_Shared_Container', function () {
 
     it('contains itself inside', async () => {
         const container = new Container();
-        const exportSingleton = await container.get('TeqFw_Di_Shared_Container$');
+        const exportSingleton = await container.get('TeqFw_Di_Container$');
         assert.strictEqual(exportSingleton, container);
         const namedSingleton = await container.get('container');
         assert.strictEqual(namedSingleton, container);
