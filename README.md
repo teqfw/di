@@ -1,5 +1,14 @@
 # @teqfw/di
 
+* Главная цель этого функционала - позднее связывание с минимальным ручным конфигурированием контейнера. Все инструкции
+  для связывания заложены в идентификаторах зависимостей.
+* Этот DI нужен для того, чтобы связывать runtime-объекты на этапе кодирования без дополнительных конфигурационных
+  файлов. Конфигурационные файлы могут понадобиться при изменении связывания на этапе выполнения.
+* "раннее связывание" - для изменения связности исходный код должен быть изменён и перекомпилирован. При позднем
+  связывании изменения можно вносить на этапе выполнения программы через конфигурацию контейнера.
+* DI позволяет перехватывать создание зависимостей и адаптировать их под конкретный контекст. Если перехват создания
+  невозможен - это не DI.
+
 "_DI_" means both "_Dynamic Import_" and "_Dependency Injection_" here. This package allows defining logical namespaces
 in your projects, dynamically importing ES6-modules from these namespaces, creating new objects from imported
 functions/classes and resolving dependencies in constructors. It uses pure ECMAScript 2015+ (ES6+) and works both for
