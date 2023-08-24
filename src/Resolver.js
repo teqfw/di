@@ -55,7 +55,8 @@ export default class TeqFw_Di_Resolver {
                 }
             }
             if (root && ext) {
-                const tail = moduleName.replace(ns, '');
+                let tail = moduleName.replace(ns, '');
+                if (tail.indexOf(NSS) === 0) tail = tail.replace(NSS, '');
                 const file = tail.replaceAll(NSS, _ps);
                 return `${root}${_ps}${file}.${ext}`;
             } else return moduleName;

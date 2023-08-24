@@ -1,0 +1,9 @@
+{
+  "@teqfw/di": {
+    "autoload": {
+      "ns": "TeqFw_Di",
+      "path": "./src",
+      "ext": "js"
+    }
+  }
+}

@@ -4,8 +4,8 @@
 import Defs from './Defs.js';
 
 // VARS
-const FUNC = /function\s*\w*\s*\((\s*\{.+\}\s*)\)/s;
-const CLASS = /constructor\s*\((\s*\{.+\}\s*)\)/s;
+const FUNC = /function\s*\w*\s*\(\s*\{([^\}]*)\}/s;
+const CLASS = /constructor\s*\(\s*\{([^\}]*)\}/s;
 
 // FUNCS
 
@@ -20,14 +20,14 @@ function _analyze(params) {
     const res = [];
     // create wrapper for arguments and collect dependencies using Proxy
     try {
-        const fn = new Function(params, 'return');
+        const fn = new Function(`{${params}}`, 'return');
         const spec = new Proxy({}, {
             get: (target, prop) => res.push(prop),
         });
         // run wrapper and return dependencies
         fn(spec);
     } catch (e) {
-        const msg = `Cannot analyze the deps specification:${parts[1]}\n`
+        const msg = `Cannot analyze the deps specification:${params}\n`
             + `\nPlease, be sure that spec does not contain extra ')' in a comments.`
             + `\n\nError: ${e}`;
         throw new Error(msg);
