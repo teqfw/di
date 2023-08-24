@@ -5,8 +5,7 @@ import {describe, it} from 'mocha';
 import Container from '../src/Container.js';
 import Defs from '../src/Defs.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = dirname(import.meta.url);
 const ROOT = join(__dirname, '_data', 'Container');
 
 describe('TeqFw_Di_Container', () => {

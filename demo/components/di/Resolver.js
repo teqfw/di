@@ -5,9 +5,7 @@
 import {dirname, join} from 'node:path';
 
 /* Resolve paths to main folders */
-const url = new URL(import.meta.url);
-const script = url.pathname;
-const bin = dirname(script);
+const bin = dirname(import.meta.url);
 const root = join(bin, '..'); // ../../components
 
 // FUNCS
