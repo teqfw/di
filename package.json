@@ -28,7 +28,7 @@
   },
   "scripts": {
     "example": "node --experimental-modules ./example/s001/s001.mjs",
-    "test": "./node_modules/mocha/bin/_mocha --recursive './test.v1/**/*.test.mjs'"
+    "test": "./node_modules/mocha/bin/_mocha --recursive './test/**/*.test.mjs'"
   },
   "devDependencies": {
     "babel-eslint": "*",

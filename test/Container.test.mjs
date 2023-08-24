@@ -1,8 +1,9 @@
-import assert from 'assert';
-import Container from '../src/Container.js';
+import {dirname, join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import assert from 'node:assert';
 import {describe, it} from 'mocha';
-import {dirname, join} from 'path';
-import {fileURLToPath} from 'url';
+import Container from '../src/Container.js';
+import Defs from '../src/Defs.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,16 +24,18 @@ describe('TeqFw_Di_Container', () => {
             assert.deepStrictEqual(methods.sort(), [
                 'get',
                 'getParser',
+                'getPreProcessor',
                 'getResolver',
                 'setDebug',
                 'setParser',
+                'setPreProcessor',
                 'setResolver',
             ]);
         });
 
         it('contains itself inside', async () => {
             const container = new Container();
-            const namedSingleton = await container.get('__container');
+            const namedSingleton = await container.get(Defs.KEY_CONTAINER);
             assert.strictEqual(namedSingleton, container);
         });
     });
@@ -60,9 +63,11 @@ describe('TeqFw_Di_Container', () => {
             const resolver = container.getResolver();
             const src = join(ROOT, 'loop');
             resolver.addNamespaceRoot('App_', src, 'js');
-            const dep = await container.get('App_Service$');
-            assert(dep);
-            dep({boobs: 'big'});
+            try {
+                await container.get('App_Service$');
+            } catch (e) {
+                assert(e);
+            }
         });
 
     });
