@@ -1,13 +1,8 @@
 /.eslintrc.js
 /.idea/
-/.jsdoc
-/.nyc_output/
+/.vscode/
 /doc/
 /example/
-/.vscode/
-/dist/
-/jsdoc/
 /node_modules/
-/package-lock.json
 /test/
 /tmp/
