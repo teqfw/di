@@ -1,5 +1,6 @@
 /**
  * Pre-processor handler to replace one object key with another.
+ * @namespace TeqFw_Di_PreProcessor_Replace
  */
 
 /**
@@ -20,7 +21,6 @@ export default function () {
      * @param {TeqFw_Di_Api_ObjectKey} objectKey
      * @param {TeqFw_Di_Api_ObjectKey} originalKey
      * @return {TeqFw_Di_Api_ObjectKey}
-     * @namespace
      */
     function TeqFw_Di_PreProcessor_Replace(objectKey, originalKey) {
         let module = objectKey.moduleName;
