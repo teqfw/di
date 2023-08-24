@@ -4,6 +4,8 @@
 /.nyc_output/
 /doc/
 /example/
+/.vscode/
+/dist/
 /jsdoc/
 /node_modules/
 /package-lock.json

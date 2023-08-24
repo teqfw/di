@@ -1,13 +1,12 @@
 {
   "name": "@teqfw/di",
-  "version": "0.12.1",
+  "version": "1.0.0",
   "description": "Dependency Injection container based on logical namespaces for ES6 modules.",
   "keywords": [
     "dependency injection",
     "di",
     "dynamic import",
-    "ecmascript 2015",
-    "es6+",
+    "es6 modules",
     "teqfw",
     "tequila framework"
   ],
@@ -21,10 +20,22 @@
     "email": "alex@flancer64.com",
     "url": "https://github.com/flancer64"
   },
-  "main": "src/Shared/Container.mjs",
+  "main": "src/Container.js",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/teqfw/di.git"
+  },
+  "scripts": {
+    "example": "node --experimental-modules ./example/s001/s001.mjs",
+    "test": "mocha --recursive './test/**/*.test.mjs'"
+  },
+  "devDependencies": {
+    "babel-eslint": "*",
+    "eslint": "*",
+    "esm": "*",
+    "mocha": "*",
+    "webpack": "^5.88.1",
+    "webpack-cli": "^5.1.4"
   }
 }

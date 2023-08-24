@@ -1,5 +1,14 @@
 # @teqfw/di
 
+* Главная цель этого функционала - позднее связывание с минимальным ручным конфигурированием контейнера. Все инструкции
+  для связывания заложены в идентификаторах зависимостей.
+* Этот DI нужен для того, чтобы связывать runtime-объекты на этапе кодирования без дополнительных конфигурационных
+  файлов. Конфигурационные файлы могут понадобиться при изменении связывания на этапе выполнения.
+* "раннее связывание" - для изменения связности исходный код должен быть изменён и перекомпилирован. При позднем
+  связывании изменения можно вносить на этапе выполнения программы через конфигурацию контейнера.
+* DI позволяет перехватывать создание зависимостей и адаптировать их под конкретный контекст. Если перехват создания
+  невозможен - это не DI.
+
 "_DI_" means both "_Dynamic Import_" and "_Dependency Injection_" here. This package allows defining logical namespaces
 in your projects, dynamically importing ES6-modules from these namespaces, creating new objects from imported
 functions/classes and resolving dependencies in constructors. It uses pure ECMAScript 2015+ (ES6+) and works both for
@@ -71,5 +80,23 @@ PHP [Zend 1](https://framework.zend.com/manual/2.4/en/migration/namespacing-old-
 
 
 ## More
+<script type="module">
+    const baseUrl = location.href;
+    // load DI container as ES6 module (w/o namespaces)
+    import(baseUrl + 'node_modules/@teqfw/di/src/Container.mjs').then(async (modContainer) => {
+        // init container and setup namespaces mapping
+        /** @type {TeqFw_Di_Container} */
+        const container = new modContainer.default();
+        const pathMain = baseUrl + 'node_modules/@flancer64/demo_teqfw_di_mod_main/src';
+        const pathPlugin = baseUrl + 'node_modules/@flancer64/demo_teqfw_di_mod_plugin/src';
+        container.addSourceMapping('Vnd_Pkg', pathMain, true, 'mjs');
+        container.addSourceMapping('Vnd_Pkg_Plugin', pathPlugin, true, 'mjs');
+        // get main front as singleton
+        /** @type {Vnd_Pkg_Front} */
+        const frontMain = await container.get('Vnd_Pkg_Front$');
+        frontMain.run();
+    });
+</script>
+```
 
 [See more here.](https://github.com/teqfw/di/blob/main/README.md#namespaces)
