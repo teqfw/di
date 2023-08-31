@@ -2,7 +2,7 @@
  * Default parser for object keys in format:
  *   - Vnd_Pkg_Prj_Mod$FA
  */
-import Dto from '../Api/ObjectKey.js';
+import Dto from '../DepId.js';
 import Defs from '../Defs.js';
 
 // VARS
@@ -13,7 +13,7 @@ const REGEXP = /^((([A-Z])[A-Za-z0-9_]*)((#|\.)?([A-Za-z0-9]*)((\$)([F|A])?([S|I
 // MAIN
 /**
  * @param {string} objectKey
- * @return {TeqFw_Di_Api_ObjectKey}
+ * @return {TeqFw_Di_DepId}
  */
 export default function TeqFw_Di_Parser_Def(objectKey) {
     const res = new Dto();

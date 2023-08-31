@@ -13,7 +13,7 @@ import Resolver from './Resolver.js';
 // FUNCS
 /**
  * ID to store singletons in the internal registry.
- * @param {TeqFw_Di_Api_ObjectKey} key
+ * @param {TeqFw_Di_DepId} key
  * @return {string}
  */
 function getSingletonId(key) {
@@ -21,6 +21,9 @@ function getSingletonId(key) {
 }
 
 // MAIN
+/**
+ * @implements TeqFw_Di_Api_Container
+ */
 export default class TeqFw_Di_Container {
 
     constructor() {
@@ -33,6 +36,9 @@ export default class TeqFw_Di_Container {
 
         /**
          * Registry for loaded es6 modules.
+         *
+         * TODO: should we have a registry for es6 modules? Perhaps we should cache just resolved paths to the modules.
+         *
          * @type {Object<string, Module>}
          */
         const _regModules = {};
@@ -44,29 +50,30 @@ export default class TeqFw_Di_Container {
         let _resolver = new Resolver();
 
         // FUNCS
-        function error() {
-            console.error(...arguments);
-        }
 
         function log() {
             if (_debug) console.log(...arguments);
         }
 
-
         // INSTANCE METHODS
 
-        this.get = async function (objectKey, stack = []) {
-            log(`Object '${objectKey}' is requested.`);
+        this.get = async function (runtimeDepId) {
+            return this.getChained(runtimeDepId, []);
+        };
+
+
+        this.getChained = async function (runtimeDepId, stack = []) {
+            log(`Object '${runtimeDepId}' is requested.`);
             // return container itself if requested
             if (
-                (objectKey === Defs.KEY_CONTAINER) ||
-                (objectKey === Defs.KEY_CONTAINER_NS)
+                (runtimeDepId === Defs.KEY_CONTAINER) ||
+                (runtimeDepId === Defs.KEY_CONTAINER_NS)
             ) {
                 log(`Container itself is returned.`);
                 return _regSingles[Defs.KEY_CONTAINER];
             }
             // parse the `objectKey` and get the structured DTO
-            const parsed = _parser.parse(objectKey);
+            const parsed = _parser.parse(runtimeDepId);
             // modify original key according to some rules (replacements, etc.)
             const key = _preProcessor.process(parsed);
             // return existing singleton
@@ -88,7 +95,7 @@ export default class TeqFw_Di_Container {
                 } catch (e) {
                     console.error(
                         e?.message,
-                        `Object key: "${objectKey}".`,
+                        `Object key: "${runtimeDepId}".`,
                         `Path: "${path}".`,
                         `Stack: ${JSON.stringify(stack)}`
                     );
@@ -98,12 +105,12 @@ export default class TeqFw_Di_Container {
             }
             // create object using the composer
             let res = await _composer.create(key, _regModules[key.moduleName], stack, this);
-            log(`Object '${objectKey}' is created.`);
+            log(`Object '${runtimeDepId}' is created.`);
 
             // TODO: refactor this code to use wrappers w/o hardcode
             if (key.wrappers.includes(Defs.WRAP_PROXY)) {
                 const me = this;
-                res = new Proxy({dep: undefined, objectKey}, {
+                res = new Proxy({dep: undefined, objectKey: runtimeDepId}, {
                     get: async function (base, name) {
                         if (name === 'create') base.dep = await me.get(base.objectKey);
                         return base.dep;
@@ -114,7 +121,7 @@ export default class TeqFw_Di_Container {
             if (key.life === Defs.LIFE_SINGLETON) {
                 const singleId = getSingletonId(key);
                 _regSingles[singleId] = res;
-                log(`Object '${objectKey}' is saved as singleton.`);
+                log(`Object '${runtimeDepId}' is saved as singleton.`);
             }
             return res;
         };

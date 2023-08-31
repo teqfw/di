@@ -22,7 +22,7 @@ export default class TeqFw_Di_Composer {
 
         /**
          *
-         * @param {TeqFw_Di_Api_ObjectKey} key
+         * @param {TeqFw_Di_DepId} key
          * @param {Object} module
          * @param {string[]} stack array of the parent objects to prevent dependency loop
          * @param {TeqFw_Di_Container} container
@@ -42,7 +42,7 @@ export default class TeqFw_Di_Composer {
                         if (deps.length) log(`Deps for object '${key.value}' are: ${JSON.stringify(deps)}`);
                         const spec = {};
                         for (const dep of deps)
-                            spec[dep] = await container.get(dep, stackNew);
+                            spec[dep] = await container.getChained(dep, stackNew);
                         // create a new object with the factory function
                         const res = (Defs.isClass(exp)) ? new exp(spec) : exp(spec);
                         if (res instanceof Promise)

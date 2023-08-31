@@ -16,7 +16,7 @@ export default class TeqFw_Di_Parser {
         // VARS
         /**
          * Default parsing function.
-         * @type {(function(string): TeqFw_Di_Api_ObjectKey)}
+         * @type {(function(string): TeqFw_Di_DepId)}
          */
         let _defaultParser = defaultParser;
         /**
@@ -30,7 +30,7 @@ export default class TeqFw_Di_Parser {
         /**
          *
          * @param {function(string):boolean} validator
-         * @param {function(string):TeqFw_Di_Api_ObjectKey} parser
+         * @param {function(string):TeqFw_Di_DepId} parser
          */
         this.addParser = function (validator, parser) {
             _parsers.push({[KEY_VALIDATOR]: validator, [KEY_PARSER]: parser});
@@ -38,7 +38,7 @@ export default class TeqFw_Di_Parser {
 
         /**
          * @param {string} objectKey
-         * @return {TeqFw_Di_Api_ObjectKey}
+         * @return {TeqFw_Di_DepId}
          */
         this.parse = function (objectKey) {
             let res;
@@ -54,7 +54,7 @@ export default class TeqFw_Di_Parser {
         };
 
         /**
-         * @param {function(string):TeqFw_Di_Api_ObjectKey} parser
+         * @param {function(string):TeqFw_Di_DepId} parser
          */
         this.setDefaultParser = function (parser) {
             _defaultParser = parser;

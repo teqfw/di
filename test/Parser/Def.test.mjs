@@ -18,7 +18,7 @@ describe('TeqFw_Di_Parser_Def', () => {
 
         describe('default export:', () => {
             it('as-is, singleton (Ns_Module)', () => {
-                /** @type {TeqFw_Di_Api_ObjectKey} */
+                /** @type {TeqFw_Di_DepId} */
                 const dto = parse('Ns_Module');
                 assert.strictEqual(dto.composition, Defs.COMPOSE_AS_IS);
                 assert.strictEqual(dto.exportName, 'default');
@@ -28,7 +28,7 @@ describe('TeqFw_Di_Parser_Def', () => {
                 assert.strictEqual(dto.wrappers.length, 0);
             });
             it('factory, singleton (Ns_Module$)', () => {
-                /** @type {TeqFw_Di_Api_ObjectKey} */
+                /** @type {TeqFw_Di_DepId} */
                 const dto = parse('Ns_Module$');
                 assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                 assert.strictEqual(dto.exportName, 'default');
@@ -38,7 +38,7 @@ describe('TeqFw_Di_Parser_Def', () => {
                 assert.strictEqual(dto.wrappers.length, 0);
             });
             it('factory, instance (Ns_Module$I)', () => {
-                /** @type {TeqFw_Di_Api_ObjectKey} */
+                /** @type {TeqFw_Di_DepId} */
                 const dto = parse('Ns_Module$I');
                 assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                 assert.strictEqual(dto.exportName, 'default');
@@ -51,7 +51,7 @@ describe('TeqFw_Di_Parser_Def', () => {
 
         describe('named export:', () => {
             it('as-is, singleton (Ns_Module.name)', () => {
-                /** @type {TeqFw_Di_Api_ObjectKey} */
+                /** @type {TeqFw_Di_DepId} */
                 const dto = parse('Ns_Module.name');
                 assert.strictEqual(dto.composition, Defs.COMPOSE_AS_IS);
                 assert.strictEqual(dto.exportName, 'name');
@@ -61,7 +61,7 @@ describe('TeqFw_Di_Parser_Def', () => {
                 assert.strictEqual(dto.wrappers.length, 0);
             });
             it('factory, singleton (Ns_Module.name$)', () => {
-                /** @type {TeqFw_Di_Api_ObjectKey} */
+                /** @type {TeqFw_Di_DepId} */
                 const dto = parse('Ns_Module.name$');
                 assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                 assert.strictEqual(dto.exportName, 'name');
@@ -71,7 +71,7 @@ describe('TeqFw_Di_Parser_Def', () => {
                 assert.strictEqual(dto.wrappers.length, 0);
             });
             it('factory, instance (Ns_Module.name$I)', () => {
-                /** @type {TeqFw_Di_Api_ObjectKey} */
+                /** @type {TeqFw_Di_DepId} */
                 const dto = parse('Ns_Module.name$I');
                 assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                 assert.strictEqual(dto.exportName, 'name');

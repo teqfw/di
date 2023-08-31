@@ -1,7 +1,7 @@
 /**
  * This is a DTO that represents the structure of an ID for a runtime dependency.
  */
-export default class TeqFw_Di_Api_ObjectKey {
+export default class TeqFw_Di_DepId {
     /**
      * The name of an export of the module.
      * @type {string}

@@ -2,7 +2,7 @@
  * Parser for object keys in old format:
  *   - Vnd_Pkg_Prj_Mod[.|#]export$$
  */
-import Dto from '../Api/ObjectKey.js';
+import Dto from '../DepId.js';
 import Defs from '../Defs.js';
 
 // VARS

@@ -18,9 +18,9 @@ export default function () {
 
     // FUNCS
     /**
-     * @param {TeqFw_Di_Api_ObjectKey} objectKey
-     * @param {TeqFw_Di_Api_ObjectKey} originalKey
-     * @return {TeqFw_Di_Api_ObjectKey}
+     * @param {TeqFw_Di_DepId} objectKey
+     * @param {TeqFw_Di_DepId} originalKey
+     * @return {TeqFw_Di_DepId}
      */
     function TeqFw_Di_PreProcessor_Replace(objectKey, originalKey) {
         let module = objectKey.moduleName;

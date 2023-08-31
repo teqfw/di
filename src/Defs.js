@@ -1,5 +1,5 @@
 /**
- * Hardcoded constants for the package.
+ * Hardcoded constants for the package and useful utilities.
  */
 export default {
     COMPOSE_AS_IS: 'A',

@@ -1,5 +1,4 @@
 import {dirname, join} from 'node:path';
-import {fileURLToPath} from 'node:url';
 import assert from 'node:assert';
 import {describe, it} from 'mocha';
 import Container from '../src/Container.js';
@@ -22,6 +21,7 @@ describe('TeqFw_Di_Container', () => {
                 .filter(p => (typeof container[p] === 'function'));
             assert.deepStrictEqual(methods.sort(), [
                 'get',
+                'getChained',
                 'getParser',
                 'getPreProcessor',
                 'getResolver',

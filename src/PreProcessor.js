@@ -11,7 +11,7 @@ export default class TeqFw_Di_PreProcessor {
         // VARS
         /**
          * The array of handlers in the dependency order (from the basic (di) up to the app).
-         * @type {Array<function(TeqFw_Di_Api_ObjectKey, TeqFw_Di_Api_ObjectKey):TeqFw_Di_Api_ObjectKey>}
+         * @type {Array<function(TeqFw_Di_DepId, TeqFw_Di_DepId):TeqFw_Di_DepId>}
          */
         const _handlers = [];
 
@@ -19,7 +19,7 @@ export default class TeqFw_Di_PreProcessor {
 
         /**
          *
-         * @param {function(TeqFw_Di_Api_ObjectKey, TeqFw_Di_Api_ObjectKey):TeqFw_Di_Api_ObjectKey} hndl
+         * @param {function(TeqFw_Di_DepId, TeqFw_Di_DepId):TeqFw_Di_DepId} hndl
          */
         this.addHandler = function (hndl) {
             _handlers.push(hndl);
@@ -27,13 +27,13 @@ export default class TeqFw_Di_PreProcessor {
 
         /**
          * Get all pre-processing handlers.
-         * @return {Array<function(TeqFw_Di_Api_ObjectKey, TeqFw_Di_Api_ObjectKey): TeqFw_Di_Api_ObjectKey>}
+         * @return {Array<function(TeqFw_Di_DepId, TeqFw_Di_DepId): TeqFw_Di_DepId>}
          */
         this.getHandlers = () => _handlers;
 
         /**
-         * @param {TeqFw_Di_Api_ObjectKey} objectKey
-         * @return {TeqFw_Di_Api_ObjectKey}
+         * @param {TeqFw_Di_DepId} objectKey
+         * @return {TeqFw_Di_DepId}
          */
         this.process = function (objectKey) {
             let res = objectKey;

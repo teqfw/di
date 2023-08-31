@@ -7,7 +7,7 @@ describe('TeqFw_Di_Parser_Old', () => {
 
     describe('should parse manual DI IDs:', () => {
         it('named singleton ID (namedSingleton)', async () => {
-            /** @type {TeqFw_Di_Api_ObjectKey} */
+            /** @type {TeqFw_Di_DepId} */
             const dto = parse('namedSingleton');
             assert.strictEqual(dto.composition, undefined);
             assert.strictEqual(dto.exportName, undefined);
@@ -17,7 +17,7 @@ describe('TeqFw_Di_Parser_Old', () => {
             assert.strictEqual(dto.wrappers.length, 0);
         });
         it('named constructor ID (namedFactory$$)', async () => {
-            /** @type {TeqFw_Di_Api_ObjectKey} */
+            /** @type {TeqFw_Di_DepId} */
             const dto = parse('namedFactory$$');
             assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
             assert.strictEqual(dto.exportName, undefined);
@@ -32,7 +32,7 @@ describe('TeqFw_Di_Parser_Old', () => {
 
         describe('simple:', () => {
             it('simple (Ns_Module)', async () => {
-                /** @type {TeqFw_Di_Api_ObjectKey} */
+                /** @type {TeqFw_Di_DepId} */
                 const dto = parse('Ns_Module');
                 assert.strictEqual(dto.composition, undefined);
                 assert.strictEqual(dto.exportName, undefined);
@@ -47,7 +47,7 @@ describe('TeqFw_Di_Parser_Old', () => {
 
             describe('default export:', () => {
                 it('as-is (Ns_Module.)', async () => {
-                    /** @type {TeqFw_Di_Api_ObjectKey} */
+                    /** @type {TeqFw_Di_DepId} */
                     const dto = parse('Ns_Module.');
                     assert.strictEqual(dto.composition, Defs.COMPOSE_AS_IS);
                     assert.strictEqual(dto.exportName, 'default');
@@ -57,7 +57,7 @@ describe('TeqFw_Di_Parser_Old', () => {
                     assert.strictEqual(dto.wrappers.length, 0);
                 });
                 it('singleton (Ns_Module$)', async () => {
-                    /** @type {TeqFw_Di_Api_ObjectKey} */
+                    /** @type {TeqFw_Di_DepId} */
                     const dto = parse('Ns_Module$');
                     assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                     assert.strictEqual(dto.exportName, 'default');
@@ -67,7 +67,7 @@ describe('TeqFw_Di_Parser_Old', () => {
                     assert.strictEqual(dto.wrappers.length, 0);
                 });
                 it('instance (Ns_Module$$)', async () => {
-                    /** @type {TeqFw_Di_Api_ObjectKey} */
+                    /** @type {TeqFw_Di_DepId} */
                     const dto = parse('Ns_Module$$');
                     assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                     assert.strictEqual(dto.exportName, 'default');
@@ -77,7 +77,7 @@ describe('TeqFw_Di_Parser_Old', () => {
                     assert.strictEqual(dto.wrappers.length, 0);
                 });
                 it('singleton proxy (Ns_Module@)', async () => {
-                    /** @type {TeqFw_Di_Api_ObjectKey} */
+                    /** @type {TeqFw_Di_DepId} */
                     const dto = parse('Ns_Module@');
                     assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                     assert.strictEqual(dto.exportName, 'default');
@@ -87,7 +87,7 @@ describe('TeqFw_Di_Parser_Old', () => {
                     assert.strictEqual(dto.wrappers[0], 'proxy');
                 });
                 it('instance proxy (Ns_Module@@)', async () => {
-                    /** @type {TeqFw_Di_Api_ObjectKey} */
+                    /** @type {TeqFw_Di_DepId} */
                     const dto = parse('Ns_Module@@');
                     assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                     assert.strictEqual(dto.exportName, 'default');
@@ -100,7 +100,7 @@ describe('TeqFw_Di_Parser_Old', () => {
 
             describe('named export:', () => {
                 it('simple (Ns_Module.name)', async () => {
-                    /** @type {TeqFw_Di_Api_ObjectKey} */
+                    /** @type {TeqFw_Di_DepId} */
                     const dto = parse('Ns_Module.name');
                     assert.strictEqual(dto.composition, Defs.COMPOSE_AS_IS);
                     assert.strictEqual(dto.exportName, 'name');
@@ -110,7 +110,7 @@ describe('TeqFw_Di_Parser_Old', () => {
                     assert.strictEqual(dto.wrappers.length, 0);
                 });
                 it('singleton (Ns_Module.name$)', async () => {
-                    /** @type {TeqFw_Di_Api_ObjectKey} */
+                    /** @type {TeqFw_Di_DepId} */
                     const dto = parse('Ns_Module.name$');
                     assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                     assert.strictEqual(dto.exportName, 'name');
@@ -120,7 +120,7 @@ describe('TeqFw_Di_Parser_Old', () => {
                     assert.strictEqual(dto.wrappers.length, 0);
                 });
                 it('instance (Ns_Module.name$$)', async () => {
-                    /** @type {TeqFw_Di_Api_ObjectKey} */
+                    /** @type {TeqFw_Di_DepId} */
                     const dto = parse('Ns_Module.name$$');
                     assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                     assert.strictEqual(dto.exportName, 'name');
@@ -130,7 +130,7 @@ describe('TeqFw_Di_Parser_Old', () => {
                     assert.strictEqual(dto.wrappers.length, 0);
                 });
                 it('singleton proxy (Ns_Module.name@)', async () => {
-                    /** @type {TeqFw_Di_Api_ObjectKey} */
+                    /** @type {TeqFw_Di_DepId} */
                     const dto = parse('Ns_Module.name@');
                     assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                     assert.strictEqual(dto.exportName, 'name');
@@ -140,7 +140,7 @@ describe('TeqFw_Di_Parser_Old', () => {
                     assert.strictEqual(dto.wrappers[0], 'proxy');
                 });
                 it('instance proxy (Ns_Module.name@@)', async () => {
-                    /** @type {TeqFw_Di_Api_ObjectKey} */
+                    /** @type {TeqFw_Di_DepId} */
                     const dto = parse('Ns_Module.name@@');
                     assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                     assert.strictEqual(dto.exportName, 'name');
