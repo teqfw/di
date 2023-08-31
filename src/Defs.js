@@ -1,5 +1,6 @@
 /**
  * Hardcoded constants for the package and useful utilities.
+ * @namespace TeqFw_Di_Defs
  */
 export default {
     COMPOSE_AS_IS: 'A',

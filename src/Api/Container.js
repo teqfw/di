@@ -11,20 +11,20 @@ export default class TeqFw_Di_Api_Container {
      * @param {string} runtimeDepId - The ID of the runtime object.
      * @return {Promise<*>} - A promise that resolves to the runtime object.
      */
-    async get(runtimeDepId) {};
+    get(runtimeDepId) {};
 
     /**
-     * @return {TeqFw_Di_Parser}
+     * @return {TeqFw_Di_Api_Container_Parser}
      */
     getParser() {};
 
     /**
-     * @return {TeqFw_Di_PreProcessor}
+     * @return {TeqFw_Di_Container_PreProcessor}
      */
     getPreProcessor() {};
 
     /**
-     * @return {TeqFw_Di_Resolver}
+     * @return {TeqFw_Di_Container_Resolver}
      */
     getResolver() {};
 
@@ -35,17 +35,17 @@ export default class TeqFw_Di_Api_Container {
     setDebug(data) {};
 
     /**
-     * @param {TeqFw_Di_Parser} data
+     * @param {TeqFw_Di_Api_Container_Parser} data
      */
     setParser(data) {};
 
     /**
-     * @param {TeqFw_Di_PreProcessor} data
+     * @param {TeqFw_Di_Container_PreProcessor} data
      */
     setPreProcessor(data) {};
 
     /**
-     * @param {TeqFw_Di_Resolver} data
+     * @param {TeqFw_Di_Container_Resolver} data
      */
     setResolver(data) {};
 };

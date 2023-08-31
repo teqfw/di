@@ -7,19 +7,21 @@
  *  - Ns_App.name$: named export, factory, singleton (the most frequently used case)
  *  - NS_App.name$I: named export, factory, instance
  */
-import parse from '../../src/Parser/Def.js';
+import DefChunk from '../../../../src/Container/Parser/Chunk/Def.js';
 import {describe, it} from 'mocha';
 import assert from 'assert';
-import Defs from '../../src/Defs.js';
+import Defs from '../../../../src/Defs.js';
 
-describe('TeqFw_Di_Parser_Def', () => {
+describe('TeqFw_Di_Container_Parser_Chunk_Def', () => {
+
+    const chunk = new DefChunk();
 
     describe('should parse:', () => {
 
         describe('default export:', () => {
             it('as-is, singleton (Ns_Module)', () => {
                 /** @type {TeqFw_Di_DepId} */
-                const dto = parse('Ns_Module');
+                const dto = chunk.parse('Ns_Module');
                 assert.strictEqual(dto.composition, Defs.COMPOSE_AS_IS);
                 assert.strictEqual(dto.exportName, 'default');
                 assert.strictEqual(dto.life, Defs.LIFE_SINGLETON);
@@ -29,7 +31,7 @@ describe('TeqFw_Di_Parser_Def', () => {
             });
             it('factory, singleton (Ns_Module$)', () => {
                 /** @type {TeqFw_Di_DepId} */
-                const dto = parse('Ns_Module$');
+                const dto = chunk.parse('Ns_Module$');
                 assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                 assert.strictEqual(dto.exportName, 'default');
                 assert.strictEqual(dto.life, Defs.LIFE_SINGLETON);
@@ -39,7 +41,7 @@ describe('TeqFw_Di_Parser_Def', () => {
             });
             it('factory, instance (Ns_Module$I)', () => {
                 /** @type {TeqFw_Di_DepId} */
-                const dto = parse('Ns_Module$I');
+                const dto = chunk.parse('Ns_Module$I');
                 assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                 assert.strictEqual(dto.exportName, 'default');
                 assert.strictEqual(dto.life, Defs.LIFE_INSTANCE);
@@ -52,7 +54,7 @@ describe('TeqFw_Di_Parser_Def', () => {
         describe('named export:', () => {
             it('as-is, singleton (Ns_Module.name)', () => {
                 /** @type {TeqFw_Di_DepId} */
-                const dto = parse('Ns_Module.name');
+                const dto = chunk.parse('Ns_Module.name');
                 assert.strictEqual(dto.composition, Defs.COMPOSE_AS_IS);
                 assert.strictEqual(dto.exportName, 'name');
                 assert.strictEqual(dto.life, Defs.LIFE_SINGLETON);
@@ -62,7 +64,7 @@ describe('TeqFw_Di_Parser_Def', () => {
             });
             it('factory, singleton (Ns_Module.name$)', () => {
                 /** @type {TeqFw_Di_DepId} */
-                const dto = parse('Ns_Module.name$');
+                const dto = chunk.parse('Ns_Module.name$');
                 assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                 assert.strictEqual(dto.exportName, 'name');
                 assert.strictEqual(dto.life, Defs.LIFE_SINGLETON);
@@ -72,7 +74,7 @@ describe('TeqFw_Di_Parser_Def', () => {
             });
             it('factory, instance (Ns_Module.name$I)', () => {
                 /** @type {TeqFw_Di_DepId} */
-                const dto = parse('Ns_Module.name$I');
+                const dto = chunk.parse('Ns_Module.name$I');
                 assert.strictEqual(dto.composition, Defs.COMPOSE_FACTORY);
                 assert.strictEqual(dto.exportName, 'name');
                 assert.strictEqual(dto.life, Defs.LIFE_INSTANCE);

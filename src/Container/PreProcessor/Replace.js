@@ -1,6 +1,6 @@
 /**
  * Pre-processor handler to replace one object key with another.
- * @namespace TeqFw_Di_PreProcessor_Replace
+ * @namespace TeqFw_Di_Container_PreProcessor_Replace
  */
 
 /**
@@ -22,7 +22,7 @@ export default function () {
      * @param {TeqFw_Di_DepId} originalKey
      * @return {TeqFw_Di_DepId}
      */
-    function TeqFw_Di_PreProcessor_Replace(objectKey, originalKey) {
+    function TeqFw_Di_Container_PreProcessor_Replace(objectKey, originalKey) {
         let module = objectKey.moduleName;
         while (replacements[module]) module = replacements[module];
         if (module !== objectKey.moduleName) {
@@ -39,10 +39,10 @@ export default function () {
      * @param {string} orig ('Vnd_Plug_Interface')
      * @param {string} alter ('Vnd_Plug_Impl')
      */
-    TeqFw_Di_PreProcessor_Replace.add = function (orig, alter) {
+    TeqFw_Di_Container_PreProcessor_Replace.add = function (orig, alter) {
         replacements[orig] = alter;
     };
 
     // MAIN
-    return TeqFw_Di_PreProcessor_Replace;
+    return TeqFw_Di_Container_PreProcessor_Replace;
 }

@@ -7,7 +7,7 @@
  *  - every package has sources with the same extensions (*.js, *.mjs, *.es6, ...)
  *  - namespaces can be nested (App_Web_ => ./@app/web/..., App_Web_Api_ => ./@app/web_api/...)
  */
-import Defs from './Defs.js';
+import Defs from '../Defs.js';
 
 // VARS
 const KEY_EXT = 'ext';
@@ -21,7 +21,7 @@ const KEY_PATH = 'root';
 const NSS = '_';
 
 // MAIN
-export default class TeqFw_Di_Resolver {
+export default class TeqFw_Di_Container_Resolver {
 
     constructor() {
         // VARS

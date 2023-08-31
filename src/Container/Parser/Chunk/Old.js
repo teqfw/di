@@ -2,8 +2,8 @@
  * Parser for object keys in old format:
  *   - Vnd_Pkg_Prj_Mod[.|#]export$$
  */
-import Dto from '../DepId.js';
-import Defs from '../Defs.js';
+import Dto from '../../../DepId.js';
+import Defs from '../../../Defs.js';
 
 // VARS
 /** @type {string} default export keyword */
@@ -26,7 +26,7 @@ const P_SNGLT = '@';
 const SNGLT = '$';
 
 // MAIN
-export default function TeqFw_Di_Parser_Old(objectKey) {
+export default function TeqFw_Di_Container_Parser_Chunk_Old(objectKey) {
     const res = new Dto();
     res.value = objectKey;
     const parts = REGEXP.exec(objectKey);

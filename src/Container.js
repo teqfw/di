@@ -1,12 +1,13 @@
 /**
  * The Object Container (composition root).
+ * @namespace TeqFw_Di_Container
  */
-import Composer from './Composer.js';
+import Composer from './Container/Composer.js';
 import Defs from './Defs.js';
-import Parser from './Parser.js';
-import PreProcessor from './PreProcessor.js';
-import NewReplace from './PreProcessor/Replace.js';
-import Resolver from './Resolver.js';
+import Parser from './Container/Parser.js';
+import PreProcessor from './Container/PreProcessor.js';
+import NewReplace from './Container/PreProcessor/Replace.js';
+import Resolver from './Container/Resolver.js';
 
 // VARS
 
@@ -30,6 +31,7 @@ export default class TeqFw_Di_Container {
         // VARS
         let _composer = new Composer();
         let _debug = false;
+        /** @type {TeqFw_Di_Api_Container_Parser} */
         let _parser = new Parser();
         let _preProcessor = new PreProcessor();
         _preProcessor.addHandler(NewReplace()); // create new instance of the replacement handler
@@ -61,19 +63,25 @@ export default class TeqFw_Di_Container {
             return this.getChained(runtimeDepId, []);
         };
 
-
-        this.getChained = async function (runtimeDepId, stack = []) {
-            log(`Object '${runtimeDepId}' is requested.`);
+        /**
+         * This method is 'private' for the package.
+         *
+         * @param {string} depId runtime dependency ID
+         * @param {string[]} stack set of the depId to detect circular dependencies
+         * @return {Promise<*>}
+         */
+        this.getChained = async function (depId, stack = []) {
+            log(`Object '${depId}' is requested.`);
             // return container itself if requested
             if (
-                (runtimeDepId === Defs.KEY_CONTAINER) ||
-                (runtimeDepId === Defs.KEY_CONTAINER_NS)
+                (depId === Defs.KEY_CONTAINER) ||
+                (depId === Defs.KEY_CONTAINER_NS)
             ) {
                 log(`Container itself is returned.`);
                 return _regSingles[Defs.KEY_CONTAINER];
             }
             // parse the `objectKey` and get the structured DTO
-            const parsed = _parser.parse(runtimeDepId);
+            const parsed = _parser.parse(depId);
             // modify original key according to some rules (replacements, etc.)
             const key = _preProcessor.process(parsed);
             // return existing singleton
@@ -95,7 +103,7 @@ export default class TeqFw_Di_Container {
                 } catch (e) {
                     console.error(
                         e?.message,
-                        `Object key: "${runtimeDepId}".`,
+                        `Object key: "${depId}".`,
                         `Path: "${path}".`,
                         `Stack: ${JSON.stringify(stack)}`
                     );
@@ -105,12 +113,12 @@ export default class TeqFw_Di_Container {
             }
             // create object using the composer
             let res = await _composer.create(key, _regModules[key.moduleName], stack, this);
-            log(`Object '${runtimeDepId}' is created.`);
+            log(`Object '${depId}' is created.`);
 
             // TODO: refactor this code to use wrappers w/o hardcode
             if (key.wrappers.includes(Defs.WRAP_PROXY)) {
                 const me = this;
-                res = new Proxy({dep: undefined, objectKey: runtimeDepId}, {
+                res = new Proxy({dep: undefined, objectKey: depId}, {
                     get: async function (base, name) {
                         if (name === 'create') base.dep = await me.get(base.objectKey);
                         return base.dep;
@@ -121,7 +129,7 @@ export default class TeqFw_Di_Container {
             if (key.life === Defs.LIFE_SINGLETON) {
                 const singleId = getSingletonId(key);
                 _regSingles[singleId] = res;
-                log(`Object '${runtimeDepId}' is saved as singleton.`);
+                log(`Object '${depId}' is saved as singleton.`);
             }
             return res;
         };

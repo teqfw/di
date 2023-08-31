@@ -1,7 +1,7 @@
 /**
  * This function analyzes specification of dependencies extracted from the text definition of the function itself.
  */
-import Defs from './Defs.js';
+import Defs from '../Defs.js';
 
 // VARS
 const FUNC = /function\s*\w*\s*\(\s*\{([^\}]*)\}/s;

@@ -1,5 +1,9 @@
 # @teqfw/di releases
 
+## 0.21.0
+
+* Restructured modules in the package.
+
 ## 0.20.1
 
 * Changed regex for parameter extraction in the Spec Analyzer.

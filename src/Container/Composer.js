@@ -1,13 +1,13 @@
 /**
  *
  */
-import Defs from './Defs.js';
+import Defs from '../Defs.js';
 import specAnalyser from './SpecAnalyser.js';
 
 // FUNCS
 
 // MAIN
-export default class TeqFw_Di_Composer {
+export default class TeqFw_Di_Container_Composer {
 
     constructor() {
         // VARS

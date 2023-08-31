@@ -1,5 +1,6 @@
 /**
  * This is a DTO that represents the structure of an ID for a runtime dependency.
+ * @namespace TeqFw_Di_DepId
  */
 export default class TeqFw_Di_DepId {
     /**

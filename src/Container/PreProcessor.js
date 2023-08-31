@@ -5,7 +5,7 @@
  *  - objectKey: current key after processing with other handlers;
  *  - originalKey: the key before any processing;
  */
-export default class TeqFw_Di_PreProcessor {
+export default class TeqFw_Di_Container_PreProcessor {
 
     constructor() {
         // VARS
