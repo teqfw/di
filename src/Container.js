@@ -2,7 +2,7 @@
  * The Object Container (composition root).
  * @namespace TeqFw_Di_Container
  */
-import Composer from './Container/Composer.js';
+import Composer from './Container/A/Composer.js';
 import Defs from './Defs.js';
 import Parser from './Container/Parser.js';
 import PreProcessor from './Container/PreProcessor.js';

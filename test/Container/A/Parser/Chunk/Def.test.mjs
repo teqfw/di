@@ -7,12 +7,12 @@
  *  - Ns_App.name$: named export, factory, singleton (the most frequently used case)
  *  - NS_App.name$I: named export, factory, instance
  */
-import DefChunk from '../../../../src/Container/Parser/Chunk/Def.js';
+import DefChunk from '../../../../../src/Container/A/Parser/Chunk/Def.js';
 import {describe, it} from 'mocha';
 import assert from 'assert';
-import Defs from '../../../../src/Defs.js';
+import Defs from '../../../../../src/Defs.js';
 
-describe('TeqFw_Di_Container_Parser_Chunk_Def', () => {
+describe('TeqFw_Di_Container_A_Parser_Chunk_Def', () => {
 
     const chunk = new DefChunk();
 

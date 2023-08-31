@@ -1,5 +1,5 @@
 /**
- * Hardcoded constants for the package and useful utilities.
+ * Hardcoded constants and useful utilities for the package.
  * @namespace TeqFw_Di_Defs
  */
 export default {
@@ -10,7 +10,7 @@ export default {
     KEY_CONTAINER_NS: 'TeqFw_Di_Container$',
     LIFE_INSTANCE: 'I',
     LIFE_SINGLETON: 'S',
-    WRAP_PROXY: 'proxy',
+    WRAP_PROXY: 'proxy', // TODO: move to the PostProcessor
 
     /**
      * Return 'true' if function is a class definition.

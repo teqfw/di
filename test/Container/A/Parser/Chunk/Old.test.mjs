@@ -1,9 +1,9 @@
-import parse from '../../../src/Container/Parser/Chunk/Old.js';
+import parse from '../../../../../src/Container/A/Parser/Chunk/Old.js';
 import {describe, it} from 'mocha';
 import assert from 'assert';
-import Defs from '../../../src/Defs.js';
+import Defs from '../../../../../src/Defs.js';
 
-describe('TeqFw_Di_Container_Parser_Chunk_Old', () => {
+describe('TeqFw_Di_Container_A_Parser_Chunk_Old', () => {
 
     describe('should parse manual DI IDs:', () => {
         it('named singleton ID (namedSingleton)', async () => {

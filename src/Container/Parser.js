@@ -3,7 +3,7 @@
  * a `depId`. The parser calls the chunks one by one to parse the string ID as a structure and returns the first result.
  * If none of the chunks processed the `depId`, the parser calls the default chunk.
  */
-import DefChunk from './Parser/Chunk/Def.js';
+import DefChunk from './A/Parser/Chunk/Def.js';
 
 /**
  * @implements TeqFw_Di_Api_Container_Parser
