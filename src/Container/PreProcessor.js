@@ -11,11 +11,6 @@ export default class TeqFw_Di_Container_PreProcessor {
 
     constructor() {
         // VARS
-        /**
-         * The array of handlers in the dependency order (from the basic (di) up to the app).
-         * @type {Array<function(TeqFw_Di_DepId, TeqFw_Di_DepId):TeqFw_Di_DepId>}
-         */
-        const _handlers = [];
 
         /**
          * The array of the chunks to modify dependency IDs.
@@ -28,13 +23,6 @@ export default class TeqFw_Di_Container_PreProcessor {
         this.addChunk = function (chunk) {
             _chunks.push(chunk);
         };
-
-        /**
-         * Get all pre-processing handlers.
-         * @return {Array<function(TeqFw_Di_DepId, TeqFw_Di_DepId): TeqFw_Di_DepId>}
-         * @deprecated remove it
-         */
-        this.getHandlers = () => _handlers;
 
         this.modify = function (depId) {
             let res = depId;

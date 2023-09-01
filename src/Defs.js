@@ -10,7 +10,10 @@ export default {
     KEY_CONTAINER_NS: 'TeqFw_Di_Container$',
     LIFE_INSTANCE: 'I',
     LIFE_SINGLETON: 'S',
-    WRAP_PROXY: 'proxy', // TODO: move to the PostProcessor
+    /**
+     * @deprecated use TeqFw_Core_Shared_Defaults.DI_WRAP_PROXY
+     */
+    WRAP_PROXY: 'proxy',
 
     /**
      * Return 'true' if function is a class definition.

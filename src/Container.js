@@ -6,6 +6,7 @@ import Composer from './Container/A/Composer.js';
 import Defs from './Defs.js';
 import Parser from './Container/Parser.js';
 import PreProcessor from './Container/PreProcessor.js';
+import PostProcessor from './Container/PostProcessor.js';
 import Resolver from './Container/Resolver.js';
 
 // FUNCS
@@ -30,6 +31,7 @@ export default class TeqFw_Di_Container {
         let _debug = false;
         let _parser = new Parser();
         let _preProcessor = new PreProcessor();
+        let _postProcessor = new PostProcessor();
 
         /**
          * Registry for loaded es6 modules.
@@ -108,18 +110,8 @@ export default class TeqFw_Di_Container {
             }
             // create object using the composer
             let res = await _composer.create(key, _regModules[key.moduleName], stack, this);
+            res = await _postProcessor.modify(res, key);
             log(`Object '${depId}' is created.`);
-
-            // TODO: refactor this code to use wrappers w/o hardcode
-            if (key.wrappers.includes(Defs.WRAP_PROXY)) {
-                const me = this;
-                res = new Proxy({dep: undefined, objectKey: depId}, {
-                    get: async function (base, name) {
-                        if (name === 'create') base.dep = await me.get(base.objectKey);
-                        return base.dep;
-                    }
-                });
-            }
 
             if (key.life === Defs.LIFE_SINGLETON) {
                 const singleId = getSingletonId(key);
