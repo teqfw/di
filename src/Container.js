@@ -6,10 +6,7 @@ import Composer from './Container/A/Composer.js';
 import Defs from './Defs.js';
 import Parser from './Container/Parser.js';
 import PreProcessor from './Container/PreProcessor.js';
-import NewReplace from './Container/PreProcessor/Replace.js';
 import Resolver from './Container/Resolver.js';
-
-// VARS
 
 // FUNCS
 /**
@@ -31,10 +28,8 @@ export default class TeqFw_Di_Container {
         // VARS
         let _composer = new Composer();
         let _debug = false;
-        /** @type {TeqFw_Di_Api_Container_Parser} */
         let _parser = new Parser();
         let _preProcessor = new PreProcessor();
-        _preProcessor.addHandler(NewReplace()); // create new instance of the replacement handler
 
         /**
          * Registry for loaded es6 modules.
@@ -60,17 +55,17 @@ export default class TeqFw_Di_Container {
         // INSTANCE METHODS
 
         this.get = async function (runtimeDepId) {
-            return this.getChained(runtimeDepId, []);
+            return this.compose(runtimeDepId, []);
         };
 
         /**
-         * This method is 'private' for the package.
+         * This method is 'private' for the npm package. It is used in the Composer only.
          *
          * @param {string} depId runtime dependency ID
          * @param {string[]} stack set of the depId to detect circular dependencies
          * @return {Promise<*>}
          */
-        this.getChained = async function (depId, stack = []) {
+        this.compose = async function (depId, stack = []) {
             log(`Object '${depId}' is requested.`);
             // return container itself if requested
             if (
@@ -83,7 +78,7 @@ export default class TeqFw_Di_Container {
             // parse the `objectKey` and get the structured DTO
             const parsed = _parser.parse(depId);
             // modify original key according to some rules (replacements, etc.)
-            const key = _preProcessor.process(parsed);
+            const key = _preProcessor.modify(parsed);
             // return existing singleton
             if (key.life === Defs.LIFE_SINGLETON) {
                 const singleId = getSingletonId(key);

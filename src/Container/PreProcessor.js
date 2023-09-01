@@ -4,6 +4,8 @@
  * Every handler is a function with 2 arguments:
  *  - objectKey: current key after processing with other handlers;
  *  - originalKey: the key before any processing;
+ *
+ *  @implements TeqFw_Di_Api_Container_PreProcessor
  */
 export default class TeqFw_Di_Container_PreProcessor {
 
@@ -15,30 +17,29 @@ export default class TeqFw_Di_Container_PreProcessor {
          */
         const _handlers = [];
 
+        /**
+         * The array of the chunks to modify dependency IDs.
+         * @type {TeqFw_Di_Api_Container_PreProcessor_Chunk[]}
+         */
+        const _chunks = [];
+
         // INSTANCE METHODS
 
-        /**
-         *
-         * @param {function(TeqFw_Di_DepId, TeqFw_Di_DepId):TeqFw_Di_DepId} hndl
-         */
-        this.addHandler = function (hndl) {
-            _handlers.push(hndl);
+        this.addChunk = function (chunk) {
+            _chunks.push(chunk);
         };
 
         /**
          * Get all pre-processing handlers.
          * @return {Array<function(TeqFw_Di_DepId, TeqFw_Di_DepId): TeqFw_Di_DepId>}
+         * @deprecated remove it
          */
         this.getHandlers = () => _handlers;
 
-        /**
-         * @param {TeqFw_Di_DepId} objectKey
-         * @return {TeqFw_Di_DepId}
-         */
-        this.process = function (objectKey) {
-            let res = objectKey;
-            for (const one of _handlers)
-                res = one(res, objectKey);
+        this.modify = function (depId) {
+            let res = depId;
+            for (const one of _chunks)
+                res = one.modify(res, depId);
             return res;
         };
     }

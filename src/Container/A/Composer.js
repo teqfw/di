@@ -42,7 +42,7 @@ export default class TeqFw_Di_Container_A_Composer {
                         if (deps.length) log(`Deps for object '${depId.value}' are: ${JSON.stringify(deps)}`);
                         const spec = {};
                         for (const dep of deps)
-                            spec[dep] = await container.getChained(dep, stackNew);
+                            spec[dep] = await container.compose(dep, stackNew);
                         // create a new object with the factory function
                         const res = (Defs.isClass(exp)) ? new exp(spec) : exp(spec);
                         if (res instanceof Promise)
