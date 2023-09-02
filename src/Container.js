@@ -34,13 +34,11 @@ export default class TeqFw_Di_Container {
         let _postProcessor = new PostProcessor();
 
         /**
-         * Registry for loaded es6 modules.
+         * Registry for paths for loaded es6 modules.
          *
-         * TODO: should we have a registry for es6 modules? Perhaps we should cache just resolved paths to the modules.
-         *
-         * @type {Object<string, Module>}
+         * @type {Object<string, string>}
          */
-        const _regModules = {};
+        const _regPaths = {};
         /**
          * Registry to store singletons.
          * @type {Object<string, *>}
@@ -89,30 +87,34 @@ export default class TeqFw_Di_Container {
                     return _regSingles[singleId];
                 }
             }
-            // load es6 module if not loaded before
-            if (!_regModules[key.moduleName]) {
-                log(`ES6 module '${key.moduleName}' is not loaded yet`);
+            // resolve path to es6 module if not resolved before
+            if (!_regPaths[key.moduleName]) {
+                log(`ES6 module '${key.moduleName}' is not resolved yet`);
                 // convert module name to the path to es6-module file with a sources
-                const path = _resolver.resolve(key.moduleName);
-                try {
-                    _regModules[key.moduleName] = await import(path);
-                    log(`ES6 module '${key.moduleName}' is loaded from '${path}'.`);
-                } catch (e) {
-                    console.error(
-                        e?.message,
-                        `Object key: "${depId}".`,
-                        `Path: "${path}".`,
-                        `Stack: ${JSON.stringify(stack)}`
-                    );
-                    throw e;
-                }
-
+                _regPaths[key.moduleName] = _resolver.resolve(key.moduleName);
             }
-            // create object using the composer
-            let res = await _composer.create(key, _regModules[key.moduleName], stack, this);
+
+            // load es6 module
+            let module;
+            const path = _regPaths[key.moduleName];
+            try {
+                module = await import(path);
+                log(`ES6 module '${key.moduleName}' is loaded from '${path}'.`);
+            } catch (e) {
+                console.error(
+                    e?.message,
+                    `Object key: "${depId}".`,
+                    `Path: "${path}".`,
+                    `Stack: ${JSON.stringify(stack)}`
+                );
+                throw e;
+            }
+            // create object using the composer then modify it in post-processor
+            let res = await _composer.create(key, module, stack, this);
             res = await _postProcessor.modify(res, key);
             log(`Object '${depId}' is created.`);
 
+            // save singletons
             if (key.life === Defs.LIFE_SINGLETON) {
                 const singleId = getSingletonId(key);
                 _regSingles[singleId] = res;
