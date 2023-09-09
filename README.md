@@ -68,7 +68,7 @@ code is organized into npm packages, within which the sources reside in files an
 root directory can be linked to a namespace:
 
 ```
-Venodor_Package_ => /home/user/app/node_modules/@vendor/package/src/....
+Vendor_Package_ => /home/user/app/node_modules/@vendor/package/src/....
 ```
 
 This way, you can reference any ES6 module in any npm package:
@@ -80,9 +80,9 @@ Venodr_Package_Shared_Dto_Service_Save => /home/user/app/node_modules/@vendor/pa
 Depending on the execution environment, the mapping may be different:
 
 ```
-Venodor_Package_ => /home/user/app/node_modules/@vendor/package/src    // Linux style
-Venodor_Package_ => C:\projects\app\node_modules\@vendor\package\src   // Window style
-Venodor_Package_ => https://unpkg.com/@vendor/package/src              // Web style
+Vendor_Package_ => /home/user/app/node_modules/@vendor/package/src    // Linux style
+Vendor_Package_ => C:\projects\app\node_modules\@vendor\package\src   // Window style
+Vendor_Package_ => https://unpkg.com/@vendor/package/src              // Web style
 ```
 
 The source code employs namespaces to reference dependencies, while the object container utilizes a resolver to
