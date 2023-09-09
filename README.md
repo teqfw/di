@@ -1,11 +1,12 @@
 # @teqfw/di
 
-A Dependency Injection container for regular JavaScript is provided, which can be used in both browser and Node.js
+A Dependency Injection container for regular JavaScript is provided, which can be used in both _browser_ and _Node.js_
 applications. This library exclusively supports ES6 modules. The primary objective of this library is late binding with
-minimal manual configuration for the container. All linking instructions are encapsulated within the dependency
-identifiers and source path resolver. Additionally, the container offers the capability to modify object identifiers (
-preprocessing) and the created objects (postprocessing). These features enable you to more comprehensively distribute
-the necessary functionality across npm packages and reuse npm packages in different projects, following a '_modular
+_minimal manual configuration_ for the container. All linking instructions are encapsulated within the dependency
+identifiers and source path resolver. Additionally, the container offers the capability to modify object identifiers
+(_preprocessing_) and the created objects (_postprocessing_). These features enable you to more comprehensively
+distribute the necessary functionality across npm packages and reuse npm packages in different projects, following a '
+_modular
 monolith_' architecture.
 
 ## Inversion of Control
@@ -174,8 +175,8 @@ class Service {
 The object container links objects not at the source code level but in runtime mode. In my applications, I have
 encountered two particularly useful runtime object lifecycles:
 
-* Singleton: It exists in a single instance within the application.
-* Instance: A new object is created each time.
+* **Singleton**: It exists in a single instance within the application.
+* **Instance**: A new object is created each time.
 
 Since any string can be used as an object key in a dependency specification, various formats can be devised to specify
 the lifecycle of the required dependency. I have personally chosen the following format:
