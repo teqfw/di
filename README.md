@@ -1,296 +1,238 @@
 # @teqfw/di
 
-* Главная цель этого функционала - позднее связывание с минимальным ручным конфигурированием контейнера. Все инструкции
-  для связывания заложены в идентификаторах зависимостей.
-* Этот DI нужен для того, чтобы связывать runtime-объекты на этапе кодирования без дополнительных конфигурационных
-  файлов. Конфигурационные файлы могут понадобиться при изменении связывания на этапе выполнения.
-* "раннее связывание" - для изменения связности исходный код должен быть изменён и перекомпилирован. При позднем
-  связывании изменения можно вносить на этапе выполнения программы через конфигурацию контейнера.
-* DI позволяет перехватывать создание зависимостей и адаптировать их под конкретный контекст. Если перехват создания
-  невозможен - это не DI.
+A Dependency Injection container for regular JavaScript is provided, which can be used in both browser and Node.js
+applications. This library exclusively supports ES6 modules. The primary objective of this library is late binding with
+minimal manual configuration for the container. All linking instructions are encapsulated within the dependency
+identifiers and source path resolver. Additionally, the container offers the capability to modify object identifiers (
+preprocessing) and the created objects (postprocessing). These features enable you to more comprehensively distribute
+the necessary functionality across npm packages and reuse npm packages in different projects, following a '_modular
+monolith_' architecture.
 
-"_DI_" means both "_Dynamic Import_" and "_Dependency Injection_" here. This package allows defining logical namespaces
-in your projects, dynamically importing ES6-modules from these namespaces, creating new objects from imported
-functions/classes and resolving dependencies in constructors. It uses pure ECMAScript 2015+ (ES6+) and works both for
-modern browsers &amp; nodejs apps. You can share the same code between your frontend (browser) and your backend (nodejs)
-without TypeScript and preprocessors. Code in the browser's debugger will be the same as in your editor. Finally, you
-even can use interfaces in you projects and replace it with implementations.
+## Inversion of Control
 
-The '_proxy object_' for `constructor` specification is inspired by [awilix](https://github.com/jeffijoe/awilix). Thanks
-guys.
+The primary motivation for creating this library was the concept that JavaScript is a language in which the entire
+application can be written, both on the front end and the back end. The idea was to enable the use of the same
+JavaScript code seamlessly on both the front end and the back end without requiring any changes, including additional
+transpilation.
 
-## Installation
+The main challenge encountered along this path was static importing. When the entire application can fit into a single
+npm package, all sources can be linked to each other through relative paths. However, if the sources are distributed
+across different npm packages, addressing them becomes problematic:
 
-```
-$ npm i @teqfw/di --save
-```
-
-## Introduction
-
-Container
-uses [dynamic import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#dynamic_imports)
-to load source files. Each file must be a
-valid [ES-module](https://nodejs.org/api/esm.html#esm_modules_ecmascript_modules). Every ES-module forms a namespace for
-all nested components (constants, functions, classes). This namespace must have unique name across all other
-namespaces (ES-modules) in the application - DI container uses these namespaces to lookup for files with sources.
-
-```ecmascript 6
-/**
- * @namespace Vendor_Package_Module_Name
- */
+```javascript
+import something from '@vendor/package/src/Module.js'; // backend style
+import something from 'https://domain.com/@vendor/package/src/Module.js'; // frontend style
 ```
 
-ES-modules can use regular import statements in code:
+The inversion of control (IoC) design pattern came to the rescue. In this pattern, any software object with external
+dependencies provides a mechanism for obtaining these dependencies. The external environment, whether it's a test unit
+or an object container, is responsible for creating these dependencies and providing them to the software object.
 
-```ecmascript 6
-import ScanData from '../Api/Dto/Scanned.mjs';
-import {existsSync, readdirSync, readFileSync, statSync} from 'fs';
-```
-
-but DI container cannot process these imports. Function or class should have this interface to be compatible with DI
-container:
-
-```ecmascript 6
-export default function ObjectFactory(spec) {/* ... */}
-export default class SomeClass {
-    constructor(spec) {/* ... */}
-}
-``` 
-
-Factory function or class constructor must have one only input argument - `spec` (specification). This `spec` argument
-is a proxy that analyzes requests to `spec` props and creates dependencies on demand (
-see [SpecProxy.mjs](src/Shared/SpecProxy.mjs)). So we can interrupt factory for every unresolved dependency, create
-requested dependency and return it to the factory.
-
-Typical code for ES-module compatible with DI container:
-
-```ecmascript 6
-export default class Vnd1_Pkg1_Prj1_Mod1 {
-    constructor(spec) {
-        const Mod2 = spec['Vnd2_Pkg2_Prj2_Mod2#']; // get as class
-        const mod3 = spec['Vnd3_Pkg3_Prj3_Mod3$']; // get as singleton
-        const mod4 = spec['Vnd4_Pkg4_Prj4_Mod4$$']; // get as new instance
-    }
+```javascript
+// constructor-based injection
+class Service {
+  constructor(config, logger) {}
 }
 ```
 
-You don't need filenames anymore, use logical namespaces instead (like in
-PHP [Zend 1](https://framework.zend.com/manual/2.4/en/migration/namespacing-old-classes.html)).
+If all dependencies are added to software objects through a similar mechanism, there is no need to use static imports in
+the source code itself. Now, they can be used without any changes, both on the front end and on the back end.
+
+## Object Container
+
+Many programming languages implement the Dependency Injection pattern. In this pattern, an application typically
+utilizes an object container, responsible for creating all the application's objects and their dependencies. The
+`@teqfw/di` package provides precisely such an object container (`src/Container.js`). This object container is
+initialized and configured at the outset of application execution, after which it assumes responsibility for creating
+the remaining application objects:
+
+```javascript
+import Container from '@teqfw/di';
+
+const container = new Container();
+const resolver = container.getResolver();
+resolver.addNamespaceRoot('App_', pathApp);
+resolver.addNamespaceRoot('Sample_Lib_', pathLib);
+const app = await container.get('App_Main$');
+```
+
+Since JavaScript does not have its own namespaces, similar to packages in Java and namespaces in PHP, the experience of
+[Zend 1](https://framework.zend.com/manual/2.4/en/migration/namespacing-old-classes.html) is used as the basis for
+identifiers.
 
 ## Namespaces
 
-[More](doc/namespaces.md)
-
-To resolve namespace
-
-```ecmascript 6
-Demo_Main_Plugin_Path_To_Module
-```
-
-'_namespace-to-source_' mapping is used:
-
-```ecmascript 6
-// node js apps
-container.addSourceMapping('Vnd_Pkg', '/.../node_modules/@vnd/package/src', true, 'mjs');
-container.addSourceMapping('Vnd_Pkg_Plugin', '/.../node_modules/@vnd/plugin/src', true, 'mjs');
-// browsers
-container.addSourceMapping('Vnd_Pkg', 'https://.../node/@vnd/package/src', true, 'mjs');
-container.addSourceMapping('Vnd_Pkg_Plugin', 'https://.../node/@vnd/plugin/src', true, 'mjs');
-```
-
-Using namespaces we can address any ES-module in our application (browser or nodes):
+The primary purpose of namespaces is to address code elements within an application. In JavaScript (JS) applications,
+code is organized into npm packages, within which the sources reside in files and directories. Each npm package and its
+root directory can be linked to a namespace:
 
 ```
-Vnd_Pkg_Plugin_Path_To_Module => /.../node_modules/@vnd/plugin/src/Path/To/Module.mjs
-Vnd_Pkg_Plugin_Path_To_Module => https://.../node/@vnd/plugin/src/Path/To/Module.mjs
+Venodor_Package_ => /home/user/app/node_modules/@vendor/package/src/....
 ```
 
-## Identifiers
-
-ID for manually added dependencies:
+This way, you can reference any ES6 module in any npm package:
 
 ```
-dbConnection                // singleton
-dbTransaction$$             // get new instance using saved factory
+Venodr_Package_Shared_Dto_Service_Save => /home/user/app/node_modules/@vendor/package/src/Shared/Dto/Service/Save.js 
 ```
 
-ID for dynamic imports:
+Depending on the execution environment, the mapping may be different:
 
 ```
-Vnd_Pkg_Module              // import whole ES6 module
-Vnd_Pkg_Module#             // get default export for ES6 module
-Vnd_Pkg_Module#fnName       // get export with name 'fnName' for ES6 module
+Venodor_Package_ => /home/user/app/node_modules/@vendor/package/src    // Linux style
+Venodor_Package_ => C:\projects\app\node_modules\@vendor\package\src   // Window style
+Venodor_Package_ => https://unpkg.com/@vendor/package/src              // Web style
 ```
 
-ID for singletons and instances:
+The source code employs namespaces to reference dependencies, while the object container utilizes a resolver to
+translate the namespace into the corresponding path to the source code file, contingent upon the runtime environment:
 
 ```
-Vnd_Pkg_Module$             // get singleton object created with default export factory
-Vnd_Pkg_Module$$            // get new object created with default export factory
-Vnd_Pkg_Module#fnName$      // get singleton object created with 'fnName' export factory
-Vnd_Pkg_Module#fnName$$     // get new object created with 'fnName' export factory
+Venodr_Package_Shared_Dto_Service_Save => /home/user/app/node_modules/@vendor/package/src/Shared/Dto/Service/Save.js
+Venodr_Package_Shared_Dto_Service_Save => C:\projects\app\node_modules\@vendor\package\src\Shared\Dto\Service\Save.js
+Venodr_Package_Shared_Dto_Service_Save => https://unpkg.com/@vendor/package/src/Shared/Dto/Service/Save.js
 ```
 
-## Interfaces
+## Dependency Specification
 
-Define interface in a module:
+JavaScript lacks reflection capabilities similar to Java or PHP. Consequently, to enable the object container to
+comprehend the necessary dependencies for creating a specific object, a distinct convention is employed - a dependency
+specification. A dependency specification is an object where each key represents the identifier of the required
+dependency:
 
-```ecmascript 6
-/** @interface */
-export default class Vnd_Plugin_Interface {
-    /** @return {string} */
-    getName() {}
+```javascript
+class Service {
+  constructor(
+          {
+            App_Config: config,
+            App_Logger: logger
+          }
+  ) {}
 }
 ```
 
-Use this interface in other module:
+In the object container, the required object is created as follows:
 
-```ecmascript 6
-export default class Vnd2_Pkg2_Consumer {
-    name;
+```javascript
+const App_Config = await container.get('App_Config');
+const App_Logger = await container.get('App_Logger');
+const spec = {App_Config, App_Logger};
+const obj = new Service(spec);
+```
 
-    constructor(spec) {
-        /** @type {Vnd_Plugin_Interface} */
-        const service = spec['Vnd_Plugin_Interface$']; // singleton from default export
-        this.name = service.getName();
-    }
+If dependencies are injected into a factory function, it appears as follows:
+
+```javascript
+function Factory({App_Config: config, App_Logger: logger}) {
+  // perform operations with dependencies and compose the result
+  return res;
 }
 ```
 
-Implement the interface in third module:
+## Es6 export
 
-```ecmascript 6
-/** @implements Vnd_Plugin_Interface */
-export default class Vnd2_Plugin_Impl {
-    getName() {
-        return 'this is implementation';
-    }
+In ES6+, a distinct building block in application development is the act
+of [exporting](https://flancer32.com/es6-export-as-code-brick-b33a8efb3510):
+
+```javascript
+export {
+  obj1 as default, obj2, obj3
+};
+```
+
+Static linking through imports is performed at the level of these building blocks:
+
+````javascript
+import obj1 from './mod.js';
+import {obj2} from './mod.js';
+````
+
+This implies that the dependency identifier must have the capability to reference not only the ES6 module itself but
+also a specific export within it, as illustrated in this example:
+
+```javascript
+const exp = 'Vendor_Package_Module.export';
+const def = 'Vendor_Package_Module.default';
+const obj2 = 'Vendor_Package_Module.obj2';
+```
+
+In this case, the dependency declaration in a constructor or factory function could look like this:
+
+```javascript
+class Service {
+  constructor(
+          {
+            'App_Config.default': config,
+            'App_Util.logger': logger
+          }
+  ) {}
 }
 ```
 
-Setup replacement in DI container:
+## Late binding
 
-```ecmascript 6
-container.addModuleReplacement('Vnd_Plugin_Interface', 'Vnd2_Plugin_Impl');
-const consumer = await container.get('Vnd2_Pkg2_Consumer$');
-console.log(consumer.name); // 'this is implementation'
+The object container links objects not at the source code level but in runtime mode. In my applications, I have
+encountered two particularly useful runtime object lifecycles:
+
+* Singleton: It exists in a single instance within the application.
+* Instance: A new object is created each time.
+
+Since any string can be used as an object key in a dependency specification, various formats can be devised to specify
+the lifecycle of the required dependency. I have personally chosen the following format:
+
+```javascript
+const asIs = 'Vendor_Package_Module.default';
+const asSingleton = 'Vendor_Package_Module.default$';
+const asInstance = 'Vendor_Package_Module.default$$';
 ```
 
-## Usage in ES Modules
+In principle, each package can have its own format for describing the dependencies it uses internally. The
+`TeqFw_Di_Container_Parser` object is responsible for applying the appropriate format within the required namespace.
 
-### Function
+## Transforming the Result
 
-```ecmascript 6
-export default function Vnd_Pkg_Plugin_Fn(spec) {
-    const singleton = spec['dbConfig'];
-    const newInstance = spec['dbTransaction$$'];
-    const module = spec['Vnd_Pkg_Plugin_Shared_Util'];
-    const defExport = spec['Vnd_Pkg_Plugin_Shared_Util#'];
-    const defExportSingleton = spec['Vnd_Pkg_Plugin_Shared_Util$'];
-    const defExportNewInstance = spec['Vnd_Pkg_Plugin_Shared_Util$$'];
-    // ...
-}
+Here are the steps for the object container:
+
+![processing steps](./doc/img/teqfw_di_container_steps.png)
+
+There are two stages involved here:
+
+* **Preprocessing**: the modification of the dependency identifier
+* **Postprocessing**: the modification of the created object
+
+### Preprocessing
+
+At times, situations may arise, especially when utilizing various extensions of the core functionality, where it becomes
+necessary to redefine certain objects within the application. For such scenarios, `@teqfw/di` includes a preprocessor:
+
+```javascript
+/** @type {TeqFw_Di_Api_Container_PreProcessor} */
+const pre = container.getPreProcessor();
 ```
 
-### Class
+You can add handlers (chunks) to the preprocessor that are capable of modifying the initial `depId`:
 
-```ecmascript 6
-export default class Vnd_Pkg_Plugin_Class {
-    constructor(spec) {
-        const singleton = spec['dbConfig'];
-        // ...
-    }
-}
+```javascript
+/** @type {TeqFw_Di_Api_Container_PreProcessor_Chunk} */
+const replace = new ReplaceChunk(); // some implementation of the interface
+pre.addChunk(replace);
 ```
 
-## Frontend Bootstrap
+The preprocessor calls the handlers sequentially and can, for example, replace a dependency from the base npm package
+(`App_Base_Mod_Api_Service_Auth`) with another dependency from one of the npm packages (`Auth_Password_Mod_Service` or
+`OAuth2_Mod_Service`), depending on the npm packages included in the application compilation.
 
-We need to proxy our `node_modules` scripts to browser (`express` example):
+By using such replacements, you can implement the core functionality in one npm package, while in other npm packages,
+you can implement the additional functionality required by the core package.
 
-```ecmascript 6
-// map all './node_modules/' requests to './node_modules/' folder as static resources requests
-server.all('*/node_modules/*', function (req, res, next) {
-    const urlParts = /^(\/node_modules\/)(.*)/.exec(req.url);
-    // convert '/node/path' to './node_modules/path' to import DI container sources as is (w/o namespaces)
-    const path = $path.join(pathNode, urlParts[2]);
-    const mimeType = $mimeTypes.lookup(path);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Content-Type', mimeType);
-    res.sendFile(path);
-    console.debug(`${req.method} ${req.url}`);
-});
-```
+### Postprocessing
 
-`index.html`:
+Since the container creates all objects in the application, it can also perform additional actions on newly created
+objects, such as adding extra functionality to them in the form of a wrapper.
 
-```html
+`@teqfw/di` enables you to add individual handlers to the post-processing stage and modify the result. For example, you
+can wrap a finished object or perform various operations on it:
 
-<script type="module">
-    const baseUrl = location.href;
-    // load DI container as ES6 module (w/o namespaces)
-    import(baseUrl + 'node_modules/@teqfw/di/src/Container.mjs').then(async (modContainer) => {
-        // init container and setup namespaces mapping
-        /** @type {TeqFw_Di_Api_Container} */
-        const container = new modContainer.default();
-        const pathMain = baseUrl + 'node_modules/@flancer64/demo_teqfw_di_mod_main/src';
-        const pathPlugin = baseUrl + 'node_modules/@flancer64/demo_teqfw_di_mod_plugin/src';
-        container.addSourceMapping('Vnd_Pkg', pathMain, true, 'mjs');
-        container.addSourceMapping('Vnd_Pkg_Plugin', pathPlugin, true, 'mjs');
-        // get main front as singleton
-        /** @type {Vnd_Pkg_Front} */
-        const frontMain = await container.get('Vnd_Pkg_Front$');
-        frontMain.run();
-    });
-</script>
-```
-
-## Server Bootstrap
-
-```ecmascript 6
-import Container from '@teqfw/di';
-// ...
-const container = new Container();
-const pathMain = $path.join(pathNode, '@flancer64/demo_teqfw_di_mod_main/src');
-const pathPlugin = $path.join(pathNode, '@flancer64/demo_teqfw_di_mod_plugin/src');
-container.addSourceMapping('Demo_Main', pathMain, true, 'mjs');
-container.addSourceMapping('Demo_Main_Plugin', pathPlugin, true, 'mjs');
-// ...
-const mainHandler = await container.get('Demo_Main_Server$$');
-const pluginHandler = await container.get('Demo_Main_Plugin_Server$$');
-```
-
-## Demo
-
-[flancer64/demo_teqfw_di](https://github.com/flancer64/demo_teqfw_di)
-
-## Class extending
-
-It is not trivial, but it's possible.
-
-Base class:
-
-```ecmascript 6
-export default class Test_BaseClass {
-    name = 'base';
-}
-```
-
-Use factory in child ES-module to load base class and to extend it:
-
-```ecmascript 6
-export default function Factory(spec) {
-    const BaseClass = spec['Test_BaseClass#'];
-
-    class Test_ChildClass extends BaseClass {}
-
-    return Test_ChildClass;
-}
-```
-
-Use it:
-
-```ecmascript 6
-const ChildClass = await container.get('Test_ChildClass$'); // create class definition and save it as singleton
-const obj = new ChildClass();
-console.log('name: ' + obj.name);
+```javascript
+// TODO: add namespace setup for loggers 
 ```

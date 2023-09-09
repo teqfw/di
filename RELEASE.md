@@ -1,5 +1,9 @@
 # @teqfw/di releases
 
+## 0.21.1
+
+* Documentation update.
+
 ## 0.21.0
 
 * Restructured modules in the package.

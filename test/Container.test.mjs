@@ -20,8 +20,8 @@ describe('TeqFw_Di_Container', () => {
             const methods = Object.getOwnPropertyNames(container)
                 .filter(p => (typeof container[p] === 'function'));
             assert.deepStrictEqual(methods.sort(), [
+                'compose',
                 'get',
-                'getChained',
                 'getParser',
                 'getPreProcessor',
                 'getResolver',
