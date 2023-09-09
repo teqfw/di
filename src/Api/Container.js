@@ -19,9 +19,14 @@ export default class TeqFw_Di_Api_Container {
     getParser() {};
 
     /**
-     * @return {TeqFw_Di_Container_PreProcessor}
+     * @return {TeqFw_Di_Api_Container_PreProcessor}
      */
     getPreProcessor() {};
+
+    /**
+     * @return {TeqFw_Di_Api_Container_PostProcessor}
+     */
+    getPostProcessor() {};
 
     /**
      * @return {TeqFw_Di_Container_Resolver}
@@ -40,9 +45,14 @@ export default class TeqFw_Di_Api_Container {
     setParser(data) {};
 
     /**
-     * @param {TeqFw_Di_Container_PreProcessor} data
+     * @param {TeqFw_Di_Api_Container_PreProcessor} data
      */
     setPreProcessor(data) {};
+
+    /**
+     * @param {TeqFw_Di_Api_Container_PostProcessor} data
+     */
+    setPostProcessor(data) {};
 
     /**
      * @param {TeqFw_Di_Container_Resolver} data

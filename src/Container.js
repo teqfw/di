@@ -125,8 +125,9 @@ export default class TeqFw_Di_Container {
 
         this.getParser = () => _parser;
 
-        this.getPreProcessor = () => _preProcessor
-        ;
+        this.getPreProcessor = () => _preProcessor;
+
+        this.getPostProcessor = () => _postProcessor;
         this.getResolver = () => _resolver;
 
         this.setDebug = function (data) {
@@ -137,6 +138,8 @@ export default class TeqFw_Di_Container {
         this.setParser = (data) => _parser = data;
 
         this.setPreProcessor = (data) => _preProcessor = data;
+
+        this.setPostProcessor = (data) => _postProcessor = data;
 
         this.setResolver = (data) => _resolver = data;
 
