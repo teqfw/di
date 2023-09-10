@@ -20,10 +20,10 @@ export default class TeqFw_Di_Container_PostProcessor {
             _chunks.push(chunk);
         };
 
-        this.modify = async function (obj, depId) {
+        this.modify = async function (obj, depId, stack) {
             let res = obj;
             for (const one of _chunks) {
-                res = one.modify(res, depId);
+                res = one.modify(res, depId, stack);
                 if (res instanceof Promise) res = await res;
             }
             return res;

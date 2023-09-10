@@ -111,7 +111,7 @@ export default class TeqFw_Di_Container {
             }
             // create object using the composer then modify it in post-processor
             let res = await _composer.create(key, module, stack, this);
-            res = await _postProcessor.modify(res, key);
+            res = await _postProcessor.modify(res, key, stack);
             log(`Object '${depId}' is created.`);
 
             // save singletons
