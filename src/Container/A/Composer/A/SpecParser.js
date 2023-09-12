@@ -1,10 +1,14 @@
 /**
- * This function analyzes specification of dependencies extracted from the text definition of the function itself.
+ * This function analyses specification of dependencies extracted from the text definition of the function itself.
+ *
+ * This is a local module and is used only inside the `TeqFw_Di_Container_A_Composer` space.
+ *
+ * @namespace TeqFw_Di_Container_A_Composer_A_SpecParser
  */
-import Defs from './Defs.js';
+import Defs from '../../../../Defs.js';
 
 // VARS
-const FUNC = /function\s*\w*\s*\(\s*\{([^\}]*)\}/s;
+const FUNC = /(function)*\s*\w*\s*\(\s*\{([^\}]*)\}/s;
 const CLASS = /constructor\s*\(\s*\{([^\}]*)\}/s;
 
 // FUNCS
@@ -60,7 +64,7 @@ function _analyzeFunc(exp) {
     const def = exp.toString();
     const parts = FUNC.exec(def);
     if (parts) {
-        res.push(..._analyze(parts[1]));
+        res.push(..._analyze(parts[2]));
     } // else: constructor does not have arguments
     return res;
 }

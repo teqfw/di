@@ -1,5 +1,6 @@
 /**
- * Hardcoded constants for the package.
+ * Hardcoded constants and useful utilities for the package.
+ * @namespace TeqFw_Di_Defs
  */
 export default {
     COMPOSE_AS_IS: 'A',
@@ -9,6 +10,9 @@ export default {
     KEY_CONTAINER_NS: 'TeqFw_Di_Container$',
     LIFE_INSTANCE: 'I',
     LIFE_SINGLETON: 'S',
+    /**
+     * @deprecated use TeqFw_Core_Shared_Defaults.DI_WRAP_PROXY
+     */
     WRAP_PROXY: 'proxy',
 
     /**

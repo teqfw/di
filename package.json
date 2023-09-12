@@ -1,7 +1,7 @@
 {
   "name": "@teqfw/di",
-  "version": "0.20.1",
-  "description": "Dependency Injection container based on logical namespaces for ES6 modules.",
+  "version": "0.21.0",
+  "description": "Dependency Injection container for ES6 modules that works in both browser and Node.js apps.",
   "keywords": [
     "dependency injection",
     "di",
@@ -27,14 +27,20 @@
     "url": "git+https://github.com/teqfw/di.git"
   },
   "scripts": {
+    "test": "mocha --recursive './test/**/*.test.mjs'"
     "build": "rm -fr ./dist/ && webpack build"
   },
   "devDependencies": {
-    "babel-eslint": "*",
-    "eslint": "*",
-    "esm": "*",
-    "mocha": "*",
-    "webpack": "^5.88.1",
-    "webpack-cli": "^5.1.4"
+    "babel-eslint": "latest",
+    "eslint": "latest",
+    "esm": "latest",
+    "mocha": "latest",
+    "webpack": "latest",
+    "webpack-cli": "latest"
+  },
+  "mocha":{
+    "require": "esm",
+    "spec": "./test/**/*.test.mjs",
+    "timeout": 5000
   }
 }
