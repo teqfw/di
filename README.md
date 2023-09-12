@@ -6,8 +6,7 @@ _minimal manual configuration_ for the container. All linking instructions are e
 identifiers and source path resolver. Additionally, the container offers the capability to modify object identifiers
 (_preprocessing_) and the created objects (_postprocessing_). These features enable you to more comprehensively
 distribute the necessary functionality across npm packages and reuse npm packages in different projects, following a '
-_modular
-monolith_' architecture.
+_modular monolith_' architecture (see the [sample](https://github.com/flancer64/demo-di-app)).
 
 ## Inversion of Control
 
@@ -235,5 +234,32 @@ objects, such as adding extra functionality to them in the form of a wrapper.
 can wrap a finished object or perform various operations on it:
 
 ```javascript
-// TODO: add namespace setup for loggers 
+// ./PostChunk.js
+/**
+ * @implements TeqFw_Di_Api_Container_PostProcessor_Chunk
+ */
+export default {
+    modify: function (obj, originalId, stack) {
+        if (originalId.wrappers.indexOf('proxy') !== -1)
+            return new Proxy(obj, {
+                get: async function (base, name) { /* do something */ }
+            });
+        else return obj;
+    }
+};
 ```
+
+```javascript
+// ./main.js
+import postChunk from './PostChunk.mjs';
+
+container.getPostProcessor().addChunk(postChunk);
+```
+
+## Resume
+
+`@teqfw/di` offers Dependency Injection for regular JavaScript with minimal manual configuration, supporting both
+browser and Node.js environments. Its use of late binding and an object container in JavaScript applications, along with
+the ability to modify the behavior of created objects (via pseudo-interfaces and wrappers), allows you to apply
+architectural solutions from other languages (such as Java, PHP, C#) and fully harness the capabilities of npm packages
+and ES6 modules in JavaScript applications, particularly in the Node.js environment.

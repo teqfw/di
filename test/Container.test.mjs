@@ -23,10 +23,12 @@ describe('TeqFw_Di_Container', () => {
                 'compose',
                 'get',
                 'getParser',
+                'getPostProcessor',
                 'getPreProcessor',
                 'getResolver',
                 'setDebug',
                 'setParser',
+                'setPostProcessor',
                 'setPreProcessor',
                 'setResolver',
             ]);

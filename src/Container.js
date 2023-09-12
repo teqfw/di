@@ -78,7 +78,7 @@ export default class TeqFw_Di_Container {
             // parse the `objectKey` and get the structured DTO
             const parsed = _parser.parse(depId);
             // modify original key according to some rules (replacements, etc.)
-            const key = _preProcessor.modify(parsed);
+            const key = _preProcessor.modify(parsed, stack);
             // return existing singleton
             if (key.life === Defs.LIFE_SINGLETON) {
                 const singleId = getSingletonId(key);

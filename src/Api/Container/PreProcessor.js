@@ -13,10 +13,11 @@ export default class TeqFw_Di_Api_Container_PreProcessor {
     addChunk(chunk) {}
 
     /**
-     * Parse given dependency ID and return structured data as DTO.
-     * @param {TeqFw_Di_DepId} depId
-     * @return {TeqFw_Di_DepId}
+     * Modify parsed depID and return it.
+     * @param {TeqFw_Di_DepId} depId - The depID as DTO.
+     * @param {string[]} stack - The stack of parent IDs.
+     * @return {TeqFw_Di_DepId} -
      */
-    modify(depId) {}
+    modify(depId, stack) {}
 
 }

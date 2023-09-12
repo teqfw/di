@@ -24,10 +24,10 @@ export default class TeqFw_Di_Container_PreProcessor {
             _chunks.push(chunk);
         };
 
-        this.modify = function (depId) {
+        this.modify = function (depId, stack) {
             let res = depId;
             for (const one of _chunks)
-                res = one.modify(res, depId);
+                res = one.modify(res, depId, stack);
             return res;
         };
     }

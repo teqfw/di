@@ -10,7 +10,8 @@ export default class TeqFw_Di_Api_Container_PreProcessor_Chunk {
      * Modify runtime dependency ID before creating any object.
      * @param {TeqFw_Di_DepId} depId - `depId` DTO after all previous pre-processing steps
      * @param {TeqFw_Di_DepId} originalId - original `depId` DTO
+     * @param {string[]} stack - stack of parents depIds
      * @return {TeqFw_Di_DepId}
      */
-    modify(depId, originalId) {}
+    modify(depId, originalId, stack) {}
 };
