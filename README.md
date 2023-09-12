@@ -193,7 +193,7 @@ In principle, each package can have its own format for describing the dependenci
 
 Here are the steps for the object container:
 
-![processing steps](./doc/img/teqfw_di_container_steps.png)
+![processing steps](https://raw.githubusercontent.com/teqfw/di/main/doc/img/teqfw_di_container_steps.png)
 
 There are two stages involved here:
 

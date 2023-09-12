@@ -27,8 +27,8 @@
     "url": "git+https://github.com/teqfw/di.git"
   },
   "scripts": {
+    "build": "rm -fr ./dist/ && webpack build",
     "test": "mocha --recursive './test/**/*.test.mjs'"
-    "build": "rm -fr ./dist/ && webpack build"
   },
   "devDependencies": {
     "babel-eslint": "latest",
