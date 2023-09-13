@@ -1,0 +1,11 @@
+{
+  "name": "@teqfw/di-demo-amphibian",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@flancer64/demo-di-app": "latest"
+  }
+}
