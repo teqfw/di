@@ -1,0 +1,58 @@
+@import "vars.css";
+
+@font-face {
+    font-family: 'CustomFontName';
+    src: url('~/public/fonts/inter.ttf') format('truetype') ;
+    font-weight: normal;
+    font-style: normal;
+}
+
+HTML {
+    font-family: CustomFontName, serif;
+    offset-anchor: 1cm 2cm;
+}
+
+BODY {
+    font-size: 1rem;
+    margin: 0;
+    padding: 0;
+}
+
+H1 {
+    font-size: 2.25rem;
+}
+
+H2 {
+    font-size: 1.5rem;
+}
+
+H3 {
+    font-size: 1.25rem;
+}
+
+H4 {
+    font-size: 1rem;
+}
+
+A {
+    /*color: var(--color-set-green);*/
+    /*color: #0E6758;*/
+    color: #0A9466;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+A:visited {
+    text-decoration: none;
+}
+
+P {
+    text-align: justify;
+}
+
+PRE {
+    background-color: var(--color-set-black);
+    color: var(--color-set-green);
+    font-size: 0.75rem;
+    padding: 5px;
+}
