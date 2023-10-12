@@ -16,5 +16,9 @@
     "nuxt": "^3.7.4",
     "vue": "^3.3.4",
     "vue-router": "^4.2.5"
+  },
+  "dependencies": {
+    "@nuxt/content": "^2.8.5",
+    "@nuxtjs/google-fonts": "^3.0.2"
   }
 }
