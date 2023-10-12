@@ -1,14 +1,7 @@
 @import "vars.css";
 
-@font-face {
-    font-family: 'CustomFontName';
-    src: url('~/public/fonts/inter.ttf') format('truetype') ;
-    font-weight: normal;
-    font-style: normal;
-}
-
 HTML {
-    font-family: CustomFontName, serif;
+    font-family: 'Inter', sans-serif;
     offset-anchor: 1cm 2cm;
 }
 
