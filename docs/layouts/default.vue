@@ -24,7 +24,7 @@ onMounted(() => {
 
 useHead(() => ({
   link: [
-    {rel: 'icon', type: 'image/x-icon', href: '/di/favicon.ico'}
+    {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'},
   ]
 }));
 
