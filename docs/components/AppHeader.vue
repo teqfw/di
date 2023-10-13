@@ -69,4 +69,11 @@ HEADER H3, HEADER H4 {
   height: 100%;
   object-fit: cover;
 }
+
+/* === Styles for mobiles === */
+@media only screen and (max-width: 800px) {
+  .h-center H3 {
+    display: none;
+  }
+}
 </style>

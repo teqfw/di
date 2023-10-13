@@ -21,6 +21,13 @@ onMounted(() => {
   window.addEventListener('hashchange', scrollToChapter);
   scrollToChapter();
 });
+
+useHead(() => ({
+  link: [
+    {rel: 'icon', type: 'image/x-icon', href: '/di/favicon.ico'}
+  ]
+}));
+
 </script>
 
 <template>
@@ -55,5 +62,22 @@ onMounted(() => {
 .app-center {
   margin: 0;
   max-width: 800px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.app-center IMG {
+  width: 100%;
+}
+
+/* === Styles for mobiles === */
+@media only screen and (max-width: 800px) {
+  .app-center {
+    max-width: calc(100vw - 10px);
+  }
+
+  PRE {
+    max-width: calc(100vw - 10px);
+  }
 }
 </style>

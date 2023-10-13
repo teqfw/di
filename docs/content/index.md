@@ -5,8 +5,8 @@ applications. This library exclusively supports ES6 modules. The primary objecti
 _minimal manual configuration_ for the container. All linking instructions are encapsulated within the dependency
 identifiers and source path resolver. Additionally, the container offers the capability to modify object identifiers
 (_preprocessing_) and the created objects (_postprocessing_). These features enable you to more comprehensively
-distribute the necessary functionality across npm packages and reuse npm packages in different projects, following a '
-_modular monolith_' architecture (see the [sample](https://github.com/flancer64/demo-di-app)).
+distribute the necessary functionality across npm packages and reuse npm packages in different projects, following a
+'_modular monolith_' architecture (see the [sample](https://github.com/flancer64/demo-di-app)).
 
 ## Inversion of Control
 
