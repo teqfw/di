@@ -6,6 +6,6 @@ export default defineNuxtConfig({
   devtools: {enabled: false},
   experimental: {payloadExtraction: false},
   googleFonts: {families: {Inter: true},},
-  gtag: {id: 'G-PPHKCR0JW0'},
+  gtag: {id: 'GTM-WGL4VX3N'},
   modules: ['@nuxt/content', '@nuxtjs/google-fonts', 'nuxt-gtag'],
 });
