@@ -10,7 +10,7 @@
 ```js
 constructor(spec)
 {
-    const container = spec['TeqFw_Di_Shared_Container$'];
+    const container = spec['TeqFw_Di_Container$'];
     // ...
     router.addRoute({
         path: DEF.ROUTE_HOME,
