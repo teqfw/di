@@ -1,5 +1,9 @@
 # @teqfw/di releases
 
+## 0.21.1
+
+* Fix the dependency key signature in `TeqFw_Di_Container_A_Parser_Chunk_Def`.
+
 ## 0.21.0
 
 * Restructured modules in the package.

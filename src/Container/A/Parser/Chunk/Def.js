@@ -9,7 +9,7 @@ import Defs from '../../../../Defs.js';
 
 // VARS
 /** @type {RegExp} expression for default object key (Ns_Module[.|#]export$[F|A][S|I]) */
-const REGEXP = /^((([A-Z])[A-Za-z0-9_]*)((#|\.)?([A-Za-z0-9]*)((\$)([F|A])?([S|I])?)?)?)$/;
+const REGEXP = /^((([A-Z])[A-Za-z0-9_]*)((#|\.)?([A-Za-z0-9_]*)((\$)([F|A])?([S|I])?)?)?)$/;
 
 /**
  * @implements TeqFw_Di_Api_Container_Parser_Chunk
