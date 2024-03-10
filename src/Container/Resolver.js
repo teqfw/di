@@ -26,16 +26,20 @@ export default class TeqFw_Di_Container_Resolver {
     constructor() {
         // VARS
         const _regNs = {};
+        let _isWindows = false; // flag of the runtime env - win or *nix/web
         let _namespaces = [];
         let _ps = '/'; // web & unix path separator
 
         // INSTANCE METHODS
 
         this.addNamespaceRoot = function (ns, path, ext) {
+            const lead = (_isWindows) ? path.replace(/^\\/, '') : path; // remove leading backslash for Win
+            const norm = lead.replace(/\\/g, '/'); // replace all windows path separators
+            const root = (_isWindows) ? `file://${norm}` : norm;
             _regNs[ns] = {
                 [KEY_EXT]: ext ?? Defs.EXT,
                 [KEY_NS]: ns,
-                [KEY_PATH]: path,
+                [KEY_PATH]: root,
             };
             _namespaces = Object.keys(_regNs).sort((a, b) => b.localeCompare(a));
         };
@@ -60,6 +64,15 @@ export default class TeqFw_Di_Container_Resolver {
                 const file = tail.replaceAll(NSS, _ps);
                 return `${root}${_ps}${file}.${ext}`;
             } else return moduleName;
+        };
+
+        /**
+         * 'true' - to use '\' as path separator to resolve paths.
+         * @param {boolean} isWindows
+         */
+        this.setWindowsEnv = function (isWindows = true) {
+            _isWindows = isWindows;
+            _ps = (isWindows) ? '\\' : '/';
         };
     }
 };
