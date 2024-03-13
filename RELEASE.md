@@ -1,5 +1,9 @@
 # @teqfw/di releases
 
+## 0.22.0
+
+* Add Windows paths to the Resolver.
+
 ## 0.21.1
 
 * Fix the dependency key signature in `TeqFw_Di_Container_A_Parser_Chunk_Def`.
