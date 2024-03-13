@@ -1,0 +1,5 @@
+/.idea/
+/docs/.nuxt/
+/docs/.output/
+/docs/dist/
+/docs/node_modules/
