@@ -1,5 +1,9 @@
 # @teqfw/di releases
 
+## 0.23.0 - TODO
+
+* Parse `Ns_Module` as es6 module instead of 'as-is singleton'.
+
 ## 0.22.0
 
 * Add Windows paths to the Resolver.
