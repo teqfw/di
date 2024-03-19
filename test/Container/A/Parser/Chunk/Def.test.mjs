@@ -1,11 +1,12 @@
 /**
  * Default format for the objects:
- *  - Ns_App: es6 module
- *  - Ns_App$: default export, factory, singleton (the most frequently used case)
- *  - NS_App$I: default export, factory, instance
- *  - Ns_App.name: named export, as-is, singleton
- *  - Ns_App.name$: named export, factory, singleton (the most frequently used case)
- *  - NS_App.name$I: named export, factory, instance
+ *  - Ns_Module: es6 module
+ *  - Ns_Module$: default export, factory, singleton (the most frequently used case)
+ *  - Ns_Module$I: default export, factory, instance
+ *  - Ns_Module$AS: default export, as-is, singleton
+ *  - Ns_Module.name: named export, as-is, singleton
+ *  - Ns_Module.name$: named export, factory, singleton (the most frequently used case)
+ *  - Ns_Module.name$I: named export, factory, instance
  */
 import DefChunk from '../../../../../src/Container/A/Parser/Chunk/Def.js';
 import {describe, it} from 'mocha';
@@ -47,6 +48,16 @@ describe('TeqFw_Di_Container_A_Parser_Chunk_Def', () => {
                 assert.strictEqual(dto.life, Defs.LIFE_INSTANCE);
                 assert.strictEqual(dto.moduleName, 'Ns_Module');
                 assert.strictEqual(dto.value, 'Ns_Module$I');
+                assert.strictEqual(dto.wrappers.length, 0);
+            });
+            it('default export, as-is, singleton (Ns_Module$AS)', () => {
+                /** @type {TeqFw_Di_DepId} */
+                const dto = chunk.parse('Ns_Module$AS');
+                assert.strictEqual(dto.composition, Defs.COMPOSE_AS_IS);
+                assert.strictEqual(dto.exportName, 'default');
+                assert.strictEqual(dto.life, Defs.LIFE_SINGLETON);
+                assert.strictEqual(dto.moduleName, 'Ns_Module');
+                assert.strictEqual(dto.value, 'Ns_Module$AS');
                 assert.strictEqual(dto.wrappers.length, 0);
             });
         });
