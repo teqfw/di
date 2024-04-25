@@ -1,6 +1,6 @@
 /**
  * Default parser for object keys in format:
- *   - Vnd_Pkg_Prj_Mod$FA
+ *   - Ns_Module[.|#]export$[F|A][S|I]
  *
  * @namespace TeqFw_Di_Container_A_Parser_Chunk_Def
  */
