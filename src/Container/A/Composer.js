@@ -56,7 +56,6 @@ export default class TeqFw_Di_Container_A_Composer {
                     // just return the export (w/o factory function)
                     return exp;
             } else {
-                // TODO: this is almost useless option
                 return module;
             }
         };

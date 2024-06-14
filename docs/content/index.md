@@ -11,8 +11,8 @@ distribute the necessary functionality across npm packages and reuse npm package
 ## Inversion of Control
 
 The primary motivation for creating this library was the concept that JavaScript is a language in which the entire
-application can be written, both on the front end and the back end. The idea was to enable the use of the same
-JavaScript code seamlessly on both the front end and the back end without requiring any changes, including additional
+application can be written, both on the front end and the backend. The idea was to enable the use of the same
+JavaScript code seamlessly on both the front end and the backend without requiring any changes, including additional
 transpilation.
 
 The main challenge encountered along this path was static importing. When the entire application can fit into a single
@@ -39,7 +39,7 @@ class Service {
 ```
 
 If all dependencies are added to software objects through a similar mechanism, there is no need to use static imports in
-the source code itself. Now, they can be used without any changes, both on the front end and on the back end.
+the source code itself. Now, they can be used without any changes, both on the front end and on the backend.
 
 ## Object Container
 

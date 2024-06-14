@@ -1,6 +1,6 @@
 /**
  * Default parser for object keys in format:
- *   - Vnd_Pkg_Prj_Mod$FA
+ *   - Ns_Module[.|#]export$[F|A][S|I]
  *
  * @namespace TeqFw_Di_Container_A_Parser_Chunk_Def
  */
@@ -55,10 +55,10 @@ export default class TeqFw_Di_Container_A_Parser_Chunk_Def {
                     res.life = (res.composition === Defs.COMPOSE_FACTORY) ? Defs.LIFE_SINGLETON : Defs.LIFE_INSTANCE;
                 }
             } else {
-                // App_Service
-                res.composition = Defs.COMPOSE_AS_IS;
-                res.exportName = 'default';
-                res.life = Defs.LIFE_SINGLETON;
+                // App_Service (es6 module)
+                res.composition = undefined;
+                res.exportName = undefined;
+                res.life = undefined;
             }
         }
 
