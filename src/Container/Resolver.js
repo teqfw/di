@@ -21,6 +21,9 @@ const KEY_PATH = 'root';
 const NSS = '_';
 
 // MAIN
+/**
+ * @implements TeqFw_Di_Api_Container_Resolver
+ */
 export default class TeqFw_Di_Container_Resolver {
 
     constructor() {
