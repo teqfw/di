@@ -29,7 +29,7 @@ export default class TeqFw_Di_Api_Container {
     getPostProcessor() {};
 
     /**
-     * @return {TeqFw_Di_Container_Resolver}
+     * @return {TeqFw_Di_Container_Resolver} - the default resolver
      */
     getResolver() {};
 
@@ -55,7 +55,7 @@ export default class TeqFw_Di_Api_Container {
     setPostProcessor(data) {};
 
     /**
-     * @param {TeqFw_Di_Container_Resolver} data
+     * @param {TeqFw_Di_Api_Container_Resolver} data
      */
     setResolver(data) {};
 };
