@@ -1,8 +1,9 @@
 # @teqfw/di releases
 
-## 0.23.0 - TODO
+## 0.30.0
 
-* Parse `Ns_Module` as es6 module instead of 'as-is singleton'.
+* New format of the depId for default parser (`Ns_Module.export$$(post)`).
+* The rollup is added.
 
 ## 0.22.0
 

@@ -2,7 +2,7 @@
  * Default parser for object keys in format:
  *   - Ns_Module[.|#]export$[F|A][S|I]
  *
- * @namespace TeqFw_Di_Container_A_Parser_Chunk_V23
+ * @namespace TeqFw_Di_Container_A_Parser_Chunk_V02X
  */
 import Dto from '../../../../DepId.js';
 import Defs from '../../../../Defs.js';
@@ -14,7 +14,7 @@ const REGEXP = /^((([A-Z])[A-Za-z0-9_]*)((#|\.)?([A-Za-z0-9_]*)((\$)([F|A])?([S|
 /**
  * @implements TeqFw_Di_Api_Container_Parser_Chunk
  */
-export default class TeqFw_Di_Container_A_Parser_Chunk_V23 {
+export default class TeqFw_Di_Container_A_Parser_Chunk_V02X {
 
     canParse(depId) {
         // default parser always trys to parse the depId

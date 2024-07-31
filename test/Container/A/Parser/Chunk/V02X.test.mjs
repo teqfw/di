@@ -8,12 +8,12 @@
  *  - Ns_Module.name$: named export, factory, singleton (the most frequently used case)
  *  - Ns_Module.name$I: named export, factory, instance
  */
-import DefChunk from '../../../../../src/Container/A/Parser/Chunk/V23.js';
+import DefChunk from '../../../../../src/Container/A/Parser/Chunk/V02X.js';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 import Defs from '../../../../../src/Defs.js';
 
-describe('TeqFw_Di_Container_A_Parser_Chunk_V23', () => {
+describe('TeqFw_Di_Container_A_Parser_Chunk_V02X', () => {
 
     const chunk = new DefChunk();
 
