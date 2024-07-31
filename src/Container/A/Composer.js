@@ -35,7 +35,7 @@ export default class TeqFw_Di_Container_A_Composer {
                 // use export from the es6-module
                 const stackNew = [...stack, depId.value];
                 const {[depId.exportName]: exp} = module;
-                if (depId.composition === Defs.COMPOSE_FACTORY) {
+                if (depId.composition === Defs.COMP_F) {
                     if (typeof exp === 'function') {
                         // create deps for factory function
                         const deps = specParser(exp);

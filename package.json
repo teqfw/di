@@ -27,6 +27,7 @@
     "url": "git+https://github.com/teqfw/di.git"
   },
   "scripts": {
+    "rollup": "rollup -c",
     "test": "mocha --recursive './test/**/*.test.mjs'"
   },
   "devDependencies": {

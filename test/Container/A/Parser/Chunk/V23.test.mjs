@@ -2,20 +2,18 @@
  * Default format for the objects:
  *  - Ns_Module: es6 module
  *  - Ns_Module$: default export, factory, singleton (the most frequently used case)
- *  - Ns_Module$$: default export, factory, instance
- *  - Ns_Module.default: default export, as-is, singleton
+ *  - Ns_Module$I: default export, factory, instance
+ *  - Ns_Module$AS: default export, as-is, singleton
  *  - Ns_Module.name: named export, as-is, singleton
  *  - Ns_Module.name$: named export, factory, singleton (the most frequently used case)
- *  - Ns_Module.name$$: named export, factory, instance
- *  - Ns_Module$(proxy): default export, factory, singleton with one post wrapper
- *  - Ns_Module$(proxy,factory): default export, factory, singleton with two post wrappers
+ *  - Ns_Module.name$I: named export, factory, instance
  */
-import DefChunk from '../../../../../src/Container/A/Parser/Chunk/Def.js';
+import DefChunk from '../../../../../src/Container/A/Parser/Chunk/V23.js';
 import {describe, it} from 'mocha';
 import assert from 'assert';
 import Defs from '../../../../../src/Defs.js';
 
-describe('TeqFw_Di_Container_A_Parser_Chunk_Def', () => {
+describe('TeqFw_Di_Container_A_Parser_Chunk_V23', () => {
 
     const chunk = new DefChunk();
 
@@ -42,45 +40,25 @@ describe('TeqFw_Di_Container_A_Parser_Chunk_Def', () => {
                 assert.strictEqual(dto.value, 'Ns_Module$');
                 assert.strictEqual(dto.wrappers.length, 0);
             });
-            it('factory, instance (Ns_Module$$)', () => {
+            it('factory, instance (Ns_Module$I)', () => {
                 /** @type {TeqFw_Di_DepId} */
-                const dto = chunk.parse('Ns_Module$$');
+                const dto = chunk.parse('Ns_Module$I');
                 assert.strictEqual(dto.composition, Defs.COMP_F);
                 assert.strictEqual(dto.exportName, 'default');
                 assert.strictEqual(dto.life, Defs.LIFE_I);
                 assert.strictEqual(dto.moduleName, 'Ns_Module');
-                assert.strictEqual(dto.value, 'Ns_Module$$');
+                assert.strictEqual(dto.value, 'Ns_Module$I');
                 assert.strictEqual(dto.wrappers.length, 0);
             });
-            it('default export, as-is, singleton (Ns_Module.)', () => {
+            it('default export, as-is, singleton (Ns_Module$AS)', () => {
                 /** @type {TeqFw_Di_DepId} */
-                const dto = chunk.parse('Ns_Module.');
+                const dto = chunk.parse('Ns_Module$AS');
                 assert.strictEqual(dto.composition, Defs.COMP_A);
                 assert.strictEqual(dto.exportName, 'default');
                 assert.strictEqual(dto.life, Defs.LIFE_S);
                 assert.strictEqual(dto.moduleName, 'Ns_Module');
-                assert.strictEqual(dto.value, 'Ns_Module.');
+                assert.strictEqual(dto.value, 'Ns_Module$AS');
                 assert.strictEqual(dto.wrappers.length, 0);
-            });
-            it('factory, singleton, wrapper (Ns_Module$(proxy))', () => {
-                /** @type {TeqFw_Di_DepId} */
-                const dto = chunk.parse('Ns_Module$(proxy)');
-                assert.strictEqual(dto.composition, Defs.COMP_F);
-                assert.strictEqual(dto.exportName, 'default');
-                assert.strictEqual(dto.life, Defs.LIFE_S);
-                assert.strictEqual(dto.moduleName, 'Ns_Module');
-                assert.strictEqual(dto.value, 'Ns_Module$(proxy)');
-                assert.strictEqual(dto.wrappers.length, 1);
-            });
-            it('factory, singleton, wrappers (Ns_Module$(proxy,factory))', () => {
-                /** @type {TeqFw_Di_DepId} */
-                const dto = chunk.parse('Ns_Module$(proxy,factory)');
-                assert.strictEqual(dto.composition, Defs.COMP_F);
-                assert.strictEqual(dto.exportName, 'default');
-                assert.strictEqual(dto.life, Defs.LIFE_S);
-                assert.strictEqual(dto.moduleName, 'Ns_Module');
-                assert.strictEqual(dto.value, 'Ns_Module$(proxy,factory)');
-                assert.strictEqual(dto.wrappers.length, 2);
             });
         });
 
@@ -105,35 +83,15 @@ describe('TeqFw_Di_Container_A_Parser_Chunk_Def', () => {
                 assert.strictEqual(dto.value, 'Ns_Module.name$');
                 assert.strictEqual(dto.wrappers.length, 0);
             });
-            it('factory, instance (Ns_Module.name$$)', () => {
+            it('factory, instance (Ns_Module.name$I)', () => {
                 /** @type {TeqFw_Di_DepId} */
-                const dto = chunk.parse('Ns_Module.name$$');
+                const dto = chunk.parse('Ns_Module.name$I');
                 assert.strictEqual(dto.composition, Defs.COMP_F);
                 assert.strictEqual(dto.exportName, 'name');
                 assert.strictEqual(dto.life, Defs.LIFE_I);
                 assert.strictEqual(dto.moduleName, 'Ns_Module');
-                assert.strictEqual(dto.value, 'Ns_Module.name$$');
+                assert.strictEqual(dto.value, 'Ns_Module.name$I');
                 assert.strictEqual(dto.wrappers.length, 0);
-            });
-            it('factory, singleton.wrapper (Ns_Module.name$(proxy))', () => {
-                /** @type {TeqFw_Di_DepId} */
-                const dto = chunk.parse('Ns_Module.name$(proxy)');
-                assert.strictEqual(dto.composition, Defs.COMP_F);
-                assert.strictEqual(dto.exportName, 'name');
-                assert.strictEqual(dto.life, Defs.LIFE_S);
-                assert.strictEqual(dto.moduleName, 'Ns_Module');
-                assert.strictEqual(dto.value, 'Ns_Module.name$(proxy)');
-                assert.strictEqual(dto.wrappers.length, 1);
-            });
-            it('factory, singleton.wrappers (Ns_Module.name$(proxy,factory))', () => {
-                /** @type {TeqFw_Di_DepId} */
-                const dto = chunk.parse('Ns_Module.name$(proxy,factory)');
-                assert.strictEqual(dto.composition, Defs.COMP_F);
-                assert.strictEqual(dto.exportName, 'name');
-                assert.strictEqual(dto.life, Defs.LIFE_S);
-                assert.strictEqual(dto.moduleName, 'Ns_Module');
-                assert.strictEqual(dto.value, 'Ns_Module.name$(proxy,factory)');
-                assert.strictEqual(dto.wrappers.length, 2);
             });
         });
     });

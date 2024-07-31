@@ -36,20 +36,20 @@ describe('TeqFw_Di_Container', () => {
 
         it('contains itself inside', async () => {
             const container = new Container();
-            const namedSingleton = await container.get(Defs.KEY_CONTAINER);
+            const namedSingleton = await container.get(Defs.ID);
             assert.strictEqual(namedSingleton, container);
         });
     });
 
     describe('creates objects', () => {
 
-        it('named export singleton (App_Service$I)', async () => {
+        it('default export singleton (App_Service$)', async () => {
             const container = new Container();
             container.setDebug(true);
             const resolver = container.getResolver();
             const src = join(ROOT, 'classes');
             resolver.addNamespaceRoot('App_', src, 'js');
-            const dep = await container.get('App_Service$I');
+            const dep = await container.get('App_Service$');
             assert(dep);
             dep({boobs: 'big'});
         });
