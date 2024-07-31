@@ -69,18 +69,18 @@ export default class TeqFw_Di_Container {
             log(`Object '${depId}' is requested.`);
             // return container itself if requested
             if (
-                (depId === Defs.KEY_CONTAINER) ||
-                (depId === Defs.KEY_CONTAINER_NS)
+                (depId === Defs.ID) ||
+                (depId === Defs.ID_FQN)
             ) {
                 log(`Container itself is returned.`);
-                return _regSingles[Defs.KEY_CONTAINER];
+                return _regSingles[Defs.ID];
             }
             // parse the `objectKey` and get the structured DTO
             const parsed = _parser.parse(depId);
             // modify original key according to some rules (replacements, etc.)
             const key = _preProcessor.modify(parsed, stack);
             // return existing singleton
-            if (key.life === Defs.LIFE_SINGLETON) {
+            if (key.life === Defs.LIFE_S) {
                 const singleId = getSingletonId(key);
                 if (_regSingles[singleId]) {
                     log(`Existing singleton '${singleId}' is returned.`);
@@ -115,7 +115,7 @@ export default class TeqFw_Di_Container {
             log(`Object '${depId}' is created.`);
 
             // save singletons
-            if (key.life === Defs.LIFE_SINGLETON) {
+            if (key.life === Defs.LIFE_S) {
                 const singleId = getSingletonId(key);
                 _regSingles[singleId] = res;
                 log(`Object '${depId}' is saved as singleton.`);
@@ -144,6 +144,6 @@ export default class TeqFw_Di_Container {
         this.setResolver = (data) => _resolver = data;
 
         // MAIN
-        _regSingles[Defs.KEY_CONTAINER] = this;
+        _regSingles[Defs.ID] = this;
     }
 };
