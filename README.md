@@ -1,5 +1,8 @@
 # @teqfw/di
 
+![npms.io](https://img.shields.io/npm/dm/@teqfw/di)
+
+
 `@teqfw/di` is a dependency injection container for standard JavaScript. This library is compatible with both browser
 and Node.js environments when using JS, but is exclusive to Node.js when using TS.
 
