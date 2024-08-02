@@ -1,13 +1,13 @@
 # @teqfw/di
 
-A Dependency Injection container for regular JavaScript is provided, which can be used in both browser and Node.js
-applications with JS, and in Node.js only with TS.
+`@teqfw/di` is a dependency injection container for standard JavaScript. This library is compatible with both browser
+and Node.js environments when using JS, but is exclusive to Node.js when using TS.
 
-**This library exclusively supports ES6 modules.**
+**This library only supports ES6 modules ([the live demo](https://flancer64.github.io/demo-di-app/)).**
 
-The primary objective of this library is the late binding for code objects with minimal manual configuration for the
-object container. All linking instructions are encapsulated within the dependency identifiers and used in constructors
-or factory functions (the constructor injection scheme):
+This library is primarily designed to simplify the binding of code objects with minimal manual configuration required
+for the object container. All instructions related to connections are encapsulated within the dependency identifiers
+used in constructors or factory functions, as per the constructor injection scheme:
 
 ```js
 export default class App_Main {
@@ -23,7 +23,7 @@ export default class App_Main {
 }
 ```
 
-The files corresponded to this case:
+Corresponding files would look like this:
 
 ```
 ./src/
@@ -35,7 +35,7 @@ The files corresponded to this case:
     ./Main.js
 ```
 
-Just set up a mapping rules for the container:
+Setting up object mapping is fairly simple:
 
 ```js
 import Container from '@teqfw/di';
@@ -46,26 +46,37 @@ resolver.addNamespaceRoot('App_', '/path/to/src'); // or 'https://cdn.jsdelivr.n
 const app = await container.get('App_Main$');
 ```
 
-That's all.
+## Key Features
 
-## The main benefits
-
-* **Late Binding**: Enjoy all the typical advantages of late binding during runtime, including flexibility, testability,
-  modularity, manageability, and clear separation of concerns.
-* **Integration with ES6 Modules**: Seamlessly integrate singletons and instances based on ES6 module exports.
-* **Interface Usage in Vanilla JS**: Utilize "interfaces" in standard JavaScript, along with dependency substitution (
-  preprocessing).
-* **Object Wrapping**: Add wrappers to created objects (postprocessing) for enhanced functionality.
+* **Late Binding**: Experience all the usual benefits of late binding at runtime including flexibility, testability,
+  modularity, manageability, and a clear separation of concerns.
+* **ES6 Modules Integration**: Seamlessly utilize singletons and instances based on ES6 module exports.
+* **Interface Usage in Standard JavaScript**: Take advantage of "interfaces" in standard JavaScript, with the added
+  benefit of dependency substitution.
+* **Object Wrapping**: Enhance the functionality of created objects by adding wrappers (postprocessing).
 
 ## Installation
 
-NodeJS:
+Installation instructions for Node.js:
 
 ```shell
 $ npm i --save @teqfw/di
 ```
 
-Web as ESM (~5Kb):
+```js
+import Container from '@teqfw/di';
+import {platform} from 'node:process';
+
+/** @type {TeqFw_Di_Container} */
+const container = new Container();
+/** @type {TeqFw_Di_Container_Resolver} */
+const resolver = res.getResolver();
+resolver.setWindowsEnv(platform === 'win32');
+resolver.addNamespaceRoot('App_', '...');
+const app = await container.get('App_Main$');
+```
+
+Installation instructions for Web as ESM (~5Kb):
 
 ```html
 
@@ -74,16 +85,21 @@ Web as ESM (~5Kb):
 
     /** @type {TeqFw_Di_Container} */
     const container = new Container();
+    /** @type {TeqFw_Di_Container_Resolver} */
+    const resolver = res.getResolver();
+    resolver.addNamespaceRoot('App_', 'https://cdn.jsdelivr.net/npm/@flancer64/demo-di-app@0.2/src');
+    resolver.addNamespaceRoot('Sample_Lib_', 'https://cdn.jsdelivr.net/npm/@flancer64/demo-di-lib@0.3/src');
+    const app = await container.get('App_Main$');
     ...
 </script>
 ```
 
-Web as UMD (~5Kb):
+Installation instructions for Web as UMD (~5Kb):
 
 ```html
 
 <script src="https://cdn.jsdelivr.net/npm/@teqfw/di@latest/dist/umd.js"></script>
-<script>
+<script type="module">
     const {default: Container} = window.TeqFw_Di_Container;
     /** @type {TeqFw_Di_Container} */
     const container = new Container();
@@ -91,23 +107,27 @@ Web as UMD (~5Kb):
 </script>
 ```
 
-## Types of Dependency ID
+## Dependency ID Types
 
-* `App_Service`=> `import * as Service from './App/Service.js'` as ES Module
-* `App_Service.default` => `import {default} from './App/Service.js'` default export as-is
-* `App_Service.name` => `import {name} from './App/Service.js'` named export as-is
-* `App_Service$` => `import {default} from './App/Service.js'; return res ?? (res = default({...}));` as singleton for
-  container
-* `App_Service$$` => `import {default} from './App/Service.js'; return new default({...})` as instance for every
-  dep
-* `App_Service.name$` => `import {name} from './App/Service.js'; return res ?? (res = name({...}));` as singleton
-* `App_Service.name$$` => `import {name} from './App/Service.js'; const res = new name({...})` as instance
-* `...(proxy,factory,...)`: add custom wrappers on postprocessing
+Different Dependency IDs can be used for different imports, such as:
+
+* `App_Service`=> `import * as Service from './App/Service.js'` Import whole module as ES module.
+* `App_Service.default` => `import {default} from './App/Service.js'` Import default export as is.
+* `App_Service.name` => `import {name} from './App/Service.js'` Import named export as is.
+* `App_Service$` => `import {default} from './App/Service.js'; return res ?? (res = default({...}));` Use default export
+  as a singleton for container.
+* `App_Service$$` => `import {default} from './App/Service.js'; return new default({...})` Create a new default
+  export as Instance for each dependency.
+* `App_Service.name$` => `import {name} from './App/Service.js'; return res ?? (res = name({...}));` Use named export as
+  singleton.
+* `App_Service.name$$` => `import {name} from './App/Service.js'; const res = new name({...})` Create a new named export
+  as instance.
+* `...(proxy,factory,...)`: Add custom wrappers to created objects in postprocessing.
 
 ```js
 export default class App_Main {
-    constructor(
-        {
+  constructor(
+          {
             App_Service: EsModule,
             'App_Service.default': defaultExportAsIs,
             'App_Service.name': namedExportAsIs,
@@ -116,18 +136,19 @@ export default class App_Main {
             'App_Service.name$': namedExportAsSingleton,
             'App_Service.name$$': namedExportAsInstance,
             'App_Service.name(factory)': factoryToCreateInstancesFromNamedExport,
-        }
-    ) {
-        const {default as SrvDef, name as SrvName} = EsModule; // deconstruct the module and access the exports 
-    }
+          }
+  ) {
+    const {default: SrvDef, name: SrvName} = EsModule; // deconstruct the module and access the exports 
+  }
 
 }
 ```
 
-## Resume
+## Summary
 
-`@teqfw/di` offers Dependency Injection for regular JavaScript with minimal manual configuration, supporting both
-browser and Node.js environments. Its use of late binding and an object container in JavaScript applications, along with
-the ability to modify the behavior of created objects (via pseudo-interfaces and wrappers), allows you to apply
-architectural solutions from other languages (such as Java, PHP, C#) and fully harness the capabilities of npm packages
-and ES6 modules in JavaScript applications, particularly in the Node.js environment.
+The `@teqfw/di` module provides a Dependency Injection feature for JavaScript, which requires minimal manual setup. This
+library is functional in both browser and Node.js settings. The module utilizes late binding and an object container
+methodology in JavaScript applications. Furthermore, it equips users with the ability to alter object behaviors through
+pseudo-interfaces and wrappers. As a result, architectural solutions from other programming languages - namely Java,
+PHP, and C# - can be harnessed effectively. This also contributes significantly by maximizing the efficiency of npm
+packages and ES6 modules in JavaScript applications, especially within the Node.js environment.
