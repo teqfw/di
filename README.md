@@ -1,6 +1,7 @@
 # @teqfw/di
 
 ![npms.io](https://img.shields.io/npm/dm/@teqfw/di)
+![jsdelivr](https://img.shields.io/jsdelivr/npm/hm/@teqfw/di)
 
 
 `@teqfw/di` is a dependency injection container for standard JavaScript. This library is compatible with both browser
