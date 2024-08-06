@@ -115,18 +115,74 @@ Installation instructions for Web as UMD (~5Kb):
 
 Different Dependency IDs can be used for different imports, such as:
 
-* `App_Service`=> `import * as Service from './App/Service.js'` Import whole module as ES module.
-* `App_Service.default` => `import {default} from './App/Service.js'` Import default export as is.
-* `App_Service.name` => `import {name} from './App/Service.js'` Import named export as is.
-* `App_Service$` => `import {default} from './App/Service.js'; return res ?? (res = default({...}));` Use default export
-  as a singleton for container.
-* `App_Service$$` => `import {default} from './App/Service.js'; return new default({...})` Create a new default
-  export as Instance for each dependency.
-* `App_Service.name$` => `import {name} from './App/Service.js'; return res ?? (res = name({...}));` Use named export as
-  singleton.
-* `App_Service.name$$` => `import {name} from './App/Service.js'; const res = new name({...})` Create a new named export
-  as instance.
-* `...(proxy,factory,...)`: Add custom wrappers to created objects in postprocessing.
+### Import whole module as ES module
+
+```js
+// App_Service
+import * as Service from './App/Service.js';
+```
+
+### Import default export as is
+
+```js
+// App_Service.default
+import {default} from './App/Service.js';
+```
+
+### Import named export as is
+
+```js
+// App_Service.name
+import {name} from './App/Service.js';
+```
+
+### Use default export as a singleton for container
+
+```js
+// App_Service$
+import {default as Factory} from './App/Service.js';
+
+return res ?? (res = Factory({/* deps */}));
+```
+
+### Create a new default export as Instance for each dependency
+
+```js
+// App_Service$$
+import {default as Factory} from './App/Service.js';
+
+return Factory({/* deps */});
+```
+
+### Use named export as singleton.
+
+```js
+// App_Service.name$
+import {name} from './App/Service.js';
+
+return res ?? (res = name({/* deps */}));
+```
+
+### Create a new named export as instance
+
+```js
+// App_Service.name$$
+import {name} from './App/Service.js';
+
+return name({/* deps */});
+```
+
+### Add custom wrappers to created objects in postprocessing
+
+```js
+// App_Service.name$$(proxy)
+import {name} from './App/Service.js';
+
+const res = name({/* deps */});
+return proxy(res); // use a handler on the postprocessing
+```
+
+### Brief overview
 
 ```js
 export default class App_Main {
