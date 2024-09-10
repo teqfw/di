@@ -34,14 +34,14 @@ export default async function Factory({logger}) {
 In JavaScript, the key in an object can be any string:
 
 ```javascript
-const obj = {['any string with spec. chars: !@#$%^&*()_+']: prop};
+const obj = {'any string with spec. chars: !@#$%^&*()_+': prop};
 ```
 
 When creating a service, we can put the path to the source of the dependency in the specification itself:
 
 ```javascript
 // ./service.js
-export default async function Factory({['./logger.js']: logger}) {
+export default async function Factory({'./logger.js': logger}) {
     return function (opts) {
         logger.info(`Service is running with: ${JSON.stringify(opts)}`);
     };
@@ -56,7 +56,7 @@ import fLogger from './logger.js';
 import fService from './service.js';
 
 const logger = await fLogger();
-const serv = await fService({['./logger.js']: logger});
+const serv = await fService({'./logger.js': logger});
 serv({name: 'The Basics of Spec'});
 ```
 
@@ -64,7 +64,7 @@ The main idea of the Dependencies Specification is that all our factory function
 an object with dependencies, where keys are the paths to the sources:
 
 ```javascript
-function Factory({['./path/to/dep1.js']: dep1, ['./path/to/dep2.js']: dep2}) { }
+function Factory({'./path/to/dep1.js': dep1, './path/to/dep2.js': dep2}) { }
 ```
 
 Next: [parser](../parser/README.md)

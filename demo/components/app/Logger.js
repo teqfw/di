@@ -1,4 +1,4 @@
-export default async function ({['app.Config']: config}) {
+export default async function ({'app.Config': config}) {
     console.info(`Logger is created with config: '${JSON.stringify(config)}'`);
     return {
         error: (msg) => console.error(msg),

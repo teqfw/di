@@ -8,8 +8,8 @@ an object with dependencies, where keys are the paths to import the sources:
 ```javascript
 function Factory(
     {
-        ['./path/to/dep1.js']: dep1,
-        ['./path/to/dep2.js']: dep2
+        './path/to/dep1.js': dep1,
+        './path/to/dep2.js': dep2
     }
 ) { }
 ```
@@ -22,7 +22,7 @@ export default function (def) {
     const res = [];
     const parts = /function Factory\s*\(\{(.*)}\).*/s.exec(def);
     if (parts?.[1]) {
-        // ['./logger.js']: logger, ['./config.js']: config
+        // './logger.js': logger, './config.js': config
         const deps = parts[1].split(',');
         for (const dep of deps) {
             const left = dep.split(':')[0];

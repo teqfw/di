@@ -62,7 +62,7 @@ function Factory(
     {
         logger,
         config,
-        ['@vendor.package.Es6Mod#exportName']: dep
+        '@vendor.package.Es6Mod#exportName': dep
     }
 ) {}
 ```
