@@ -1,6 +1,6 @@
 # @teqfw/di releases
 
-## 0.30.X - TODO
+## 0.30.1
 
 * Improve the README.
 

@@ -5,9 +5,17 @@
 
 
 `@teqfw/di` is a dependency injection container for standard JavaScript. This library is compatible with both browser
-and Node.js environments when using JS, but is exclusive to Node.js when using TS.
+and Node.js environments.
 
 **This library only supports ES6 modules ([the live demo](https://flancer64.github.io/demo-di-app/)).**
+
+More samples:
+
+* [demo-wa-esm-openai](https://github.com/flancer64/demo-wa-esm-openai)
+* [pwa-wallet](https://github.com/flancer64/pwa-wallet)
+* [spa-remote-console](https://github.com/flancer64/spa-remote-console)
+* [demo-webauthn-pubkey](https://github.com/flancer64/demo-webauthn-pubkey)
+* [tg-bot-habr-demo-grammy](https://github.com/flancer64/tg-bot-habr-demo-grammy)
 
 This library is primarily designed to simplify the binding of code objects with minimal manual configuration required
 for the object container. All instructions related to connections are encapsulated within the dependency identifiers
@@ -49,6 +57,11 @@ const resolver = container.getResolver();
 resolver.addNamespaceRoot('App_', '/path/to/src'); // or 'https://cdn.jsdelivr.net/npm/@vendor/pkg@latest/src'
 const app = await container.get('App_Main$');
 ```
+
+While it could potentially be used with TypeScript, the current algorithm for composing
+dependency identifiers, designed for JavaScript, may not be suitable for TypeScript. A different approach for composing
+identifiers and mapping them to the corresponding objects in the transpiled codebase would be required, which is beyond
+the current scope of the package.
 
 ## Key Features
 
