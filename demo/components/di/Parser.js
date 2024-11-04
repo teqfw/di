@@ -18,7 +18,7 @@ const KEY = /([a-zA-Z\d.]+)(\?(mod|inst|(export=([a-zA-Z\d]+)(&(inst))?)))?/s;
  *  - `package.Module?export=name&inst`: uses the named export as a Factory to create the instance;
  *
  * @param {string} objectKey
- * @return {Di.Dto.ObjectKey}
+ * @returns {Di.Dto.ObjectKey}
  */
 export default function (objectKey) {
     const res = new ObjectKey();

@@ -10,14 +10,14 @@ export default class TeqFw_Di_Api_Container_Parser_Chunk {
      * Returns 'true' if this chunk can parse the given dependency ID.
      *
      * @param {string} depId
-     * @return {boolean}
+     * @returns {boolean}
      */
     canParse(depId) {};
 
     /**
      * Parses a string ID for a runtime dependency and returns structured data (DTO).
      * @param {string} depId
-     * @return {TeqFw_Di_DepId}
+     * @returns {TeqFw_Di_DepId}
      */
     parse(depId) {}
 };

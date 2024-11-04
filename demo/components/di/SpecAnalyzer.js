@@ -8,14 +8,14 @@ const FUNC = /function\s*\w*\s*\((.*?)\)/s;
 // MAIN
 /**
  * @param {Function|Object} exp
- * @return {string[]}
+ * @returns {string[]}
  */
 export default function (exp) {
 
     // FUNCS
     /**
      * @param {Function|Object} exp
-     * @return {string[]}
+     * @returns {string[]}
      */
     function analyzeFunc(exp) {
         // extract arguments from factory function

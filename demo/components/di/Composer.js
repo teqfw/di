@@ -13,7 +13,7 @@ let specAnalyser;
  * @param {Di.Dto.ObjectKey} key
  * @param {Module} module
  * @param {Di.Container} container
- * @return {Promise<*>}
+ * @returns {Promise<*>}
  */
 async function create(key, module, container) {
     if (key.exportName === undefined) {

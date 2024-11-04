@@ -1,6 +1,6 @@
 /**
  * @param {string} def
- * @return {string[]}
+ * @returns {string[]}
  */
 export default function (def) {
     const res = [];

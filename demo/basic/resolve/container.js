@@ -14,7 +14,7 @@ function parser(def) {
 
 /**
  * @param {string} key - logical name of the object
- * @return {Promise<*>}
+ * @returns {Promise<*>}
  */
 async function get(key) {
     if (deps[key]) return deps[key];

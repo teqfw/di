@@ -16,7 +16,7 @@ export default class TeqFw_Di_Api_Container_PreProcessor {
      * Modify parsed depID and return it.
      * @param {TeqFw_Di_DepId} depId - The depID as DTO.
      * @param {string[]} stack - The stack of parent IDs.
-     * @return {TeqFw_Di_DepId} -
+     * @returns {TeqFw_Di_DepId} -
      */
     modify(depId, stack) {}
 

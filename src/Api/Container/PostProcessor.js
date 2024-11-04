@@ -18,7 +18,7 @@ export default class TeqFw_Di_Api_Container_PostProcessor {
      * @param {*} obj - The result object to be modified.
      * @param {TeqFw_Di_DepId} depId - The original depID DTO.
      * @param {string[]} - The stack of parent IDs.
-     * @return {Promise<*>}
+     * @returns {Promise<*>}
      */
     modify(obj, depId, stack) {}
 

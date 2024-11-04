@@ -5,7 +5,7 @@ const deps = {}; // all created deps
 /**
  * Get some object from the Container or import sources and create new one.
  * @param {string} key
- * @return {Promise<*>}
+ * @returns {Promise<*>}
  */
 async function get(key) {
     if (deps[key]) return deps[key];

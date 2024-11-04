@@ -23,7 +23,7 @@ function composePath(moduleName) {
 /**
  *
  * @param {Di.Dto.ObjectKey} data
- * @return {Promise<*>}
+ * @returns {Promise<*>}
  */
 export default async function (data) {
     const name = data.moduleName;

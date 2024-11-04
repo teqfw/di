@@ -17,7 +17,7 @@ const regSingles = {};
 /**
  * ID to store singletons in the internal registry.
  * @param {Di.Dto.ObjectKey} key
- * @return {string}
+ * @returns {string}
  */
 function getSingletonId(key) {
     return `${key.moduleName}#${key.exportName}`;
@@ -25,7 +25,7 @@ function getSingletonId(key) {
 
 /**
  * @param {string} objectKey - identifier of the object to create and return
- * @return {Promise<*>}
+ * @returns {Promise<*>}
  */
 async function get(objectKey) {
     // parse the `objectKey` and get structured DTO
