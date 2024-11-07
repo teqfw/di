@@ -9,27 +9,27 @@ export default class TeqFw_Di_Api_Container {
      * Gets or creates a runtime object by ID.
      *
      * @param {string} runtimeDepId - The ID of the runtime object.
-     * @return {Promise<*>} - A promise that resolves to the runtime object.
+     * @returns {Promise<*>} - A promise that resolves to the runtime object.
      */
     get(runtimeDepId) {};
 
     /**
-     * @return {TeqFw_Di_Api_Container_Parser}
+     * @returns {TeqFw_Di_Api_Container_Parser}
      */
     getParser() {};
 
     /**
-     * @return {TeqFw_Di_Api_Container_PreProcessor}
+     * @returns {TeqFw_Di_Api_Container_PreProcessor}
      */
     getPreProcessor() {};
 
     /**
-     * @return {TeqFw_Di_Api_Container_PostProcessor}
+     * @returns {TeqFw_Di_Api_Container_PostProcessor}
      */
     getPostProcessor() {};
 
     /**
-     * @return {TeqFw_Di_Container_Resolver} - the default resolver
+     * @returns {TeqFw_Di_Container_Resolver} - the default resolver
      */
     getResolver() {};
 

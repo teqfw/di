@@ -11,7 +11,7 @@ export default class TeqFw_Di_Api_Container_PreProcessor_Chunk {
      * @param {TeqFw_Di_DepId} depId - `depId` DTO after all previous pre-processing steps
      * @param {TeqFw_Di_DepId} originalId - original `depId` DTO
      * @param {string[]} stack - stack of parents depIds
-     * @return {TeqFw_Di_DepId}
+     * @returns {TeqFw_Di_DepId}
      */
     modify(depId, originalId, stack) {}
 };

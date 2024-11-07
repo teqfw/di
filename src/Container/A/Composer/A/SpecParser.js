@@ -17,7 +17,7 @@ const CLASS = /constructor\s*\(\s*\{([^\}]*)\}/s;
  * Internal function to analyze extracted parameters.
  *
  * @param {string} params
- * @return {string[]}
+ * @returns {string[]}
  * @private
  */
 function _analyze(params) {
@@ -41,7 +41,7 @@ function _analyze(params) {
 
 /**
  * @param {Function|Object} exp
- * @return {string[]}
+ * @returns {string[]}
  */
 function _analyzeClass(exp) {
     const res = [];
@@ -56,7 +56,7 @@ function _analyzeClass(exp) {
 
 /**
  * @param {Function|Object} exp
- * @return {string[]}
+ * @returns {string[]}
  */
 function _analyzeFunc(exp) {
     const res = [];
@@ -72,7 +72,7 @@ function _analyzeFunc(exp) {
 // MAIN
 /**
  * @param {Function|Object} exp
- * @return {string[]}
+ * @returns {string[]}
  */
 export default function (exp) {
     if (typeof exp === 'function') {

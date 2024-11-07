@@ -13,7 +13,7 @@ import Resolver from './Container/Resolver.js';
 /**
  * ID to store singletons in the internal registry.
  * @param {TeqFw_Di_DepId} key
- * @return {string}
+ * @returns {string}
  */
 function getSingletonId(key) {
     return `${key.moduleName}#${key.exportName}`;
@@ -63,7 +63,7 @@ export default class TeqFw_Di_Container {
          *
          * @param {string} depId runtime dependency ID
          * @param {string[]} stack set of the depId to detect circular dependencies
-         * @return {Promise<*>}
+         * @returns {Promise<*>}
          */
         this.compose = async function (depId, stack = []) {
             log(`Object '${depId}' is requested.`);

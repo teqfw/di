@@ -26,7 +26,7 @@ export default class TeqFw_Di_Container_A_Composer {
          * @param {Object} module - imported es6 module
          * @param {string[]} stack - array of the parent objects IDs to prevent dependency loop
          * @param {TeqFw_Di_Container} container - to create dependencies for requested object
-         * @return {Promise<*>}
+         * @returns {Promise<*>}
          */
         this.create = async function (depId, module, stack, container) {
             if (stack.includes(depId.value))

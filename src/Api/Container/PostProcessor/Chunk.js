@@ -11,7 +11,7 @@ export default class TeqFw_Di_Api_Container_PostProcessor_Chunk {
      * @param {*} obj - created object
      * @param {TeqFw_Di_DepId} originalId - original `depId` DTO
      * @param {string[]} stack - stack of parents depIds
-     * @return {*} modified object
+     * @returns {*} modified object
      */
     modify(obj, originalId, stack) {}
 };

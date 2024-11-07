@@ -15,7 +15,7 @@ export default {
      * See: https://stackoverflow.com/a/29094018/4073821
      *
      * @param {function} fn
-     * @return {boolean}
+     * @returns {boolean}
      */
     isClass(fn) {
         const proto = Object.getOwnPropertyDescriptor(fn, 'prototype');

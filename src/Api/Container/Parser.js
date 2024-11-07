@@ -15,7 +15,7 @@ export default class TeqFw_Di_Api_Container_Parser {
     /**
      * Parse given dependency ID and return structured data as DTO.
      * @param {string} depId
-     * @return {TeqFw_Di_DepId}
+     * @returns {TeqFw_Di_DepId}
      */
     parse(depId) {}
 

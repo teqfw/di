@@ -1,5 +1,10 @@
 # @teqfw/di releases
 
+## 0.30.2
+
+* Enhanced the README with updates from ChatGPT.
+* Unified JSDoc annotations.
+
 ## 0.30.1
 
 * Improve the README.
