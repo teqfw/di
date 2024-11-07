@@ -1,5 +1,9 @@
 # @teqfw/di releases
 
+## 0.30.2
+
+* Improve the README with ChatGPT.
+
 ## 0.30.1
 
 * Improve the README.
