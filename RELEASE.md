@@ -2,7 +2,8 @@
 
 ## 0.30.2
 
-* Improve the README with ChatGPT.
+* Enhanced the README with updates from ChatGPT.
+* Unified JSDoc annotations.
 
 ## 0.30.1
 
