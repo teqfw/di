@@ -173,9 +173,8 @@ Alternatively, you can use the UMD version in the browser (~5KB):
 
 <script src="https://cdn.jsdelivr.net/npm/@teqfw/di@latest/dist/umd.js"></script>
 <script>
-    const {default: Container} = window.TeqFw_Di_Container;
     /** @type {TeqFw_Di_Container} */
-    const container = new Container();
+    const container = new window.TeqFw_Di_Container();
 </script>
   ```
 
