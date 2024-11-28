@@ -54,8 +54,8 @@ export default class TeqFw_Di_Container {
 
         // INSTANCE METHODS
 
-        this.get = async function (runtimeDepId) {
-            return this.compose(runtimeDepId, []);
+        this.get = async function (runtimeDepId, stack = []) {
+            return this.compose(runtimeDepId, stack);
         };
 
         /**
