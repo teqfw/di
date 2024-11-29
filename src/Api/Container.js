@@ -9,9 +9,10 @@ export default class TeqFw_Di_Api_Container {
      * Gets or creates a runtime object by ID.
      *
      * @param {string} runtimeDepId - The ID of the runtime object.
+     * @param {string[]} [stack]
      * @returns {Promise<*>} - A promise that resolves to the runtime object.
      */
-    get(runtimeDepId) {};
+    get(runtimeDepId, stack) {};
 
     /**
      * @returns {TeqFw_Di_Api_Container_Parser}

@@ -1,5 +1,10 @@
 # @teqfw/di releases
 
+## 0.31.0
+
+* Added optional `stack` parameter to the `get` method for improved dependency tracking and debugging.
+* Fixed browser example in the README by updating the usage of `window.TeqFw_Di_Container` for compatibility.
+
 ## 0.30.2
 
 * Enhanced the README with updates from ChatGPT.
