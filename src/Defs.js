@@ -3,12 +3,13 @@
  * @namespace TeqFw_Di_Defs
  */
 export default {
-    COMP_A: 'A', // composition: as-is
-    COMP_F: 'F', // composition: factory
+    CA: 'A', // composition: as-is
+    CF: 'F', // composition: factory
+    // TODO: we don't need an access to the container itself.
     ID: 'container', // default ID for container itself
     ID_FQN: 'TeqFw_Di_Container$', // default Full Qualified Name for container itself
-    LIFE_I: 'I', // lifestyle: instance
-    LIFE_S: 'S', // lifestyle: singleton
+    LI: 'I', // lifestyle: instance
+    LS: 'S', // lifestyle: singleton
 
     /**
      * Return 'true' if function is a class definition.

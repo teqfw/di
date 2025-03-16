@@ -26,6 +26,7 @@ describe('TeqFw_Di_Container', () => {
                 'getPostProcessor',
                 'getPreProcessor',
                 'getResolver',
+                'register',
                 'setDebug',
                 'setParser',
                 'setPostProcessor',
@@ -51,6 +52,7 @@ describe('TeqFw_Di_Container', () => {
             resolver.addNamespaceRoot('App_', src, 'js');
             const dep = await container.get('App_Service$');
             assert(dep);
+            assert(Object.isFrozen(dep));
             dep({boobs: 'big'});
         });
 

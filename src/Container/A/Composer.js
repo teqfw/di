@@ -29,17 +29,17 @@ export default class TeqFw_Di_Container_A_Composer {
          * @returns {Promise<*>}
          */
         this.create = async function (depId, module, stack, container) {
-            if (stack.includes(depId.value))
-                throw new Error(`Circular dependency for '${depId.value}'. Parents are: ${JSON.stringify(stack)}`);
+            if (stack.includes(depId.origin))
+                throw new Error(`Circular dependency for '${depId.origin}'. Parents are: ${JSON.stringify(stack)}`);
             if (depId.exportName) {
                 // use export from the es6-module
-                const stackNew = [...stack, depId.value];
+                const stackNew = [...stack, depId.origin];
                 const {[depId.exportName]: exp} = module;
-                if (depId.composition === Defs.COMP_F) {
+                if (depId.composition === Defs.CF) {
                     if (typeof exp === 'function') {
                         // create deps for factory function
                         const deps = specParser(exp);
-                        if (deps.length) log(`Deps for object '${depId.value}' are: ${JSON.stringify(deps)}`);
+                        if (deps.length) log(`Deps for object '${depId.origin}' are: ${JSON.stringify(deps)}`);
                         const spec = {};
                         for (const dep of deps)
                             spec[dep] = await container.compose(dep, stackNew);

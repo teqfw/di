@@ -35,6 +35,13 @@ export default class TeqFw_Di_Api_Container {
     getResolver() {};
 
     /**
+     * Registers an object (module, singleton, factory, or prototype) by dependency ID.
+     * @param {string} depId
+     * @param {Object} obj
+     */
+    register(depId, obj) {};
+
+    /**
      * Enable disable debug output for the object composition process.
      * @param {boolean} data
      */

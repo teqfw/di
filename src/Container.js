@@ -19,6 +19,21 @@ function getSingletonId(key) {
     return `${key.moduleName}#${key.exportName}`;
 }
 
+/**
+ * Determines if an object, function, or primitive can be safely frozen.
+ * @param {*} value - The value to check.
+ * @returns {boolean} - Returns true if the value can be safely frozen.
+ */
+function canBeFrozen(value) {
+    // Primitives (except objects and functions) cannot be frozen
+    if (value === null || typeof value !== 'object' && typeof value !== 'function') return false;
+    // // ES modules cannot be frozen
+    if (Object.prototype.toString.call(value) === '[object Module]') return false;
+    // check is Object is already frozen
+    return !Object.isFrozen(value);
+}
+
+
 // MAIN
 /**
  * @implements TeqFw_Di_Api_Container
@@ -80,7 +95,7 @@ export default class TeqFw_Di_Container {
             // modify original key according to some rules (replacements, etc.)
             const key = _preProcessor.modify(parsed, stack);
             // return existing singleton
-            if (key.life === Defs.LIFE_S) {
+            if (key.life === Defs.LS) {
                 const singleId = getSingletonId(key);
                 if (_regSingles[singleId]) {
                     log(`Existing singleton '${singleId}' is returned.`);
@@ -111,11 +126,13 @@ export default class TeqFw_Di_Container {
             }
             // create object using the composer then modify it in post-processor
             let res = await _composer.create(key, module, stack, this);
+            // freeze the result to prevent modifications (TODO: should we have configuration for the feature?)
+            if (canBeFrozen(res)) Object.freeze(res);
             res = await _postProcessor.modify(res, key, stack);
             log(`Object '${depId}' is created.`);
 
             // save singletons
-            if (key.life === Defs.LIFE_S) {
+            if (key.life === Defs.LS) {
                 const singleId = getSingletonId(key);
                 _regSingles[singleId] = res;
                 log(`Object '${depId}' is saved as singleton.`);
@@ -128,7 +145,26 @@ export default class TeqFw_Di_Container {
         this.getPreProcessor = () => _preProcessor;
 
         this.getPostProcessor = () => _postProcessor;
+
         this.getResolver = () => _resolver;
+
+        /**
+         * Register new object in the Container.
+         * @param {string} depId
+         * @param {Object} obj
+         */
+        this.register = function (depId, obj) {
+            if (!depId || !obj) throw new Error('depId and object are required');
+            const key = _parser.parse(depId);
+            if (key.life === Defs.LS) {
+                const singleId = getSingletonId(key);
+                _regSingles[singleId] = obj;
+                log(`Object '${depId}' is registered manually as singleton.`);
+            } else {
+                // TODO: factory function also should be added manually
+                throw new Error(`Only singletons can be registered manually. Given: ${depId}`);
+            }
+        };
 
         this.setDebug = function (data) {
             _debug = data;

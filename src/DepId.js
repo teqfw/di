@@ -1,33 +1,44 @@
 /**
- * This is a DTO that represents the structure of an ID for a runtime dependency.
+ *  DTO representing a dependency identifier in the container.
  * @namespace TeqFw_Di_DepId
  */
 export default class TeqFw_Di_DepId {
     /**
-     * The name of an export of the module.
+     * The name of an export from the module.
+     * Example: 'default', 'logger', 'DbClient'.
      * @type {string}
      */
     exportName;
     /**
-     * Composition type (see Defs.COMPOSE_): use the export as Factory (F) or return as-is (A).
+     * Defines how the export should be used:
+     * - 'F' (Factory): The export is a factory function, call it to get an instance.
+     * - 'A' (As-Is): The export is returned as-is, without calling.
+     * Example: 'F', 'A'.
      * @type {string}
      */
     composition;
     /**
-     * Lifestyle type (see Defs.LIFE_): singleton (S) or instance (I).
+     * Defines the lifecycle of the resolved dependency:
+     * - 'S' (Singleton): A single instance is created and reused.
+     * - 'I' (Instance): A new instance is created on each request.
+     * Example: 'S', 'I'.
      * @type {string}
      */
     life;
     /**
-     * The code for ES6 module that can be converted to the path to this es6 module.
+     * ES6 module identifier, which can be transformed into a file path.
+     * This value is processed by the Resolver to determine the module's location.
+     * Example: 'TeqFw_Core_Shared_Api_Logger'.
      * @type {string}
      */
     moduleName;
     /**
-     * Object key value.
+     * The original identifier string provided to the container.
+     * This is the unprocessed dependency key.
+     * Example: 'TeqFw_Core_Shared_Api_Logger$$'.
      * @type {string}
      */
-    value;
+    origin;
     /**
      * List of wrappers to decorate the result.
      * @type {string[]}
