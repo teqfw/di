@@ -1,5 +1,6 @@
 # @teqfw/di releases
 
+## 0.32.0
 ## 0.31.0
 
 * Added optional `stack` parameter to the `get` method for improved dependency tracking and debugging.
