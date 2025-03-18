@@ -1,6 +1,13 @@
 # @teqfw/di releases
 
-## 0.32.0
+## 0.32.0 - added support for the `node:` prefix
+
+- **Added ability** to manually register objects in the container (`register`).
+- **Optimized dependency parsing**, added support for the `node:` prefix.
+- **Updated singleton handling**, fixed issues with `Defs.LS`.
+- **Added protection against object modification**, freezing objects when possible (`Object.freeze`).
+- **Updated dependencies** (Mocha, Rollup, Rollup plugins).
+
 ## 0.31.0
 
 * Added optional `stack` parameter to the `get` method for improved dependency tracking and debugging.
@@ -71,6 +78,6 @@
 ## 0.8.0
 
 * docs for plugin's teq-descriptor (see in `main` branch);
-* use object notation instead of array notation in namespace replacement statements of
-  teq-descriptor (`@teqfw/di.replace` node format is changed in `./teqfw.json`);
+* use object notation instead of array notation in namespace replacement statements of teq-descriptor (
+  `@teqfw/di.replace` node format is changed in `./teqfw.json`);
 * array is used as a container for upline dependencies in the 'SpecProxy' (object was);
