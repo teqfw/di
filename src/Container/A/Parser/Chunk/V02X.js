@@ -9,16 +9,16 @@ import Dto from '../../../../DepId.js';
 import Defs from '../../../../Defs.js';
 
 // VARS
-/** @type {RegExp} expression for default object key */
-const REGEXP = /^(node:)?((([A-Z])[A-Za-z0-9_]*|[a-z][a-z0-9\-]*))((#|\.)?([A-Za-z0-9_]*)((\$)([F|A])?([S|I])?)?)?$/;
+/** @type {RegExp} expression for a default object key */
+const REGEXP = /^(node:)?(([A-Z])[A-Za-z0-9_]*|[a-z][a-z0-9-]*)(([#.])?([A-Za-z0-9_]*)((\$)([F|A])?([S|I])?)?)?$/;
 
 /**
  * @implements TeqFw_Di_Api_Container_Parser_Chunk
  */
 export default class TeqFw_Di_Container_A_Parser_Chunk_V02X {
 
-    canParse(depId) {
-        // default parser always tries to parse the depId
+    canParse() {
+        // the default parser always tries to parse the depId
         return true;
     }
 
@@ -30,29 +30,30 @@ export default class TeqFw_Di_Container_A_Parser_Chunk_V02X {
             res.isNodeModule = Boolean(parts[1]); // Check if it starts with 'node:'
             res.moduleName = parts[2].replace(/^node:/, ''); // Remove 'node:' if present
 
-            if (parts[6] === '.') {
+            if (parts[5] === '.') {
                 // App_Service.export or node:package.export
-                if (parts[9] === '$') {
+                if (parts[8] === '$') {
                     // App_Service.export$ or node:package.export$
                     res.composition = Defs.CF;
-                    res.exportName = parts[7];
-                    res.life = (parts[11] === Defs.LI) ? Defs.LI : Defs.LS;
+                    res.exportName = parts[6];
+                    res.life = (parts[10] === Defs.LI) ? Defs.LI : Defs.LS;
                 } else {
-                    res.composition = (!parts[9] || parts[9] === Defs.CA) ? Defs.CA : Defs.CF;
-                    res.exportName = parts[7];
-                    res.life = (!parts[9] || parts[11] === Defs.LS) ? Defs.LS : Defs.LI;
+                    res.composition = (!parts[8] || parts[8] === Defs.CA) ? Defs.CA : Defs.CF;
+                    res.exportName = parts[6];
+                    res.life = (!parts[8] || parts[10] === Defs.LS) ? Defs.LS : Defs.LI;
                 }
-            } else if (parts[9] === '$') {
+            } else if (parts[8] === '$') {
                 // App_Logger$FS or node:package$
-                res.composition = (!parts[10] || parts[10] === Defs.CF) ? Defs.CF : Defs.CA;
+                res.composition = (!parts[9] || parts[9] === Defs.CF) ? Defs.CF : Defs.CA;
                 res.exportName = 'default';
-                res.life = parts[11] ? (parts[11] === Defs.LS ? Defs.LS : Defs.LI) : (res.composition === Defs.CF ? Defs.LS : Defs.LI);
+                res.life = parts[10] ? (parts[10] === Defs.LS ? Defs.LS : Defs.LI) : (res.composition === Defs.CF ? Defs.LS : Defs.LI);
             } else {
                 // App_Service or node:package (ES6 module)
                 res.composition = undefined;
                 res.exportName = undefined;
                 res.life = undefined;
             }
+
         }
 
         // Enforce singleton for non-factory exports

@@ -87,7 +87,7 @@ export default class TeqFw_Di_Container {
                 (depId === Defs.ID) ||
                 (depId === Defs.ID_FQN)
             ) {
-                log(`Container itself is returned.`);
+                log('Container itself is returned.');
                 return _regSingles[Defs.ID];
             }
             // parse the `objectKey` and get the structured DTO
