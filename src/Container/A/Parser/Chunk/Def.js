@@ -10,16 +10,16 @@ import Dto from '../../../../DepId.js';
 import Defs from '../../../../Defs.js';
 
 // VARS
-/** @type {RegExp} expression for default object key */
-const REGEXP = /^(node:)?((@?[A-Za-z0-9_\-]+\/?[A-Za-z0-9_\-]*))((\.)?([A-Za-z0-9_]*)((\$)?(\$)?)?)?(\(([A-Za-z0-9_,]*)\))?$/;
+/** @type {RegExp} expression for a default object key */
+const REGEXP = /^(node:)?(@?[A-Za-z0-9_-]+\/?[A-Za-z0-9_-]*)(([.#])?([A-Za-z0-9_]*)((\$)?(\$)?)?)?(\(([A-Za-z0-9_,]*)\))?$/;
 
 /**
  * @implements TeqFw_Di_Api_Container_Parser_Chunk
  */
 export default class TeqFw_Di_Container_A_Parser_Chunk_Def {
 
-    canParse(depId) {
-        // default parser always tries to parse the depId
+    canParse() {
+        // the default parser always tries to parse the depId
         return true;
     }
 
@@ -31,22 +31,22 @@ export default class TeqFw_Di_Container_A_Parser_Chunk_Def {
             res.isNodeModule = Boolean(parts[1]); // Detect 'node:' prefix
             res.moduleName = parts[2].replace(/^node:/, ''); // Remove 'node:' prefix
 
-            if (parts[5] === '.') {
+            if ((parts[4] === '.') || (parts[4] === '#')) {
                 // Ns_Module.export or node:package.export
-                if ((parts[7] === '$') || (parts[7] === '$$')) {
+                if ((parts[6] === '$') || (parts[6] === '$$')) {
                     res.composition = Defs.CF;
-                    res.exportName = parts[6];
-                    res.life = (parts[7] === '$') ? Defs.LS : Defs.LI;
+                    res.exportName = parts[5];
+                    res.life = (parts[6] === '$') ? Defs.LS : Defs.LI;
                 } else {
                     res.composition = Defs.CA;
                     res.life = Defs.LS;
-                    res.exportName = (parts[6] !== '') ? parts[6] : 'default';
+                    res.exportName = (parts[5] !== '') ? parts[5] : 'default';
                 }
-            } else if ((parts[7] === '$') || parts[7] === '$$') {
+            } else if ((parts[6] === '$') || parts[6] === '$$') {
                 // Ns_Module$$ or node:package$$
                 res.composition = Defs.CF;
                 res.exportName = 'default';
-                res.life = (parts[7] === '$') ? Defs.LS : Defs.LI;
+                res.life = (parts[6] === '$') ? Defs.LS : Defs.LI;
             } else {
                 // Ns_Module or node:package (ES6 module)
                 res.composition = undefined;
@@ -55,8 +55,8 @@ export default class TeqFw_Di_Container_A_Parser_Chunk_Def {
             }
 
             // Wrappers handling
-            if (parts[11]) {
-                res.wrappers = parts[11].split(',');
+            if (parts[10]) {
+                res.wrappers = parts[10].split(',');
             }
         }
 

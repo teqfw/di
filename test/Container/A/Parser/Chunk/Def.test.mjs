@@ -137,6 +137,45 @@ describe('TeqFw_Di_Container_A_Parser_Chunk_Def', () => {
             });
         });
 
+        describe('named export with "#" separator:', () => {
+            it('as-is, singleton (Ns_Module#name)', () => {
+                const dto = chunk.parse('Ns_Module#name');
+                assert.strictEqual(dto.composition, Defs.CA);
+                assert.strictEqual(dto.exportName, 'name');
+                assert.strictEqual(dto.life, Defs.LS);
+                assert.strictEqual(dto.moduleName, 'Ns_Module');
+                assert.strictEqual(dto.origin, 'Ns_Module#name');
+                assert.strictEqual(dto.wrappers.length, 0);
+            });
+            it('factory, singleton (Ns_Module#name$)', () => {
+                const dto = chunk.parse('Ns_Module#name$');
+                assert.strictEqual(dto.composition, Defs.CF);
+                assert.strictEqual(dto.exportName, 'name');
+                assert.strictEqual(dto.life, Defs.LS);
+                assert.strictEqual(dto.moduleName, 'Ns_Module');
+                assert.strictEqual(dto.origin, 'Ns_Module#name$');
+                assert.strictEqual(dto.wrappers.length, 0);
+            });
+            it('factory, instance (Ns_Module#name$$)', () => {
+                const dto = chunk.parse('Ns_Module#name$$');
+                assert.strictEqual(dto.composition, Defs.CF);
+                assert.strictEqual(dto.exportName, 'name');
+                assert.strictEqual(dto.life, Defs.LI);
+                assert.strictEqual(dto.moduleName, 'Ns_Module');
+                assert.strictEqual(dto.origin, 'Ns_Module#name$$');
+                assert.strictEqual(dto.wrappers.length, 0);
+            });
+            it('factory, singleton with wrappers (Ns_Module#name$(proxy,factory))', () => {
+                const dto = chunk.parse('Ns_Module#name$(proxy,factory)');
+                assert.strictEqual(dto.composition, Defs.CF);
+                assert.strictEqual(dto.exportName, 'name');
+                assert.strictEqual(dto.life, Defs.LS);
+                assert.strictEqual(dto.moduleName, 'Ns_Module');
+                assert.strictEqual(dto.origin, 'Ns_Module#name$(proxy,factory)');
+                assert.strictEqual(dto.wrappers.length, 2);
+            });
+        });
+
         describe('nodejs package:', () => {
             it('es6 module (node:pkg)', () => {
                 const dto = chunk.parse('node:pkg');
