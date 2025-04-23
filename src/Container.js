@@ -1,5 +1,7 @@
 /**
  * The Object Container (composition root).
+ * We can use static imports in the Container.
+ *
  * @namespace TeqFw_Di_Container
  */
 import Composer from './Container/A/Composer.js';
@@ -33,11 +35,7 @@ function canBeFrozen(value) {
     return !Object.isFrozen(value);
 }
 
-
 // MAIN
-/**
- * @implements TeqFw_Di_Api_Container
- */
 export default class TeqFw_Di_Container {
 
     constructor() {
@@ -45,8 +43,9 @@ export default class TeqFw_Di_Container {
         let _composer = new Composer();
         let _debug = false;
         let _parser = new Parser();
-        let _preProcessor = new PreProcessor();
         let _postProcessor = new PostProcessor();
+        let _preProcessor = new PreProcessor();
+        let _testMode = false;
 
         /**
          * Registry for paths for loaded es6 modules.
@@ -56,7 +55,7 @@ export default class TeqFw_Di_Container {
         const _regPaths = {};
         /**
          * Registry to store singletons.
-         * @type {Object<string, *>}
+         * @type {Object<string, object>}
          */
         const _regSingles = {};
         let _resolver = new Resolver();
@@ -69,20 +68,9 @@ export default class TeqFw_Di_Container {
 
         // INSTANCE METHODS
 
-        this.get = async function (runtimeDepId, stack = []) {
-            return this.compose(runtimeDepId, stack);
-        };
-
-        /**
-         * This method is 'private' for the npm package. It is used in the Composer only.
-         *
-         * @param {string} depId runtime dependency ID
-         * @param {string[]} stack set of the depId to detect circular dependencies
-         * @returns {Promise<*>}
-         */
-        this.compose = async function (depId, stack = []) {
+        this.get = async function (depId, stack = []) {
             log(`Object '${depId}' is requested.`);
-            // return container itself if requested
+            // return the container itself if requested
             if (
                 (depId === Defs.ID) ||
                 (depId === Defs.ID_FQN)
@@ -92,7 +80,7 @@ export default class TeqFw_Di_Container {
             }
             // parse the `objectKey` and get the structured DTO
             const parsed = _parser.parse(depId);
-            // modify original key according to some rules (replacements, etc.)
+            // modify the original key according to some rules (replacements, etc.)
             const key = _preProcessor.modify(parsed, stack);
             // return existing singleton
             if (key.life === Defs.LS) {
@@ -102,10 +90,10 @@ export default class TeqFw_Di_Container {
                     return _regSingles[singleId];
                 }
             }
-            // resolve path to es6 module if not resolved before
+            // resolve a path to es6 module if not resolved before
             if (!_regPaths[key.moduleName]) {
                 log(`ES6 module '${key.moduleName}' is not resolved yet`);
-                // convert module name to the path to es6-module file with a sources
+                // convert the module name to the path to an es6-module file with a source
                 _regPaths[key.moduleName] = _resolver.resolve(key.moduleName);
             }
 
@@ -124,9 +112,9 @@ export default class TeqFw_Di_Container {
                 );
                 throw e;
             }
-            // create object using the composer then modify it in post-processor
+            // create an object using the composer, then modify it in post-processor
             let res = await _composer.create(key, module, stack, this);
-            // freeze the result to prevent modifications (TODO: should we have configuration for the feature?)
+            // freeze the result to prevent modifications
             if (canBeFrozen(res)) Object.freeze(res);
             res = await _postProcessor.modify(res, key, stack);
             log(`Object '${depId}' is created.`);
@@ -140,6 +128,14 @@ export default class TeqFw_Di_Container {
             return res;
         };
 
+        /**
+         * Enables test mode, allowing manual singleton registration.
+         */
+        this.enableTestMode = function () {
+            _testMode = true;
+            log('Test mode enabled');
+        };
+
         this.getParser = () => _parser;
 
         this.getPreProcessor = () => _preProcessor;
@@ -149,21 +145,28 @@ export default class TeqFw_Di_Container {
         this.getResolver = () => _resolver;
 
         /**
-         * Register new object in the Container.
-         * @param {string} depId
-         * @param {Object} obj
+         * Registers a new singleton object in the Container.
+         *
+         * @param {string} depId - Dependency identifier. Must be a singleton identifier.
+         * @param {object} obj - The object to register.
          */
         this.register = function (depId, obj) {
-            if (!depId || !obj) throw new Error('depId and object are required');
+            if (!_testMode)
+                throw new Error('Use enableTestMode() to allow it');
+
+            if (!depId || !obj)
+                throw new Error('Both params are required');
+
             const key = _parser.parse(depId);
-            if (key.life === Defs.LS) {
-                const singleId = getSingletonId(key);
-                _regSingles[singleId] = obj;
-                log(`Object '${depId}' is registered manually as singleton.`);
-            } else {
-                // TODO: factory function also should be added manually
-                throw new Error(`Only singletons can be registered manually. Given: ${depId}`);
-            }
+            if (key.life !== Defs.LS)
+                throw new Error(`Only singletons can be registered: '${depId}'`);
+
+            const singleId = getSingletonId(key);
+            if (_regSingles[singleId])
+                throw new Error(`'${depId}' is already registered`);
+
+            _regSingles[singleId] = obj;
+            log(`'${depId}' is registered`);
         };
 
         this.setDebug = function (data) {
