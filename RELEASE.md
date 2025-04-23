@@ -1,5 +1,16 @@
 # @teqfw/di releases
 
+## 0.34.0 – Strict Mode and Test Support
+
+- Removed outdated interface `TeqFw_Di_Api_Container` and associated documentation.
+- Unified the `get()` and `compose()` methods for dependency retrieval.
+- Introduced strict mode by default: manual registration of dependencies is now **disabled** unless explicitly allowed.
+- Added `enableTestMode()` method to the container, enabling safe, test-specific manual registration of singleton
+  dependencies.
+- Improved error messages and safeguards against accidental overwrites in `register()`.
+- Updated internal naming and documentation for better clarity and alignment with the platform's principles.
+- Cleaned up ESLint and JSDoc inconsistencies in internal files.
+
 ## 0.33.0 – Cleanup and Enhancements
 
 - Removed deprecated documentation.

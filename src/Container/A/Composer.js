@@ -23,7 +23,7 @@ export default class TeqFw_Di_Container_A_Composer {
          * Returns or creates and returns the requested object.
          *
          * @param {TeqFw_Di_DepId} depId
-         * @param {Object} module - imported es6 module
+         * @param {object} module - imported es6 module
          * @param {string[]} stack - array of the parent objects IDs to prevent dependency loop
          * @param {TeqFw_Di_Container} container - to create dependencies for requested object
          * @returns {Promise<*>}
@@ -42,7 +42,7 @@ export default class TeqFw_Di_Container_A_Composer {
                         if (deps.length) log(`Deps for object '${depId.origin}' are: ${JSON.stringify(deps)}`);
                         const spec = {};
                         for (const dep of deps)
-                            spec[dep] = await container.compose(dep, stackNew);
+                            spec[dep] = await container.get(dep, stackNew);
                         // create a new object with the factory function
                         const res = (Defs.isClass(exp)) ? new exp(spec) : exp(spec);
                         if (res instanceof Promise)
