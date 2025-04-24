@@ -8,15 +8,32 @@ objects with minimal manual configuration. It integrates smoothly in both browse
 flexibility, modularity, and easier testing for your applications.
 
 Unlike typical object containers, `@teqfw/di` requires no manual registration of objects, instead mapping dependency IDs
-directly to their source paths for greater simplicity.
+directly to their source paths for greater simplicity. However, for advanced use cases—such as unit testing—it is
+possible to explicitly register singleton objects using the `register(depId, obj)` method (available only in test mode).
+This allows controlled substitution of dependencies without altering the main codebase.
 
 **This library is specifically optimized for ES6 modules, ensuring top performance and compatibility. It does not
 support CommonJS, AMD, UMD, or other module formats.**
+
+To increase robustness, all instances created by the container are automatically **frozen** using `Object.freeze()`.
+This guarantees immutability of the returned objects, helping prevent accidental modifications and ensuring predictable
+behavior at runtime.
 
 While this library is primarily designed for JavaScript, it is also fully compatible with TypeScript. Developers can use
 TypeScript to compose dependency identifiers in the same way as in JavaScript. It is important to ensure that TypeScript
 transpiles the source code to ES6 modules for proper functionality. With this setup, TypeScript users can effectively
 leverage the benefits of this library without any additional configuration.
+
+---
+
+## Design Philosophy
+
+This library is a component of the **TeqFW platform**, an experimental framework grounded in the principles of modular
+monolith design, long-term maintainability, late binding, and immutability-first logic composition.
+
+To explore the conceptual background, see: **[TeqFW Philosophy](./PHILOSOPHY.md)**.
+
+---
 
 ## Samples
 
@@ -35,6 +52,8 @@ Explore `@teqfw/di` in action through the following demo applications:
   grammY library.
 
 These projects offer practical examples and insights into using `@teqfw/di` effectively!
+
+---
 
 ## Example of Typical Usage
 
@@ -58,7 +77,7 @@ as the container can be configured to work with any layout (e.g., within `/home/
 
 ### Step 2: Declare Dependencies
 
-In your code, declare dependencies by defining them as keys in the constructor. Dependency identifiers here follow a
+In your code, declare dependencies by specifying them as keys in the constructor. Dependency identifiers here follow a
 namespace style similar to PHP Zend 1, which is used by default in this library. You can also implement a custom parser
 if you prefer a different naming convention or mapping strategy.
 
@@ -101,6 +120,26 @@ Finally, retrieve your main application instance. The container automatically in
 const app = await container.get('App_Main$');
   ```
 
+---
+
+## Test Mode Support
+
+`@teqfw/di` supports a dedicated **test mode** to help with unit testing and dependency mocking.
+
+When test mode is enabled via `container.enableTestMode()`, you can manually register singleton dependencies using the
+`register(depId, obj)` method:
+
+```js
+container.enableTestMode();
+container.register('App_Service_Customer$', mockCustomerService);
+```
+
+This makes it easy to substitute real implementations with mocks or stubs during tests, without affecting production
+logic. Test mode safeguards this capability, ensuring that manual overrides are only permitted in designated test
+environments.
+
+---
+
 ## Key Benefits
 
 `@teqfw/di` offers the core functionality of any object container — creating objects and injecting dependencies — with
@@ -117,6 +156,10 @@ Here’s what makes it stand out:
 - **Mapping IDs to Source Modules via Resolvers**: Thanks to resolvers, `@teqfw/di` lets you map dependency IDs to their
   source locations effortlessly. This makes the library adaptable to any project structure or file layout.
 
+- **Immutable Objects for Safer Runtime**: All objects created by the container are frozen by default. This ensures that
+  dependencies cannot be modified once instantiated, eliminating unintended mutations and reinforcing modular,
+  predictable application behavior.
+
 - **Preprocessing for Enhanced Control**: Built-in preprocessing allows modifying dependencies at the time of creation,
   enabling local overrides or adjustments in functionality. This is especially useful for larger projects, where
   different teams may tailor dependencies to their specific requirements. The default preprocessing can also be replaced
@@ -131,6 +174,8 @@ Here’s what makes it stand out:
 
 These features make `@teqfw/di` a powerful, adaptable DI container that not only provides ready-to-use solutions but can
 be easily customized to meet unique project demands.
+
+---
 
 ## Installation
 
@@ -220,6 +265,8 @@ Alternatively, you can use the UMD version in the browser (~5KB):
 With these steps, the container is configured to automatically resolve and inject dependencies based on your setup,
 whether in Node.js or in a browser environment.
 
+---
+
 ## Dependency ID Types
 
 `@teqfw/di` supports various dependency ID formats to match different import styles and object requirements. Here’s a
@@ -259,6 +306,8 @@ export default class App_Main {
 }
 ```
 
+---
+
 ## Summary
 
 `@teqfw/di` is a versatile and lightweight dependency injection container tailored for modern JavaScript applications.
@@ -266,8 +315,8 @@ With its flexible dependency mapping, customizable ID configurations, and suppor
 `@teqfw/di` empowers developers to build modular, testable, and scalable codebases.
 
 Whether you’re working in Node.js or a browser environment, `@teqfw/di` provides a solid foundation with built-in
-functionality that you can further adapt to fit your project’s unique requirements. You are encouraged to explore and
-extend this library as needed to create your ideal development environment.
+functionality that you can further adapt to fit your project’s unique requirements. Feel free to explore and extend the
+library as needed to create your ideal development environment.
 
 For any questions, feedback, or collaboration opportunities, please feel free to reach out through the following
 channels:
