@@ -1,6 +1,6 @@
 {
   "name": "@teqfw/di",
-  "version": "0.34.0",
+  "version": "0.35.0",
   "description": "Dependency Injection container for ES6 modules that works in both browser and Node.js apps.",
   "keywords": [
     "dependency injection",

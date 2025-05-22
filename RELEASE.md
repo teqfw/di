@@ -1,5 +1,14 @@
 # @teqfw/di releases
 
+## 0.35.0 – Support for Node.js Module Mocking in Test Mode
+
+- DI container (test mode): extended support to register not only singleton instances but also mock implementations of
+  native Node.js modules, enabling more flexible and robust unit testing.
+- Added missing property `TeqFw_Di_DepId.isNodeModule` to properly identify Node.js modules in the dependency resolution
+  process.
+- Improved documentation (`README.md` and `PHILOSOPHY.md`) to clarify the design philosophy of TeqFW and explain the
+  immutability and test mode features in greater detail.
+
 ## 0.34.0 – Strict Mode and Test Support
 
 - Removed outdated interface `TeqFw_Di_Api_Container` and associated documentation.
