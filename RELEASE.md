@@ -1,5 +1,10 @@
 # @teqfw/di releases
 
+## 0.35.0 – TODO
+
+- DI container (test mode): now allows registering mock node modules in addition to singletons.
+- Added missing `TeqFw_Di_DepId.isNodeModule`.
+
 ## 0.34.0 – Strict Mode and Test Support
 
 - Removed outdated interface `TeqFw_Di_Api_Container` and associated documentation.

@@ -58,6 +58,12 @@ export default class TeqFw_Di_Container {
          * @type {Object<string, object>}
          */
         const _regSingles = {};
+        /**
+         * Registry to store mocks for Node.js libs in the Test mode.
+         * @type {Object<string, object>}
+         */
+        const _regTestNodeLibs = {};
+
         let _resolver = new Resolver();
 
         // FUNCS
@@ -71,10 +77,7 @@ export default class TeqFw_Di_Container {
         this.get = async function (depId, stack = []) {
             log(`Object '${depId}' is requested.`);
             // return the container itself if requested
-            if (
-                (depId === Defs.ID) ||
-                (depId === Defs.ID_FQN)
-            ) {
+            if ((depId === Defs.ID) || (depId === Defs.ID_FQN)) {
                 log('Container itself is returned.');
                 return _regSingles[Defs.ID];
             }
@@ -88,6 +91,14 @@ export default class TeqFw_Di_Container {
                 if (_regSingles[singleId]) {
                     log(`Existing singleton '${singleId}' is returned.`);
                     return _regSingles[singleId];
+                }
+            }
+            // return existing node lib in the Test mode
+            if (key.isNodeModule && _testMode) {
+                const nodeId = key.origin;
+                if (_regTestNodeLibs[nodeId]) {
+                    log(`Existing nodejs lib '${nodeId}' is returned.`);
+                    return _regTestNodeLibs[nodeId];
                 }
             }
             // resolve a path to es6 module if not resolved before
@@ -104,12 +115,7 @@ export default class TeqFw_Di_Container {
                 module = await import(path);
                 log(`ES6 module '${key.moduleName}' is loaded from '${path}'.`);
             } catch (e) {
-                console.error(
-                    e?.message,
-                    `Object key: "${depId}".`,
-                    `Path: "${path}".`,
-                    `Stack: ${JSON.stringify(stack)}`
-                );
+                console.error(e?.message, `Object key: "${depId}".`, `Path: "${path}".`, `Stack: ${JSON.stringify(stack)}`);
                 throw e;
             }
             // create an object using the composer, then modify it in post-processor
@@ -151,21 +157,22 @@ export default class TeqFw_Di_Container {
          * @param {object} obj - The object to register.
          */
         this.register = function (depId, obj) {
-            if (!_testMode)
-                throw new Error('Use enableTestMode() to allow it');
+            if (!_testMode) throw new Error('Use enableTestMode() to allow it');
 
-            if (!depId || !obj)
-                throw new Error('Both params are required');
+            if (!depId || !obj) throw new Error('Both params are required');
 
             const key = _parser.parse(depId);
-            if (key.life !== Defs.LS)
-                throw new Error(`Only singletons can be registered: '${depId}'`);
+            if ((key.life !== Defs.LS) && !key.isNodeModule) throw new Error(`Only node modules & singletons can be registered: '${depId}'`);
+            if (key.life === Defs.LS) {
+                const singleId = getSingletonId(key);
+                if (_regSingles[singleId]) throw new Error(`'${depId}' is already registered`);
+                _regSingles[singleId] = obj;
+            } else if (key.isNodeModule) {
+                const nodeId = key.origin;
+                if (_regTestNodeLibs[nodeId]) throw new Error(`'${depId}' is already registered`);
+                _regTestNodeLibs[nodeId] = obj;
+            }
 
-            const singleId = getSingletonId(key);
-            if (_regSingles[singleId])
-                throw new Error(`'${depId}' is already registered`);
-
-            _regSingles[singleId] = obj;
             log(`'${depId}' is registered`);
         };
 

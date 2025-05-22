@@ -18,6 +18,11 @@ export default class TeqFw_Di_DepId {
      */
     composition;
     /**
+     * Defines if the dependency is a Node.js module.
+     * @type {boolean}
+     */
+    isNodeModule;
+    /**
      * Defines the lifecycle of the resolved dependency:
      * - 'S' (Singleton): A single instance is created and reused.
      * - 'I' (Instance): A new instance is created on each request.
