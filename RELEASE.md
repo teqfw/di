@@ -1,5 +1,7 @@
 # @teqfw/di releases
 
+- New preprocessor is added: `TeqFw_Di_Pre_Replace`
+
 ## 0.35.0 – Support for Node.js Module Mocking in Test Mode
 
 - DI container (test mode): extended support to register not only singleton instances but also mock implementations of
