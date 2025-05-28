@@ -124,7 +124,7 @@ const app = await container.get('App_Main$');
 
 ## Test Mode Support
 
-`@teqfw/di` supports a dedicated **test mode** to help with unit testing and dependency mocking.
+`@teqfw/di` supports a dedicated **test mode** to facilitate unit testing and dependency mocking.
 
 When test mode is enabled via `container.enableTestMode()`, you can manually register singleton dependencies using the
 `register(depId, obj)` method:
@@ -134,9 +134,31 @@ container.enableTestMode();
 container.register('App_Service_Customer$', mockCustomerService);
 ```
 
-This makes it easy to substitute real implementations with mocks or stubs during tests, without affecting production
-logic. Test mode safeguards this capability, ensuring that manual overrides are only permitted in designated test
-environments.
+This makes it easy to substitute real implementations with mocks or stubs during tests, without altering production
+logic. Overrides are allowed only in test mode, ensuring clean separation of concerns.
+
+### Mocking Node.js Built-in Modules
+
+A powerful feature of `@teqfw/di` is the ability to mock **Node.js built-in libraries** such as `fs`, `path`, or
+`process`. This is useful for isolating side effects and simulating system behavior:
+
+```js
+container.register('node:fs', {
+    existsSync: (path) => path.endsWith('.html'),
+});
+```
+
+You can also register mocks for custom logic or environment-specific behavior:
+
+```js
+container.register('node:path', {
+    join: (...args) => args.join('/'),
+    resolve: (p) => `/abs/${p}`,
+});
+```
+
+These mocks are injected transparently wherever such modules are used as dependencies, making it possible to write pure,
+isolated, and deterministic unit tests — even for logic that relies on the filesystem or path resolution.
 
 ---
 
