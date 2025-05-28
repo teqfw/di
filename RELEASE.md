@@ -1,6 +1,11 @@
 # @teqfw/di releases
 
-- New preprocessor is added: `TeqFw_Di_Pre_Replace`
+## 0.36.0 – New Preprocessor for Dynamic Dependency Rewriting
+
+- Introduced `TeqFw_Di_Pre_Replace`, a new preprocessor allowing runtime substitution of dependency identifiers before
+  object creation, enabling advanced customization scenarios.
+- Improved documentation (`README.md`): added concrete examples of mocking native Node.js modules during testing, better
+  illustrating the power of test mode and late binding.
 
 ## 0.35.0 – Support for Node.js Module Mocking in Test Mode
 
