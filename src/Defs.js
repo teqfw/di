@@ -5,9 +5,6 @@
 export default {
     CA: 'A', // composition: as-is
     CF: 'F', // composition: factory
-    // TODO: we don't need an access to the container itself.
-    ID: 'container', // default ID for container itself
-    ID_FQN: 'TeqFw_Di_Container$', // default Full Qualified Name for container itself
     LI: 'I', // lifestyle: instance
     LS: 'S', // lifestyle: singleton
 

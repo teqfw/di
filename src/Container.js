@@ -76,11 +76,6 @@ export default class TeqFw_Di_Container {
 
         this.get = async function (depId, stack = []) {
             log(`Object '${depId}' is requested.`);
-            // return the container itself if requested
-            if ((depId === Defs.ID) || (depId === Defs.ID_FQN)) {
-                log('Container itself is returned.');
-                return _regSingles[Defs.ID];
-            }
             // parse the `objectKey` and get the structured DTO
             const parsed = _parser.parse(depId);
             // modify the original key according to some rules (replacements, etc.)
@@ -188,8 +183,5 @@ export default class TeqFw_Di_Container {
         this.setPostProcessor = (data) => _postProcessor = data;
 
         this.setResolver = (data) => _resolver = data;
-
-        // MAIN
-        _regSingles[Defs.ID] = this;
     }
 };

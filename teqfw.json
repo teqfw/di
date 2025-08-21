@@ -1,9 +1,8 @@
 {
   "@teqfw/di": {
     "autoload": {
-      "ns": "TeqFw_Di",
-      "path": "./src",
-      "ext": "js"
+      "ns": "TeqFw_Di_",
+      "path": "./src"
     }
   }
 }

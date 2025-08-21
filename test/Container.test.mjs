@@ -35,10 +35,17 @@ describe('TeqFw_Di_Container', () => {
             ]);
         });
 
-        it('contains itself inside', async () => {
+        it('does not contain itself inside', async () => {
             const container = new Container();
-            const namedSingleton = await container.get(Defs.ID);
-            assert.strictEqual(namedSingleton, container);
+            await assert.rejects(
+                async () => {
+                    await container.get('container');
+                },
+                {
+                    code: 'ERR_MODULE_NOT_FOUND',
+                    message: /^Cannot find package 'container'/
+                }
+            );
         });
     });
 
@@ -125,7 +132,7 @@ describe('TeqFw_Di_Container', () => {
             container.enableTestMode();
             assert.throws(() => {
                 container.register('My_Test_Module$$', {notAllowed: true});
-            }, /Only singletons can be registered/);
+            }, /Only node modules & singletons can be registered/);
         });
 
     });

@@ -1,6 +1,6 @@
 {
   "name": "@teqfw/di",
-  "version": "0.36.0",
+  "version": "1.0.0",
   "description": "Dependency Injection container for ES6 modules that works in both browser and Node.js apps.",
   "keywords": [
     "dependency injection",
@@ -32,12 +32,12 @@
     "test": "mocha --recursive './test/**/*.test.mjs'"
   },
   "devDependencies": {
-    "@eslint/js": "^9.25.0",
+    "@eslint/js": "^9.33.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
-    "eslint": "^9.25.0",
-    "mocha": "^11.1.0",
-    "rollup": "^4.36.0"
+    "eslint": "^9.33.0",
+    "mocha": "^11.7.1",
+    "rollup": "^4.47.1"
   },
   "mocha": {
     "spec": "./test/**/*.test.mjs",
