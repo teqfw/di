@@ -1,6 +1,6 @@
 import {dirname, join} from 'node:path';
 import assert from 'node:assert';
-import {describe, it} from 'mocha';
+import {describe, it} from 'node:test';
 import Container from '../src/Container.js';
 import Defs from '../src/Defs.js';
 

@@ -29,18 +29,13 @@
   "scripts": {
     "rollup": "rollup -c",
     "eslint": "eslint './src/**/*.js'",
-    "test": "mocha --recursive './test/**/*.test.mjs'"
+    "test": "node --test"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
     "eslint": "^9.33.0",
-    "mocha": "^11.7.1",
     "rollup": "^4.47.1"
-  },
-  "mocha": {
-    "spec": "./test/**/*.test.mjs",
-    "timeout": 5000
   }
 }
