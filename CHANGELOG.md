@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+- Prepare npm package for publication.
+- Add distribution build outputs to package files and specify entry points.
+
 ## 1.0.0
 - Started changelog for version 1.0.0.
 - Added AGENTS.md with English-only guidelines and link to PHILOSOPHY.md.

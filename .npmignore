@@ -1,0 +1,7 @@
+.github/
+test/
+doc/
+rollup.config.js
+eslint.config.js
+*.log
+!dist/
