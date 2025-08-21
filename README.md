@@ -3,6 +3,11 @@
 ![npms.io](https://img.shields.io/npm/dm/@teqfw/di)
 ![jsdelivr](https://img.shields.io/jsdelivr/npm/hm/@teqfw/di)
 
+> [!IMPORTANT]
+> **Breaking Changes in v1.0.0**
+>
+> The library has been stable for a long time and is now promoted to its first major version. To improve security, the Object Container can no longer access itself, so all configuration must occur in the Composition Root. This restriction ensures that third-party plugins cannot override or modify the container's internal functionality. Legacy versions are maintained in the `forerunner` branch, and packages like `@teqfw/core` should depend on `@teqfw/di` versions below `1.0.0`.
+
 `@teqfw/di` is a lightweight dependency injection container for standard JavaScript, enabling late binding of code
 objects with minimal manual configuration. It integrates smoothly in both browser and Node.js environments, supporting
 flexibility, modularity, and easier testing for your applications.
