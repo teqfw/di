@@ -20,7 +20,20 @@
     "email": "alex@flancer64.com",
     "url": "https://github.com/flancer64"
   },
-  "main": "src/Container.js",
+  "files": [
+    "dist/",
+    "src/",
+    "LICENSE",
+    "README.md"
+  ],
+  "main": "dist/umd.js",
+  "module": "dist/esm.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm.js",
+      "require": "./dist/umd.js"
+    }
+  },
   "type": "module",
   "repository": {
     "type": "git",
