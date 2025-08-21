@@ -1,6 +1,6 @@
 import parse from '../../../../../src/Container/A/Composer/A/SpecParser.js';
-import {describe, it} from 'mocha';
-import assert from 'assert';
+import {describe, it} from 'node:test';
+import assert from 'node:assert';
 
 
 describe('TeqFw_Di_Container_A_Composer_A_SpecParser', () => {
