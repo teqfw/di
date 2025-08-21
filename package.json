@@ -37,5 +37,12 @@
     "@rollup/plugin-terser": "^0.4.4",
     "eslint": "^9.33.0",
     "rollup": "^4.47.1"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/sponsors/teqfw"
   }
 }
