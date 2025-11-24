@@ -1,6 +1,6 @@
 {
   "name": "@teqfw/di",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Dependency Injection container for ES6 modules that works in both browser and Node.js apps.",
   "keywords": [
     "dependency injection",
@@ -32,6 +32,9 @@
     ".": {
       "import": "./dist/esm.js",
       "require": "./dist/umd.js"
+    },
+    "./pre/replace": {
+      "import": "./src/Pre/Replace.js"
     }
   },
   "type": "module",

@@ -1,6 +1,7 @@
 /.idea/
 /.nyc_output/
 /.vscode/
+/**/output.md
 /dist/
 /jsdoc/
 /node_modules/
