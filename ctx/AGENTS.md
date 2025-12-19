@@ -11,6 +11,7 @@ The `ctx/` directory serves as the declarative core of the project’s cognitive
 
 - `agent/` — operational level: local agent instructions, reporting, and interaction modes defined in `ctx/agent/AGENTS.md`.
 - `docs/` — project documentation branch: the core of architecture, code, composition, environment constraints, and product descriptions defined in `ctx/docs/AGENTS.md`.
+- `img/` — visual support for architecture documents (diagrams only, no normative content).
 - `AGENTS.md` — this document, declaring the structure of `ctx/` and providing the entry point into the context.
 
 ## Structure and Relationships

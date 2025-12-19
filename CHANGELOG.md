@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2
+
+- Moved architecture diagrams into `ctx/img/` and updated the context map accordingly.
+- Clarified type map rules to require global namespace declarations for IDE type resolution.
+
 ## 1.1.1
 
 - Added missing published files (`CHANGELOG.md`, `teqfw.json`, `types.d.ts`) and declared `types.d.ts` in `package.json`.
