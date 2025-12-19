@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.3
+
+- Added global type declarations to `types.d.ts` to match the type map architecture rules.
+
 ## 1.1.2
 
 - Moved architecture diagrams into `ctx/img/` and updated the context map accordingly.
