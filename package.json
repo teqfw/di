@@ -1,6 +1,6 @@
 {
   "name": "@teqfw/di",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Dependency Injection container for ES6 modules that works in both browser and Node.js apps.",
   "keywords": [
     "dependency injection",
@@ -23,11 +23,15 @@
   "files": [
     "dist/",
     "src/",
+    "CHANGELOG.md",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "teqfw.json",
+    "types.d.ts"
   ],
   "main": "dist/umd.js",
   "module": "dist/esm.js",
+  "types": "types.d.ts",
   "exports": {
     ".": {
       "import": "./dist/esm.js",

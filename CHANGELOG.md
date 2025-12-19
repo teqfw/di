@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+- Added missing published files (`CHANGELOG.md`, `teqfw.json`, `types.d.ts`) and declared `types.d.ts` in `package.json`.
+
 ## 1.1.0
 
 - Added ADSM cognitive context documentation and reporting structure under `ctx/`.
