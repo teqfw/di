@@ -1,6 +1,7 @@
 !dist/
 .github/
 *.log
+**/output.md
 ctx/
 doc/
 eslint.config.js

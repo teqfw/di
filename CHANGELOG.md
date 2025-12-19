@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+- Added ADSM cognitive context documentation and reporting structure under `ctx/`.
+- Added type map documentation and a `types.d.ts` namespace-to-source mapping for IDE support.
+- Updated `.npmignore` to ignore `output.md` artifacts.
+
 ## 1.0.2
 
 - Added ability to import the Replace preprocessor chunk via package subpath (`./pre/replace`).
