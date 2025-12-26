@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+- Documented the dependency declaration model in the README and product overview.
+- Refined the type map rules to clarify tsserver scope and public vs internal type visibility.
+- Updated `types.d.ts` mappings to use `InstanceType` for class defaults and split internal aliases from globals.
+
 ## 1.1.3
 
 - Added global type declarations to `types.d.ts` to match the type map architecture rules.
