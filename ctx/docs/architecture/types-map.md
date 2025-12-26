@@ -2,126 +2,104 @@
 
 Path: `ctx/docs/architecture/types-map.md`
 
-## 1. Purpose and role
+## 1. Purpose
 
-Type maps in TeqFW are an architectural documentation mechanism whose sole purpose is to bind
-**logical dependency identifiers** (namespaces used by the DI container) to **concrete JavaScript
-source files** in a form consumable by static analyzers and IDEs.
+A type map in TeqFW is an architectural mechanism intended **exclusively for the TypeScript Language Service (`tsserver`)**, which is the sole JavaScript analyzer used by Visual Studio Code.
 
-Type maps exist exclusively to support:
+The purpose of a type map is to control which JavaScript source files are visible to `tsserver` for analysis and which part of the library’s type information is exposed to consuming projects.
 
-- source navigation;
-- autocompletion;
-- static code comprehension in IDEs (primarily VSCode).
-
-Type maps do not participate in runtime execution and do not influence dependency resolution.
+A type map does not participate in runtime execution and does not affect runtime semantics.
 
 ---
 
-## 2. Architectural context
+## 2. Architectural Premises
 
-TeqFW is based on the following architectural premises:
+TeqFW is based on late binding, logical dependency identifiers instead of file paths, minimal use of static imports, and JavaScript + JSDoc without TypeScript.
 
-- late binding via a DI container;
-- dependency addressing by logical identifiers instead of file paths;
-- absence of static imports between application modules;
-- pure JavaScript (ES6+) without compilation or transpilation.
+In this architecture, the static import graph does not represent the real system structure.
 
-As a result:
+At the same time, `tsserver` builds its type model strictly from files and type declarations.
 
-- runtime code operates on **namespace identifiers**;
-- IDEs and analyzers operate on **files and types**.
-
-Type maps are introduced to bridge this mismatch **strictly at the static analysis level**,
-without affecting runtime semantics.
+A type map is introduced as an adapter between these two models.
 
 ---
 
 ## 3. Definition: Type Map
 
-A **type map** is a static, declarative list of bindings of the form:
+A **type map** is a declarative layer, implemented as a `types.d.ts` file, that tells `tsserver` which JavaScript files belong to the library, which of them participate in type analysis, and which of them form the public type surface.
 
-```text
-Namespace identifier → JavaScript source file
-```
+A type map does not describe types manually and is not a type system.
 
-All bindings defined in a type map are introduced into the **global type namespace**
-of the project and are intended to be referenced **without imports**.
-
-A type map:
-
-- does not define new types in isolation;
-- does not describe structure independently of implementation;
-- does not introduce behavioral or lifecycle semantics.
-
-It merely binds an architectural name to an existing implementation file.
-
-In TeqFW, a type map is implemented as a single `types.d.ts` file published with an npm package.
+It specifies where `tsserver` must compute the type model, based on JavaScript code and JSDoc.
 
 ---
 
-## 4. Scope and constraints
+## 4. Two Roles of `types.d.ts`
 
-A type map is subject to the following strict constraints:
+The `types.d.ts` file performs two fundamentally different roles.
 
-- it is used only by static analysis tools;
-- it is not a type system;
-- it is not an abstraction layer;
-- it is not an API contract.
+### 4.1. Granting `tsserver` Access to All Library Sources
 
-Any information not required to establish a global name-to-file correspondence
-does not belong in a type map.
+Any declarations in `types.d.ts`, both global and non-global, make the referenced JavaScript sources reachable by `tsserver`, allow `tsserver` to derive structure from JSDoc, and ensure internal type-model consistency during library development.
 
 ---
 
-## 5. Canonical construction rules
+### 4.2. Separating Public and Internal Type Surfaces
 
-### 5.1. One package — one type map
+In TeqFW, the actual API boundary is defined by the globality of declarations in `types.d.ts`.
 
-Each npm package that exposes namespace-addressable code **must provide exactly one type map**.
+Non-global declarations are visible to `tsserver` only when analyzing the library itself and form the internal type surface.
 
-By convention:
+Declarations inside `declare global { ... }` are exported into the type model of consuming projects and form the public type surface.
 
-- the file name is `types.d.ts`;
-- it is referenced via the `types` field in `package.json`.
+Therefore:
+
+> The `declare global` boundary is the effective public API boundary in terms of `tsserver`.
 
 ---
 
-### 5.2. Namespace as type name
+## 5. Canonical Rules
+
+### 5.1. One Package — One Type Map
+
+Each TeqFW npm package must provide exactly one `types.d.ts` file, referenced via the `types` field in `package.json`.
+
+---
+
+### 5.2. Namespace as Type Name
 
 Each entry in a type map corresponds to exactly one namespace identifier.
 
-Rules:
+Requirements:
 
-- the type name **must exactly match** the namespace identifier;
+- the type name must exactly match the namespace identifier;
 - lifecycle suffixes (`$`, `$$`) are forbidden;
-- type names must be globally unique across all packages.
+- type names must be globally unique.
 
-Example:
+---
+
+### 5.3. Global vs Non-Global Declarations
+
+Both declaration forms are allowed in `types.d.ts`: non-global declarations for internal library analysis and global declarations (`declare global`) for publishing the type model externally.
+
+Using `declare global` is not a stylistic choice but the mechanism by which types are included in the `tsserver` model of consuming projects.
+
+---
+
+### 5.4. Mapping Form (Mandatory)
+
+The only permitted mapping form is a type alias that references a concrete JavaScript source via `import()`.
+
+If the file’s `default` export is a class, the published type must describe the instance, not the constructor:
 
 ```ts
-TeqFw_Di_Container_Resolver;
+declare global {
+  type Ns_SubSpace_Folder_Name = InstanceType<typeof import("./src/Folder/Name.js").default>;
+}
+export {};
 ```
 
----
-
-### 5.3. Global scope requirement (mandatory)
-
-All namespace types defined in a type map **must be declared in the global type scope**.
-
-A type map **must** use `declare global { ... }` to introduce namespace identifiers
-as globally accessible types within the project.
-
-Local, module-scoped, or import-only type declarations are forbidden.
-
----
-
-### 5.4. Exclusive mapping form (mandatory)
-
-The **only permitted form** of a type map entry is a direct alias to a concrete JavaScript module
-using `import()` inside a global declaration.
-
-Canonical form:
+A direct reference to the `default` export is allowed only if the file exports a function (not a class) or an object literal:
 
 ```ts
 declare global {
@@ -130,120 +108,20 @@ declare global {
 export {};
 ```
 
-This form is mandatory and exclusive.
-
-No other declaration forms are allowed.
-
-The `export {}` statement is required to enforce module context
-and ensure correct application of the global declaration.
+Any other declaration forms, including manual structure descriptions, interfaces, or wrappers, are forbidden.
 
 ---
 
-### 5.5. Interpretation of the mapping
+## 6. Restrictions
 
-Each mapping entry asserts the following and nothing more:
+The `types.d.ts` file must not contain manual class or interface declarations, method or property signatures, abstract or synthetic types, or runtime or container semantics.
 
-- the referenced file exists;
-- the referenced file contains the actual implementation;
-- all structural information is derived from that file and its JSDoc.
-
-The type map itself carries no structural or semantic knowledge.
+Any declaration that does not directly reference a JavaScript source file does not belong in a type map.
 
 ---
 
-### 5.6. Aggregation
+## 7. Summary
 
-A `types.d.ts` file may contain multiple mapping entries.
+In TeqFW, `types.d.ts` defines what exactly `tsserver` can see; non-global declarations form the internal type surface; `declare global` publishes the type model externally; and “public” is a category of type visibility, not runtime behavior.
 
-It represents the **set of architectural entities intentionally exposed
-for global namespace-based addressing**.
-
-Internal or incidental files must not be included.
-
----
-
-## 6. IDE integration
-
-VSCode uses TypeScript Language Service for both JavaScript and TypeScript projects.
-
-When an npm package declares:
-
-```json
-{
-  "types": "types.d.ts"
-}
-```
-
-VSCode will:
-
-1. load the type map automatically;
-2. apply its global declarations to the project type space;
-3. resolve `import()` references in each mapping;
-4. derive navigation and completion from the referenced source files.
-
-No additional configuration is required.
-
----
-
-## 7. Usage from application code
-
-Namespace identifiers are resolved as **global types**.
-
-Example:
-
-```js
-/**
- * @param {Ns_SubSpace_Folder_Name} service
- */
-export default function Controller(service) {
-  service.method();
-}
-```
-
-No imports or type references are required or allowed at usage sites.
-
-The application code continues to operate purely on namespace identifiers.
-
----
-
-## 8. Normative restriction
-
-A `types.d.ts` file in TeqFW **must not contain anything except global namespace-to-file mappings**.
-
-In particular, it must not contain:
-
-- class declarations;
-- interface declarations;
-- function declarations;
-- property or method signatures;
-- lifecycle, scope, or container semantics;
-- abstract, synthetic, or virtual type definitions.
-
-If a declaration does not directly point to a concrete JavaScript source file
-and introduce it as a global namespace type, it does not belong in a type map.
-
----
-
-## 9. Evolution
-
-This document intentionally combines rationale and construction rules
-to preserve conceptual integrity.
-
-It may be split into separate documents if and when:
-
-- multiple categories of type maps emerge;
-- public and internal mappings diverge;
-- automated validation or generation tools appear.
-
-Until then, a single document provides the clearest architectural boundary.
-
----
-
-## 10. Summary
-
-In TeqFW, namespace identifiers are **global architectural symbols**.
-
-Type maps bind these symbols to implementation files for static analysis and IDE support,
-while preserving late binding and runtime independence.
-
-A type map is a **map**, not a model, not a contract, and not a type system.
+A type map is not a contract and not a type system, but an architectural map of type visibility for `tsserver`.

@@ -15,6 +15,16 @@ Component binding is performed not through types, decorators, or compile-time co
 
 The container acts as an interpreter of this semantics and mechanically applies the fixed binding rules, without analyzing the problem domain or making architectural decisions.
 
+## Dependency Declaration Model
+
+In `@teqfw/di`, dependencies are **declared structurally in the constructor (or factory) signature**, not registered, requested, or described separately.
+
+A component declares its dependencies by using a **single object parameter** whose property names are **dependency identifiers**.  
+When creating an object, the container analyzes the constructor (or factory) signature, extracts the object destructuring pattern, and resolves each declared identifier recursively before invoking the constructor.
+
+The created object has no access to the container and cannot request dependencies at runtime.  
+This model enforces explicit constructor-level dependency declaration and **excludes service-locator semantics by design**.
+
 ## Role in Projects
 
 `@teqfw/di` serves as a **composition core**, providing:

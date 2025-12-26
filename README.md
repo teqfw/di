@@ -3,8 +3,7 @@
 ![npms.io](https://img.shields.io/npm/dm/@teqfw/di)
 ![jsdelivr](https://img.shields.io/jsdelivr/npm/hm/@teqfw/di)
 
-> [!IMPORTANT]
-> **Breaking Changes in v1.0.0**
+> [!IMPORTANT] > **Breaking Changes in v1.0.0**
 >
 > The library has been stable for a long time and is now promoted to its first major version. To improve security, the Object Container can no longer access itself, so all configuration must occur in the Composition Root. This restriction ensures that third-party plugins cannot override or modify the container's internal functionality. Legacy versions are maintained in the `forerunner` branch, and packages like `@teqfw/core` should depend on `@teqfw/di` versions below `1.0.0`.
 
@@ -40,6 +39,17 @@ To explore the conceptual background, see: **[TeqFW Philosophy](./PHILOSOPHY.md)
 
 ---
 
+## Dependency Declaration Model
+
+In `@teqfw/di`, dependencies are declared **exclusively in the constructor (or factory) signature**.
+A component defines its dependencies using a **single object parameter**, where each property name
+is a dependency identifier interpreted by the container.
+
+The container analyzes the constructor signature, resolves all declared identifiers **before object
+creation**, and invokes the constructor with a fully populated argument object. Created objects are isolated from the container.
+
+---
+
 ## Samples
 
 Explore `@teqfw/di` in action through the following demo applications:
@@ -70,41 +80,42 @@ configuring the container, and finally retrieving the main object with injected 
 Here’s an example of how files might be organized in a project. This structure can vary depending on your project needs,
 as the container can be configured to work with any layout (e.g., within `/home/user/project/`):
 
-  ```
-  ./src/
-      ./Service/
-          ./Customer.js
-          ./Sale.js
-      ./Config.js
-      ./Logger.js
-      ./Main.js
-  ```
+```text
+./src/
+    ./Service/
+        ./Customer.js
+        ./Sale.js
+    ./Config.js
+    ./Logger.js
+    ./Main.js
+```
 
 ### Step 2: Declare Dependencies
 
-In your code, declare dependencies by specifying them as keys in the constructor. Dependency identifiers here follow a
-namespace style similar to PHP Zend 1, which is used by default in this library. You can also implement a custom parser
-if you prefer a different naming convention or mapping strategy.
+In your code, declare dependencies by specifying them as keys in the constructor. This is the only supported
+way to declare dependencies in `@teqfw/di`. Dependency identifiers here follow a namespace style similar to PHP
+Zend 1, which is used by default in this library. You can also implement a custom parser if you prefer a
+different naming convention or mapping strategy.
 
-  ```js
-  export default class App_Main {
-    constructor(
-        {
-            App_Config$: config,
-            App_Logger$: logger,
-            App_Service_Customer$: servCustomer,
-            App_Service_Sale$: servSale,
-        }
-    ) { /* ... */ }
+```js
+export default class App_Main {
+  constructor({
+    App_Config$: config,
+    App_Logger$: logger,
+    App_Service_Customer$: servCustomer,
+    App_Service_Sale$: servSale,
+  }) {
+    /* ... */
+  }
 }
-  ```
+```
 
 ### Step 3: Configure the Container
 
 Next, set up the container and configure it to use the correct namespace and path for your dependencies:
 
-  ```js
-  import Container from '@teqfw/di';
+```js
+import Container from "@teqfw/di";
 
 // Create a new instance of the container
 const container = new Container();
@@ -113,17 +124,17 @@ const container = new Container();
 const resolver = container.getResolver();
 
 // Define the namespace root for dependencies, allowing the container to resolve identifiers like 'App_*'
-resolver.addNamespaceRoot('App_', '/home/user/project/src'); 
-  ```
+resolver.addNamespaceRoot("App_", "/home/user/project/src");
+```
 
 ### Step 4: Retrieve the Main Object with Dependencies
 
 Finally, retrieve your main application instance. The container automatically injects all declared dependencies:
 
-  ```js
-  // Retrieve the main application instance as a singleton asynchronously
-const app = await container.get('App_Main$');
-  ```
+```js
+// Retrieve the main application instance as a singleton asynchronously
+const app = await container.get("App_Main$");
+```
 
 ---
 
@@ -136,7 +147,7 @@ When test mode is enabled via `container.enableTestMode()`, you can manually reg
 
 ```js
 container.enableTestMode();
-container.register('App_Service_Customer$', mockCustomerService);
+container.register("App_Service_Customer$", mockCustomerService);
 ```
 
 This makes it easy to substitute real implementations with mocks or stubs during tests, without altering production
@@ -148,17 +159,17 @@ A powerful feature of `@teqfw/di` is the ability to mock **Node.js built-in libr
 `process`. This is useful for isolating side effects and simulating system behavior:
 
 ```js
-container.register('node:fs', {
-    existsSync: (path) => path.endsWith('.html'),
+container.register("node:fs", {
+  existsSync: (path) => path.endsWith(".html"),
 });
 ```
 
 You can also register mocks for custom logic or environment-specific behavior:
 
 ```js
-container.register('node:path', {
-    join: (...args) => args.join('/'),
-    resolve: (p) => `/abs/${p}`,
+container.register("node:path", {
+  join: (...args) => args.join("/"),
+  resolve: (p) => `/abs/${p}`,
 });
 ```
 
@@ -173,9 +184,8 @@ isolated, and deterministic unit tests — even for logic that relies on the fil
 extensive flexibility and configurability. This allows the library to adapt seamlessly to a wide range of project needs.
 Here’s what makes it stand out:
 
-- **Automatic Dependency Resolution**: The library simplifies managing complex objects and their dependencies by
-  automatically resolving and injecting them based on container configuration. This basic functionality works out of the
-  box but can be fully customized if needed.
+- **Automatic Dependency Resolution**: The library resolves and injects dependencies by interpreting constructor
+  signatures. This basic functionality works out of the box but can be fully customized if needed.
 
 - **Flexible Dependency ID Configuration**: With customizable parsers and chunks, you can define unique ID schemes for
   dependencies, making it easy to adapt the library to specific naming conventions or custom mapping rules.
@@ -210,45 +220,43 @@ be easily customized to meet unique project demands.
 
 To install `@teqfw/di` in a Node.js environment, use the following command:
 
-  ```shell
-  $ npm install @teqfw/di
-  ```
+```shell
+npm install @teqfw/di
+```
 
 Then, import and initialize the container:
 
-  ```js
-  import Container from '@teqfw/di';
+```js
+import Container from "@teqfw/di";
 
 /** @type {TeqFw_Di_Container} */
 const container = new Container();
-  ```
+```
 
 ### For the Browser (ESM Module)
 
 To use `@teqfw/di` in a browser environment with ES modules, include it as follows (~5KB):
 
-  ```html
-
+```html
 <script type="module">
-    import Container from 'https://cdn.jsdelivr.net/npm/@teqfw/di@latest/+esm';
+  import Container from "https://cdn.jsdelivr.net/npm/@teqfw/di@latest/+esm";
 
-    /** @type {TeqFw_Di_Container} */
-    const container = new Container();
+  /** @type {TeqFw_Di_Container} */
+  const container = new Container();
 </script>
-  ```
+```
 
 ### For the Browser (UMD Module)
 
 Alternatively, you can use the UMD version in the browser (~5KB):
 
-  ```html
-
+```html
 <script src="https://cdn.jsdelivr.net/npm/@teqfw/di@latest/dist/umd.js"></script>
 <script>
-    /** @type {TeqFw_Di_Container} */
-    const container = new window.TeqFw_Di_Container();
+  /** @type {TeqFw_Di_Container} */
+  const container = new window.TeqFw_Di_Container();
 </script>
-  ```
+```
 
 ---
 
@@ -259,35 +267,35 @@ Alternatively, you can use the UMD version in the browser (~5KB):
 1. **Configure Dependency Mapping**: Configure the resolver to detect the platform environment. Then, set up namespace
    roots to map dependency IDs to their source paths.
 
-    ```js
-    import { platform } from 'node:process';
+   ```js
+   import { platform } from "node:process";
 
-    const resolver = container.getResolver();
-    resolver.setWindowsEnv(platform === 'win32'); // Adjusts for Windows environment if needed
-    resolver.addNamespaceRoot('App_', '/path/to/src');
-    ```
+   const resolver = container.getResolver();
+   resolver.setWindowsEnv(platform === "win32"); // Adjusts for Windows environment if needed
+   resolver.addNamespaceRoot("App_", "/path/to/src");
+   ```
 
 2. **Retrieve Singleton Instances**: Retrieve the main application instance as a singleton asynchronously:
 
-    ```js
-    const app = await container.get('App_Main$');
-    ```
+   ```js
+   const app = await container.get("App_Main$");
+   ```
 
 ### In the Browser
 
 1. **Configure Dependency Mapping**: Set up namespace roots to map dependency IDs to their source paths, using URLs as
    needed.
 
-    ```js
-    const resolver = container.getResolver();
-    resolver.addNamespaceRoot('App_', 'https://cdn.jsdelivr.net/npm/@flancer64/demo-di-app@0.2/src'); 
-    ```
+   ```js
+   const resolver = container.getResolver();
+   resolver.addNamespaceRoot("App_", "https://cdn.jsdelivr.net/npm/@flancer64/demo-di-app@0.2/src");
+   ```
 
 2. **Retrieve Singleton Instances**: Retrieve the main application instance as a singleton asynchronously:
 
-    ```js
-    const app = await container.get('App_Main$');
-    ```
+   ```js
+   const app = await container.get("App_Main$");
+   ```
 
 With these steps, the container is configured to automatically resolve and inject dependencies based on your setup,
 whether in Node.js or in a browser environment.
@@ -300,7 +308,7 @@ whether in Node.js or in a browser environment.
 quick reference:
 
 | Dependency ID               | Import Style                                           | Description                                                                                           |
-|-----------------------------|--------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| --------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
 | `App_Service`               | `import * as Service from './App/Service.js';`         | Imports the entire module as an ES module.                                                            |
 | `App_Service.default`       | `import {default} from './App/Service.js';`            | Imports the default export as-is.                                                                     |
 | `App_Service.name`          | `import {name} from './App/Service.js';`               | Imports a named export as-is.                                                                         |
@@ -316,20 +324,18 @@ Here’s an example showing a class with multiple dependencies, each using diffe
 
 ```js
 export default class App_Main {
-    constructor(
-        {
-            App_Service: EsModule,
-            'App_Service.default': defaultExportAsIs,
-            'App_Service.name': namedExportAsIs,
-            App_Service$: defaultExportAsSingleton,
-            App_Service$$: defaultExportAsInstance,
-            'App_Service.name$': namedExportAsSingleton,
-            'App_Service.name$$': namedExportAsInstance,
-            'App_Service.name(factory)': factoryToCreateInstancesFromNamedExport,
-        }
-    ) {
-        const {default: SrvDef, name: SrvName} = EsModule; // Deconstruct the module and access the exports 
-    }
+  constructor({
+    App_Service: EsModule,
+    "App_Service.default": defaultExportAsIs,
+    "App_Service.name": namedExportAsIs,
+    App_Service$: defaultExportAsSingleton,
+    App_Service$$: defaultExportAsInstance,
+    "App_Service.name$": namedExportAsSingleton,
+    "App_Service.name$$": namedExportAsInstance,
+    "App_Service.name(factory)": factoryToCreateInstancesFromNamedExport,
+  }) {
+    const { default: SrvDef, name: SrvName } = EsModule; // Deconstruct the module and access the exports
+  }
 }
 ```
 
