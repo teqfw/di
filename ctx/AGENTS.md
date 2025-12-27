@@ -1,11 +1,11 @@
 # Cognitive Layer of the Project
 
 - Path: `./ctx/AGENTS.md`
-- Version: `20251218`
+- Version: `20251227`
 
 ## Purpose
 
-The `ctx/` directory serves as the declarative core of the project’s cognitive layer. It synchronizes the agent’s organizational instructions with the project documentation, fixes shared invariants of the agent’s role, and defines two coordinated context branches: `agent/`, responsible for agent behavior and reporting, and `docs/`, which accumulates architecture, constraints, engineering rules, and product meaning. Both branches inherit the context of this level, operate under the same ADSM quality criteria, and do not overlap.
+The `ctx/` directory serves as the declarative core of the project’s cognitive layer. It synchronizes the agent’s organizational instructions with the project documentation, fixes shared invariants of the agent’s role, and defines two coordinated context branches: `agent/`, responsible for agent behavior and reporting, and `docs/`, which accumulates architecture, constraints, engineering rules, and product meaning. Both branches inherit the context of this level, operate under the same ADSM quality criteria, and do not overlap. The primary audience of the `ctx/` corpus is automated agents; human readers are secondary consumers of the same declarative context. Documents in `ctx/` are authoritative constraints for automated agents.
 
 ## Level Map
 

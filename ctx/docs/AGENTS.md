@@ -1,11 +1,11 @@
 # Project Documentation (`./ctx/docs/`)
 
 - Path: `./ctx/docs/AGENTS.md`
-- Version: `20251218`
+- Version: `20251227`
 
 ## Purpose
 
-The `ctx/docs/` directory accumulates declarative knowledge about the project: its meanings, architecture, engineering norms, composition, and operational environment. This level forms the project perspective by fixing domain contours and invariants without including organizational modes of agent operation. It inherits quality criteria from `ctx/AGENTS.md`, while each subdirectory refines context boundaries and preserves the declarative nature of descriptions.
+The `ctx/docs/` directory accumulates declarative knowledge about the project: its meanings, architecture, engineering norms, composition, and operational environment. Documents in this branch are normative, binding context primarily consumed by automated agents. This level forms the project perspective by fixing domain contours and invariants without including organizational modes of agent operation. It inherits quality criteria from `ctx/AGENTS.md`, while each subdirectory refines context boundaries and preserves the declarative nature of descriptions.
 
 ## Level Map
 
@@ -39,6 +39,7 @@ Documents at the `docs/` level must:
 
 1. Use a declarative style and must not repeat statements fixed at other context levels.
 2. Not introduce instructions for agent behavior; such instructions belong exclusively to the `ctx/agent/` branch.
+3. Prevail over code and examples in case of conflict.
 
 ## Summary
 

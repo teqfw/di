@@ -2,6 +2,8 @@
 
 Path: `ctx/docs/product/overview.md`
 
+This document is part of the agent context. It defines product-level invariants. It is not marketing material.
+
 ## Product Purpose
 
 `@teqfw/di` is an infrastructure library for building modular JavaScript applications in which system composition, component binding, and implementation substitution are defined **declaratively through text**, rather than through implicit mechanisms, code analysis, or compile-time reflection.

@@ -5,9 +5,14 @@ Path: `ctx/docs/architecture/AGENTS.md`
 ## Purpose
 
 The `architecture/` level fixes **architectural form and invariants** of the project.
-It declares what structural rules are valid and binding for all lower documentation levels.
+It declares what structural rules are valid and binding for all lower documentation levels. Architectural statements at this level are fixed invariants for automated agents.
 
 ---
+
+## Architectural Authority
+
+This level is authoritative over all architectural statements in the project context.
+Architectural statements at this level are not reinterpreted, optimized, or substituted by automated agents.
 
 ## Level Map
 
