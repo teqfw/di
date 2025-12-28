@@ -28,6 +28,14 @@ Both branches complement the shared inheritance with guarantees fixed at the `ct
 
 The base context for work at the `ctx/` level is determined by the documents on the path from the root `AGENTS.md` to the current space. When entering `ctx/docs/`, the agent first considers the declarations of this file, then `ctx/docs/AGENTS.md`, and only after that any local instructions. Subdirectories may reference higher levels and each other, but must not exceed the boundaries defined by the current `AGENTS.md`.
 
+## Normative Authority Map
+
+- `docs/architecture/dependency-model.md` — architectural invariants, highest authority
+- `docs/architecture/dependency-language.md` — canonical dependency DSL
+- `docs/architecture/types-map.md` — type projection of the dependency model
+- `docs/product/**` — interpretation and application, not normative authority
+- `agent/**` — process artifacts and reports, not source of truth
+
 ## ADSM Documentation Quality Criteria
 
 Documents at the `ctx/` level are created in accordance with the eight ADSM quality criteria.

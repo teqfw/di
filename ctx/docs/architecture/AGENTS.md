@@ -14,6 +14,12 @@ It declares what structural rules are valid and binding for all lower documentat
 This level is authoritative over all architectural statements in the project context.
 Architectural statements at this level are not reinterpreted, optimized, or substituted by automated agents.
 
+## Document Stability
+
+- `dependency-model.md` — Stable / Normative
+- `dependency-language.md` — Stable / Normative
+- `types-map.md` — Stable / Normative
+
 ## Level Map
 
 - `AGENTS.md` — this document.
