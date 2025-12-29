@@ -79,6 +79,7 @@ The module name is mandatory and defines the logical name of an ES6 module or No
 Allowed characters include alphanumeric characters, `_`, `-`, a single nesting level using `/`, and scoped package form `@scope/package`.
 
 The module name does not contain file or physical path information.
+Module name to source path mapping invariants are defined in `ctx/docs/architecture/namespace-addressing.md`.
 
 ### 5.3 Export Selector
 
@@ -187,5 +188,6 @@ This specification does not describe dependency graphs, optimization, alternativ
 ## 14. Related Normative Documents
 
 - `ctx/docs/architecture/dependency-model.md`
+- `ctx/docs/architecture/namespace-addressing.md`
 - `ctx/docs/architecture/types-map.md`
 - `ctx/docs/product/overview.md`

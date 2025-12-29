@@ -4,21 +4,15 @@ Path: `ctx/docs/architecture/types-map.md`
 
 ## 1. Purpose
 
-A type map in TeqFW is an architectural mechanism intended **exclusively for the TypeScript Language Service (`tsserver`)**, which is the sole JavaScript analyzer used by Visual Studio Code.
+A type map in TeqFW is an architectural mechanism intended **exclusively for the TypeScript Language Service (`tsserver`)**, controlling which JavaScript sources are visible for analysis and which part of the library’s type surface is published to consuming projects.
 
-The purpose of a type map is to control which JavaScript source files are visible to `tsserver` for analysis and which part of the library’s type information is exposed to consuming projects.
-
-A type map does not participate in runtime execution and does not affect runtime semantics.
+A type map is an editor-time visibility map for `tsserver`; it does not change runtime behavior and does not declare types manually.
 
 ---
 
 ## 2. Architectural Premises
 
-TeqFW is based on late binding, logical dependency identifiers instead of file paths, minimal use of static imports, and JavaScript + JSDoc without TypeScript.
-
-In this architecture, the static import graph does not represent the real system structure.
-
-At the same time, `tsserver` builds its type model strictly from files and type declarations.
+TeqFW is based on late binding, logical dependency identifiers instead of file paths, minimal use of static imports, and JavaScript + JSDoc without TypeScript, so the static import graph does not represent the real system structure while `tsserver` builds its model strictly from files and declarations.
 
 A type map is introduced as an adapter between these two models.
 
@@ -27,8 +21,6 @@ A type map is introduced as an adapter between these two models.
 ## 3. Definition: Type Map
 
 A **type map** is a declarative layer, implemented as a `types.d.ts` file, that tells `tsserver` which JavaScript files belong to the library, which of them participate in type analysis, and which of them form the public type surface.
-
-A type map does not describe types manually and is not a type system.
 
 It specifies where `tsserver` must compute the type model, based on JavaScript code and JSDoc.
 
@@ -76,6 +68,8 @@ Requirements:
 - lifecycle suffixes (`$`, `$$`) are forbidden;
 - type names must be globally unique.
 
+Namespace addressing and module-to-path mapping invariants are defined in `ctx/docs/architecture/namespace-addressing.md`.
+
 ---
 
 ### 5.3. Global vs Non-Global Declarations
@@ -114,14 +108,10 @@ Any other declaration forms, including manual structure descriptions, interfaces
 
 ## 6. Restrictions
 
-The `types.d.ts` file must not contain manual class or interface declarations, method or property signatures, abstract or synthetic types, or runtime or container semantics.
-
-Any declaration that does not directly reference a JavaScript source file does not belong in a type map.
+The `types.d.ts` file must contain only `import()`-based references to JavaScript sources and must not include manual class or interface declarations, synthetic types, or runtime/container semantics.
 
 ---
 
 ## 7. Summary
 
-In TeqFW, `types.d.ts` defines what exactly `tsserver` can see; non-global declarations form the internal type surface; `declare global` publishes the type model externally; and “public” is a category of type visibility, not runtime behavior.
-
-A type map is not a contract and not a type system, but an architectural map of type visibility for `tsserver`.
+In TeqFW, `types.d.ts` defines what `tsserver` can see; non-global declarations form the internal type surface; `declare global` publishes the type model externally; and “public” is a category of type visibility, not runtime behavior.

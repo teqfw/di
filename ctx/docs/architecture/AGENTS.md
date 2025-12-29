@@ -23,6 +23,9 @@ Architectural statements at this level are not reinterpreted, optimized, or subs
 ## Level Map
 
 - `AGENTS.md` — this document.
+- `dependency-language.md` — canonical dependency identifier language and interpretation rules.
+- `dependency-model.md` — architectural dependency model and invariants for container behavior.
+- `namespace-addressing.md` — namespace addressing rules, zoning, and module-to-path mapping invariants.
 - `types-map.md` — normative rules for namespace-to-source mappings used by IDEs and static analyzers.
 
 ---
@@ -36,6 +39,6 @@ This level:
 
 This level does not:
 
-- describe runtime behavior;
-- define implementation techniques;
-- contain engineering or coding conventions.
+- prescribe implementation techniques or optimization algorithms;
+- define engineering or coding conventions;
+- describe procedural runtime mechanics beyond fixed model invariants.

@@ -6,26 +6,21 @@ This document is part of the agent context. It defines product-level invariants.
 
 ## Product Purpose
 
-`@teqfw/di` is an infrastructure library for building modular JavaScript applications in which system composition, component binding, and implementation substitution are defined **declaratively through text**, rather than through implicit mechanisms, code analysis, or compile-time reflection.
+`@teqfw/di` is an infrastructure library for building modular JavaScript applications in which system composition, component binding, and implementation substitution are defined **declaratively through text**, rather than through implicit mechanisms, code analysis, or reflection.
 
 The product is intended for projects that require structural predictability, architectural transparency, and reproducible results over long-term code evolution.
 
 ## Core Idea
 
-At the core of the product lies the principle that a **dependency identifier is the primary carrier of architectural meaning**.  
-Component binding is performed not through types, decorators, or compile-time conventions, but through the interpretation of textual identifiers with a formalized semantics.
+At the core of the product lies the principle that a **dependency identifier is the primary carrier of architectural meaning**, and component binding is performed through interpretation of textual identifiers with formalized semantics.
 
 The container acts as an interpreter of this semantics and mechanically applies the fixed binding rules, without analyzing the problem domain or making architectural decisions.
 
 ## Dependency Declaration Model
 
-In `@teqfw/di`, dependencies are **declared structurally in the constructor (or factory) signature**, not registered, requested, or described separately.
+Dependency declaration and resolution rules are fixed in `ctx/docs/architecture/dependency-model.md` and `ctx/docs/architecture/dependency-language.md`.
 
-A component declares its dependencies by using a **single object parameter** whose property names are **dependency identifiers**.  
-When creating an object, the container analyzes the constructor (or factory) signature, extracts the object destructuring pattern, and resolves each declared identifier recursively before invoking the constructor.
-
-The created object has no access to the container and cannot request dependencies at runtime.  
-This model enforces explicit constructor-level dependency declaration and **excludes service-locator semantics by design**.
+The product relies on declarative identifiers in constructor or factory signatures, with details and constraints defined by those normative documents.
 
 ## Role in Projects
 
@@ -51,15 +46,7 @@ The product is oriented toward:
 
 ## Product Boundaries
 
-`@teqfw/di` deliberately **does not** address the following concerns:
-
-- it does not analyze source code or automatically build dependency graphs;
-- it does not rely on type information, decorators, or compile-time metadata;
-- it does not manage the application lifecycle beyond composition;
-- it does not contain business logic or application-level components;
-- it does not attempt to optimize or “simplify” architectural decisions through implicit behavior.
-
-All architectural meanings and binding rules must be expressed explicitly.
+Product boundaries and non-goals are fixed in `ctx/docs/architecture/dependency-model.md`, and the public surface is defined in `ctx/docs/code/api-boundary.md`.
 
 ## Stable Product Properties
 
@@ -74,7 +61,6 @@ The product exhibits the following stable properties derived from its architectu
 
 ## Positioning
 
-`@teqfw/di` is not a universal DI framework and not a development automation tool.  
-It is an engineering mechanism for cases where architectural discipline, explicit decisions, and documentation consistency are more important than reducing code volume or providing out-of-the-box convenience.
+`@teqfw/di` is not a universal DI framework and not a development automation tool, and it targets cases where architectural discipline, explicit decisions, and documentation consistency matter more than minimizing code volume or providing out-of-the-box convenience.
 
 The product is aimed at developers who treat architecture as part of the product and are prepared to fix it explicitly.

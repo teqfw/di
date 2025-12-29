@@ -4,7 +4,7 @@ Path: `ctx/docs/architecture/namespace-addressing.md`
 
 ## 1. Scope and Authority
 
-This document defines the invariants of ES module addressing in the `@teqfw/di` library in terms of namespace names: address structure, semantic zones, and public surface rules. Addressing is treated as part of the late-binding mechanism: a module name must be deterministically mapped by the container to a source location using mapping rules provided by configuration.
+This document defines the invariants of ES module addressing in the `@teqfw/di` library in terms of namespace names: address structure, semantic zones, public surface rules, and deterministic module-name mapping.
 
 ## 2. Namespace Root
 
@@ -32,14 +32,17 @@ DTOs are not public automatically: a DTO becomes part of the public surface only
 
 ## 5. Address Structure and Mapping Invariant
 
-An ES module address is built as a sequence of segments separated by `_` and is intended for deterministic mapping to a source path.
+An ES module address is built as a sequence of segments separated by `_` and is deterministically mapped to a source path through configured namespace-root bindings and a stable mapping rule.
 
 Address requirements:
 
-- an address encodes a semantic hierarchy and, at the same time, serves as the address of a specific ES module within the source tree defined by the mapping rules;
+- an address encodes a semantic hierarchy and, at the same time, serves as the logical name of a specific ES module within the source tree defined by the mapping rules;
 - address segments are consistent with the rules that convert an address into a relative path under the bound root (including converting `_` into directory separators);
+- the namespace root is bound to a source root via configuration, and the module name tail maps to a relative path by a stable rule;
+- if multiple roots match, the longest matching namespace root applies to determine the bound source root;
 - an address does not contain absolute paths; absolute paths exist only in the configuration of root bindings;
-- an address does not contain environment-specific markers that must be expressed by configuration (runtime environment, source placement, access format).
+- an address does not contain environment-specific markers that must be expressed by configuration (runtime environment, source placement, access format);
+- refactoring source layout requires either address changes or updates to the mapping and root bindings to preserve deterministic resolution.
 
 ## 6. Relation to Dependency Identifier Language
 
