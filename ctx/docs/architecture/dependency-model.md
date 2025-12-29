@@ -97,7 +97,53 @@ The following invariants are fixed and non-negotiable within the model:
 - created objects have **no access to the container** and cannot initiate dependency resolution;
 - service-locator semantics are **explicitly excluded by definition**.
 
-## 7. Extensibility Axes
+## 7. Container Lifecycle Boundary
+
+The container is used in two strictly separated phases:
+
+- **Configuration phase** — the container is assembled and configured in a single dedicated place.
+- **Composition phase** — the container is used only to compose objects and resolve declared dependencies.
+
+### 7.1 Single Construction Point
+
+A project MUST have exactly one place where the container is created and configured: the **composition root**.
+
+All container configuration is performed only there.
+Any attempt to configure the container outside the composition root is outside the model.
+
+### 7.2 Configuration Phase
+
+During the configuration phase, the container may be configured only along the extensibility axes defined by this model.
+
+Typical configuration actions include:
+
+- binding and mapping rules between logical identifiers and implementation sources;
+- namespace and path resolution strategy setup;
+- enabling and composing pre-resolution transformation steps of identifiers;
+- enabling and composing post-processing steps of composition results, including wrappers;
+- enabling test mode (if applicable).
+
+The configuration phase MUST complete before any application root objects are composed.
+
+### 7.3 Composition Phase
+
+During the composition phase, the container is used only to:
+
+- resolve dependencies by interpreting declarative identifiers;
+- compose root objects and all their transitive dependencies.
+
+During this phase, configuration MUST be immutable:
+the container MUST NOT accept changes to binding rules, resolution strategy, identifier transformation, or post-processing.
+
+### 7.4 Test Mode Boundary
+
+Test mode is an explicit exception to the production restrictions.
+
+Test mode MAY allow explicit registration or substitution of dependencies, but only as a controlled mechanism for tests.
+
+In production mode, explicit registration of dependencies is forbidden.
+
+## 8. Extensibility Axes
 
 The model allows extensibility **only** along the following axes:
 
@@ -108,7 +154,7 @@ The model allows extensibility **only** along the following axes:
 
 Any form of extensibility outside these axes is prohibited.
 
-## 8. Conceptual Resolution Model
+## 9. Conceptual Resolution Model
 
 Dependency resolution is defined as a **unidirectional conceptual pipeline**:
 
@@ -118,7 +164,7 @@ Dependency resolution is defined as a **unidirectional conceptual pipeline**:
 
 Cycles, rollbacks, or dynamic restructuring of the process are **not supported by the model**.
 
-## 9. Language Constraint
+## 10. Language Constraint
 
 The model assumes a **single canonical language** for dependency identifiers.
 
@@ -126,13 +172,13 @@ This language is intended for use within an ES6 module environment and is **not 
 
 Support for multiple DSLs, alternative identifier formats, or syntax negotiation is explicitly excluded.
 
-## 10. Test Mode Exception
+## 11. Test Mode Exception
 
 For testing purposes, the container may be switched into a **test mode**, in which explicit registration of objects corresponding to dependency identifiers is permitted.
 
 In production mode, such registration is forbidden, and all dependencies are resolved and instantiated by the container **exclusively based on declarative identifiers**.
 
-## 11. Explicit Non-Goals
+## 12. Explicit Non-Goals
 
 The model intentionally does **not** address the following concerns:
 
@@ -142,7 +188,7 @@ The model intentionally does **not** address the following concerns:
 - runtime dependency discovery by objects;
 - adaptation of the model to libraries or runtimes that do not use the standard ES6 module system.
 
-## 12. Agent Usage Notes
+## 13. Agent Usage Notes
 
 Any conclusions, suggestions, or modifications produced by automated agents concerning container code or components are considered valid **only if they comply with this model**.
 
@@ -150,7 +196,7 @@ An agent must interpret code and related documentation within the context of thi
 
 In case of discrepancies between implementation, examples, and this model, **the model takes precedence**.
 
-## 13. Related Normative Documents
+## 14. Related Normative Documents
 
 - `dependency-language.md`
 - `types-map.md`
