@@ -16,6 +16,7 @@ declare global {
   type TeqFw_Di_Api_Container_PreProcessor_Chunk = InstanceType<typeof import("./src/Api/Container/PreProcessor/Chunk.js").default>;
   type TeqFw_Di_Api_Container_Resolver = InstanceType<typeof import("./src/Api/Container/Resolver.js").default>;
   type TeqFw_Di_Container = InstanceType<typeof import("./src/Container.js").default>;
+  type TeqFw_Di_Container_Config = InstanceType<typeof import("./src/Container/Config.js").default>;
   type TeqFw_Di_Defs = import("./src/Defs.js").default;
   type TeqFw_Di_DepId = InstanceType<typeof import("./src/DepId.js").default>;
   type TeqFw_Di_Pre_Replace = InstanceType<typeof import("./src/Pre/Replace.js").default>;
