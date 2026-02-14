@@ -1,67 +1,31 @@
-# Agent Behavior Overview
+# Human–Agent Interaction (`./ctx/agent/`)
 
-- Path: `ctx/agent/AGENTS.md`
-- Version: `20251218`
+Path: `./ctx/agent/AGENTS.md`
+Version: `20260214`
 
 ## Purpose
 
-This document defines the role and behavior of the agent within the project. It fixes responsibility boundaries, interaction modes with the cognitive and code layers, and the reporting procedure. The agent relies on principles fixed in the root `AGENTS.md` and specifies how it operates within this context branch.
+The `ctx/agent/` directory is designated for organizing interaction between the human and the agent within the project. It defines only the operational communication layer and does not contain architectural, product, or engineering invariants. This level does not participate in forming or restoring the project’s architectural model.
 
 ## Level Map
 
-- `report/` — iteration reports with local instructions defined in `report/AGENTS.md`.
-- `AGENTS.md` — this document, describing agent operation modes and alignment with the rest of the documentation.
+- `plan/` — iteration planning documents.
+- `prompt/` — task templates for interaction with models and agents.
+- `report/` — reports for completed iterations.
+- `AGENTS.md` — this document, defining the purpose and boundaries of the `agent/` directory.
 
----
+## Information Status
 
-## Scope of Responsibility
+The contents of `prompt/`, `plan/`, and `report/` are temporary in nature. Prompts, plans, and reports may be modified, replaced, or removed throughout the project lifecycle. These materials are not a source of invariants and do not define the normative state of the system.
 
-The agent transforms human goals into consistent cognitive and code artifacts, maintains their integrity, and verifies compliance with established project invariants. The agent is not responsible for operational infrastructure and does not make deployment decisions unless explicitly fixed at a higher context level.
+## Level Boundaries
 
-## Operating Modes
+The `ctx/agent/` directory is used exclusively for recording communication and organizing the iterative process. It does not contain declarations of architecture, constraints, engineering rules, or product descriptions. Such declarations are defined only within the corresponding branches of `ctx/docs/`.
 
-- **Context Mode** — working with `ctx/` documentation, meaning declarations, and agent role rules.
-- **Code Mode** — working with source code and related engineering artifacts.
+## Usage Principle
 
-The operating mode is set by the human. Only one active mode is allowed within a single iteration.
+Plans are stored in `plan/`, reports are created in `report/`, and task templates are maintained in `prompt/`. Removal of outdated documents is permitted provided that the current state of interaction remains consistent and no active work is disrupted.
 
-## Context Navigation
+## Summary
 
-- `ctx/agent/` — agent activity management and iteration reporting.
-- `ctx/docs/` — project documentation: meanings, architecture, constraints, and engineering norms.
-- Other `ctx/` branches — used only within the boundaries defined by their respective `AGENTS.md`.
-
-All links within the context must be relative paths, ensuring structural portability and consistent navigation.
-
-## Consistency Rules
-
-- All documents in `ctx/` must be written in a declarative style.
-- File structure and naming remain stable within the level.
-- All changes are checked for integrity, coherence, logical consistency, non-redundancy, and completeness.
-- Iteration results are submitted to the human for approval.
-- The agent treats the project as external memory and interacts with it exclusively through the human.
-
-## Governing Documents
-
-- `../../AGENTS.md` — general rules for agents within ADSM.
-- `../../ctx/docs/AGENTS.md` — boundaries and structure of project documentation.
-- Local `AGENTS.md` files in subdirectories — refine context and invariants of the corresponding levels.
-
----
-
-## Testing Rules
-
-If the project contains tests, the agent must follow testing rules fixed in the documentation at the `docs/` or `code/` level.
-
-- By default, changes are considered complete only after successful execution of mandatory tests.
-- If the task definition explicitly allows the absence of testing (for example, documentation-only work or structure preparation), the agent must record this in the iteration report.
-
-Specific testing commands and tools are not fixed at this level.
-
----
-
-## Agent Directives
-
-- Keep this document up to date when the `ctx/agent/` structure changes.
-- Preserve the declarative style in all updates.
-- Verify the document and work results against the criteria: integrity, coherence, logical consistency, non-redundancy, and completeness.
+`ctx/agent/` defines the operational environment of human–agent interaction through plans, prompts, and reports and does not participate in establishing project invariants.

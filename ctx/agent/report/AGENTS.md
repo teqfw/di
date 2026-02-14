@@ -1,52 +1,29 @@
-# Agent Iteration Recording Protocol
+# Agent Iteration Logging Protocol
 
-- Path: `ctx/agent/report/AGENTS.md`
-- Version: `20251218`
+Path: `./ctx/agent/report/AGENTS.md`
+Version: `20260214`
 
 ## Directory Purpose
 
-The `ctx/agent/report/` directory is intended for storing reports of the agent’s working iterations. Each report records a completed iteration and confirms that context changes and related artifacts are agreed upon and fixed.
+The `ctx/agent/report/` directory is designated for archival recording of completed interaction iterations between the human and the agent. Each report file represents a single completed iteration and confirms the consistency of the changes introduced.
 
 ## Level Map
 
-- `YYYY/` — archive of iteration reports organized by years, with nested month and day structures.
-- `AGENTS.md` — this document, defining reporting requirements and the structure of the `report/` directory.
+- `YYYY/` — hierarchical storage structure for reports organized by year with nested month and day directories.
+- `AGENTS.md` — this document, defining the invariants of the `report/` level.
 
-## Mandatory Rules
+## Reporting Invariants
 
-- Each iteration must end with the creation of a separate report at the path  
-  `ctx/agent/report/YYYY/MM/DD/HH-MM-{title}.md`.
-- The report must contain at least three semantic sections:
-  - “Summary of Changes”
-  - “Work Details”
-  - “Results”
-- The report must reflect the relationship between the human’s task definition, context changes, and modifications to product or code artifacts.
-- Absence of a report means the iteration is not complete and cannot be considered recorded.
+Each completed iteration must be recorded as a separate file at the path `./ctx/agent/report/YYYY/MM/DD/HH-MM-{title}.md`. Absence of a report means the iteration is not considered recorded.
 
-## Report Immutability Policy
+A report contains a structured description of the iteration goal, the performed changes, and the obtained results. The report establishes the relationship between the task definition and the modifications in context or code, but it is not a source of project invariants.
 
-- **A report is an immutable document.**
-- **Editing a report after its creation is prohibited.**
-- **Only deletion** of a report is allowed if it is deemed erroneous or irrelevant.
-- Re-recording must be performed exclusively by creating a **new file**, not by modifying an existing one.
-- Reports should be marked as `read-only` to prevent accidental edits.
-- The `ctx/agent/report/` directory is treated as an archive: the agent does not read, analyze, or modify existing reports without explicit instruction from the human.
+## Report Status
 
-## Agent Action Algorithm
+A report is an archival document and must not be edited after creation. Corrections are performed only by creating a new report. Deletion of a report is permitted if it is recognized as erroneous or irrelevant.
 
-1. Upon completion of an iteration, generate the report content.
-2. Ensure that the date-based directory hierarchy exists; create it if necessary.
-3. Save the report in Markdown format with a unique `{title}` suffix.
-4. Commit the report file together with the rest of the iteration changes.
-5. Ensure the immutability of the created report.
-
-## Additional Guidelines
-
-- The `{title}` suffix should briefly reflect the essence of the iteration (for example, `structure-update`, `docs-sync`, `bugfix`).
-- Repeated or follow-up iterations are recorded as separate reports without overwriting previous ones.
-- If the iteration includes context changes, the report must include links to the relevant documents.
-- Reports are intended for the human and for historical recording; they are not used by the agent as a working context by default.
+The `report/` directory is not used by the agent as a default working context and does not participate in reconstruction of the architectural state of the project.
 
 ## Summary
 
-`ctx/agent/report/AGENTS.md` defines a unified, portable protocol for recording iterations, ensuring a transparent change history and a strict boundary between the agent’s current work and the archive of completed steps.
+`ctx/agent/report/AGENTS.md` defines a declarative protocol for recording iterations, ensuring archival integrity of the interaction history without affecting the project invariants of the system.

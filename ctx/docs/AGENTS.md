@@ -1,46 +1,37 @@
 # Project Documentation (`./ctx/docs/`)
 
-- Path: `./ctx/docs/AGENTS.md`
-- Version: `20251227`
+Path: `./ctx/docs/AGENTS.md`
+Version: `20260214`
 
 ## Purpose
 
-The `ctx/docs/` directory accumulates declarative knowledge about the project: its meanings, architecture, engineering norms, composition, and operational environment. Documents in this branch are normative, binding context primarily consumed by automated agents. This level forms the project perspective by fixing domain contours and invariants without including organizational modes of agent operation. It inherits quality criteria from `ctx/AGENTS.md`, while each subdirectory refines context boundaries and preserves the declarative nature of descriptions.
+The `ctx/docs/` directory contains the declarative description of the project structured according to ADSM levels and defines the meaning, constraints, structural form, and engineering invariants of the system without including organizational instructions for the agent.
 
-## Level Map
+## Level Model
 
-- `architecture/` — architectural form of the system: overview, structures, and boundaries in which contours, events, phases, and interfaces are fixed.
-- `code/` — engineering norms: code organization conventions, modularity rules, runtime contracts, and testing requirements.
-- `composition/` — application composition: user interfaces, components, states, routes, and application mechanics grouped by contours.
-- `constraints/` — mandatory implementation constraints ensuring compliance with semantic and architectural invariants.
-- `environment/` — description of the operational environment: runtime configuration, services, system dependencies, and environment parameters.
-- `product/` — semantic core: purpose, terminology, descriptions of system capabilities, and interaction flows.
-- `AGENTS.md` — this document at the `docs/` level, defining the boundaries of project documentation and serving as the agent’s entry point.
+Documentation at the `docs/` level is organized in accordance with the ADSM levels:
+
+- `product/` — system meaning and domain invariants;
+- `constraints/` — mandatory design boundaries and prohibitions;
+- `architecture/` — structural form of the system and its boundaries;
+- `composition/` — execution model and scenario dynamics;
+- `environment/` — execution conditions and infrastructural prerequisites;
+- `code/` — engineering invariants of implementation and code organization conventions.
+
+Each subdirectory defines a distinct type of knowledge and does not duplicate statements established at other levels.
 
 ## Level Boundaries
 
-Documentation at the `docs/` level is limited to describing meanings, architecture, engineering rules, and operational characteristics. It does not contain instructions for agent behavior, reporting, or interaction procedures. Each subdirectory concentrates on its own type of knowledge:  
-`product/` — meaning,  
-`constraints/` — obligations,  
-`architecture/` — form,  
-`composition/` — application structure,  
-`code/` — engineering norms,  
-`environment/` — execution environment.
+`ctx/docs/` describes the system as a design object: its purpose, constraints, structural form, execution dynamics, and engineering rules. Instructions governing agent behavior, reporting modes, and organizational procedures are excluded from this level and belong exclusively to the `ctx/agent/` branch.
 
-Relationships between directories are described declaratively, without role overlap and without duplicating statements fixed at higher levels.
+Relationships between subdirectories are defined declaratively through references to documents within `ctx/docs/` without procedural descriptions and without role overlap.
 
-## Structure and Relationships
+## Document Requirements
 
-The `docs/` level inherits the context of `ctx/AGENTS.md` and is refined by its own declarations. The file `ctx/docs/AGENTS.md` fixes that this branch contains project descriptions; each subdirectory then introduces its own `AGENTS.md` defining local boundaries. Relationships between subdirectories are defined through declarative references (`ctx/docs/...`), while inheritance principles ensure semantic consistency and the absence of procedural descriptions.
+Documents at the `docs/` level must use a declarative style and define invariants, boundaries, and definitions corresponding to the relevant ADSM level. Repetition of statements fixed at other context levels is not permitted. Text within paragraphs must be written without manual line breaks.
 
-## Requirements
-
-Documents at the `docs/` level must:
-
-1. Use a declarative style and must not repeat statements fixed at other context levels.
-2. Not introduce instructions for agent behavior; such instructions belong exclusively to the `ctx/agent/` branch.
-3. Prevail over code and examples in case of conflict.
+Documentation must comply with the eight ADSM quality criteria: declarativity, completeness, consistency, coherence, density, compactness, non-redundancy, and absence of the obvious.
 
 ## Summary
 
-`ctx/docs/AGENTS.md` fixes the structure and hierarchy of project documentation, ensuring that meanings, architecture, engineering norms, composition, constraints, and the execution environment are described within a single coherent space and do not intersect with the agent’s organizational branch.
+`ctx/docs/AGENTS.md` defines the structure and boundaries of project documentation in accordance with ADSM levels and ensures consistent distribution of meaning, constraints, structural form, execution dynamics, and engineering invariants within the `docs/` branch.
