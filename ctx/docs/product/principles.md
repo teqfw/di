@@ -4,24 +4,24 @@ Path: `./ctx/docs/product/principles.md`
 
 ## Declarative Dependency Model
 
-The container enforces explicit declaration of dependencies. Implicit dependencies are not considered acceptable. All relationships between modules must be expressed declaratively and remain reconstructible from source code. Architectural discipline is achieved through prohibition of hidden coupling and through preference of explicit structure over implicit linkage.
+The container requires explicit declarative dependencies. Relationships between modules must remain reconstructible from source code, with no hidden coupling.
 
 ## Isomorphic Linking Model
 
-The container maintains a single model of dependency resolution across execution environments. Browser and Node.js contexts share identical linking semantics. Isomorphism is not a convenience feature but a principle of architectural integrity. The system must preserve a unified cognitive and structural model regardless of runtime environment.
+The container preserves one dependency resolution model across browser and Node.js environments. Isomorphism is a principle of architectural integrity, not a convenience feature.
 
-## Immutability-First Composition
+## Immutability
 
-Objects created by the container are immutable. Immutability is treated as a security principle and as a protection against unintended mutation in heterogeneous web environments where code from different sources may coexist. Predictable behavior is reinforced through the absence of post-instantiation state mutation.
+Objects created by the container are immutable. Immutability enhances security and reduces unintended mutation in heterogeneous execution environments.
 
-## Technological Transparency
+## Native ES6 Transparency
 
-The container operates on native ES6 modules without reliance on transpilation or compile-time metadata generation. This choice reflects a commitment to transparency: the executed code is identical to the authored code. Architectural reasoning must not depend on hidden transformation stages.
+The container operates on native ES6 modules without transpilation or compile-time metadata generation. Architectural reasoning is based on authored code and executed code as the same artifact.
 
 ## Deterministic Resolution
 
-Dependency resolution must be deterministic. Given the same identifier and environment, the container must produce the same result. Linking behavior must not depend on implicit state, order of evaluation, or hidden registries. Determinism is treated as a foundation of transparency and predictability.
+Given the same identifier and environment, dependency resolution must return the same result. Linking behavior must not depend on implicit state, evaluation order, or hidden registries.
 
-## Minimal Core
+## Minimal Core Model
 
-The container is intentionally minimal. It provides a disciplined linking mechanism without evolving into a runtime platform. Higher-level runtimes and frameworks may be constructed on top of it, but the core remains structurally restrained in order to preserve clarity and conceptual stability.
+The core remains structurally minimal and focused on disciplined dependency linking to preserve conceptual clarity and stability.
