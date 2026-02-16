@@ -18,7 +18,9 @@ An External Dependency Declaration is the only permitted form of dependency desc
 
 EDD is a string and MUST be a valid ASCII ECMAScript `IdentifierName`. Declarations that do not conform to this grammar MUST be rejected deterministically.
 
-EDD constitutes a public architectural contract of an application. Changing an EDD value constitutes a breaking architectural change for that application.
+Characters `.`, `(`, `)`, and `:` are forbidden in EDD.
+
+EDD constitutes a public architectural contract of an application. Changing the semantic interpretation of an EDD constitutes a breaking architectural change.
 
 The internal segmentation or naming conventions of EDD are not regulated at the architectural level.
 
@@ -26,21 +28,23 @@ The internal segmentation or naming conventions of EDD are not regulated at the 
 
 Each runtime instance uses exactly one parser selected during container configuration.
 
-The parser validates EDD and transforms it into a canonical internal representation (`DepId`). The parser defines the dependency encoding scheme used by the application.
+The parser validates EDD and transforms it into a structural canonical representation (`DepId`). The parser defines the dependency encoding scheme used by the application.
 
 Different parser implementations may define different EDD encoding schemes while using the same container implementation. Applications using different parsers are not required to be compatible at the level of dependency declarations.
 
-Canonicalization is not part of the immutable core linking semantics. The immutable core begins strictly with `DepId`.
+Normalization is internal to the parser and is not a separate architectural layer. No canonical string representation of EDD is introduced at the architectural level; identity is defined exclusively by the structural `DepId`.
 
-Determinism at the canonicalization boundary is defined by identical container configuration, identical parser, and identical EDD.
+Structural canonicalization resulting in `DepId` is not part of the immutable core linking semantics. The immutable core begins strictly with `DepId`.
 
-## Canonical Dependency Representation
+Determinism at the structural canonicalization boundary is defined by identical container configuration, identical parser, and identical EDD interpreted under identical parser configuration.
 
-`DepId` is the canonical internal representation of a dependency within the linking model.
+## Structural Canonical Dependency Representation
+
+`DepId` is the structural canonical representation of a dependency within the linking model.
 
 `DepId` is a structural DTO produced exclusively by the configured parser. It is not part of the public contract and cannot be constructed directly by application code.
 
-The core linking model operates exclusively on canonical `DepId` values.
+The core linking model operates exclusively on structural canonical `DepId` values.
 
 ## Core Linking Semantics
 
@@ -60,7 +64,7 @@ Resolver semantics are architecturally fixed and non-replaceable.
 
 The resolver domain is defined by container configuration established prior to linking. Resolver behavior must not depend on mutable runtime state.
 
-The resolver maps canonical dependency identifiers to concrete ES module exports within the configured resolver domain and must be total over this domain. If a DepId falls outside the resolver domain or cannot be resolved, linking terminates immediately.
+The resolver maps structural canonical `DepId` values to concrete ES module exports within the configured resolver domain and must be total over this domain. If a DepId falls outside the resolver domain or cannot be resolved, linking terminates immediately.
 
 Internal caching does not alter resolution semantics and is part of lifecycle enforcement.
 

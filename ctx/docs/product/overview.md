@@ -14,9 +14,11 @@ Dependencies are declared explicitly as External Dependency Declarations (EDD).
 
 An EDD is a string-level public contract and must conform to the ASCII ECMAScript `IdentifierName` grammar. Dependency resolution is performed exclusively through EDD values and does not rely on static imports.
 
-Each runtime instance uses a configured parser that transforms EDD into a canonical internal representation. The parser defines the encoding scheme of dependency declarations for a given application.
+Each runtime instance uses a configured parser that transforms EDD into a structural canonical representation (`DepId`). The parser may define deterministic syntactic sugar for dependency declarations, provided it does not introduce semantic aliasing.
 
-The product distribution provides a default EDD profile and corresponding parser. Applications may replace the default parser to adopt alternative encoding schemes while preserving the same core linking architecture. Compatibility between applications at the dependency level is defined by a shared parser profile.
+Dependency identity is determined by structural `DepId`, not by raw EDD string equality.
+
+The product distribution provides a default EDD profile and corresponding parser. The default profile is immutable within a library version. A breaking library change of the default profile is a semantic change in EDD interpretation that alters the resulting structural canonical `DepId`. Cosmetic or surface grammar expansions are not breaking changes when they preserve semantic interpretation, preserve resulting structural canonical `DepId`, and do not introduce semantic aliasing. Applications may replace the default parser to adopt alternative encoding schemes while preserving the same core linking architecture. Compatibility between applications at the dependency level is defined by a shared parser profile.
 
 ## Problem Domain
 

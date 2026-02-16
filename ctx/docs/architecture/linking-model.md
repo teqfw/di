@@ -8,7 +8,7 @@ This document defines the immutable core linking semantics and the formally defi
 
 ## Core Boundary
 
-A dependency request is expressed as EDD. The configured parser transforms EDD into a canonical internal representation `DepId`.
+A dependency request is expressed as EDD. The configured parser transforms EDD into a structural canonical representation `DepId`.
 
 The parser is configuration-level and outside the immutable core.
 

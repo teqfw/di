@@ -10,7 +10,7 @@ Dependency identifiers form part of the public architectural contract of an appl
 
 ## Configurable Declaration Encoding
 
-Dependency declarations are interpreted by a configured parser that transforms EDD into a canonical internal representation. The container provides a normative default EDD profile and parser. Alternative encoding schemes may be adopted through parser replacement without modifying the core linking architecture.
+Dependency declarations are interpreted by a configured parser that transforms EDD into a structural canonical representation (`DepId`). The container provides a normative default EDD profile and parser. Alternative encoding schemes may be adopted through parser replacement without modifying the core linking architecture.
 
 Compatibility between applications at the level of dependency declarations is defined by shared parser profile.
 
@@ -40,7 +40,7 @@ Objects created by the container are immutable after construction and lifecycle 
 
 The core linking semantics operates on native ES module abstractions without relying on transpilation or compile-time metadata generation. Architectural reasoning is based on authored code and executed code as the same artifact.
 
-Modules originating from other systems may be used only through explicit ES module adapters that preserve the linking semantics and canonical identity model.
+Modules originating from other systems may be used only through explicit ES module adapters that preserve the linking semantics and structural canonical `DepId` identity model.
 
 ## Minimal Structural Core
 

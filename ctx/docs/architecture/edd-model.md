@@ -4,7 +4,7 @@ Path: `./ctx/docs/architecture/edd-model.md`
 
 ## Purpose
 
-This document defines the architectural model of the External Dependency Declaration (EDD), its grammar, semantic role, and boundary with the internal canonical representation (`DepId`). It defines the parser as a configuration-level component and clarifies compatibility rules across different EDD encoding schemes.
+This document defines the architectural model of the External Dependency Declaration (EDD), its grammar, semantic role, and boundary with the structural canonical identity (`DepId`). It defines the parser as a configuration-level component and clarifies compatibility rules across different EDD encoding schemes.
 
 ## Definition
 
@@ -20,6 +20,8 @@ EDD is:
 
 The declaration MUST consist only of ASCII characters valid in ECMAScript `IdentifierName`, including letters, digits, `$`, and `_`.
 
+Characters `.`, `(`, `)`, and `:` are forbidden in EDD.
+
 Reserved ECMAScript keywords are not explicitly prohibited.
 
 Leading `$` and `_` are permitted.
@@ -30,7 +32,7 @@ Declarations that do not conform to this grammar MUST be rejected deterministica
 
 EDD is the public architectural name of a dependency within a given application.
 
-Changing an EDD value constitutes a breaking architectural change for that application.
+Changing semantic interpretation of EDD in a way that alters the resulting structural canonical `DepId` constitutes a breaking architectural change.
 
 EDD is not a structural model. It is a semantically encoded identifier interpreted by a parser defined in container configuration.
 
@@ -47,7 +49,7 @@ The architecture does not regulate internal segmentation or naming conventions w
 
 ## Parser
 
-A parser is a configuration-defined component responsible for transforming EDD into an initial canonical internal representation (`DepId₀`).
+A parser is a configuration-defined component responsible for transforming EDD into an initial structural canonical representation (`DepId₀`).
 
 Each runtime instance uses exactly one parser selected during container configuration.
 
@@ -56,7 +58,9 @@ The parser:
 - deterministically transforms EDD into `DepId₀`,
 - may add default fields not explicitly encoded in EDD,
 - defines the encoding system applicable to the supported subset of EDD,
-- must be injective: distinct EDD values must not produce identical `DepId₀` values.
+- must preserve semantic injectivity: distinct semantic interpretations of EDD within the parser profile must not produce identical `DepId₀` values.
+
+Deterministic syntactic sugar defined by the parser profile is permitted.
 
 Injectivity applies strictly to the parser stage.
 
@@ -66,9 +70,9 @@ If a grammatically valid EDD cannot be interpreted by the configured parser, thi
 
 For grammatically valid and parser-supported EDD, construction of `DepId₀` must not fail.
 
-## Canonical Representation (DepId)
+## Structural Canonical Representation (DepId)
 
-DepId is a structural DTO used exclusively inside the linking model.
+DepId is a structural DTO used exclusively inside the linking model and is the only structural canonical identity representation.
 
 DepId:
 
@@ -80,7 +84,9 @@ DepId:
 - is not extended dynamically,
 - is not persisted as an architectural entity outside linking.
 
-Each valid EDD corresponds to exactly one initial canonical representation (`DepId₀`).
+The parser may normalize EDD internally as part of deterministic parsing. No intermediate canonical string representation is introduced as an architectural entity.
+
+Each parser-supported semantic interpretation of EDD corresponds to exactly one initial structural canonical representation (`DepId₀`).
 
 Final dependency identity used by the immutable core is defined after the preprocess stage in the linking model.
 
@@ -113,11 +119,16 @@ The default profile:
 - is normative for the product,
 - defines the standard dependency encoding scheme,
 - is expected to be used by the majority of applications,
-- ensures compatibility between applications that adopt it.
+- ensures compatibility between applications that adopt it,
+- is immutable within a single library version.
 
 Use of the default parser is not architecturally mandatory.
 
 Replacing the default parser is a configuration-level decision that defines a different EDD profile while preserving the same immutable core linking architecture.
+
+A breaking change of the default EDD profile is a semantic change in EDD interpretation that alters the resulting structural canonical `DepId`.
+
+Cosmetic or surface grammar expansions are not breaking changes when they preserve semantic interpretation, preserve resulting structural canonical `DepId`, and do not introduce semantic aliasing.
 
 ## Boundary Between EDD and Core Linking
 
@@ -126,10 +137,10 @@ The architectural boundary is defined as follows:
 - EDD belongs to the public application layer.
 - The parser belongs to the configuration layer.
 - DepId belongs to the internal linking layer.
-- Immutable core linking semantics operates exclusively on the canonical representation after the preprocess stage.
+- Immutable core linking semantics operates exclusively on the structural canonical representation (`DepId`) after the preprocess stage.
 
-Determinism of canonicalization is defined by identical container configuration, identical parser, and identical EDD.
+Determinism of structural canonicalization into `DepId` is defined by identical container configuration, identical parser, and identical EDD.
 
 Determinism of the full linking process is defined in `architecture/linking-model.md` and additionally depends on identical dependency stack conditions.
 
-The immutable linking pipeline begins only after the parser has produced the canonical representation.
+The immutable linking pipeline begins only after the parser has produced the structural canonical representation (`DepId`).

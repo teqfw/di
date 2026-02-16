@@ -13,13 +13,13 @@ The container does not define or depend on domain semantics.
 The container is responsible for:
 
 - interpreting External Dependency Declarations (EDD) through a configured parser;
-- transforming EDD into canonical internal representations;
+- transforming EDD into structural canonical representations (`DepId`);
 - resolving dependencies deterministically;
 - instantiating objects according to declared semantics;
 - enforcing lifecycle and immutability guarantees;
 - maintaining structural integrity of the linking process.
 
-The immutable core linking pipeline operates exclusively on canonical dependency representations.
+The immutable core linking pipeline operates exclusively on structural canonical dependency representations (`DepId`).
 
 ## Configuration-Level Responsibility
 
@@ -60,7 +60,7 @@ The container allows configurable parsers and defined extension points. Extensio
 
 - replace the resolver;
 - reorder or restructure the core pipeline;
-- alter canonical identity semantics;
+- alter structural canonical `DepId` identity semantics;
 - introduce non-deterministic behavior.
 
 ## Evolution Boundary

@@ -10,7 +10,7 @@ This document defines the immutable architectural invariants of the deterministi
 
 The immutable core linking semantics begins strictly with `DepId` after parser execution.
 
-No additional identity normalization is permitted inside the core. The core operates exclusively on canonical dependency representations.
+No additional identity normalization is permitted inside the core. The core operates exclusively on structural canonical dependency representations (`DepId`).
 
 Core semantics are non-replaceable.
 
@@ -18,18 +18,18 @@ Core semantics are non-replaceable.
 
 Dependency identity is defined in two stages:
 
-- initial canonical identity produced by the configured parser;
-- final canonical identity produced after preprocess.
+- initial structural canonical identity (`DepId₀`) produced by the configured parser;
+- final structural canonical identity (`DepId₁`) produced after preprocess.
 
 Identity transformations are permitted only in the preprocess stage.
 
 Identity MUST remain stable after resolution begins. Lifecycle enforcement, postprocess, caching, and freeze must not alter dependency identity.
 
-Distinct EDD values must not produce identical initial canonical representations within the same parser profile.
+Distinct semantic interpretations of EDD within the same parser profile must not produce identical initial structural canonical representations (`DepId₀`).
 
 ## Determinism Invariant
 
-For identical container configuration, identical parser, identical EDD, and identical dependency stack conditions, the linking process MUST produce identical lifecycle outcomes and identical wrapper composition.
+For identical container configuration, identical parser, identical EDD interpreted under identical parser configuration, and identical dependency stack conditions, the linking process MUST produce identical lifecycle outcomes and identical wrapper composition.
 
 Determinism is guaranteed at the level of instance identity returned by the container.
 

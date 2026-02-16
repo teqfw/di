@@ -18,12 +18,14 @@ The following transformations are prohibited:
 - hybrid static/runtime linking models;
 - alternative linking modes within the same package;
 - replacement of the immutable core pipeline;
-- modification of identity semantics;
+- modification of structural canonical `DepId` identity semantics;
 - expansion or contraction of determinism scope.
 
 Any of the above constitutes exit from the current architectural model and requires a new architectural branch of the product.
 
 The immutable core is an irreversible architectural decision.
+
+Evolution of EDD surface grammar, deterministic syntactic sugar, and internal parser normalization rules that preserve structural canonical `DepId` identity semantics does not constitute modification of identity semantics.
 
 ## Dependency Control Constraint
 
@@ -46,11 +48,17 @@ Within a single parser profile, the following are prohibited:
 
 - modification of EDD grammar without profile version change;
 - weakening of parser injectivity;
-- introduction of implicit alias mechanisms.
+- introduction of semantic alias mechanisms.
 
 Parser injectivity is a permanent constraint.
 
-Distinct EDD values must remain semantically distinct within a profile.
+Parser injectivity applies to semantic interpretation of EDD into structural canonical `DepId`, not to raw EDD string equality.
+
+Distinct semantic interpretations of EDD must remain distinct at the structural canonical `DepId` level within a profile.
+
+Deterministic syntactic sugar defined by the profile is permitted provided it does not collapse distinct semantic interpretations.
+
+Grammar evolution within parser profile versioning and internal parser normalization are permitted when they preserve structural canonical `DepId` identity semantics.
 
 ## Configuration Constraint
 
@@ -78,7 +86,7 @@ Well-formed extensions are those that:
 - preserve determinism under identical configuration and inputs;
 - do not introduce environment-dependent behavior;
 - do not modify core pipeline structure;
-- do not alter canonical identity semantics.
+- do not alter structural canonical `DepId` identity semantics.
 
 Extensions that violate these conditions place the system outside its guaranteed behavior domain.
 
@@ -113,8 +121,8 @@ The system guarantees determinism, identity stability, and fail-fast behavior on
 The system remains within its architectural model as long as:
 
 - the immutable core pipeline remains unchanged;
-- identity semantics remain stable;
-- parser injectivity is preserved;
+- structural canonical `DepId` identity semantics remain stable;
+- semantic parser injectivity into structural canonical `DepId` is preserved;
 - determinism scope is not expanded or reduced;
 - extension surface remains fixed.
 
