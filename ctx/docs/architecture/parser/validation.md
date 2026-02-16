@@ -19,7 +19,7 @@ Classification does not affect termination semantics; any violation results in f
 
 The following rules define base lexical admissibility:
 
-1. The EDD string must be a valid ASCII ECMAScript `IdentifierName`.
+1. The EDD string must be a valid `AsciiEddIdentifier` as defined in `ctx/docs/architecture/edd-model.md`.
 2. Unicode characters are not permitted.
 3. Leading digits are not permitted.
 4. The string must be non-empty.
@@ -52,11 +52,12 @@ Violation of any Lifecycle Rule results in `ProfileViolation`.
 
 1. Wrappers are permitted only when lifecycle is present.
 2. Wrapper segments must follow lifecycle.
-3. Wrapper names must not contain `_`.
-4. Wrapper names must not contain `$`.
-5. Wrapper names must not be `default`.
-6. Wrapper names may contain digits.
-7. Wrapper segments must not be empty.
+3. Wrappers are not permitted when `exportName = null` (whole-module import).
+4. Wrapper names must not contain `_`.
+5. Wrapper names must not contain `$`.
+6. Wrapper names must not be `default`.
+7. Wrapper names may contain digits.
+8. Wrapper segments must not be empty.
 
 Violation of any Wrapper Rule results in `ProfileViolation`.
 
@@ -94,3 +95,7 @@ Violation of any Platform Prefix Rule results in `ProfileViolation`.
 ## 5. Determinism Requirement
 
 Validation must not perform backtracking or alternative interpretations. A string is either valid under the default profile or invalid. No recovery or fallback semantics are permitted.
+
+## 6. Validation Boundary
+
+This document defines grammar and profile admissibility rules. Structural `DepId` invariants are validated after transformation as defined in `ctx/docs/architecture/parser/transformation.md` and `ctx/docs/architecture/depid-model.md`.

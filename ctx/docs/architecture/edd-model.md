@@ -13,16 +13,18 @@ An External Dependency Declaration (EDD) is the only permitted form of dependenc
 EDD is:
 
 - a string,
-- a valid ASCII ECMAScript `IdentifierName`,
+- a valid `AsciiEddIdentifier`,
 - case-sensitive,
 - semantically encoded,
 - part of the public architectural contract of an application.
 
-The declaration MUST consist only of ASCII characters valid in ECMAScript `IdentifierName`, including letters, digits, `$`, and `_`.
+`AsciiEddIdentifier` is a custom lexical class defined as a non-empty ASCII string matching `[$A-Za-z_][$0-9A-Za-z_]*`.
+
+This class is an ASCII-only lexical class with an explicit prohibition of leading digits.
 
 Characters `.`, `(`, `)`, and `:` are forbidden in EDD.
 
-Reserved ECMAScript keywords are not explicitly prohibited.
+Reserved ECMAScript keywords are not explicitly prohibited and remain lexically admissible.
 
 Leading `$` and `_` are permitted.
 
@@ -114,21 +116,20 @@ The linking architecture remains invariant across parser variants.
 
 The product distribution provides a default parser and a corresponding default EDD encoding scheme.
 
-The default profile:
-
-- is normative for the product,
-- defines the standard dependency encoding scheme,
-- is expected to be used by the majority of applications,
-- ensures compatibility between applications that adopt it,
-- is immutable within a single library version.
-
 Use of the default parser is not architecturally mandatory.
 
 Replacing the default parser is a configuration-level decision that defines a different EDD profile while preserving the same immutable core linking architecture.
 
-A breaking change of the default EDD profile is a semantic change in EDD interpretation that alters the resulting structural canonical `DepId`.
+Compatibility between applications with respect to dependency declarations is defined by shared parser profile.
 
-Cosmetic or surface grammar expansions are not breaking changes when they preserve semantic interpretation, preserve resulting structural canonical `DepId`, and do not introduce semantic aliasing.
+Normative parser semantics of the default profile are defined by the architecture parser specification set:
+
+- `ctx/docs/architecture/parser/overview.md`
+- `ctx/docs/architecture/parser/validation.md`
+- `ctx/docs/architecture/parser/transformation.md`
+- `ctx/docs/architecture/parser/error-model.md`
+
+Normative product positioning, stability guarantees, compatibility guarantees, and breaking-change policy for the default profile are defined in `ctx/docs/product/default-edd-profile.md`.
 
 ## Boundary Between EDD and Core Linking
 

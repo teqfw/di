@@ -68,6 +68,8 @@ Wrappers are logically defined as ordered segments attached to a lifecycle insta
 
 If lifecycle is absent, wrappers are invalid.
 
+If `exportName = null` (whole-module import), wrappers are invalid.
+
 Wrappers:
 
 - must not contain `_`
@@ -128,8 +130,12 @@ After applying all logical mappings:
 
 ## 10. Invariant Enforcement
 
-After construction, structural invariants of `DepId` must be validated. If any invariant is violated, transformation fails with `DepIdInvariantViolation`.
+After construction, structural invariants of `DepId` defined in `ctx/docs/architecture/depid-model.md` must be validated. If any invariant is violated, transformation fails with `DepIdInvariantViolation`.
 
-## 11. Determinism
+## 11. Semantic Closure
+
+The transformation for the default profile is closed over lifecycle, export, wrappers, and composition. It defines exactly one semantic alias class: omission of export when lifecycle is present maps to explicit `default` export. No other alias classes are defined.
+
+## 12. Determinism
 
 The logical transformation defines a single semantic interpretation for each valid EDD string. No backtracking, fallback, or alternative interpretation is permitted. The result must be identical across all compliant implementations of the default profile.

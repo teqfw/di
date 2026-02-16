@@ -12,7 +12,7 @@ The container enforces architectural discipline through explicit dependency decl
 
 Dependencies are declared explicitly as External Dependency Declarations (EDD).
 
-An EDD is a string-level public contract and must conform to the ASCII ECMAScript `IdentifierName` grammar. Dependency resolution is performed exclusively through EDD values and does not rely on static imports.
+An EDD is a string-level public contract and must conform to `AsciiEddIdentifier` grammar as defined at the architecture level. Dependency resolution is performed exclusively through EDD values and does not rely on static imports.
 
 Each runtime instance uses a configured parser that transforms EDD into a structural canonical representation (`DepId`). The parser may define deterministic syntactic sugar for dependency declarations, provided it does not introduce semantic aliasing.
 

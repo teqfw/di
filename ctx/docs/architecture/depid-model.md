@@ -46,6 +46,10 @@ Given identical container configuration, identical parser profile, and identical
 
 If `composition = 'A'`, then `life = null`. If `life != null`, then `composition = 'F'`. If `exportName = null`, then `wrappers.length = 0`. Wrapper order is preserved and significant. All fields except `origin` participate in structural identity.
 
+## Parser Consistency Boundary
+
+Any parser profile that produces `DepId` must map lifecycle, export, composition, and wrappers so that these structural invariants always hold for successful parsing. In the default profile, this mapping and its validation order are specified in `ctx/docs/architecture/parser/transformation.md` and `ctx/docs/architecture/parser/validation.md`, and invariant validation is performed after `DepId` construction.
+
 ## Hashing Semantics
 
 If hashing is implemented, the hash MUST be computed exclusively from the structural identity fields: `moduleName`, `platform`, `exportName`, `composition`, `life`, and `wrappers`. The `origin` field MUST NOT affect the hash. Hash stability across runtime instances is required for deterministic behavior.

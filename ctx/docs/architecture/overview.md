@@ -16,7 +16,7 @@ The architecture operates exclusively at runtime. Static imports must not be use
 
 An External Dependency Declaration is the only permitted form of dependency description at the application level.
 
-EDD is a string and MUST be a valid ASCII ECMAScript `IdentifierName`. Declarations that do not conform to this grammar MUST be rejected deterministically.
+EDD is a string and MUST be a valid `AsciiEddIdentifier` as defined in `ctx/docs/architecture/edd-model.md`. Declarations that do not conform to this grammar MUST be rejected deterministically.
 
 Characters `.`, `(`, `)`, and `:` are forbidden in EDD.
 
@@ -87,7 +87,7 @@ The following actions violate the architecture:
 - accessing the container or configuration from resolved services;
 - modifying or reordering the core resolution pipeline;
 - replacing resolver semantics;
-- introducing dependency declarations that are not valid ASCII ECMAScript `IdentifierName`;
+- introducing dependency declarations that are not valid `AsciiEddIdentifier`;
 - allowing cyclic dependencies.
 
 Determinism is guaranteed at the level of instance identity produced by the container for identical container configuration, identical parser, identical EDD, and identical dependency stack dynamics. Internal object state is outside the scope of this guarantee.

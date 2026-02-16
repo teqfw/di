@@ -26,7 +26,7 @@ The transformation is fully deterministic and side-effect free. All validation a
 
 ## 5. Grammar and Structural Restrictions
 
-The EDD string must be a valid ASCII ECMAScript `IdentifierName`. Unicode characters are not permitted. The underscore `_` is permitted within `moduleName` but is forbidden within `wrapperName` and `exportName`. The dollar sign `$` is forbidden within `exportName`. Wrappers are permitted only when a lifecycle marker (`$` or `$$`) is present. Empty wrapper segments are forbidden. Export names may be explicitly specified using `__ExportName`, including `__default` without lifecycle.
+The EDD string must be a valid `AsciiEddIdentifier` as defined in `ctx/docs/architecture/edd-model.md`. Unicode characters are not permitted. The underscore `_` is permitted within `moduleName` but is forbidden within `wrapperName` and `exportName`. The dollar sign `$` is forbidden within `exportName`. Wrappers are permitted only when a lifecycle marker (`$` or `$$`) is present. Wrappers are not permitted for whole-module import (`exportName = null`). Empty wrapper segments are forbidden. Export names may be explicitly specified using `__ExportName`, including `__default` without lifecycle.
 
 ## 6. Platform Derivation
 
@@ -34,7 +34,7 @@ The parser derives the `platform` field of `DepId` deterministically from the mo
 
 ## 7. Default Export Semantics
 
-`exportName` may be `null`, which denotes the entire ES module. When lifecycle is present and export is omitted, the default export is implied. The following semantic equivalences are defined:
+`exportName` may be `null`, which denotes the entire ES module. If lifecycle is present and export is omitted, `exportName = 'default'`. If lifecycle is absent and export is omitted, `exportName = null`. The following semantic equivalences are defined:
 
 ```txt
 Module$  ≡ Module__default$
@@ -47,24 +47,40 @@ No additional export-based equivalence classes are defined.
 
 The set of permitted surface-form equivalences is closed and consists exclusively of the default export alias when lifecycle is present. No other semantic equivalence classes are defined. Any future extension introducing new equivalences constitutes a breaking change.
 
-## 9. Injectivity Guarantee
+## 9. Closed Interaction Rules
+
+The default profile defines a closed and deterministic interaction of lifecycle, export, wrappers, and composition:
+
+1. Wrappers are allowed only when lifecycle is present.
+2. Wrappers are not allowed for whole-module imports (`exportName = null`).
+3. Lifecycle implies `composition = 'F'`.
+4. Absence of lifecycle implies `composition = 'A'`.
+5. If lifecycle is present and export is absent, `exportName = 'default'`.
+6. If lifecycle is absent and export is absent, `exportName = null`.
+7. `exportName = null` implies `wrappers.length = 0`.
+8. Structural invariants are validated after transformation and `DepId` construction.
+9. No semantic equivalence classes exist except the explicit default-export lifecycle alias.
+
+These rules are implemented through the transformation mapping in `ctx/docs/architecture/parser/transformation.md` and are validated by profile and invariant checks in `ctx/docs/architecture/parser/validation.md` and `ctx/docs/architecture/depid-model.md`.
+
+## 10. Injectivity Guarantee
 
 For any two EDD strings that are not members of the explicitly defined semantic equivalence class, the parser must produce distinct `DepId` values. Structural identity is determined exclusively by the fields of `DepId`. The original string is preserved in the `origin` field but is not part of identity.
 
-## 10. Error Model
+## 11. Error Model
 
 The parser produces one of the following error categories:
 
-- `GrammarViolation` — the string does not satisfy ASCII `IdentifierName`.
+- `GrammarViolation` — the string does not satisfy `AsciiEddIdentifier`.
 - `ProfileViolation` — the string violates default profile rules.
 - `DepIdInvariantViolation` — the constructed `DepId` violates structural invariants.
 
 The parser terminates at the first detected violation. Error codes are not standardized; category-level classification is sufficient.
 
-## 11. Boundary Between Parser and Resolver
+## 12. Boundary Between Parser and Resolver
 
 The parser is responsible for grammar validation, profile validation, platform derivation, default completion rules, and construction of a valid `DepId`. The resolver operates exclusively on a valid `DepId` and performs module resolution and export verification. The resolver must not reinterpret the surface grammar of EDD.
 
-## 12. Architectural Consistency
+## 13. Architectural Consistency
 
 This specification preserves architectural invariants, deterministic runtime linking, structural identity of `DepId`, fail-fast semantics, and semantic injectivity. It does not introduce a canonical string identity layer and does not expand the extension surface of the default EDD profile.

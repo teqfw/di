@@ -17,6 +17,7 @@ Documents of this level must remain semantically aligned in product identity, de
 ## Level Map
 
 - `AGENTS.md` — this document, defining purpose, boundaries, and consistency rules of the product level.
+- `default-edd-profile.md` — product-level normative positioning, compatibility guarantees, and stability policy for the default EDD profile.
 - `overview.md` — product overview describing purpose, domain problem, architectural position, and value.
 - `principles.md` — declarative product principles that constrain product behavior and evolution.
 - `scope.md` — product scope and explicit responsibility boundaries, including out-of-scope concerns.
