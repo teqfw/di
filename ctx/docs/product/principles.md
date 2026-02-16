@@ -26,6 +26,8 @@ The core linking pipeline is structurally fixed and non-replaceable. Resolution,
 
 The architecture isolates configuration-level variability from immutable core semantics.
 
+The immutable core linking pipeline is an irreversible architectural decision. Structural replacement, redefinition, or optionalization of core stages constitutes a departure from the product identity rather than incremental evolution.
+
 ## Isomorphic Execution Model
 
 The container preserves a single dependency resolution model across browser and Node.js environments. Isomorphism is a property of architectural integrity rather than an auxiliary feature.

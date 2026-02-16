@@ -4,7 +4,7 @@ Path: `./ctx/docs/product/scope.md`
 
 ## Application Domain
 
-`@teqfw/di` is an object container for programs based on native ES modules within the JavaScript ecosystem. Its scope is limited to the ES module execution model and deterministic runtime linking of declared dependencies.
+`@teqfw/di` is an object container for programs operating within the JavaScript ES module execution model. Its scope is limited to deterministic runtime linking of declared dependencies within that model.
 
 The container does not define or depend on domain semantics.
 
