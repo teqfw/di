@@ -36,7 +36,9 @@ Objects created by the container are immutable after construction and lifecycle 
 
 ## Native ES Module Transparency
 
-The container operates exclusively on native ES modules without transpilation or compile-time metadata generation. Architectural reasoning is based on authored code and executed code as the same artifact.
+The core linking semantics operates on native ES module abstractions without relying on transpilation or compile-time metadata generation. Architectural reasoning is based on authored code and executed code as the same artifact.
+
+Modules originating from other systems may be used only through explicit ES module adapters that preserve the linking semantics and canonical identity model.
 
 ## Minimal Structural Core
 

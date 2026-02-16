@@ -8,9 +8,9 @@ The system defines a deterministic runtime linking architecture for ES modules.
 
 All dependencies are declared explicitly as External Dependency Declarations (EDD). The architecture separates dependency declaration from implementation resolution and centralizes binding in a controlled composition phase.
 
-Linking begins only after container configuration is finalized. Reconfiguration after resolution begins is not supported.
+Linking begins only after container configuration is finalized. Reconfiguration after resolution begins is prohibited.
 
-The architecture operates exclusively at runtime. Static imports are not part of the linking model.
+The architecture operates exclusively at runtime. Static imports must not be used as an alternative dependency mechanism.
 
 ## External Dependency Declaration (EDD)
 
