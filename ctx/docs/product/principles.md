@@ -4,24 +4,40 @@ Path: `./ctx/docs/product/principles.md`
 
 ## Declarative Dependency Model
 
-The container requires explicit declarative dependencies. Relationships between modules must remain reconstructible from source code, with no hidden coupling.
+The container requires explicit declarative dependencies expressed as External Dependency Declarations (EDD). All dependency relationships must be reconstructible from source code and must not rely on implicit imports, hidden registries, or runtime introspection.
 
-## Isomorphic Linking Model
+Dependency identifiers form part of the public architectural contract of an application.
 
-The container preserves one dependency resolution model across browser and Node.js environments. Isomorphism is a principle of architectural integrity, not a convenience feature.
+## Configurable Declaration Encoding
 
-## Immutability
+Dependency declarations are interpreted by a configured parser that transforms EDD into a canonical internal representation. The container provides a normative default EDD profile and parser. Alternative encoding schemes may be adopted through parser replacement without modifying the core linking architecture.
 
-Objects created by the container are immutable. Immutability enhances security and reduces unintended mutation in heterogeneous execution environments.
+Compatibility between applications at the level of dependency declarations is defined by shared parser profile.
 
-## Native ES6 Transparency
+## Deterministic Runtime Linking
 
-The container operates on native ES6 modules without transpilation or compile-time metadata generation. Architectural reasoning is based on authored code and executed code as the same artifact.
+Given identical container configuration, identical parser, and identical EDD, dependency resolution must produce identical results. Linking behavior must not depend on evaluation order, implicit mutable state, or hidden global structures.
 
-## Deterministic Resolution
+Determinism applies to the entire resolution process from dependency declaration to final object instance.
 
-Given the same identifier and environment, dependency resolution must return the same result. Linking behavior must not depend on implicit state, evaluation order, or hidden registries.
+## Immutable Core Semantics
 
-## Minimal Core Model
+The core linking pipeline is structurally fixed and non-replaceable. Resolution, instantiation, wrapping, lifecycle enforcement, and freeze semantics cannot be reordered, substituted, or partially overridden.
 
-The core remains structurally minimal and focused on disciplined dependency linking to preserve conceptual clarity and stability.
+The architecture isolates configuration-level variability from immutable core semantics.
+
+## Isomorphic Execution Model
+
+The container preserves a single dependency resolution model across browser and Node.js environments. Isomorphism is a property of architectural integrity rather than an auxiliary feature.
+
+## Object Immutability
+
+Objects created by the container are immutable after construction and lifecycle enforcement. Immutability reduces unintended side effects and strengthens predictability in heterogeneous execution environments.
+
+## Native ES Module Transparency
+
+The container operates exclusively on native ES modules without transpilation or compile-time metadata generation. Architectural reasoning is based on authored code and executed code as the same artifact.
+
+## Minimal Structural Core
+
+The core remains structurally minimal and focused exclusively on disciplined runtime linking. Features that do not directly serve deterministic dependency resolution are excluded to preserve conceptual clarity and long-term stability.

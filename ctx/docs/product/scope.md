@@ -4,35 +4,67 @@ Path: `./ctx/docs/product/scope.md`
 
 ## Application Domain
 
-`@teqfw/di` is an object container for programs based on ES6 modules within the JavaScript ecosystem. Its scope is limited to the ES module model.
+`@teqfw/di` is an object container for programs based on native ES modules within the JavaScript ecosystem. Its scope is limited to the ES module execution model and deterministic runtime linking of declared dependencies.
 
-## Responsibility
+The container does not define or depend on domain semantics.
 
-The container is responsible for disciplined object creation and dependency resolution through late binding. It links modules and instantiates objects according to declarative dependencies.
+## Core Responsibility
+
+The container is responsible for:
+
+- interpreting External Dependency Declarations (EDD) through a configured parser;
+- transforming EDD into canonical internal representations;
+- resolving dependencies deterministically;
+- instantiating objects according to declared semantics;
+- enforcing lifecycle and immutability guarantees;
+- maintaining structural integrity of the linking process.
+
+The immutable core linking pipeline operates exclusively on canonical dependency representations.
+
+## Configuration-Level Responsibility
+
+The container configuration defines:
+
+- the parser used to interpret dependency declarations;
+- namespace and module mapping rules;
+- debug and testing modes;
+- permitted extension components.
+
+Parser selection determines the dependency encoding profile of an application. Applications using different parsers are not required to be compatible at the level of dependency declarations.
+
+Configuration does not modify core linking semantics.
 
 ## Supported Concerns Within Scope
 
 Within its responsibility boundary, the container may:
 
 - detect and prevent cyclic dependencies;
-- provide diagnostic information in debug mode;
-- support configuration for namespace mapping and extension integration;
-- maintain internal operational state required for resolution and testing modes.
+- provide diagnostic information;
+- maintain internal operational state required for deterministic resolution;
+- support controlled extension points that do not alter immutable core semantics.
 
 ## Out of Scope
 
 The container does not manage:
 
-- application lifecycle;
-- domain logic;
-- execution policies;
-- security policies;
-- runtime platform behavior.
+- application lifecycle orchestration;
+- domain logic or business rules;
+- execution policies or scheduling;
+- security policies beyond immutability guarantees;
+- runtime platform behavior;
+- cross-application compatibility of custom dependency encoding schemes.
 
-## Extensibility
+## Extensibility Boundary
 
-The container supports extensions that can alter resolution strategies, identifier interpretation, or object wrapping. These modifications remain external to the core responsibility.
+The container allows configurable parsers and defined extension points. Extensions may participate in dependency preprocessing or object wrapping but must not:
+
+- replace the resolver;
+- reorder or restructure the core pipeline;
+- alter canonical identity semantics;
+- introduce non-deterministic behavior.
 
 ## Evolution Boundary
 
-Higher-level systems may be built on top of the container, while the container scope remains limited to disciplined object linking and dependency resolution.
+The core linking architecture remains stable across parser variants and product evolution.
+
+Higher-level systems may be built on top of the container. The container itself remains limited to deterministic runtime dependency linking and disciplined object composition.

@@ -1,44 +1,27 @@
-# Architecture Context
+# Architecture Documentation (`./ctx/docs/architecture/`)
 
-Path: `ctx/docs/architecture/AGENTS.md`
+Path: `./ctx/docs/architecture/AGENTS.md`
 
 ## Purpose
 
-The `architecture/` level fixes **architectural form and invariants** of the project.
-It declares what structural rules are valid and binding for all lower documentation levels. Architectural statements at this level are fixed invariants for automated agents.
+The `ctx/docs/architecture/` directory defines the structural form of the system as a deterministic runtime linking architecture, including its immutable core semantics, extension boundaries, and canonical dependency identity model.
 
----
+## Level Boundaries
 
-## Architectural Authority
+This level describes architectural invariants and structural relations between dependency declaration, parser configuration, canonical identity, and linking pipeline stages. It does not define product meaning, organizational procedures, or implementation-level coding conventions.
 
-This level is authoritative over all architectural statements in the project context.
-Architectural statements at this level are not reinterpreted, optimized, or substituted by automated agents.
+## Consistency Rule
 
-## Document Stability
-
-- `dependency-model.md` — Stable / Normative
-- `dependency-language.md` — Stable / Normative
-- `types-map.md` — Stable / Normative
+Documents of this level must remain semantically aligned in the definitions of `EDD`, `DepId`, immutable core boundary, resolver semantics, lifecycle enforcement, freeze, fail-fast behavior, and acyclicity. Architectural terms may be refined across documents but must not introduce conflicting stage order, conflicting determinism scope, or conflicting extension permissions.
 
 ## Level Map
 
-- `AGENTS.md` — this document.
-- `dependency-language.md` — canonical dependency identifier language and interpretation rules.
-- `dependency-model.md` — architectural dependency model and invariants for container behavior.
-- `namespace-addressing.md` — namespace addressing rules, zoning, and module-to-path mapping invariants.
-- `types-map.md` — normative rules for namespace-to-source mappings used by IDEs and static analyzers.
+- `AGENTS.md` — this document, defining purpose, boundaries, and consistency rules of the architecture level.
+- `edd-model.md` — declarative model of External Dependency Declaration, parser role, and boundary to canonical identity.
+- `invariants.md` — immutable architectural invariants that constrain all parser profiles and configurations.
+- `linking-model.md` — immutable core linking pipeline, stage semantics, determinism scope, and failure semantics.
+- `overview.md` — compact architectural overview of runtime linking form, extension surface, and prohibited actions.
 
----
+## Summary
 
-## Boundaries
-
-This level:
-
-- defines architectural invariants and allowed forms;
-- acts as the highest authority on structure.
-
-This level does not:
-
-- prescribe implementation techniques or optimization algorithms;
-- define engineering or coding conventions;
-- describe procedural runtime mechanics beyond fixed model invariants.
+`ctx/docs/architecture/AGENTS.md` defines the governed scope of the architecture level and provides a navigational map of its documents while preserving internal semantic consistency requirements.

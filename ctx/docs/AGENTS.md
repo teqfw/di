@@ -1,7 +1,7 @@
 # Project Documentation (`./ctx/docs/`)
 
 Path: `./ctx/docs/AGENTS.md`
-Version: `20260214`
+Version: `20260215`
 
 ## Purpose
 
@@ -28,9 +28,11 @@ Relationships between subdirectories are defined declaratively through reference
 
 ## Document Requirements
 
-Documents at the `docs/` level must use a declarative style and define invariants, boundaries, and definitions corresponding to the relevant ADSM level. Repetition of statements fixed at other context levels is not permitted. Text within paragraphs must be written without manual line breaks.
+Documents at the `docs/` level must be written in a declarative style and define the invariants, boundaries, and definitions of the corresponding ADSM level. Repetition of statements established at other levels is not permitted. Text within paragraphs must be written without manual line breaks and without using section separators such as `---`.
 
 Documentation must comply with the eight ADSM quality criteria: declarativity, completeness, consistency, coherence, density, compactness, non-redundancy, and absence of the obvious.
+
+The size of an individual document must not exceed 5,000 tokens.
 
 ## Summary
 
