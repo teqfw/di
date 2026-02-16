@@ -10,6 +10,12 @@ This document defines the lifecycle and execution model of the container as a ru
 
 The container is a persistent runtime service within a single process. All guarantees apply strictly within the lifecycle of a single container instance.
 
+A single container per runtime is the recommended execution model for predictable configuration management and deterministic behavior.
+
+Multiple containers within a single process are not prohibited by architecture.
+
+Architectural invariants, including determinism, parser injectivity, and structural identity via `DepId`, apply per container instance provided container configuration and parser profile are consistent for the evaluated instance.
+
 ## Lifecycle States
 
 The container has exactly four states:

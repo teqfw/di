@@ -114,7 +114,7 @@ Cyclic dependencies are prohibited. Detection of a cycle results in immediate te
 
 Determinism is guaranteed at the level of instance identity.
 
-For identical container configuration, identical parser, identical EDD, and identical dependency stack, linking must produce identical lifecycle outcomes and wrapper composition.
+For identical container configuration, identical parser, identical EDD interpreted under identical parser configuration, and identical dependency stack, linking must produce identical lifecycle outcomes and wrapper composition.
 
 The architecture does not guarantee determinism of internal object state. Randomness or time-dependent behavior inside constructors is permitted.
 
