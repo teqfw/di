@@ -18,14 +18,19 @@ The execution model is single-threaded. Worker threads are not supported. The co
 
 Multi-process environments are allowed. In such environments, the container remains strictly process-local. When used in cluster mode, each worker must instantiate its own container. Container state is not synchronized across processes.
 
-The architecture assumes a single container per runtime for determinism guarantees.
-Multiple containers within a single process are outside the guaranteed behavior domain and not covered by architectural invariants.
+Multiple independent containers within a single process are permitted.
+
+Determinism guarantees apply per container instance for identical configuration and identical request dynamics and do not establish any cross-container consistency guarantees.
 
 ## 4. Module Loader Assumptions
 
 Module resolution is fully delegated to the standard ESM loader of the runtime. The container does not modify or extend loader behavior.
 
-Dynamic `import()` must conform to ECMAScript semantics. Within a single runtime, identical module specifiers must resolve to the same module namespace object. Module caching behavior is entirely controlled by the runtime and not by the container.
+Dynamic `import()` must conform to ECMAScript semantics. Within a single runtime, identical module specifiers must resolve to the same module namespace object. Module caching and module namespace identity are controlled by the runtime.
+
+The runtime is the canonical source of module namespace identity. The container MUST NOT override, invalidate, or substitute the runtime module cache.
+
+The resolver MAY maintain an internal cache as an optimization provided it does not change observable namespace identity or resolution semantics.
 
 Errors originating from module loading, including syntax errors or missing modules, are considered environmental errors. The container does not intercept, normalize, or reinterpret loader exceptions.
 

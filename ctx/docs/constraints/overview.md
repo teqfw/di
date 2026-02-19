@@ -21,6 +21,10 @@ The following transformations are prohibited:
 - modification of structural canonical `DepId` identity semantics;
 - expansion or contraction of determinism scope.
 
+Lazy graph resolution denotes any linking model that constructs, precomputes, or incrementally maintains a dependency graph as a first-class artifact and uses graph traversal as the primary linking mechanism.
+
+On-demand linking triggered by explicit dependency requests is permitted and remains graphless. Dynamic `import()` is permitted as the runtime module loading primitive and does not constitute lazy graph resolution.
+
 Any of the above constitutes exit from the current architectural model and requires a new architectural branch of the product.
 
 The immutable core is an irreversible architectural decision.

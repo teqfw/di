@@ -53,7 +53,15 @@ Resolver semantics are architecturally fixed.
 
 The resolver domain is defined by container configuration established prior to linking.
 
-The resolver MUST be total over its configured domain.
+The configured resolver domain is the set of structural identities (`DepId`) that satisfy the domain predicate induced by container configuration.
+
+Domain membership is a logical property of `DepId` under a fixed configuration and is independent of runtime availability of module sources.
+
+The resolver MUST be total over its configured domain in the sense that, for any `DepId` in-domain, resolution is defined and resolution is attempted.
+
+If a `DepId` is out of domain, the request violates the architecture.
+
+If a `DepId` is in domain but module loading fails due to loader or environment failure, this is an environmental failure and does not contradict totality.
 
 Resolution must not depend on mutable runtime state.
 

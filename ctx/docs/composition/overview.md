@@ -12,24 +12,21 @@ The container is a persistent runtime service within a single process. All guara
 
 A single container per runtime is the recommended execution model for predictable configuration management and deterministic behavior.
 
-Multiple containers within a single process are not prohibited by architecture.
+Multiple independent containers within a single process are permitted.
 
 Architectural invariants, including determinism, parser injectivity, and structural identity via `DepId`, apply per container instance provided container configuration and parser profile are consistent for the evaluated instance.
 
 ## Lifecycle States
 
-The container has exactly four states:
+The container has exactly three states:
 
-1. Created  
-   The container instance exists and requires configuration.
+1. NotConfigured  
+   The container instance exists and configuration is mutable. No dependency requests have been processed.
 
-2. Configured  
-   Configuration is complete and mutable no longer. No dependency requests have been processed.
+2. Operational  
+   The first dependency request has been initiated. The container processes dependency requests on demand under sealed configuration.
 
-3. Operational  
-   The first dependency request has been executed. The container processes dependency requests on demand under sealed configuration.
-
-4. Failed  
+3. Failed  
    A fatal linking error has occurred. The container is irreversibly invalid.
 
 No additional states exist. There is no partially linked, shutdown, or disposal state.
@@ -38,8 +35,7 @@ The container has no termination phase.
 
 ## State Transitions
 
-- Created → Configured occurs after configuration completion.
-- Configured → Operational occurs on the first dependency request.
+- NotConfigured → Operational occurs on the first dependency request.
 - Operational → Failed occurs on any fatal linking error.
 - Transition from Failed to any other state is prohibited.
 

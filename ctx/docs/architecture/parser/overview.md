@@ -15,14 +15,14 @@ The parser is an architectural boundary component that converts a surface identi
 The parser is a pure deterministic function:
 
 ```txt
-parse(edd: string) → DepId | Error
+parse(edd: string) → DepId
 ```
 
 For the same input string and the same profile definition, the result must be identical across executions. The parser must not access runtime state or external systems. The default profile is fixed and not configurable; introduction of a new profile requires a distinct parser.
 
 ## 4. Determinism and Purity
 
-The transformation is fully deterministic and side-effect free. All validation and interpretation rules are internal to the parser and depend solely on the input string. No fallback or recovery semantics are permitted. The parser follows fail-fast semantics: upon the first detected violation, it terminates with an error.
+The transformation is fully deterministic and side-effect free. All validation and interpretation rules are internal to the parser and depend solely on the input string. No fallback or recovery semantics are permitted. The parser follows fail-fast semantics: upon the first detected violation, it throws an error.
 
 ## 5. Grammar and Structural Restrictions
 
@@ -79,7 +79,7 @@ The parser terminates at the first detected violation. Error codes are not stand
 
 ## 12. Boundary Between Parser and Resolver
 
-The parser is responsible for grammar validation, profile validation, platform derivation, default completion rules, and construction of a valid `DepId`. The resolver operates exclusively on a valid `DepId` and performs module resolution and export verification. The resolver must not reinterpret the surface grammar of EDD.
+The parser is responsible for grammar validation, profile validation, platform derivation, default completion rules, and construction of a valid `DepId`. The resolver operates exclusively on a valid `DepId` and performs module resolution only by loading the ES module namespace. Export selection and export existence verification are performed during instantiation. The resolver must not reinterpret the surface grammar of EDD.
 
 ## 13. Architectural Consistency
 

@@ -44,7 +44,7 @@ No additional public resolution methods are permitted.
 
 ## Configuration Model
 
-The container is instantiated in state `Created`.
+The container is instantiated in state `NotConfigured`.
 
 Configuration consists of:
 
@@ -52,15 +52,15 @@ Configuration consists of:
 - registering postprocess functions,
 - replacing the default parser.
 
-Configuration is mutable only in state `Created`.
+Configuration is mutable only in state `NotConfigured`.
 
-Transition from `Created` to `Operational` occurs immediately upon entry into the first `get` invocation, before resolution begins.
+Transition from `NotConfigured` to `Operational` occurs immediately upon entry into the first `get` invocation, before resolution begins.
 
 There is no externally observable `Configured` state.
 
 Any attempt to modify configuration after the first `get` invocation MUST throw.
 
-Invocation of `get` in `Created` without prior configuration is permitted. If resolver configuration is incomplete, resolution fails.
+Invocation of `get` in `NotConfigured` without prior configuration is permitted. If resolver configuration is incomplete, resolution fails.
 
 Registration of the same function multiple times is permitted. Each registration produces a distinct pipeline entry.
 
@@ -112,15 +112,15 @@ Lifecycle is responsible for caching singleton instances and applying freeze bef
 
 The container has three observable states:
 
-1. Created
+1. NotConfigured
 2. Operational
 3. Failed
 
-Created → Operational occurs at the start of the first `get` invocation.
+NotConfigured → Operational occurs at the start of the first `get` invocation.
 
 If the first invocation fails, the state transition sequence is:
 
-Created → Operational → Failed
+NotConfigured → Operational → Failed
 
 Operational → Failed occurs upon any fatal linking error.
 

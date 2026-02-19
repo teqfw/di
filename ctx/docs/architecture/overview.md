@@ -64,7 +64,7 @@ Resolver semantics are architecturally fixed and non-replaceable.
 
 The resolver domain is defined by container configuration established prior to linking. Resolver behavior must not depend on mutable runtime state.
 
-The resolver maps structural canonical `DepId` values to concrete ES module exports within the configured resolver domain and must be total over this domain. If a DepId falls outside the resolver domain or cannot be resolved, linking terminates immediately.
+The resolver maps structural canonical `DepId` values to ES module namespaces within the configured resolver domain and must be total over this domain. If a DepId falls outside the resolver domain or cannot be resolved, linking terminates immediately. Export selection and export existence verification occur during instantiation.
 
 Internal caching does not alter resolution semantics and is part of lifecycle enforcement.
 

@@ -50,9 +50,13 @@ Preprocess MUST be deterministic for identical configuration, identical input `D
 Resolve is a core stage.
 
 Input: `DepId₁`.
-Output: `ExportDescriptor`.
+Output: `ModuleNamespace`.
 
 Resolver behavior is defined by container configuration established prior to linking. It must not depend on mutable runtime state and must not perform lazy linking.
+
+Resolve loads the ES module namespace for `DepId₁` within the configured resolver domain.
+
+Resolve MUST NOT perform export selection or export existence verification.
 
 Resolver MUST be total over its configured resolver domain. If a source cannot be resolved for `DepId₁`, linking terminates immediately.
 
@@ -60,10 +64,14 @@ Resolver MUST be total over its configured resolver domain. If a source cannot b
 
 Instantiation is a core stage.
 
-Inputs: `ExportDescriptor`, lifecycle policy.
+Inputs: `DepId₁`, `ModuleNamespace`, lifecycle policy.
 Output: instance.
 
-Instantiation depends only on `ExportDescriptor` and lifecycle policy. It must not depend on dependency stack or container runtime state.
+Instantiation selects the export defined by `DepId₁` from the resolved `ModuleNamespace` and verifies its existence.
+
+Instantiation invokes the selected export as a factory according to the dependency composition encoded in `DepId₁`.
+
+Instantiation depends only on `DepId₁`, `ModuleNamespace`, and lifecycle policy. It must not depend on dependency stack or container runtime state.
 
 Instantiation MUST NOT produce side effects outside the created object.
 
@@ -101,6 +109,8 @@ Lifecycle enforcement MUST NOT alter dependency identity between calls.
 Freeze is a mandatory core stage.
 
 Freeze enforces structural immutability of the final instance and occurs before the instance is returned.
+
+Freeze may be implemented as part of lifecycle enforcement provided the observable stage ordering is preserved: lifecycle enforcement and caching precede freeze, and freeze precedes exposure of the instance to the caller.
 
 Freeze cannot be disabled.
 

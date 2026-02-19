@@ -4,13 +4,15 @@ Path: `./ctx/docs/architecture/parser/error-model.md`
 
 ## 1. Scope
 
-This document defines the architectural error semantics of the default EDD parser. It specifies classification rules, termination semantics, and error boundaries. It does not prescribe implementation mechanisms.
+This document defines the architectural error semantics of the default EDD parser. It specifies classification rules, termination semantics, and error boundaries. It does not prescribe concrete error class hierarchies.
 
 ## 2. Termination Semantics
 
 Any validation or invariant violation terminates parsing immediately. Parsing must not continue after the first detected violation. The parser does not expose partial state and does not return partially constructed `DepId` objects.
 
-The architectural requirement is failure termination. The concrete implementation mechanism (exception, result object, or other) is not defined at this level.
+The parser MUST terminate by throwing an error.
+
+Returning error objects, result wrappers, or out-of-band error values is not permitted.
 
 ## 3. Error Categories
 
@@ -34,7 +36,7 @@ If multiple violations exist, classification corresponds to the first detected v
 
 ## 5. Error Information
 
-An error must contain:
+The thrown error must contain:
 
 - a human-readable message,
 - a description of the reason for failure.

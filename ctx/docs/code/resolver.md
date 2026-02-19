@@ -1,6 +1,7 @@
 # Resolver Implementation Contract
 
-Path: `ctx/docs/code/resolver.md`
+Path: `./ctx/docs/code/resolver.md`
+
 
 ## Purpose
 
