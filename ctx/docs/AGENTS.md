@@ -1,7 +1,7 @@
 # Project Documentation (`./ctx/docs/`)
 
 Path: `./ctx/docs/AGENTS.md`
-Version: `20260215`
+Version: `20260219`
 
 ## Purpose
 
@@ -33,6 +33,16 @@ Documents at the `docs/` level must be written in a declarative style and define
 Documentation must comply with the eight ADSM quality criteria: declarativity, completeness, consistency, coherence, density, compactness, non-redundancy, and absence of the obvious.
 
 The size of an individual document must not exceed 5,000 tokens.
+
+## Level Map
+
+- `architecture/` — declarative description of the system structural form and architectural invariants.
+- `code/` — declarative description of implementation-level engineering invariants and code organization conventions.
+- `composition/` — declarative description of the execution model and scenario dynamics.
+- `constraints/` — declarative description of mandatory design boundaries and prohibitions.
+- `environment/` — declarative description of execution conditions and infrastructural prerequisites.
+- `product/` — declarative description of system meaning and domain invariants.
+- `AGENTS.md` — this document, defining the structure and boundaries of the `docs/` directory.
 
 ## Summary
 

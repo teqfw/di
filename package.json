@@ -48,8 +48,8 @@
   },
   "scripts": {
     "rollup": "rollup -c",
-    "eslint": "eslint './src/**/*.js'",
-    "test": "node --test"
+    "eslint": "eslint './src2/**/*.mjs'",
+    "test:unit": "node --test \"test2/unit/**/*.test.mjs\""
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
