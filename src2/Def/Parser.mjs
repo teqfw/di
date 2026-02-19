@@ -13,7 +13,7 @@ export default class TeqFw_Di_Def_Parser {
 
         let origin = edd;
         let source = edd;
-        let platform = TeqFw_Di_Enum_Platform.SRC;
+        let platform = TeqFw_Di_Enum_Platform.TEQ;
 
         if (source.startsWith('node_')) {
             platform = TeqFw_Di_Enum_Platform.NODE;

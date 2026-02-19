@@ -60,7 +60,7 @@ describe('TeqFw_Di_Def_Parser', () => {
         for (const one of cases) {
             it(`parses '${one.edd}'`, () => {
                 parseAndAssert(parser, one.edd, {
-                    platform: TeqFw_Di_Enum_Platform.SRC,
+                    platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
                     ...one.exp,
                 });
@@ -69,7 +69,7 @@ describe('TeqFw_Di_Def_Parser', () => {
 
         it('maps implicit direct (no lifecycle marker) to direct', () => {
             parseAndAssert(parser, MODULE, {
-                platform: TeqFw_Di_Enum_Platform.SRC,
+                platform: TeqFw_Di_Enum_Platform.TEQ,
                 moduleName: MODULE,
                 exportName: null,
                 life: null,
@@ -80,7 +80,7 @@ describe('TeqFw_Di_Def_Parser', () => {
 
         it('enforces transient to factory semantic rule', () => {
             parseAndAssert(parser, `${MODULE}$$`, {
-                platform: TeqFw_Di_Enum_Platform.SRC,
+                platform: TeqFw_Di_Enum_Platform.TEQ,
                 moduleName: MODULE,
                 exportName: 'default',
                 life: TeqFw_Di_Enum_Life.INSTANCE,
@@ -91,7 +91,7 @@ describe('TeqFw_Di_Def_Parser', () => {
 
         it('enforces exportName=null to composition=as-is rule', () => {
             parseAndAssert(parser, `${MODULE}`, {
-                platform: TeqFw_Di_Enum_Platform.SRC,
+                platform: TeqFw_Di_Enum_Platform.TEQ,
                 moduleName: MODULE,
                 exportName: null,
                 life: null,
@@ -106,7 +106,7 @@ describe('TeqFw_Di_Def_Parser', () => {
             const left = parser.parse(`${MODULE}$`);
             const right = parser.parse(`${MODULE}__default$`);
             assertDepId(left, {
-                platform: TeqFw_Di_Enum_Platform.SRC,
+                platform: TeqFw_Di_Enum_Platform.TEQ,
                 moduleName: MODULE,
                 exportName: 'default',
                 life: TeqFw_Di_Enum_Life.SINGLETON,
@@ -114,7 +114,7 @@ describe('TeqFw_Di_Def_Parser', () => {
                 wrappers: [],
             });
             assertDepId(right, {
-                platform: TeqFw_Di_Enum_Platform.SRC,
+                platform: TeqFw_Di_Enum_Platform.TEQ,
                 moduleName: MODULE,
                 exportName: 'default',
                 life: TeqFw_Di_Enum_Life.SINGLETON,
@@ -133,7 +133,7 @@ describe('TeqFw_Di_Def_Parser', () => {
             const left = parser.parse(`${MODULE}$$`);
             const right = parser.parse(`${MODULE}__default$$`);
             assertDepId(left, {
-                platform: TeqFw_Di_Enum_Platform.SRC,
+                platform: TeqFw_Di_Enum_Platform.TEQ,
                 moduleName: MODULE,
                 exportName: 'default',
                 life: TeqFw_Di_Enum_Life.INSTANCE,
@@ -141,7 +141,7 @@ describe('TeqFw_Di_Def_Parser', () => {
                 wrappers: [],
             });
             assertDepId(right, {
-                platform: TeqFw_Di_Enum_Platform.SRC,
+                platform: TeqFw_Di_Enum_Platform.TEQ,
                 moduleName: MODULE,
                 exportName: 'default',
                 life: TeqFw_Di_Enum_Life.INSTANCE,
@@ -183,6 +183,17 @@ describe('TeqFw_Di_Def_Parser', () => {
     });
 
     describe('platform smoke tests', () => {
+        it('uses teq platform when EDD has no platform prefix', () => {
+            parseAndAssert(parser, `${MODULE}$`, {
+                platform: TeqFw_Di_Enum_Platform.TEQ,
+                moduleName: MODULE,
+                exportName: 'default',
+                life: TeqFw_Di_Enum_Life.SINGLETON,
+                composition: TeqFw_Di_Enum_Composition.FACTORY,
+                wrappers: [],
+            });
+        });
+
         it('parses node platform without export', () => {
             parseAndAssert(parser, `node_${MODULE}$`, {
                 platform: TeqFw_Di_Enum_Platform.NODE,
@@ -242,7 +253,7 @@ describe('TeqFw_Di_Def_Parser', () => {
             // A strict "maximal trailing '$'" interpretation would reject these strings.
             // This test locks behavior to examples and wrapper-after-lifecycle semantics.
             parseAndAssert(parser, `${MODULE}$$_${WRAPPER_LOG}`, {
-                platform: TeqFw_Di_Enum_Platform.SRC,
+                platform: TeqFw_Di_Enum_Platform.TEQ,
                 moduleName: MODULE,
                 exportName: 'default',
                 life: TeqFw_Di_Enum_Life.INSTANCE,

@@ -1,5 +1,5 @@
 const TeqFw_Di_Enum_Platform = {
-    SRC: 'src',
+    TEQ: 'teq',
     NODE: 'node',
     NPM: 'npm',
 };

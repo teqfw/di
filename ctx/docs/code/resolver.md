@@ -55,7 +55,7 @@ Export selection and verification are performed during instantiation and are out
 
 The resolver derives a module specifier deterministically from `DepId`.
 
-For `platform = 'src'`:
+For `platform = 'teq'`:
 
 - A namespace-to-path mapping provided by container configuration is applied to `moduleName`.
 - The mapping produces the final module specifier.
@@ -88,7 +88,7 @@ The resolver MUST NOT:
 
 Resolver configuration is provided by the container prior to the first resolution.
 
-Configuration includes namespace-to-path mapping rules for the `src` platform.
+Configuration includes namespace-to-path mapping rules for the `teq` platform.
 
 Configuration becomes immutable when the container transitions to operational state.
 

@@ -7,7 +7,7 @@ import TeqFw_Di_Enum_Platform from '../../../src2/Enum/Platform.mjs';
 describe('TeqFw_Di_Enum_Platform', () => {
     it('contains descriptive keys with canonical lowercase values', () => {
         assert.deepStrictEqual(TeqFw_Di_Enum_Platform, {
-            SRC: 'src',
+            TEQ: 'teq',
             NODE: 'node',
             NPM: 'npm',
         });

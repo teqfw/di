@@ -28,7 +28,7 @@ All semantic interpretation of EDD — including lifecycle derivation, export no
 `DepId` has the following fixed structural fields:
 
 - `moduleName: string`
-- `platform: 'src' | 'node' | 'npm'`
+- `platform: 'teq' | 'node' | 'npm'`
 - `exportName: string | null`
 - `composition: 'A' | 'F'`
 - `life: 'S' | 'I' | null`
@@ -52,7 +52,7 @@ Enums in TeqFW:
 
 The canonical enum modules and literal sets for `DepId` are:
 
-- `src2/Enum/Platform.mjs` → `{ SRC: 'src', NODE: 'node', NPM: 'npm' }`
+- `src2/Enum/Platform.mjs` → `{ TEQ: 'teq', NODE: 'node', NPM: 'npm' }`
 - `src2/Enum/Composition.mjs` → `{ A: 'A', F: 'F' }`
 - `src2/Enum/Life.mjs` → `{ S: 'S', I: 'I' }`
 

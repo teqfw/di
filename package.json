@@ -48,7 +48,7 @@
   },
   "scripts": {
     "rollup": "rollup -c",
-    "eslint": "eslint './src2/**/*.mjs'",
+    "eslint": "npx eslint './src2/**/*.mjs'",
     "test:unit": "node --test \"test2/unit/**/*.test.mjs\""
   },
   "devDependencies": {

@@ -30,7 +30,7 @@ describe('TeqFw_Di_Dto_DepId', () => {
     it('normalizes missing fields', () => {
         const dto = factory.create({});
         assert.strictEqual(dto.moduleName, '');
-        assert.strictEqual(dto.platform, TeqFw_Di_Enum_Platform.SRC);
+        assert.strictEqual(dto.platform, TeqFw_Di_Enum_Platform.TEQ);
         assert.strictEqual(dto.exportName, null);
         assert.strictEqual(dto.composition, TeqFw_Di_Enum_Composition.AS_IS);
         assert.strictEqual(dto.life, null);
@@ -62,7 +62,7 @@ describe('TeqFw_Di_Dto_DepId', () => {
             exportName: 123,
             wrappers: ['ok', 1, {}, 'ok2'],
         });
-        assert.strictEqual(dto.platform, TeqFw_Di_Enum_Platform.SRC);
+        assert.strictEqual(dto.platform, TeqFw_Di_Enum_Platform.TEQ);
         assert.strictEqual(dto.composition, TeqFw_Di_Enum_Composition.AS_IS);
         assert.strictEqual(dto.life, null);
         assert.strictEqual(dto.exportName, null);

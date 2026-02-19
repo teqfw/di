@@ -2,7 +2,7 @@ import TeqFw_Di_Enum_Composition from '../Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../Enum/Life.mjs';
 import TeqFw_Di_Enum_Platform from '../Enum/Platform.mjs';
 
-const DFLT_PLATFORM = TeqFw_Di_Enum_Platform.SRC;
+const DFLT_PLATFORM = TeqFw_Di_Enum_Platform.TEQ;
 const DFLT_COMPOSITION = TeqFw_Di_Enum_Composition.AS_IS;
 
 const PLATFORM_VALUES = new Set(Object.values(TeqFw_Di_Enum_Platform));
