@@ -23,7 +23,7 @@ Dependency identity is defined in two stages:
 
 Identity transformations are permitted only in the preprocess stage.
 
-Identity MUST remain stable after resolution begins. Lifecycle enforcement, postprocess, caching, and freeze must not alter dependency identity.
+Identity MUST remain stable after resolution begins. Instantiation, postprocess, lifecycle enforcement, caching, and freeze must not alter dependency identity.
 
 Distinct semantic interpretations of EDD within the same parser profile must not produce identical initial structural canonical representations (`DepId₀`).
 
@@ -31,7 +31,7 @@ Distinct semantic interpretations of EDD within the same parser profile must not
 
 For identical container configuration, identical parser, identical EDD interpreted under identical parser configuration, and identical dependency stack conditions, the linking process MUST produce identical lifecycle outcomes and identical wrapper composition.
 
-Determinism is guaranteed at the level of instance identity returned by the container.
+Determinism is guaranteed at the level of the instance identity returned by the container.
 
 Internal object state is outside the scope of this guarantee.
 
@@ -67,23 +67,35 @@ Resolution must not depend on mutable runtime state.
 
 Lazy linking is prohibited.
 
-## Lifecycle Invariant
+## Composition and Lifecycle Invariant
 
-Lifecycle enforcement is part of the immutable core.
+Composition and lifecycle are orthogonal semantic dimensions defined in `DepId`.
 
-Lifecycle behavior must not depend on runtime state and must not vary across identical linking conditions.
+The following conditions are architecturally fixed:
 
-Caching is part of lifecycle semantics.
+1. If `life = 'transient'`, then `composition = 'factory'`.
 
-Singleton instantiation occurs exactly once prior to caching.
+2. If `composition = 'factory'`, then `exportName != null`.
+
+3. If `exportName = null`, then `composition = 'as-is'`.
+
+4. Lifecycle enforcement must be applied strictly after postprocess and before freeze.
+
+5. Lifecycle behavior must not depend on runtime state and must not vary across identical linking conditions.
+
+6. Caching is part of lifecycle semantics.
+
+7. Singleton instantiation occurs exactly once prior to caching.
+
+Wrappers are applied to the value produced by composition and prior to lifecycle enforcement. Wrapper presence participates in structural dependency identity.
 
 ## Immutability Invariant
 
 Freeze is mandatory and cannot be disabled.
 
-Freeze enforces structural immutability of the instance before it is returned.
+Freeze enforces structural immutability of the value after lifecycle enforcement and before it is returned.
 
-Returned instances must not expose container internals.
+Returned values must not expose container internals.
 
 ## Extension Boundary Invariant
 
@@ -92,14 +104,14 @@ The extension surface consists exclusively of preprocess and postprocess stages.
 Extensions may:
 
 - transform dependency identity prior to resolution;
-- wrap or replace instantiated objects prior to lifecycle enforcement and freeze.
+- wrap or replace instantiated values prior to lifecycle enforcement and freeze.
 
 Extensions must not:
 
 - modify or reorder core stages;
 - alter resolver semantics;
 - introduce lazy linking;
-- introduce side effects outside the returned object;
+- introduce side effects outside the returned value;
 - introduce non-determinism under identical conditions.
 
 ## Failure Invariant

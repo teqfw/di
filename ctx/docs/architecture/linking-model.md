@@ -4,7 +4,11 @@ Path: `./ctx/docs/architecture/linking-model.md`
 
 ## Purpose
 
-This document defines the immutable core linking semantics and the formally defined extension surface of the deterministic runtime linking architecture. It specifies the linking pipeline, stage responsibilities, determinism scope, and failure semantics. EDD grammar and parser behavior are defined in `architecture/edd-model.md`.
+This document defines the immutable core linking semantics and the formally defined extension surface of the deterministic runtime linking architecture.
+
+It specifies the linking pipeline, stage responsibilities, determinism scope, and failure semantics.
+
+EDD grammar and parser behavior are defined in `architecture/edd-model.md`.
 
 ## Core Boundary
 
@@ -13,6 +17,8 @@ A dependency request is expressed as EDD. The configured parser transforms EDD i
 The parser is configuration-level and outside the immutable core.
 
 The immutable core begins strictly with `DepId`. No additional identity normalization is permitted inside the core. Once `DepId` enters the core pipeline, it is final unless transformed by the preprocess stage.
+
+All core semantics operate exclusively on the structural fields of `DepId`.
 
 ## Pipeline
 
@@ -28,7 +34,7 @@ EDD
 → postprocess
 → lifecycle enforcement and caching
 → freeze
-→ return instance
+→ return value
 
 Reordering, skipping, partial execution, or backward transitions are not permitted.
 
@@ -44,6 +50,8 @@ Output: `DepId₁`.
 Preprocess MAY replace `DepId₀` with a different `DepId₁`, thereby changing dependency identity.
 
 Preprocess MUST be deterministic for identical configuration, identical input `DepId₀`, and identical dependency stack. It MUST NOT produce side effects outside the linking process.
+
+Identity MUST remain stable after preprocess completes.
 
 ### Resolve
 
@@ -64,53 +72,85 @@ Resolver MUST be total over its configured resolver domain. If a source cannot b
 
 Instantiation is a core stage.
 
-Inputs: `DepId₁`, `ModuleNamespace`, lifecycle policy.
-Output: instance.
+Inputs: `DepId₁`, `ModuleNamespace`.
+Output: value.
 
-Instantiation selects the export defined by `DepId₁` from the resolved `ModuleNamespace` and verifies its existence.
+Instantiation performs two logically distinct operations:
 
-Instantiation invokes the selected export as a factory according to the dependency composition encoded in `DepId₁`.
+1. **Export selection**
+2. **Composition execution**
 
-Instantiation depends only on `DepId₁`, `ModuleNamespace`, and lifecycle policy. It must not depend on dependency stack or container runtime state.
+#### Export Selection
 
-Instantiation MUST NOT produce side effects outside the created object.
+- If `exportName != null`, the named export MUST exist in `ModuleNamespace`.
+- If `exportName = null`, the selected value is the full `ModuleNamespace`.
 
-For singleton dependencies, instantiation MUST occur exactly once.
+Failure to locate a required export results in immediate termination of linking.
+
+#### Composition Execution
+
+Composition behavior is determined by `DepId.composition`:
+
+- If `composition = 'as-is'`, the selected export is used directly.
+- If `composition = 'factory'`, the selected export MUST be callable and is invoked to produce a value.
+
+If `composition = 'factory'` and `exportName = null`, this is an invalid state and linking terminates immediately.
+
+Instantiation MUST depend only on `DepId₁` and `ModuleNamespace`. It must not depend on container runtime state or dependency stack.
+
+Instantiation MUST NOT produce side effects outside the created value.
+
+Instantiation does not perform caching.
 
 ### Postprocess
 
 Postprocess is a configuration-level extension stage executed after instantiation and before lifecycle enforcement.
 
-Inputs: freshly created instance, `DepId₁`, dependency stack.
-Output: instance′.
+Inputs: value, `DepId₁`, dependency stack.
+Output: value′.
 
-Postprocess MAY replace the created instance, including returning a proxy or wrapper. Wrapper semantics are encoded in `DepId`.
+Postprocess MAY replace the value, including returning a proxy or wrapper.
 
-Postprocess MUST be a pure transformation of the created instance. It MUST NOT introduce side effects outside the returned object.
+Wrappers encoded in `DepId.wrappers` are applied conceptually at this stage.
+
+Postprocess MUST be a pure transformation of the value. It MUST NOT introduce side effects outside the returned object.
 
 Postprocess MAY depend on the dependency stack.
 
-For identical configuration, identical input instance, identical `DepId₁`, and identical dependency stack, postprocess MUST return an identical result.
+For identical configuration, identical input value, identical `DepId₁`, and identical dependency stack, postprocess MUST return an identical result.
 
 ### Lifecycle Enforcement and Caching
 
 Lifecycle enforcement is a core stage and part of immutable core semantics.
 
-Lifecycle behavior does not depend on runtime state and cannot be replaced by configuration.
+Lifecycle operates on the postprocessed value.
 
-Caching is part of lifecycle semantics.
+Lifecycle behavior is determined by `DepId.life`:
 
-Lifecycle operates on the postprocessed instance. For singleton dependencies, postprocess is executed once before lifecycle caching. Subsequent requests return the cached instance.
+- `'direct'` — no caching is applied. The value is returned as produced.
+- `'singleton'` — the value is cached and reused for subsequent requests of identical structural identity.
+- `'transient'` — a new value is produced per request without caching.
 
-Lifecycle enforcement MUST NOT alter dependency identity between calls.
+Lifecycle enforcement MUST NOT alter dependency identity.
+
+Caching is part of lifecycle semantics and cannot be disabled.
+
+For singleton dependencies:
+
+- instantiation and postprocess MUST occur exactly once prior to caching;
+- subsequent requests return the cached value.
+
+Lifecycle behavior must not depend on mutable runtime state and must not vary across identical linking conditions.
 
 ### Freeze
 
 Freeze is a mandatory core stage.
 
-Freeze enforces structural immutability of the final instance and occurs before the instance is returned.
+Freeze enforces structural immutability of the final value and occurs after lifecycle enforcement and before the value is returned.
 
-Freeze may be implemented as part of lifecycle enforcement provided the observable stage ordering is preserved: lifecycle enforcement and caching precede freeze, and freeze precedes exposure of the instance to the caller.
+Freeze may be implemented as part of lifecycle enforcement provided the observable stage ordering is preserved:
+
+instantiate → postprocess → lifecycle enforcement and caching → freeze → return
 
 Freeze cannot be disabled.
 
@@ -122,11 +162,11 @@ Cyclic dependencies are prohibited. Detection of a cycle results in immediate te
 
 ## Determinism
 
-Determinism is guaranteed at the level of instance identity.
+Determinism is guaranteed at the level of returned value identity.
 
-For identical container configuration, identical parser, identical EDD interpreted under identical parser configuration, and identical dependency stack, linking must produce identical lifecycle outcomes and wrapper composition.
+For identical container configuration, identical parser, identical EDD interpreted under identical parser configuration, and identical dependency stack, linking MUST produce identical lifecycle outcomes and identical wrapper composition.
 
-The architecture does not guarantee determinism of internal object state. Randomness or time-dependent behavior inside constructors is permitted.
+The architecture does not guarantee determinism of internal object state. Randomness or time-dependent behavior inside constructors or factories is permitted.
 
 ## Failure Semantics
 
@@ -138,8 +178,16 @@ Linking is fail-fast. Deferred errors, fallback resolution, partial linking, or 
 
 The extension surface consists exclusively of preprocess and postprocess stages.
 
-Extensions may transform dependency identity before resolution and may wrap or replace instances before lifecycle enforcement and freeze.
+Extensions may:
 
-Extensions must not reorder or bypass core stages, alter resolver semantics, introduce lazy linking, or introduce non-determinism under identical conditions.
+- transform dependency identity before resolution;
+- wrap or replace values before lifecycle enforcement and freeze.
+
+Extensions must not:
+
+- reorder or bypass core stages;
+- alter resolver semantics;
+- introduce lazy linking;
+- introduce non-determinism under identical conditions.
 
 Core linking semantics are immutable and non-replaceable.

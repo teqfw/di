@@ -19,10 +19,10 @@ Identity, determinism, and injectivity are defined strictly at the `DepId` level
 `DepId` is an immutable structural data carrier with the following fields:
 
 - `moduleName: string`
-- `platform: 'src' | 'node' | 'npm'`
+- `platform: 'teq' | 'node' | 'npm'`
 - `exportName: string | null`
 - `composition: 'as-is' | 'factory'`
-- `life: 'singleton' | 'instance' | null`
+- `life: 'direct' | 'singleton' | 'transient'`
 - `wrappers: string[]`
 - `origin: string`
 
@@ -30,9 +30,9 @@ All fields are immutable after construction.
 
 The literal sets are closed and canonical:
 
-- `platform ∈ {'src','node','npm'}`
+- `platform ∈ {'teq','node','npm'}`
 - `composition ∈ {'as-is','factory'}`
-- `life ∈ {'singleton','instance',null}`
+- `life ∈ {'direct','singleton','transient'}`
 
 Architectural semantics are defined exclusively in terms of these values.
 
@@ -40,22 +40,26 @@ Architectural semantics are defined exclusively in terms of these values.
 
 `moduleName` is the logical namespace identifier. Resolution to a physical resource is delegated to the resolver.
 
-`platform` defines the execution domain of the module and participates in structural identity.
+`platform` defines the semantic execution domain of the module and participates in structural identity:
+
+- `'teq'` — a TeqFW-compatible module participating in the DI architecture.
+- `'node'` — a built-in Node.js module.
+- `'npm'` — an external npm package not required to follow TeqFW conventions.
 
 `exportName` is `null` for whole-module import. A non-null value denotes a named export. The literal `'default'` explicitly represents the default export. `exportName` participates in structural identity.
 
 `composition` defines how the selected export is interpreted:
 
-- `'as-is'` — the resolved export is returned directly.
+- `'as-is'` — the resolved export is used directly.
 - `'factory'` — the resolved export is invoked to produce a value.
 
-`life` defines lifecycle policy when applicable:
+`life` defines lifecycle policy:
 
-- `'singleton'` — the produced instance is cached.
-- `'instance'` — a new instance is produced per request.
-- `null` — lifecycle is not applicable.
+- `'direct'` — no caching is applied. The value produced by composition is returned as-is.
+- `'singleton'` — the produced value is cached and reused.
+- `'transient'` — a new value is produced per request without caching.
 
-`wrappers` is an ordered list of wrapper identifiers applied after composition. Order is significant.
+`wrappers` is an ordered list of wrapper identifiers applied after composition semantics are resolved and before lifecycle enforcement. Order is significant.
 
 `origin` preserves the original EDD string for traceability and diagnostics. It does not participate in structural identity.
 
@@ -92,13 +96,22 @@ Given identical container configuration, identical parser profile, and identical
 
 The following cross-field conditions define the invariant requirements for `DepId` values entering the immutable core:
 
-- If `composition = 'as-is'`, then `life = null`.
-- If `life != null`, then `composition = 'factory'`.
-- If `exportName = null`, then `wrappers.length = 0`.
-- Wrapper order is preserved and significant.
-- All fields except `origin` participate in structural identity.
+1. If `life = 'transient'`, then:
+   - `composition = 'factory'`.
 
-These invariants describe the semantic consistency required for canonical dependency identity within the linking pipeline.
+2. If `composition = 'factory'`, then:
+   - `exportName != null`.
+
+3. If `exportName = null`, then:
+   - `composition = 'as-is'`.
+
+4. Wrappers are applied to the value produced by composition.
+
+5. Wrapper order is preserved and significant.
+
+6. All fields except `origin` participate in structural identity.
+
+Wrappers are permitted for all valid combinations of `composition` and `life`, including `'direct'`, provided the above invariants hold.
 
 ## Invariant Enforcement Boundary
 

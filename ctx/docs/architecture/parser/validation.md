@@ -4,98 +4,128 @@ Path: `./ctx/docs/architecture/parser/validation.md`
 
 ## 1. Scope
 
-This document defines the normative validation rules for the default EDD profile. These rules determine whether an EDD string is acceptable for transformation into a `DepId`. Validation is deterministic and fail-fast. Any violation terminates parsing.
+This document defines the normative validation rules for the default EDD profile.
 
-## 2. Classification of Violations
+These rules determine whether an EDD string is acceptable for transformation into a `DepId`.
 
-Validation failures are classified as:
+Validation is deterministic and fail-fast. Any violation terminates parsing by throwing a standard `Error`.
 
-- `GrammarViolation` — violation of base lexical constraints.
-- `ProfileViolation` — violation of default EDD profile rules.
+No error subclasses or classification categories are defined.
 
-Classification does not affect termination semantics; any violation results in failure.
-
-## 3. Grammar Rules
+## 2. Grammar Rules
 
 The following rules define base lexical admissibility:
 
 1. The EDD string must be a valid `AsciiEddIdentifier` as defined in `ctx/docs/architecture/edd-model.md`.
 2. Unicode characters are not permitted.
-3. Leading digits are not permitted.
-4. The string must be non-empty.
+3. The string must be non-empty.
+4. The string must not begin with a digit.
 
-Violation of any Grammar Rule results in `GrammarViolation`.
+Violation of any Grammar Rule causes parsing to fail immediately.
 
-## 4. Profile Rules
-
-Profile rules apply only after Grammar Rules are satisfied.
-
-### 4.1 Delimiter Rules
+## 3. Delimiter Rules
 
 1. The delimiter `__` may appear at most once in the entire string.
 2. The delimiter `__` must not appear at the beginning of the string.
 3. The delimiter `__` must not appear at the end of the string.
 4. `moduleName` must not contain `__`.
 
-Violation of any Delimiter Rule results in `ProfileViolation`.
+Violation of any Delimiter Rule causes parsing to fail.
 
-### 4.2 Lifecycle Rules
+## 4. Lifecycle Rules
 
-1. Only `$` or `$$` are permitted lifecycle markers.
+1. Only `$`, `$$`, or `$$$` are permitted lifecycle markers.
 2. At most one lifecycle marker sequence is permitted.
-3. Lifecycle must appear immediately after the base module segment and before any wrapper segments.
-4. `$` may appear only as part of the lifecycle marker.
+3. Lifecycle marker must appear after the export segment (if present) and before any wrapper segments.
+4. `$` may appear only as part of a lifecycle marker.
 
-Violation of any Lifecycle Rule results in `ProfileViolation`.
+Lifecycle mapping:
 
-### 4.3 Wrapper Rules
+- `$` → `life = 'singleton'`
+- `$$` → `life = 'transient'`
+- `$$$` → `life = 'direct'`
 
-1. Wrappers are permitted only when lifecycle is present.
-2. Wrapper segments must follow lifecycle.
-3. Wrappers are not permitted when `exportName = null` (whole-module import).
-4. Wrapper names must not contain `_`.
-5. Wrapper names must not contain `$`.
-6. Wrapper names must not be `default`.
-7. Wrapper names may contain digits.
-8. Wrapper segments must not be empty.
+Absence of lifecycle marker implies `life = 'direct'`.
 
-Violation of any Wrapper Rule results in `ProfileViolation`.
+Any invalid lifecycle encoding causes parsing to fail.
 
-### 4.4 Export Rules
+## 5. Wrapper Rules
+
+Wrappers are defined as ordered suffix segments following lifecycle markers.
+
+1. Wrappers are permitted for all lifecycle modes, including `'direct'`.
+2. Wrapper segments must follow the lifecycle marker.
+3. Wrapper identifiers must not contain `_` beyond the leading wrapper marker.
+4. Wrapper identifiers must not contain `$`.
+5. Wrapper identifiers must not be empty.
+6. Wrapper identifiers must not be equal to `default`.
+7. Wrapper order is preserved.
+8. Duplicate wrapper identifiers are permitted.
+
+Violation of any Wrapper Rule causes parsing to fail.
+
+## 6. Export Rules
 
 1. Export name must not contain `_`.
 2. Export name must not contain `$`.
 3. Export name may be `default`.
-4. Export name may be `node` or `npm`.
-5. Empty export segments are not permitted.
+4. Export name must not be empty.
+5. Export name must not contain additional `__`.
 
-Violation of any Export Rule results in `ProfileViolation`.
+Export is optional.
 
-### 4.5 Module Rules
+Export presence does not require lifecycle.
 
-1. `moduleName` must be non-empty after removal of lifecycle, wrappers, and export.
+Invalid export encoding causes parsing to fail.
+
+## 7. Module Rules
+
+After removal of export, lifecycle, and wrapper segments:
+
+1. `moduleName` must be non-empty.
 2. `moduleName` must not contain `$`.
 3. `moduleName` must not contain `__`.
 4. `moduleName` must not start with `_`.
-5. `moduleName` must not be equal to `node`.
-6. `moduleName` must not be equal to `npm`.
 
-Violation of any Module Rule results in `ProfileViolation`.
+Violation of any Module Rule causes parsing to fail.
 
-### 4.6 Platform Prefix Rules
+## 8. Platform Prefix Rules
 
-1. If the string begins with `node_`, platform is `node` and the prefix is removed from `moduleName`.
-2. If the string begins with `npm_`, platform is `npm` and the prefix is removed from `moduleName`.
-3. If no reserved prefix is present, platform is `src`.
-4. The explicit prefix `src_` is not permitted.
+Platform is derived from the module prefix:
+
+1. If the string begins with `node_`, platform is `node` and the prefix is removed.
+2. If the string begins with `npm_`, platform is `npm` and the prefix is removed.
+3. If no reserved prefix is present, platform is `teq`.
+4. The explicit prefix `teq_` is not permitted.
 5. Reserved prefixes are interpreted deterministically and always take precedence.
 
-Violation of any Platform Prefix Rule results in `ProfileViolation`.
+Violation of any Platform Prefix Rule causes parsing to fail.
 
-## 5. Determinism Requirement
+## 9. Composition Consistency Rules
 
-Validation must not perform backtracking or alternative interpretations. A string is either valid under the default profile or invalid. No recovery or fallback semantics are permitted.
+The following semantic consistency rules are validated during transformation:
 
-## 6. Validation Boundary
+1. If `life = 'transient'`, then `composition = 'factory'`.
+2. If `composition = 'factory'`, then `exportName != null`.
+3. If `exportName = null`, then `composition = 'as-is'`.
 
-This document defines grammar and profile admissibility rules. Structural `DepId` invariants are validated after transformation as defined in `ctx/docs/architecture/parser/transformation.md` and `ctx/docs/architecture/depid-model.md`.
+Any violation results in parsing failure.
+
+## 10. Determinism Requirement
+
+Validation must not perform backtracking or alternative interpretations.
+
+A string is either valid under the default profile or invalid.
+
+No recovery or fallback semantics are permitted.
+
+## 11. Validation Boundary
+
+This document defines grammar and profile admissibility rules.
+
+Structural `DepId` invariants are validated after transformation as defined in:
+
+- `ctx/docs/architecture/parser/transformation.md`
+- `ctx/docs/architecture/depid-model.md`
+
+Any violation results in immediate failure.
