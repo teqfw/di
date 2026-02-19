@@ -4,28 +4,27 @@ Path: `./ctx/docs/code/depid.md`
 
 ## Purpose
 
-This document defines the engineering contract of the `DepId` DTO within the code layer of `@teqfw/di` (v2, `src2/`). It specifies its structural form, construction rules, immutability strategy, and boundaries of responsibility relative to the parser and the immutable linking core.
+This document defines the implementation-level contract of `src2/Dto/DepId.mjs` in the current project state. It fixes the DTO shape, normalization rules, immutability mode, and responsibility boundaries of the `DepId` factory without redefining parser grammar or immutable-core architecture semantics.
 
-This document does not redefine architectural semantics of `DepId`. Architectural identity, invariants, and determinism guarantees are defined at the architecture level. This document defines only code-level structural guarantees.
+## Normative References
 
-## Architectural Position
+The `DepId` DTO contract is implementation-level and must remain aligned with:
 
-`DepId` is the structural canonical dependency identity produced by the configured parser and consumed by the immutable core linking pipeline.
+- `ctx/docs/architecture/depid-model.md`
+- `ctx/docs/architecture/overview.md`
+- `ctx/docs/code/parser.md`
+- `src2/Dto/DepId.mjs`
+- `src2/Enum/Platform.mjs`
+- `src2/Enum/Composition.mjs`
+- `src2/Enum/Life.mjs`
 
-At the code level:
+## Architectural Boundary
 
-- `DepId` is implemented as a DTO.
-- It is a pure structural data carrier.
-- It contains no behavior.
-- It contains no methods.
-- It performs no semantic interpretation.
-- It performs no derived-field computation.
+Architectural documents define semantic meanings of dependency identity (`as-is`/`factory`, `direct`/`singleton`/`transient`) and parser invariants. The code-level DTO stores compact canonical literals used by the current implementation and does not perform semantic interpretation. Semantic mapping and invariant enforcement belong to the parser boundary.
 
-All semantic interpretation of EDD — including lifecycle derivation, export normalization, platform derivation, and invariant validation — is performed by the parser before DTO construction.
+## DTO Shape
 
-## Structural Shape
-
-`DepId` has the following fixed structural fields:
+`DepId` DTO contains exactly seven public fields:
 
 - `moduleName: string`
 - `platform: 'teq' | 'node' | 'npm'`
@@ -35,138 +34,73 @@ All semantic interpretation of EDD — including lifecycle derivation, export no
 - `wrappers: string[]`
 - `origin: string`
 
-All fields are required. `origin` must always be present and must not be `null` or `undefined`.
+`origin` is mandatory in the DTO shape, but does not participate in structural identity comparison.
 
-`origin` does not participate in structural identity comparison but is mandatory for traceability and diagnostic consistency.
+## Enum Literals in Current Implementation
 
-## Enum Model
+Factory admissibility checks are based on current enum modules:
 
-Enumerated fields (`platform`, `composition`, `life`) are represented using TeqFW Enum objects as flat literal maps of primitive constants.
+- `Platform`: `teq | node | npm`
+- `Composition`: `A | F` (`AS_IS | FACTORY`)
+- `Life`: `S | I` (`SINGLETON | INSTANCE`)
 
-Enums in TeqFW:
+Code-level `life = null` is allowed and represents the non-lifecycle case in the current parser contract.
 
-- are flat literal objects,
-- contain only primitive constant values,
-- contain no logic,
-- serve as structural constant sets.
+## Factory Interface
 
-The canonical enum modules and literal sets for `DepId` are:
+`src2/Dto/DepId.mjs` exports class `Factory` with method `create(input, options)`.
 
-- `src2/Enum/Platform.mjs` → `{ TEQ: 'teq', NODE: 'node', NPM: 'npm' }`
-- `src2/Enum/Composition.mjs` → `{ A: 'A', F: 'F' }`
-- `src2/Enum/Life.mjs` → `{ S: 'S', I: 'I' }`
+Factory contract:
 
-The DTO stores canonical string literals as defined by the architecture. Symbol-based enums are prohibited because they break JSON compatibility and hashing determinism.
+- accepts any JavaScript value as `input`;
+- accepts any JavaScript value as `options`;
+- never throws;
+- always returns a `DTO` instance;
+- supports optional immutable mode through `options.immutable === true`.
 
-## Factory Responsibility
+## Normalization Rules
 
-`DepId` instances are created exclusively through a factory.
+Factory normalization in current implementation is deterministic and field-local:
 
-The factory:
+- `moduleName`: non-string -> `''`;
+- `platform`: non-admissible literal -> `'teq'`;
+- `exportName`: value other than `string | null` -> `null`;
+- `composition`: non-admissible literal -> `'A'`;
+- `life`: non-admissible literal -> `null`;
+- `wrappers`: non-array -> `[]`, array -> keep only string items in original order;
+- `origin`: non-string -> `''`.
 
-- accepts `undefined` or any arbitrary JavaScript value as input,
-- never throws,
-- always returns a structurally admissible DTO,
-- does not compute derived fields,
-- does not enforce semantic profile rules.
+The factory does not derive any field from other fields and does not mutate input objects.
 
-The factory performs structural normalization:
+## Immutability Mode
 
-- missing or invalid primitive fields are replaced with structural defaults,
-- invalid enum literals are replaced with canonical defaults,
-- `exportName` is normalized to `string | null`,
-- `life` is normalized to `'S' | 'I' | null`,
-- `wrappers` is normalized to a cloned `string[]`,
-- `origin` is always present as a string,
-- no DTO field remains `undefined`.
+When `options.immutable === true`, the factory:
 
-The factory performs structural admissibility checks only:
+1. freezes `dto.wrappers`;
+2. freezes `dto` itself.
 
-- primitive type checks,
-- enum literal admissibility checks,
-- `wrappers` element type checks.
+The wrappers array is created by `Array.prototype.filter`, so the DTO never keeps an external array reference from input.
 
-The factory does not:
+When immutable mode is not enabled, returned DTO and wrappers remain mutable.
 
-- derive any field from another field,
-- derive `composition` from `life`,
-- enforce lifecycle–composition relations,
-- validate architectural cross-field invariants,
-- reorder or deduplicate `wrappers`.
+## Responsibility Boundary
 
-## Invariant Non-Enforcement Principle
+The DTO factory is responsible only for structural normalization and admissibility of single fields. The factory is not responsible for parser-level or architecture-level cross-field invariants, including lifecycle/composition/export consistency. Such invariants are enforced before immutable-core linking and are outside the DTO contract.
 
-The `DepId` factory intentionally does not enforce architectural cross-field invariants.
+## Identity Boundary
 
-`DepId` at the code level is a structural DTO and not a semantic validator.
+For identity semantics at architecture level, `origin` is excluded and all remaining fields are identity-relevant. The DTO itself does not implement equality, hashing, or semantic validation.
 
-Architectural invariants — including lifecycle–composition consistency and wrapper applicability rules — are guaranteed exclusively by the parser before `DepId` enters the immutable core linking pipeline.
+## Prohibited Expansions of DTO Responsibility
 
-The DTO layer must not duplicate, partially enforce, or reinterpret parser logic.
+The current code-level contract prohibits adding parser or linking behavior into `DepId` factory, including:
 
-Synthetic `DepId` instances created in controlled test environments may temporarily violate architectural invariants. Such instances are not considered valid inputs to the immutable core linking pipeline.
-
-Invariant enforcement is therefore outside the responsibility of the DTO factory.
-
-## Immutability Strategy
-
-`DepId` supports mutable and immutable creation modes.
-
-Immutable mode (`create(input, { immutable: true })`) is enforced as follows:
-
-1. The `wrappers` array is cloned to detach it from external references.
-2. The cloned array is frozen.
-3. The DTO object itself is shallow-frozen.
-
-Mutable mode does not freeze the DTO or `wrappers`.
-
-Deep freeze is not required because all fields are primitives or frozen arrays of primitives.
-
-The factory must not expose external mutable references through DTO fields.
-
-## Structural Identity
-
-Structural identity is defined exclusively by:
-
-- `moduleName`
-- `platform`
-- `exportName`
-- `composition`
-- `life`
-- `wrappers` (element-by-element, order preserved)
-
-`origin` does not participate in structural identity.
-
-The DTO does not implement equality or hashing. Any hashing or structural comparison mechanism is external and must operate exclusively on structural identity fields.
-
-The DTO does not store a precomputed identity key.
-
-## Creation Boundary
-
-Architecturally, `DepId` is produced by the parser.
-
-Application code must not construct `DepId` directly.
-
-In test environments, synthetic construction is permitted only through the factory.
-
-`DepId` must never exist without `origin`.
-
-## Error Model at Code Level
-
-The factory does not throw and does not signal failure. Structural invalidity is handled only by normalization to admissible structural values.
-
-Semantic profile errors remain the parser responsibility and are outside DTO construction.
+- EDD parsing;
+- cross-field invariant validation;
+- resolver-specific logic;
+- lifecycle cache semantics;
+- wrapper execution.
 
 ## Summary
 
-At the code level, `DepId` is a strictly structural DTO that:
-
-- represents canonical dependency identity,
-- contains no behavior,
-- performs no semantic logic,
-- enforces structural admissibility only,
-- intentionally does not enforce architectural invariants,
-- supports optional immutability mode,
-- preserves strict separation between parser semantics and structural representation.
-
-This preserves deterministic linking semantics while maintaining a clear boundary between semantic interpretation and structural identity.
+In the current project state, `DepId` is a structural DTO with compact enum literals (`A/F`, `S/I/null`) and a non-throwing normalization factory. Architectural semantics and invariant enforcement remain outside this factory and are handled at parser and immutable-core boundaries.

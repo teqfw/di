@@ -1,138 +1,249 @@
 # DTO Creation Rules (TeqFW)
 
 Path: `./ctx/docs/code/conventions/teqfw/dto.md`
+Version: `20260219`
 
 ## Purpose
 
-This document defines the engineering invariants for implementing DTO modules in TeqFW. It specifies structural form, factory contract, immutability strategy, DI boundary, and testing obligations. This document regulates implementation rules only and does not redefine architectural semantics.
+This document defines engineering invariants for implementing DTO modules in TeqFW. It specifies structural form, namespace discipline, factory contract, immutability model, DI boundary, and testing obligations. Architectural semantics are defined at higher ADSM levels and are not restated here.
 
-## Definition
+---
 
-A DTO in TeqFW is a structural runtime object representing state only. It defines structural shape and contains no behavior. It does not guarantee semantic correctness and is created exclusively by its factory.
+## 1. Definition
 
-A DTO is not a Domain Entity, Value Object, ORM model, Domain model, Validation object, or behavior container.
+A TeqFW DTO is a structural runtime object representing state only.
 
-## Module Structure
+A DTO:
+
+- defines structural shape only
+- contains no behavior
+- guarantees no semantic correctness
+- is created exclusively by its factory
+
+Architectural separation:
+
+```
+DTO = structure + state
+Handlers = logic without state
+```
+
+DTO is structurally deterministic and semantically neutral.
+
+---
+
+## 2. Module Structure
 
 Each DTO module MUST export exactly two elements:
 
 ```js
-export default class Factory {}
+export default class Ns_Pkg_Dto_Config {}
 export class DTO {}
 ```
 
-The `default` export is the factory.
-The named `DTO` export is the structural class.
+Rules:
 
-The `DTO` class MUST NOT participate in DI.
-Only the factory participates in DI.
-DTO factories MUST be registered as singletons (`Ns_Dto_Component$`).
-Instance lifecycle (`$$`) MUST NOT be used for DTO factories.
+- `default` export — factory class
+- named `DTO` export — structural class
+- no additional exports are permitted
 
-No additional exports are permitted.
+The structural `DTO` class:
 
-## Factory Contract
+- MUST NOT participate in DI
+- MUST NOT declare dependencies
+- MUST NOT contain behavior
+
+DTO factories:
+
+- MUST be registered as singleton (`Ns_Pkg_Dto_Config$`)
+- MUST NOT use per-resolution lifecycle (`$$`)
+
+---
+
+## 3. Namespace Discipline
+
+The ES module namespace MUST match the factory class name.
+
+Example:
+
+```js
+export default class Ns_Pkg_Dto_Config {}
+```
+
+Then:
+
+- `Ns_Pkg_Dto_Config` — factory class
+- `Ns_Pkg_Dto_Config$` — singleton factory resolved via DI
+- `Ns_Pkg_Dto_Config$DTO` — structural instance type
+
+Injection occurs strictly via the factory namespace identifier.
+Structural class is never injected.
+
+---
+
+## 4. Factory Contract
+
+Every DTO factory MUST expose exactly one public method:
+
+```ts
+create(data?: unknown, options?: TeqDtoCreateOptions): TDto;
+```
+
+Where:
+
+```ts
+export interface TeqDtoCreateOptions {
+  mode?: "cutting" | "relaxed";
+  immutable?: boolean;
+}
+```
+
+Factory invariants:
+
+- MUST always return a DTO
+- MUST NOT throw
+- MUST NOT signal failure
+- MUST NOT expose additional public APIs
+- MUST NOT extend the factory interface
 
 DTO instances:
 
-- MUST be created only by their factory.
-- MUST be returned even if input is `undefined`.
-- MUST always have a complete structural shape.
+- MUST be created only by their factory
+- MUST always have a complete structural shape
+- MUST be returned even if input is `undefined`
 
-The factory:
+---
 
-- accepts an arbitrary JavaScript object or `undefined`,
-- MUST NOT throw,
-- MUST NOT signal failure,
-- MUST always return a structurally valid DTO.
+## 5. Structural Normalization
 
-The factory performs structural normalization only.
+Factory performs structural normalization only.
 
-## Structural Normalization
+It MUST:
 
-Factory responsibilities include:
+- create expected primitive fields
+- create expected arrays (empty if absent)
+- create nested DTOs via their factories
+- apply structural coercion only if explicitly defined
+- assign `undefined` when coercion is not applied
 
-- creating expected primitive fields,
-- creating expected arrays (empty if absent),
-- creating nested DTOs via their own factories,
-- applying structural coercion if explicitly defined,
-- assigning `undefined` when coercion is not applied.
+It MUST NOT:
 
-The factory MUST NOT:
-
-- validate business rules,
-- enforce domain invariants,
-- perform semantic validation,
-- implement business logic,
-- mutate nested DTOs created by other factories.
+- validate business rules
+- enforce domain invariants
+- implement business logic
+- perform semantic validation
+- bypass nested DTO factories
+- mutate nested DTOs created by other factories
 
 Normalization is strictly structural.
 
-## Composition Rules
+---
+
+## 6. Nested DTO Composition
 
 If a DTO contains nested DTOs:
 
-- the parent factory MUST invoke the nested factory,
-- each factory operates strictly at its own structural level,
-- hierarchical structural normalization is mandatory.
+- parent factory MUST invoke nested factory
+- each factory operates strictly within its structural boundary
+- hierarchical normalization is mandatory
 
-Factories MUST NOT bypass nested factories.
+Factories MUST NOT mutate DTOs created by other factories.
 
-## Immutability Rules
+---
+
+## 7. Immutability Model
 
 DTO instances MAY operate in mutable or immutable mode.
 
 In immutable mode:
 
-- the factory MUST apply shallow `Object.freeze()` to the DTO,
-- nested structures created at the same structural level belong to the factory’s freeze responsibility,
-- structural isolation is the responsibility of the factory.
+- factory MUST apply shallow `Object.freeze()`
+- freeze applies only at the factory’s structural level
+- nested structures created at that level belong to the factory’s freeze responsibility
 
-The DTO:
+DTO instances:
 
-- MUST NOT track mutations,
-- MUST NOT enforce invariants after creation.
+- MUST NOT track mutations
+- MUST NOT enforce invariants after creation
 
-Mutation responsibility lies outside the DTO.
+Mutation responsibility lies entirely outside DTO.
 
-## Structural Class Rules
+---
+
+## 8. Structural Class Constraints
 
 The `DTO` class:
 
-- MUST NOT define methods,
-- MUST NOT contain logic,
-- MUST NOT depend on services,
-- MUST NOT perform validation,
-- MUST NOT contain behavior,
-- MUST NOT implement serialization,
-- MUST NOT define equality or cloning logic.
+- MUST NOT define methods
+- MUST NOT contain logic
+- MUST NOT perform validation
+- MUST NOT implement serialization
+- MUST NOT define equality or cloning logic
 
-The class serves as a structural declaration only.
+The class serves exclusively as structural declaration.
 
-## Dependency Injection Boundary
+---
 
-Only factories may declare dependencies.
+## 9. Dependency Injection Boundary
 
-The structural DTO class MUST NOT participate in DI.
+Only DTO factories may declare dependencies.
+
+The structural `DTO` class:
+
+- MUST NOT participate in DI
+- MUST NOT depend on services
 
 Container configuration and lifecycle management are outside DTO scope.
 
-## Testing Requirements
+---
 
-Tests MUST verify factory behavior:
+## 10. Type Declaration Rules
 
-- complete structural shape,
-- correct creation modes,
-- correct nested factory invocation,
-- safe degradation of invalid input.
+Factory type:
 
-The `DTO` class MUST NOT be tested independently of the factory.
+```ts
+type Ns_Pkg_Dto_Config = typeof import("./Config.mjs").default;
+```
 
-## Core Principle
+Factory instance type:
 
-TeqFW enforces strict separation:
+```ts
+type Ns_Pkg_Dto_Config$ = InstanceType<typeof import("./Config.mjs").default>;
+```
 
-- DTO = structure and state.
-- Handlers = logic without state.
+DTO instance type:
 
-DTO is structurally deterministic and semantically neutral.
+```ts
+type Ns_Pkg_Dto_Config$DTO = InstanceType<typeof import("./Config.mjs").DTO>;
+```
+
+`$DTO` MUST NOT participate in DI.
+
+---
+
+## 11. Testing Requirements
+
+Tests MUST verify:
+
+- complete structural shape
+- correct creation modes
+- correct nested factory invocation
+- safe degradation of invalid input
+
+Structural class MUST NOT be tested independently.
+
+---
+
+## 12. Exclusion Boundary
+
+A TeqFW DTO is NOT:
+
+- Domain Entity
+- Value Object
+- Aggregate
+- ORM model
+- Domain model
+- Validation object
+- Service
+- Behavior container
+
+DTO is strictly a factory-created structural data model with DI participation limited exclusively to the factory.
