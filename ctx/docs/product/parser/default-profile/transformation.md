@@ -1,6 +1,6 @@
 # Logical Transformation Model (Default EDD Profile)
 
-Path: `./ctx/docs/architecture/parser/transformation.md`
+Path: `./ctx/docs/product/parser/default-profile/transformation.md`
 
 ## 1. Scope
 

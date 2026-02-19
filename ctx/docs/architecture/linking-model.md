@@ -8,7 +8,7 @@ This document defines the immutable core linking semantics and the formally defi
 
 It specifies the linking pipeline, stage responsibilities, determinism scope, and failure semantics.
 
-EDD grammar and parser behavior are defined in `architecture/edd-model.md`.
+EDD is a string-level declaration interpreted by a configured parser profile. The architectural EDD model and the parser boundary are defined in `architecture/edd-model.md`.
 
 ## Core Boundary
 

@@ -16,6 +16,7 @@ Documents of this level must remain semantically aligned in product identity, de
 
 ## Level Map
 
+- `parser/` — product-level parser documentation, including the canonical default EDD profile specification.
 - `AGENTS.md` — this document, defining purpose, boundaries, and consistency rules of the product level.
 - `default-edd-profile.md` — product-level normative positioning, compatibility guarantees, and stability policy for the default EDD profile.
 - `overview.md` — product overview describing purpose, domain problem, architectural position, and value.

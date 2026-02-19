@@ -4,9 +4,9 @@ Path: `./ctx/docs/architecture/edd-model.md`
 
 ## Purpose
 
-This document defines the architectural model of the External Dependency Declaration (EDD), its grammar, semantic role, and its boundary with the structural canonical identity (`DepId`).
+This document defines the architectural model of the External Dependency Declaration (EDD), its semantic role, and its boundary with the structural canonical identity (`DepId`).
 
-It defines the parser as a configuration-level component and clarifies compatibility rules across different EDD encoding schemes.
+It defines the parser as a configuration-level boundary component and clarifies compatibility rules across different EDD encoding schemes (parser profiles).
 
 ## Definition
 
@@ -15,26 +15,11 @@ An External Dependency Declaration (EDD) is the only permitted form of dependenc
 EDD is:
 
 - a string,
-- a valid `AsciiEddIdentifier`,
 - case-sensitive,
-- semantically encoded,
+- semantically encoded by the configured parser profile,
 - part of the public architectural contract of an application.
 
-`AsciiEddIdentifier` is a custom lexical class defined as a non-empty ASCII string matching:
-
-```
-[$A-Za-z_][$0-9A-Za-z_]*
-```
-
-This class is ASCII-only and explicitly prohibits leading digits.
-
-Characters `.`, `(`, `)`, and `:` are forbidden in EDD.
-
-Reserved ECMAScript keywords are not explicitly prohibited and remain lexically admissible.
-
-Leading `$` and `_` are permitted.
-
-Declarations that do not conform to this grammar MUST be rejected deterministically by the parser.
+The architecture does not impose a concrete surface grammar for EDD. Admissibility and interpretation rules are defined by the configured parser profile.
 
 ## Architectural Role
 
@@ -74,9 +59,9 @@ Injectivity applies strictly to the parser stage.
 
 Canonicalization is not part of the immutable core linking pipeline. It is performed by the configured parser before core linking begins.
 
-If a grammatically valid EDD cannot be interpreted by the configured parser profile, the parser throws a standard `Error`.
+If an EDD string is rejected by the configured parser profile, the parser throws a standard `Error`.
 
-For grammatically valid and parser-supported EDD, construction of `DepId₀` must succeed.
+For an EDD string accepted by the configured parser profile, construction of `DepId₀` must succeed.
 
 ## Structural Canonical Representation (DepId)
 
@@ -120,21 +105,19 @@ The linking architecture remains invariant across parser variants.
 
 ## Default Parser Profile
 
-The product distribution provides a default parser and a corresponding default EDD encoding scheme.
+The product distribution provides a canonical default parser profile and a corresponding default EDD encoding scheme.
 
-Use of the default parser is not architecturally mandatory.
+Use of the default profile is not architecturally mandatory.
 
-Replacing the default parser is a configuration-level decision that defines a different EDD profile while preserving the same immutable core linking architecture.
+Replacing the parser is a configuration-level decision that defines a different EDD profile while preserving the same immutable core linking architecture.
 
-Compatibility between applications with respect to dependency declarations is defined by shared parser profile.
+The canonical default profile is defined in product documentation and is explicitly replaceable via custom parser configuration.
 
-Normative parser semantics of the default profile are defined by:
+Normative default-profile grammar, transformation rules, and validation rules are defined in:
 
-- `ctx/docs/architecture/parser/overview.md`
-- `ctx/docs/architecture/parser/validation.md`
-- `ctx/docs/architecture/parser/transformation.md`
-
-No separate architectural error-classification model exists.
+- `ctx/docs/product/parser/default-profile/grammar.md`
+- `ctx/docs/product/parser/default-profile/transformation.md`
+- `ctx/docs/product/parser/default-profile/validation.md`
 
 Normative product positioning, stability guarantees, compatibility guarantees, and breaking-change policy for the default profile are defined in `ctx/docs/product/default-edd-profile.md`.
 

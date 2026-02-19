@@ -1,6 +1,6 @@
 # Validation Rules (Default EDD Profile)
 
-Path: `./ctx/docs/architecture/parser/validation.md`
+Path: `./ctx/docs/product/parser/default-profile/validation.md`
 
 ## 1. Scope
 
@@ -16,7 +16,7 @@ No error subclasses or classification categories are defined.
 
 The following rules define base lexical admissibility:
 
-1. The EDD string must be a valid `AsciiEddIdentifier` as defined in `ctx/docs/architecture/edd-model.md`.
+1. The EDD string must be a valid `AsciiEddIdentifier` as defined in `ctx/docs/product/parser/default-profile/grammar.md`.
 2. Unicode characters are not permitted.
 3. The string must be non-empty.
 4. The string must not begin with a digit.
@@ -125,7 +125,7 @@ This document defines grammar and profile admissibility rules.
 
 Structural `DepId` invariants are validated after transformation as defined in:
 
-- `ctx/docs/architecture/parser/transformation.md`
+- `ctx/docs/product/parser/default-profile/transformation.md`
 - `ctx/docs/architecture/depid-model.md`
 
 Any violation results in immediate failure.

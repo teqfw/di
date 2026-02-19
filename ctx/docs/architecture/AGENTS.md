@@ -17,6 +17,7 @@ Documents of this level must remain semantically aligned in the definitions of `
 ## Level Map
 
 - `AGENTS.md` — this document, defining purpose, boundaries, and consistency rules of the architecture level.
+- `depid-model.md` — declarative model of structural canonical dependency identity (`DepId`) and its immutable invariants.
 - `edd-model.md` — declarative model of External Dependency Declaration, parser role, and boundary to structural canonical identity (`DepId`).
 - `invariants.md` — immutable architectural invariants that constrain all parser profiles and configurations.
 - `linking-model.md` — immutable core linking pipeline, stage semantics, determinism scope, and failure semantics.

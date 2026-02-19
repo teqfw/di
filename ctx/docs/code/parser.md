@@ -8,15 +8,23 @@ This document defines the implementation-level contract of the parser component 
 
 ## 2. Normative Architecture References
 
-Parser implementations MUST conform to the following architecture documents:
+Parser implementations MUST conform to the following architecture boundary documents:
 
-- `ctx/docs/architecture/parser/overview.md`
-- `ctx/docs/architecture/parser/validation.md`
-- `ctx/docs/architecture/parser/transformation.md`
-- `ctx/docs/architecture/parser/error-model.md`
+- `ctx/docs/architecture/edd-model.md`
 - `ctx/docs/architecture/depid-model.md`
+- `ctx/docs/architecture/invariants.md`
+- `ctx/docs/architecture/linking-model.md`
 
-These documents are the only normative source for parser semantics, including lifecycle/export/wrapper interaction, equivalence-class boundaries, structural invariants, and validation boundaries. This code-level document does not restate those rules.
+These documents define the parser boundary, `DepId` structure, core invariants, and the immutable linking pipeline boundary.
+
+The canonical default EDD profile shipped with the product is specified in:
+
+- `ctx/docs/product/default-edd-profile.md`
+- `ctx/docs/product/parser/default-profile/grammar.md`
+- `ctx/docs/product/parser/default-profile/transformation.md`
+- `ctx/docs/product/parser/default-profile/validation.md`
+
+This code-level document does not restate default-profile grammar, mapping rules, or validation rules.
 
 ## 3. Public Interface
 
@@ -33,7 +41,7 @@ Two parser variants are supported at code level:
 1. A generic parser implementation conforming to the architectural parser contract.
 2. The default EDD profile parser provided by the product.
 
-All parser implementations MUST satisfy this interface and behavioral contract. The default parser implementation MUST additionally conform exactly to the architecture-defined default profile semantics.
+All parser implementations MUST satisfy this interface and behavioral contract. The default parser implementation MUST additionally conform exactly to the product-defined default profile semantics.
 
 ## 5. Determinism and Purity
 
@@ -49,27 +57,23 @@ Returning error objects instead of throwing is prohibited.
 
 ## 7. Error Surface
 
-The thrown exception MUST expose a category discriminator with one of the following values:
+The parser MUST throw a standard `Error` for any rejection under the selected profile.
 
-- `GrammarViolation`
-- `ProfileViolation`
-- `DepIdInvariantViolation`
+Concrete error classes, structured error fields, and error classification are implementation-defined and must not be relied upon by architectural semantics.
 
-Concrete error classes are implementation-defined. A single error class with a category field is sufficient. Error messages MUST be human-readable and describe the reason for failure.
-
-Error classification MUST be deterministic. Identical invalid input MUST produce the same category under identical profile definition. Parser errors MUST be isolated from resolver, loader, or runtime linking errors.
+Error messages MUST be human-readable and describe the reason for failure.
 
 ## 8. DepId Construction Contract
 
 The parser MUST construct a `DepId` instance with explicit deterministic assignment of all structural identity fields and with `origin` equal to the original input string without modification.
 
-Structural invariants are defined at architecture level. If the constructed `DepId` violates those invariants, the parser MUST throw `DepIdInvariantViolation`.
+Structural invariants are defined at architecture level. If the constructed `DepId` violates those invariants, the parser MUST throw.
 
 The parser MUST NOT expose or allow direct construction of `DepId` by application code.
 
 ## 9. Injectivity and Equivalence Conformance
 
-Within a given parser profile, the implementation MUST preserve semantic injectivity and MUST implement only architecture-defined equivalence classes. Introducing additional equivalence classes is non-compliant.
+Within a given parser profile, the implementation MUST preserve semantic injectivity and MUST implement only the equivalence classes defined by that profile. Introducing additional equivalence classes within a profile is non-compliant.
 
 Any change that weakens injectivity within a profile is a breaking change.
 

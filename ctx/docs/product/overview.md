@@ -12,13 +12,13 @@ The container enforces architectural discipline through explicit dependency decl
 
 Dependencies are declared explicitly as External Dependency Declarations (EDD).
 
-An EDD is a string-level public contract and must conform to `AsciiEddIdentifier` grammar as defined at the architecture level. Dependency resolution is performed exclusively through EDD values and does not rely on static imports.
+An EDD is a string-level public contract interpreted by a configured parser profile. Dependency resolution is performed exclusively through EDD values and does not rely on static imports.
 
 Each runtime instance uses a configured parser that transforms EDD into a structural canonical representation (`DepId`). The parser may define deterministic syntactic sugar for dependency declarations, provided it does not introduce semantic aliasing.
 
 Dependency identity is determined by structural `DepId`, not by raw EDD string equality.
 
-The product distribution provides a default EDD profile and corresponding parser. The default profile is immutable within a library version. A breaking library change of the default profile is a semantic change in EDD interpretation that alters the resulting structural canonical `DepId`. Cosmetic or surface grammar expansions are not breaking changes when they preserve semantic interpretation, preserve resulting structural canonical `DepId`, and do not introduce semantic aliasing. Applications may replace the default parser to adopt alternative encoding schemes while preserving the same core linking architecture. Compatibility between applications at the dependency level is defined by a shared parser profile.
+The product distribution provides a canonical default EDD profile and corresponding parser. The default profile defines the default EDD grammar and mapping rules and is specified in `ctx/docs/product/default-edd-profile.md` and `ctx/docs/product/parser/default-profile/grammar.md`. The default profile is immutable within a library version. A breaking library change of the default profile is a semantic change in EDD interpretation that alters the resulting structural canonical `DepId`. Cosmetic or surface grammar expansions are not breaking changes when they preserve semantic interpretation, preserve resulting structural canonical `DepId`, and do not introduce semantic aliasing. Applications may replace the default parser to adopt alternative encoding schemes while preserving the same core linking architecture. Compatibility between applications at the dependency level is defined by a shared parser profile.
 
 ## Problem Domain
 

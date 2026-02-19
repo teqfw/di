@@ -127,11 +127,6 @@ The immutable core linking pipeline assumes that every `DepId` it receives satis
 
 Any parser profile that produces `DepId` must map lifecycle, export, composition, and wrappers so that structural invariants hold for successful parsing.
 
-In the default profile, mapping and validation order are specified in:
-
-- `ctx/docs/architecture/parser/transformation.md`
-- `ctx/docs/architecture/parser/validation.md`
-
 ## Hashing Semantics
 
 If hashing is implemented, it MUST be computed exclusively from the structural identity fields:
