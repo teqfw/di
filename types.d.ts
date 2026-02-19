@@ -6,6 +6,7 @@ type TeqFw_Di_Container_Parser = InstanceType<typeof import("./src/Container/Par
 type TeqFw_Di_Container_PostProcessor = InstanceType<typeof import("./src/Container/PostProcessor.js").default>;
 type TeqFw_Di_Container_PreProcessor = InstanceType<typeof import("./src/Container/PreProcessor.js").default>;
 type TeqFw_Di_Container_Resolver = InstanceType<typeof import("./src/Container/Resolver.js").default>;
+type TeqFw_Di_Def_Parser = InstanceType<typeof import("./src2/Def/Parser.mjs").default>;
 type TeqFw_Di_Dto_DepId = InstanceType<typeof import("./src2/Dto/DepId.mjs").default>;
 type TeqFw_Di_Dto_DepId_DTO = import("./src2/Dto/DepId.mjs").DTO;
 type TeqFw_Di_Enum_Composition = typeof import("./src2/Enum/Composition.mjs").default;
@@ -23,6 +24,7 @@ declare global {
   type TeqFw_Di_Container = InstanceType<typeof import("./src/Container.js").default>;
   type TeqFw_Di_Container_Config = InstanceType<typeof import("./src/Container/Config.js").default>;
   type TeqFw_Di_Defs = import("./src/Defs.js").default;
+  type TeqFw_Di_Def_Parser = InstanceType<typeof import("./src2/Def/Parser.mjs").default>;
   type TeqFw_Di_DepId = InstanceType<typeof import("./src/DepId.js").default>;
   type TeqFw_Di_DepId_V2_DTO = import("./src2/Dto/DepId.mjs").DTO;
   type TeqFw_Di_DepId_V2_Factory = InstanceType<typeof import("./src2/Dto/DepId.mjs").default>;
