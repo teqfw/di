@@ -2,10 +2,9 @@
 
 Path: `./ctx/docs/code/resolver.md`
 
-
 ## Purpose
 
-This document defines the implementation-level contract of the `Resolver` component in `@teqfw/di`. It specifies the public interface, resolution semantics, configuration boundary, module caching model, error behavior, determinism scope, and breaking-change limits.
+This document defines the implementation-level contract of the `Resolver` component in `@teqfw/di`. It specifies the public interface, resolution semantics, configuration model, module caching behavior, error semantics, determinism scope, and breaking-change limits.
 
 Architectural pipeline ordering and structural identity semantics are defined at higher levels and are not restated here.
 
@@ -18,12 +17,15 @@ The resolver implementation MUST conform to:
 - `ctx/docs/constraints/overview.md`
 - `ctx/docs/code/structure.md`
 - `ctx/docs/environment/overview.md`
+- `ctx/docs/code/conventions/teqfw/dto.md`
 
 ## Public Interface
 
 The resolver exposes a single method:
 
-`resolve(depId: DepId): Promise<object>`
+```
+resolve(depId: DepId): Promise<object>
+```
 
 The method MUST:
 
@@ -51,15 +53,81 @@ The resolver MUST ignore:
 
 Export selection and verification are performed during instantiation and are outside resolver responsibility.
 
+## Resolver Configuration Model
+
+Resolver configuration is provided by the container before the container transitions to operational state.
+
+Configuration is represented by two DTOs defined according to:
+
+```
+ctx/docs/code/conventions/teqfw/dto.md
+```
+
+The structural shape of these DTOs is normative. Any structural change constitutes a breaking change of the resolver implementation contract.
+
+### 1. TeqFw_Di_Dto_Resolver_Config$DTO
+
+Structural form:
+
+```
+namespaces: TeqFw_Di_Dto_Resolver_Config_Namespace$DTO[]
+nodeModulesRoot?: string | undefined
+```
+
+Semantics:
+
+- `namespaces` — complete set of namespace mapping rules used when `platform = 'teq'`.
+- `nodeModulesRoot` — root directory of `node_modules`, used when deriving module specifiers for `platform = 'npm'` if absolute resolution is required by the runtime environment.
+
+No additional fields are permitted.
+
+The DTO:
+
+- MUST NOT contain computed or derived values,
+- MUST NOT contain normalized paths,
+- MUST NOT contain cached data,
+- MUST NOT contain container state.
+
+### 2. TeqFw_Di_Dto_Resolver_Config_Namespace$DTO
+
+Structural form:
+
+```
+prefix: string
+target: string
+defaultExt: string
+```
+
+Semantics:
+
+- `prefix` — namespace prefix used for deterministic longest-prefix match against `DepId.moduleName`.
+- `target` — base module specifier (filesystem path or base URL) to which the derived relative path is appended.
+- `defaultExt` — extension appended to modules within this namespace. No global default extension exists.
+
+No additional fields are permitted.
+
+The DTO is strictly structural and contains no resolution logic.
+
+### Namespace Matching Rule
+
+When `platform = 'teq'`, the resolver MUST select the namespace rule using deterministic longest-prefix match.
+
+Given identical configuration and identical `DepId`, namespace selection MUST produce identical results.
+
+Namespace matching semantics are part of resolver behavior and not part of DTO logic.
+
 ## Module Specifier Derivation
 
 The resolver derives a module specifier deterministically from `DepId`.
 
 For `platform = 'teq'`:
 
-- A namespace-to-path mapping provided by container configuration is applied to `moduleName`.
-- The mapping produces the final module specifier.
-- The resolver does not perform filesystem inspection or path normalization beyond configured mapping rules.
+- The resolver selects a namespace rule using longest-prefix match.
+- The relative module path is derived from `moduleName` remainder.
+- `defaultExt` of the selected namespace is appended.
+- The final module specifier is constructed by combining `target` and derived path.
+
+The resolver MUST NOT perform filesystem inspection or environment-specific normalization beyond configured mapping rules.
 
 For `platform = 'node'`:
 
@@ -67,7 +135,8 @@ For `platform = 'node'`:
 
 For `platform = 'npm'`:
 
-- The module specifier is the bare specifier derived from `moduleName`.
+- The module specifier is derived from `moduleName`.
+- If required by runtime environment, `nodeModulesRoot` may be used to construct an absolute specifier.
 
 Given identical configuration and identical `DepId`, module specifier derivation MUST produce identical results.
 
@@ -85,10 +154,6 @@ The resolver MUST NOT:
 - freeze objects.
 
 ## Configuration Boundary
-
-Resolver configuration is provided by the container prior to the first resolution.
-
-Configuration includes namespace-to-path mapping rules for the `teq` platform.
 
 Configuration becomes immutable when the container transitions to operational state.
 
@@ -135,6 +200,7 @@ Determinism applies only to module namespace identity.
 The resolver is responsible for:
 
 - deterministic module specifier derivation,
+- namespace selection,
 - loading ES modules,
 - caching module namespace objects.
 
@@ -154,7 +220,9 @@ The following changes constitute breaking changes:
 
 - changing the asynchronous contract of `resolve`,
 - altering module specifier derivation for a given `(platform, moduleName)`,
+- modifying namespace matching semantics,
 - modifying platform interpretation rules,
+- changing DTO structural shape,
 - removing or altering resolver-level caching semantics,
 - introducing export validation into resolver,
 - introducing fallback resolution strategies,
@@ -167,7 +235,9 @@ Refactoring that preserves module specifier derivation, namespace identity, and 
 A compliant resolver implementation MUST:
 
 - operate exclusively on structural `DepId`,
+- use configuration DTOs exactly as specified,
 - derive module specifiers deterministically,
+- apply longest-prefix namespace matching,
 - use native dynamic `import()`,
 - maintain resolver-level module caching,
 - remain independent of lifecycle semantics,

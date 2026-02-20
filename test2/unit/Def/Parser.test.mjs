@@ -1,4 +1,4 @@
-import assert from 'node:assert';
+import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Def_Parser from '../../../src2/Def/Parser.mjs';
