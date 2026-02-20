@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "checkJs": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@teqfw/di-types": ["types.d.ts"]
+    }
+  },
+  "include": ["src2", "types.d.ts"]
+}
