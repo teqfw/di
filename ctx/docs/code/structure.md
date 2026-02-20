@@ -175,7 +175,7 @@ The following rules are normative:
 TypeScript is prohibited.
 JSDoc is the only permitted type annotation mechanism.
 
-Absence of required JSDoc constitutes non-compliance with package structure rules.
+Absence of required JSDoc constitutes non-compliance with package structure rules. Detailed structural typing discipline is defined in `ctx/docs/code/jsdoc-spec.md`.
 
 ## 9. Default Parser
 

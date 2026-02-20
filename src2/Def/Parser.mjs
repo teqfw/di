@@ -1,18 +1,32 @@
+// @ts-check
+
 import TeqFw_Di_Enum_Composition from '../Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../Enum/Life.mjs';
 import TeqFw_Di_Enum_Platform from '../Enum/Platform.mjs';
 import TeqFw_Di_Dto_DepId from '../Dto/DepId.mjs';
 
+/**
+ * Parser for EDD identifiers into immutable dependency identity DTO.
+ */
 export default class TeqFw_Di_Def_Parser {
+    /** @type {TeqFw_Di_DepId} Factory used to construct dependency identity DTO. */
     #depIdFactory = new TeqFw_Di_Dto_DepId();
 
+    /**
+     * Parses one EDD identifier and returns normalized immutable dependency DTO.
+     *
+     * @param {string} edd EDD identifier string.
+     * @returns {TeqFw_Di_DepId$DTO}
+     */
     parse(edd) {
         if (typeof edd !== 'string') throw new Error('EDD must be a string.');
         if (edd.length === 0) throw new Error('EDD must be non-empty.');
         if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(edd)) throw new Error('EDD must satisfy AsciiEddIdentifier.');
 
-        let origin = edd;
+        /** @type {string} */
+        const origin = edd;
         let source = edd;
+        /** @type {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} */
         let platform = TeqFw_Di_Enum_Platform.TEQ;
 
         if (source.startsWith('node_')) {
@@ -27,10 +41,14 @@ export default class TeqFw_Di_Def_Parser {
 
         if (source.length === 0) throw new Error('moduleName must be non-empty.');
 
+        /** @type {RegExp} */
         const lifecyclePattern = /(\${1,3})(?:_([A-Za-z0-9]+(?:_[A-Za-z0-9]+)*))?$/;
+        /** @type {RegExpMatchArray|null} */
         const lifecycleMatch = source.match(lifecyclePattern);
 
+        /** @type {typeof TeqFw_Di_Enum_Life[keyof typeof TeqFw_Di_Enum_Life]} */
         let life = null;
+        /** @type {string[]} */
         let wrappers = [];
         let core = source;
 
@@ -52,6 +70,7 @@ export default class TeqFw_Di_Def_Parser {
             }
         } else {
             if (source.includes('$')) throw new Error('Invalid lifecycle marker.');
+            /** @type {RegExpMatchArray|null} */
             const trailing = source.match(/(?:^|[^_])_([a-z][A-Za-z0-9]*)$/);
             if (trailing) {
                 throw new Error('Wrapper without lifecycle is forbidden.');
@@ -66,6 +85,7 @@ export default class TeqFw_Di_Def_Parser {
         if (core.startsWith('__') || core.endsWith('__')) throw new Error('Malformed export segment.');
 
         let moduleName = core;
+        /** @type {string|null} */
         let exportName = null;
 
         if (firstDelim !== -1) {
@@ -81,6 +101,7 @@ export default class TeqFw_Di_Def_Parser {
         if (moduleName.includes('__')) throw new Error('moduleName must not contain __.');
         if (moduleName.includes('$')) throw new Error('moduleName must not contain $.');
 
+        /** @type {typeof TeqFw_Di_Enum_Composition[keyof typeof TeqFw_Di_Enum_Composition]} */
         let composition = TeqFw_Di_Enum_Composition.AS_IS;
         if (exportName !== null) {
             composition = TeqFw_Di_Enum_Composition.FACTORY;
@@ -100,6 +121,6 @@ export default class TeqFw_Di_Def_Parser {
             life,
             wrappers,
             origin,
-        }, {immutable: true});
+        }, { immutable: true });
     }
 }

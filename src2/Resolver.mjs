@@ -1,7 +1,13 @@
+// @ts-check
+
 /**
  * @typedef {object} TeqFw_Di_Resolver_Dependencies
  * @property {TeqFw_Di_Dto_Resolver_Config$DTO} config Resolver configuration DTO.
  * @property {(specifier: string) => Promise<object>} [importFn] Import function override.
+ */
+
+/**
+ * @typedef {{prefix: string, target: string, defaultExt: string}} TeqFw_Di_Resolver_NamespaceRule
  */
 
 /**
@@ -13,12 +19,14 @@ export default class TeqFw_Di_Resolver {
     #cache = new Map();
     /** @type {TeqFw_Di_Dto_Resolver_Config$DTO} Original config reference captured from dependencies. */
     #configInput;
-    /** @type {{nodeModulesRoot: (string|undefined), namespaces: Array<{prefix: string, target: string, defaultExt: string}>}|undefined} */
+    /** @type {{nodeModulesRoot: (string|undefined), namespaces: TeqFw_Di_Resolver_NamespaceRule[]}|undefined} */
     #configSnapshot;
-    /** @type {(specifier: string) => Promise<object>} */
+    /** @type {(specifier: string) => Promise<object>} Import function used for namespace loading. */
     #importFn;
 
     /**
+     * Initializes resolver with runtime dependencies.
+     *
      * @param {TeqFw_Di_Resolver_Dependencies} deps Resolver dependencies descriptor.
      */
     constructor(deps) {
@@ -39,15 +47,17 @@ export default class TeqFw_Di_Resolver {
     async resolve(depId) {
         await Promise.resolve();
 
-        if (!this.#configSnapshot) this.#configSnapshot = this.#makeConfigSnapshot(this.#configInput);
+        if (!this.#configSnapshot) {
+            this.#configSnapshot = this.#makeConfigSnapshot(this.#configInput);
+        }
 
-        /** @type {TeqFw_Di_DepId$DTO|Record<string, unknown>} */
-        const source = (depId && (typeof depId === 'object')) ? depId : {};
-        const platform = source.platform;
-        const moduleName = source.moduleName;
+        const platform = depId.platform;
+        const moduleName = depId.moduleName;
         const key = `${platform}::${moduleName}`;
 
-        if (this.#cache.has(key)) return this.#cache.get(key);
+        if (this.#cache.has(key)) {
+            return this.#cache.get(key);
+        }
 
         /** @type {Promise<object>} */
         const promise = (async () => {
@@ -56,6 +66,7 @@ export default class TeqFw_Di_Resolver {
         })();
 
         this.#cache.set(key, promise);
+
         try {
             return await promise;
         } catch (error) {
@@ -68,17 +79,17 @@ export default class TeqFw_Di_Resolver {
      * Creates immutable-in-effect structural snapshot used for all post-start resolutions.
      *
      * @param {TeqFw_Di_Dto_Resolver_Config$DTO} input Resolver config DTO.
-     * @returns {{nodeModulesRoot: (string|undefined), namespaces: Array<{prefix: string, target: string, defaultExt: string}>}}
+     * @returns {{nodeModulesRoot: (string|undefined), namespaces: TeqFw_Di_Resolver_NamespaceRule[]}}
      */
     #makeConfigSnapshot(input) {
         /** @type {TeqFw_Di_Dto_Resolver_Config$DTO|Record<string, unknown>} */
         const src = (input && (typeof input === 'object')) ? input : {};
-        /** @type {import('@teqfw/di-types').TeqFw_Di_Dto_Resolver_Config_Namespace$DTO$[]} */
+        /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace$DTO$[]} */
         const namespaces = Array.isArray(src.namespaces) ? src.namespaces : [];
         return {
             nodeModulesRoot: (typeof src.nodeModulesRoot === 'string') ? src.nodeModulesRoot : undefined,
             namespaces: namespaces.map((item) => {
-                /** @type {import('@teqfw/di-types').TeqFw_Di_Dto_Resolver_Config_Namespace$DTO$|Record<string, unknown>} */
+                /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace$DTO$|Record<string, unknown>} */
                 const ns = (item && (typeof item === 'object')) ? item : {};
                 return {
                     prefix: (typeof ns.prefix === 'string') ? ns.prefix : '',
@@ -92,7 +103,7 @@ export default class TeqFw_Di_Resolver {
     /**
      * Derives module specifier from depId structural fields.
      *
-     * @param {'teq'|'node'|'npm'} platform DepId platform.
+     * @param {TeqFw_Di_Enum_Platform[keyof TeqFw_Di_Enum_Platform]} platform DepId platform.
      * @param {string} moduleName DepId module namespace.
      * @returns {string}
      */
@@ -101,7 +112,7 @@ export default class TeqFw_Di_Resolver {
         if (platform === 'npm') return moduleName;
         if (platform !== 'teq') throw new Error(`Unsupported platform: ${platform}`);
 
-        /** @type {{prefix: string, target: string, defaultExt: string}} */
+        /** @type {TeqFw_Di_Resolver_NamespaceRule} */
         const rule = this.#selectNamespaceRule(moduleName);
         const remainder = moduleName.slice(rule.prefix.length);
         const relativePath = remainder.split('_').join('/');
@@ -113,13 +124,13 @@ export default class TeqFw_Di_Resolver {
      * Selects namespace rule with deterministic longest-prefix match.
      *
      * @param {string} moduleName Teq module namespace.
-     * @returns {{prefix: string, target: string, defaultExt: string}}
+     * @returns {TeqFw_Di_Resolver_NamespaceRule}
      */
     #selectNamespaceRule(moduleName) {
-        /** @type {{prefix: string, target: string, defaultExt: string}|null} */
+        /** @type {TeqFw_Di_Resolver_NamespaceRule|null} */
         let found = null;
         let foundLen = -1;
-        /** @type {Array<{prefix: string, target: string, defaultExt: string}>} */
+        /** @type {TeqFw_Di_Resolver_NamespaceRule[]} */
         const items = this.#configSnapshot.namespaces;
         for (const one of items) {
             if (typeof one.prefix !== 'string') continue;
