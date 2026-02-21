@@ -1,57 +1,85 @@
-# Object Container for ES6-Module-Based Applications
+# LLM-First Declarative JavaScript Method
 
 Path: `./ctx/docs/product/overview.md`
 
 ## Purpose
 
-`@teqfw/di` is an object container for applications operating within the JavaScript ES module execution model. The container implements deterministic runtime linking and disciplined late binding of dependencies as an alternative to structural coupling introduced by static imports. It operates uniformly in browser and Node.js environments without altering the development model.
+The product is an LLM-first disciplined method of writing JavaScript applications on the ES module execution model. The method eliminates static imports as an application dependency mechanism and replaces them with explicit Canonical Dependency Contracts (CDC) and module-level dependency descriptors, enabling deterministic late binding while preserving execution isomorphism across browser and Node.js environments.
 
-The container enforces architectural discipline through explicit dependency declaration, controlled object composition, and immutable core linking semantics.
+The library `@teqfw/di` is the reference implementation of this method and serves as a foundational base of Tequila Framework (TeqFW), a platform for agent-oriented construction and maintenance of isomorphic JavaScript applications.
 
-## Dependency Declaration Model
+## Method, Not Framework
 
-Dependencies are declared explicitly as External Dependency Declarations (EDD).
+The product is a method of structuring modules, not a framework or an architectural style.
 
-An EDD is a string-level public contract interpreted by a configured parser profile. Dependency resolution is performed exclusively through EDD values and does not rely on static imports.
+The method defines a discipline in which:
 
-Each runtime instance uses a configured parser that transforms EDD into a structural canonical representation (`DepId`). The parser may define deterministic syntactic sugar for dependency declarations, provided it does not introduce semantic aliasing.
+- application dependency structure is not expressed via static `import` statements;
+- dependency requirements of module exports are declared explicitly as static data;
+- dependency contracts are expressed as CDC and interpreted by the Default CDC Profile;
+- runtime linking is deterministic under identical CDC, descriptors, and configuration;
+- the same linking model applies in browser and Node.js environments.
 
-Dependency identity is determined by structural `DepId`, not by raw EDD string equality.
+The library enforces these constraints and provides a mechanically predictable runtime for late binding.
 
-The product distribution provides a canonical default EDD profile and corresponding parser. The default profile defines the default EDD grammar and mapping rules and is specified in `ctx/docs/product/default-edd-profile.md` and `ctx/docs/product/parser/default-profile/grammar.md`. The default profile is immutable within a library version. A breaking library change of the default profile is a semantic change in EDD interpretation that alters the resulting structural canonical `DepId`. Cosmetic or surface grammar expansions are not breaking changes when they preserve semantic interpretation, preserve resulting structural canonical `DepId`, and do not introduce semantic aliasing. Applications may replace the default parser to adopt alternative encoding schemes while preserving the same core linking architecture. Compatibility between applications at the dependency level is defined by a shared parser profile.
+## Development Model Assumptions
+
+When applied in practice to the construction and maintenance of JavaScript applications, the method assumes an LLM-first workflow in which:
+
+- Agents generate and maintain dependency declarations and module-level contracts as part of the structural code surface of the application.
+- Humans perform semantic review, validate architectural intent, and enforce documented invariants.
+- Dependency metadata of the application is explicit, static, and structurally predictable.
+- Dependency metadata is reconstructible without runtime reflection, function source parsing, or signature inference.
+
+## Dependency Contract Model
+
+Dependencies are declared as Canonical Dependency Contracts (CDC). A CDC is a string-level canonical linking contract interpreted by the Default CDC Profile. Under this profile, CDC strings deterministically map to a structural canonical representation (`DepId`) used by immutable linking semantics.
+
+CDC encodes dependency identity, export selection, composition semantics, lifecycle semantics, and wrapper declarations at the contract surface.
+
+Dependency identity is determined by structural `DepId` fields, not by raw CDC string equality. The Default CDC Profile is normative and defines compatibility between applications with respect to dependency contracts.
+
+The Default CDC Profile and its stability boundary are positioned in `ctx/docs/product/default-cdc-profile.md`. The formal grammar, transformation model, and validation rules are specified at architecture level in `ctx/docs/architecture/cdc-profile/default/`.
+
+## Module-Level Dependency Descriptor Model
+
+Dependencies of a module export are declared via a static ES module export descriptor. The descriptor is part of the public module contract and is intended to be generated and updated mechanically.
+
+The descriptor is indexed by export name (including `default`) and defines the CDC set required for that export. Descriptor omission is interpreted as an empty dependency set. No implicit inference is permitted.
+
+Runtime signature analysis, constructor parameter parsing, and other reflection-based dependency extraction mechanisms are outside the product model.
 
 ## Problem Domain
 
 Modern JavaScript applications commonly embed dependency structure through static imports. This fixes dependency graphs at authoring time, increases structural coupling, constrains architectural evolution, and introduces divergence between frontend and backend execution models.
 
-`@teqfw/di` replaces structural imports with declarative dependency identifiers, deterministic runtime resolution, and explicit object composition.
+Many dependency injection approaches rely on transpilation, compile-time metadata, or manual container configuration. These mechanisms introduce additional build or configuration surfaces that are not structurally reconstructible from module contracts alone.
 
-## Architectural Position
+`@teqfw/di` replaces static imports as a dependency mechanism with explicit Canonical Dependency Contracts (CDC) and deterministic late binding, without transpilation, compile-time metadata generation, or manual container wiring.
 
-The container is defined by the following principles:
+## Guarantees
+
+The method is defined by the following guarantees:
 
 - linking semantics are based on the ES module execution model;
-- static imports must not be used as an alternative dependency mechanism;
+- static imports must not be used to express application dependency structure;
 - non-ESM code may be integrated only through explicit ES module adapters;
-- no reliance on transpilation or compile-time metadata generation;
+- no reliance on transpilation or reflection-based dependency extraction;
 - identical linking semantics in browser and Node.js environments;
-- immutability of created objects;
-- deterministic resolution under identical configuration and dependency declarations.
+- immutable linking semantics under the Default CDC Profile;
+- immutability of created objects enforced by the reference implementation;
+- deterministic linking under identical CDC, descriptors, and configuration.
 
 These principles define the architectural scope and limits of the system.
 
 ## Value
 
-The primary value of the container is architectural discipline and controlled dependency management. It provides explicit linking semantics, deterministic behavior, predictability, testability, immutability-based safety, and transparent resolution mechanics.
+The method provides a disciplined, structurally explicit dependency model in which contracts are declarative, machine-reconstructible, and normatively interpreted under a stable CDC profile.
 
-## Positioning
-
-`@teqfw/di` is a standalone infrastructure component focused exclusively on object linking and dependency resolution. It does not embed domain semantics and can serve as a foundation for higher-level architectural styles.
-
-The product defines a stable immutable core linking architecture while allowing versioned evolution of dependency declaration formats through parser profiles.
+This enables deterministic late binding, automatic linking without manual container wiring, reproducible behavior under automation, and a stable cross-environment execution model suitable for agent-oriented development workflows.
 
 ## Responsibility Boundary
 
-The responsibility of the container is limited to deterministic object creation and dependency resolution through runtime linking.
+The product defines the contract surface (CDC, descriptors, and invariants) and guarantees deterministic late binding and isomorphic execution. The library enforces these guarantees at runtime as a reference implementation.
 
 Application lifecycle orchestration, domain behavior, execution policies, concurrency control, and cross-application compatibility of custom dependency formats are outside this boundary.

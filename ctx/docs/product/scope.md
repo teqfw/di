@@ -4,48 +4,47 @@ Path: `./ctx/docs/product/scope.md`
 
 ## Application Domain
 
-`@teqfw/di` is an object container for programs operating within the JavaScript ES module execution model. Its scope is limited to deterministic runtime linking of declared dependencies within that model.
+The product is an LLM-first method of structuring JavaScript applications on the ES module execution model. The library `@teqfw/di` is the reference implementation of this method. Its scope is limited to deterministic runtime linking of explicitly declared dependencies within that model.
 
-The container does not define or depend on domain semantics.
+The method does not define or depend on domain semantics.
 
 ## Core Responsibility
 
-The container is responsible for:
+The product defines the contract surface and guarantees required for compliant applications. The reference implementation enforces these guarantees at runtime:
 
-- interpreting External Dependency Declarations (EDD) through a configured parser;
-- transforming EDD into structural canonical representations (`DepId`);
-- resolving dependencies deterministically;
-- instantiating objects according to declared semantics;
+- interpreting Canonical Dependency Contracts (CDC) according to the Default CDC Profile;
+- transforming CDC into structural canonical representations (`DepId`);
+- performing deterministic runtime linking of dependencies requested by declared metadata;
+- composing module exports according to declared composition semantics;
 - enforcing lifecycle and immutability guarantees;
-- maintaining structural integrity of the linking process.
+- preserving a single isomorphic execution model across browser and Node.js environments.
 
-The immutable core linking pipeline operates exclusively on structural canonical dependency representations (`DepId`).
+Immutable linking semantics are defined over structural canonical dependency representations (`DepId`), not raw CDC string equality.
 
 ## Configuration-Level Responsibility
 
-The container configuration defines:
+Configuration defines:
 
-- the parser used to interpret dependency declarations;
 - namespace and module mapping rules;
 - debug and testing modes;
 - permitted extension components.
 
-Parser selection determines the dependency encoding profile of an application. Applications using different parsers are not required to be compatible at the level of dependency declarations.
+The product defines exactly one CDC interpretation: the Default CDC Profile.
 
-Configuration does not modify core linking semantics.
+Configuration does not modify immutable linking semantics, lifecycle semantics, or object immutability enforcement.
 
 ## Supported Concerns Within Scope
 
-Within its responsibility boundary, the container may:
+Within its responsibility boundary, the reference implementation may:
 
 - detect and prevent cyclic dependencies;
 - provide diagnostic information;
-- maintain internal operational state required for deterministic resolution;
-- support controlled extension points that do not alter immutable core semantics.
+- maintain internal operational state required to preserve determinism under declared contracts;
+- support controlled extension points that do not alter immutable linking semantics.
 
 ## Out of Scope
 
-The container does not manage:
+The product does not manage:
 
 - application lifecycle orchestration;
 - domain logic or business rules;
@@ -54,17 +53,24 @@ The container does not manage:
 - runtime platform behavior;
 - cross-application compatibility of custom dependency encoding schemes.
 
+The product also does not infer dependency structure from behavioral code. Dependency extraction by function source parsing, parameter-name analysis, decorator reflection, or similar introspection mechanisms is outside product scope and is not part of the canonical declaration model.
+
 ## Extensibility Boundary
 
-The container allows configurable parsers and defined extension points. Extensions may participate in dependency preprocessing or object wrapping but must not:
+The reference implementation may expose extension mechanisms, but extensions must not:
 
-- replace the resolver;
-- reorder or restructure the core pipeline;
+- change immutable linking semantics under declared contracts;
 - alter structural canonical `DepId` identity semantics;
 - introduce non-deterministic behavior.
 
 ## Evolution Boundary
 
-The core linking architecture remains stable across parser variants and product evolution.
+The method and its guarantees remain stable across product evolution. The Default CDC Profile evolves only under the compatibility and stability policy defined at product level.
 
-Higher-level systems may be built on top of the container. The container itself remains limited to deterministic runtime dependency linking and disciplined object composition.
+Higher-level systems may be built on top of the reference implementation. The reference implementation remains limited to deterministic runtime dependency linking and disciplined object composition.
+
+## Declaration Boundary
+
+Within the product boundary, runtime linking operates exclusively on explicit structural declarations.
+
+Dependency requests are expressed as CDC values, and dependency requirements of module exports are expressed through module-level dependency descriptors. Descriptor omission results in zero dependencies. No implicit inference, defaulting-by-reflection, or signature-based reconstruction is permitted within the product boundary.

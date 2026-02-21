@@ -21,11 +21,11 @@ The container implementation MUST conform to:
 
 The only resolution entry point is:
 
-`get(edd: string): Promise<any>`
+`get(cdc: string): Promise<any>`
 
 The method MUST:
 
-- accept exactly one EDD string,
+- accept exactly one CDC string,
 - return a `Promise`,
 - resolve with a fully linked and frozen instance,
 - reject on failure,
@@ -94,7 +94,7 @@ Any exception thrown by an extension is a fatal linking error.
 
 The container orchestrates the immutable linking pipeline:
 
-EDD → parse → DepId₀ → preprocess[] → DepId₁ → resolve → instantiate → postprocess[] → lifecycle enforcement → freeze → return instance
+CDC → parse → DepId₀ → preprocess[] → DepId₁ → resolve → instantiate → postprocess[] → lifecycle enforcement → freeze → return instance
 
 The container MUST invoke stages in this structural order.
 
@@ -148,7 +148,7 @@ Partially constructed singleton instances must not persist after failure.
 
 ## Determinism Scope
 
-For identical finalized configuration, identical parser, identical EDD interpreted under identical parser profile, and identical dependency stack conditions, `get` MUST resolve to identical instance identity.
+For identical finalized configuration, identical parser, identical CDC interpreted under identical CDC profile configuration, and identical dependency stack conditions, `get` MUST resolve to identical instance identity.
 
 Invocation order of independent dependencies must not influence outcomes except through lifecycle caching.
 

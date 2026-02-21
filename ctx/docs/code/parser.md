@@ -10,19 +10,19 @@ This document defines the implementation-level contract of the parser component 
 
 Parser implementations MUST conform to the following architecture boundary documents:
 
-- `ctx/docs/architecture/edd-model.md`
+- `ctx/docs/architecture/cdc-model.md`
 - `ctx/docs/architecture/depid-model.md`
 - `ctx/docs/architecture/invariants.md`
 - `ctx/docs/architecture/linking-model.md`
 
 These documents define the parser boundary, `DepId` structure, core invariants, and the immutable linking pipeline boundary.
 
-The canonical default EDD profile shipped with the product is specified in:
+The Default CDC Profile supported by the product is specified in:
 
-- `ctx/docs/product/default-edd-profile.md`
-- `ctx/docs/product/parser/default-profile/grammar.md`
-- `ctx/docs/product/parser/default-profile/transformation.md`
-- `ctx/docs/product/parser/default-profile/validation.md`
+- `ctx/docs/product/default-cdc-profile.md`
+- `ctx/docs/architecture/cdc-profile/default/grammar.md`
+- `ctx/docs/architecture/cdc-profile/default/transformation.md`
+- `ctx/docs/architecture/cdc-profile/default/validation.md`
 
 This code-level document does not restate default-profile grammar, mapping rules, or validation rules.
 
@@ -30,16 +30,16 @@ This code-level document does not restate default-profile grammar, mapping rules
 
 Every parser implementation MUST expose a single public method with the following signature:
 
-`parse(edd: string): DepId`
+`parse(cdc: string): DepId`
 
-The method MUST accept exactly one EDD string, return a fully constructed `DepId` instance on success, throw on failure, never return partial or intermediate structures, and never return `null` or `undefined`.
+The method MUST accept exactly one CDC string, return a fully constructed `DepId` instance on success, throw on failure, never return partial or intermediate structures, and never return `null` or `undefined`.
 
 ## 4. Parser Variants
 
 Two parser variants are supported at code level:
 
 1. A generic parser implementation conforming to the architectural parser contract.
-2. The default EDD profile parser provided by the product.
+2. The Default CDC Profile parser provided by the product.
 
 All parser implementations MUST satisfy this interface and behavioral contract. The default parser implementation MUST additionally conform exactly to the product-defined default profile semantics.
 
@@ -87,12 +87,12 @@ Tests MUST verify that successful parsing produces a valid `DepId`, invalid inpu
 
 ## 11. Deterministic Stability
 
-Given a fixed parser implementation and fixed profile definition, the mapping from EDD to `DepId` MUST remain stable within a library version.
+Given a fixed parser implementation and fixed profile definition, the mapping from CDC to `DepId` MUST remain stable within a library version.
 
-Any semantic change that alters resulting structural `DepId` values for previously valid EDD inputs is a breaking change. Cosmetic refactoring that preserves structural output and error classification is permitted.
+Any semantic change that alters resulting structural `DepId` values for previously valid CDC inputs is a breaking change. Cosmetic refactoring that preserves structural output and error classification is permitted.
 
 ## 12. Conformance Boundary
 
-The parser implementation MUST remain within architectural boundaries for EDD interpretation, structural canonical `DepId` identity, fail-fast semantics, semantic injectivity, and determinism scope.
+The parser implementation MUST remain within architectural boundaries for CDC interpretation, structural canonical `DepId` identity, fail-fast semantics, semantic injectivity, and determinism scope.
 
 The parser MUST NOT modify or extend immutable core linking pipeline stages, introduce additional extension points, alter resolver semantics, or introduce non-deterministic behavior.

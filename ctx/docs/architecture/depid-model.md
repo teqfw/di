@@ -61,7 +61,7 @@ Architectural semantics are defined exclusively in terms of these values.
 
 `wrappers` is an ordered list of wrapper identifiers applied after composition semantics are resolved and before lifecycle enforcement. Order is significant.
 
-`origin` preserves the original EDD string for traceability and diagnostics. It does not participate in structural identity.
+`origin` preserves the original CDC string for traceability and diagnostics. It does not participate in structural identity.
 
 ## Identity Semantics
 
@@ -80,7 +80,7 @@ Equality and hashing mechanisms are external to `DepId`. Structural identity is 
 
 ## Injectivity Requirement
 
-For a given parser profile, distinct semantic interpretations of EDD MUST NOT produce identical structural `DepId` values.
+For a given CDC profile, distinct semantic interpretations of CDC MUST NOT produce identical structural `DepId` values.
 
 Syntactic sugar is permitted only when it maps deterministically to identical structural fields defined by this model.
 

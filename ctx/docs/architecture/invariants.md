@@ -25,11 +25,11 @@ Identity transformations are permitted only in the preprocess stage.
 
 Identity MUST remain stable after resolution begins. Instantiation, postprocess, lifecycle enforcement, caching, and freeze must not alter dependency identity.
 
-Distinct semantic interpretations of EDD within the same parser profile must not produce identical initial structural canonical representations (`DepId₀`).
+Distinct semantic interpretations of CDC within the same CDC profile must not produce identical initial structural canonical representations (`DepId₀`).
 
 ## Determinism Invariant
 
-For identical container configuration, identical parser, identical EDD interpreted under identical parser configuration, and identical dependency stack conditions, the linking process MUST produce identical lifecycle outcomes and identical wrapper composition.
+For identical container configuration, identical parser, identical CDC interpreted under identical CDC profile configuration, and identical dependency stack conditions, the linking process MUST produce identical lifecycle outcomes and identical wrapper composition.
 
 Determinism is guaranteed at the level of the instance identity returned by the container.
 

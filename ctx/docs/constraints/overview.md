@@ -29,11 +29,11 @@ Any of the above constitutes exit from the current architectural model and requi
 
 The immutable core is an irreversible architectural decision.
 
-Evolution of EDD surface grammar, deterministic syntactic sugar, and internal parser normalization rules that preserve structural canonical `DepId` identity semantics does not constitute modification of identity semantics.
+Evolution of CDC surface grammar, deterministic syntactic sugar, and internal parser normalization rules that preserve structural canonical `DepId` identity semantics does not constitute modification of identity semantics.
 
 ## Dependency Control Constraint
 
-All dependency relations within applications using the system must be expressed exclusively through External Dependency Declarations and resolved by the container.
+All dependency relations within applications using the system must be expressed exclusively through Canonical Dependency Contracts and resolved by the container.
 
 The following are prohibited:
 
@@ -44,21 +44,21 @@ The following are prohibited:
 
 The container is the sole authority over dependency linking semantics within its scope.
 
-## EDD and Parser Contract Constraint
+## CDC and Parser Contract Constraint
 
 The parser profile defines the encoding contract of dependency declarations.
 
-Within a single parser profile, the following are prohibited:
+Within a single CDC profile, the following are prohibited:
 
-- modification of EDD grammar without profile version change;
+- modification of CDC grammar without profile version change;
 - weakening of parser injectivity;
 - introduction of semantic alias mechanisms.
 
 Parser injectivity is a permanent constraint.
 
-Parser injectivity applies to semantic interpretation of EDD into structural canonical `DepId`, not to raw EDD string equality.
+Parser injectivity applies to semantic interpretation of CDC into structural canonical `DepId`, not to raw CDC string equality.
 
-Distinct semantic interpretations of EDD must remain distinct at the structural canonical `DepId` level within a profile.
+Distinct semantic interpretations of CDC must remain distinct at the structural canonical `DepId` level within a profile.
 
 Deterministic syntactic sugar defined by the profile is permitted provided it does not collapse distinct semantic interpretations.
 

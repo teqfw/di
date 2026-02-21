@@ -8,11 +8,11 @@ This document defines the immutable core linking semantics and the formally defi
 
 It specifies the linking pipeline, stage responsibilities, determinism scope, and failure semantics.
 
-EDD is a string-level declaration interpreted by a configured parser profile. The architectural EDD model and the parser boundary are defined in `architecture/edd-model.md`.
+CDC is a string-level contract interpreted by a configured CDC profile. The architectural CDC model and the parser boundary are defined in `ctx/docs/architecture/cdc-model.md`.
 
 ## Core Boundary
 
-A dependency request is expressed as EDD. The configured parser transforms EDD into a structural canonical representation `DepId`.
+A dependency request is expressed as CDC. The configured parser transforms CDC into a structural canonical representation `DepId`.
 
 The parser is configuration-level and outside the immutable core.
 
@@ -24,7 +24,7 @@ All core semantics operate exclusively on the structural fields of `DepId`.
 
 The linking process is linear and forward-only:
 
-EDD
+CDC
 → parse
 → DepId₀
 → preprocess
@@ -164,7 +164,7 @@ Cyclic dependencies are prohibited. Detection of a cycle results in immediate te
 
 Determinism is guaranteed at the level of returned value identity.
 
-For identical container configuration, identical parser, identical EDD interpreted under identical parser configuration, and identical dependency stack, linking MUST produce identical lifecycle outcomes and identical wrapper composition.
+For identical container configuration, identical parser, identical CDC interpreted under identical CDC profile configuration, and identical dependency stack, linking MUST produce identical lifecycle outcomes and identical wrapper composition.
 
 The architecture does not guarantee determinism of internal object state. Randomness or time-dependent behavior inside constructors or factories is permitted.
 

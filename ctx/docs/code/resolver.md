@@ -239,7 +239,7 @@ Resolver is responsible for:
 
 Resolver is not responsible for:
 
-- EDD parsing,
+- CDC parsing,
 - DepId validation,
 - export selection,
 - instantiation,

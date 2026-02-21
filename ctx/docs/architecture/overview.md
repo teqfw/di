@@ -6,35 +6,35 @@ Path: `./ctx/docs/architecture/overview.md`
 
 The system defines a deterministic runtime linking architecture for ES modules.
 
-All dependencies are declared explicitly as External Dependency Declarations (EDD). The architecture separates dependency declaration from implementation resolution and centralizes binding in a controlled composition phase.
+All dependencies are declared explicitly as Canonical Dependency Contracts (CDC). The architecture separates dependency declaration from implementation resolution and centralizes binding in a controlled composition phase.
 
 Linking begins only after container configuration is finalized. Reconfiguration after resolution begins is prohibited.
 
 The architecture operates exclusively at runtime. Static imports must not be used as an alternative dependency mechanism.
 
-## External Dependency Declaration (EDD)
+## Canonical Dependency Contract (CDC)
 
-An External Dependency Declaration is the only permitted form of dependency description at the application level.
+A Canonical Dependency Contract is the only permitted form of dependency declaration at the application level.
 
-EDD is a string. Admissibility and interpretation of EDD values are defined by the configured parser profile. Declarations rejected by the configured parser profile MUST be rejected deterministically.
+CDC is a string. Admissibility and interpretation of CDC values are defined by the selected CDC profile at the parser boundary. Declarations rejected by the selected profile MUST be rejected deterministically.
 
-EDD constitutes a public architectural contract of an application. Changing the semantic interpretation of an EDD constitutes a breaking architectural change.
+CDC constitutes a public architectural contract of an application. Changing the semantic interpretation of a CDC constitutes a breaking architectural change.
 
-The internal segmentation or naming conventions of EDD are not regulated at the architectural level.
+The internal segmentation or naming conventions of CDC are not regulated at the architectural level beyond the selected CDC profile.
 
 ## Parser and Canonicalization
 
 Each runtime instance uses exactly one parser selected during container configuration.
 
-The parser validates EDD and transforms it into a structural canonical representation (`DepId`). The parser defines the dependency encoding scheme used by the application.
+The parser validates CDC and transforms it into a structural canonical representation (`DepId`). The parser defines the CDC profile used by the application.
 
-Different parser implementations may define different EDD encoding schemes while using the same container implementation. Applications using different parsers are not required to be compatible at the level of dependency declarations.
+Different parser implementations may define different CDC surface encodings while using the same container implementation. Applications using different parsers are not required to be compatible at the level of dependency declarations.
 
-Normalization is internal to the parser and is not a separate architectural layer. No canonical string representation of EDD is introduced at the architectural level; identity is defined exclusively by the structural `DepId`.
+Normalization is internal to the parser and is not a separate architectural layer. No canonical string representation of CDC is introduced at the architectural level; identity is defined exclusively by the structural `DepId`.
 
 Structural canonicalization resulting in `DepId` is not part of the immutable core linking semantics. The immutable core begins strictly with `DepId`.
 
-Determinism at the structural canonicalization boundary is defined by identical container configuration, identical parser, and identical EDD interpreted under identical parser configuration.
+Determinism at the structural canonicalization boundary is defined by identical container configuration, identical parser, and identical CDC interpreted under identical CDC profile configuration.
 
 ## Structural Canonical Dependency Representation
 
@@ -74,7 +74,7 @@ Preprocess may transform dependency identity prior to resolution.
 
 Postprocess may wrap or replace the instantiated object prior to lifecycle enforcement and freeze.
 
-Extensions must not reorder or bypass core stages, alter resolver semantics, introduce lazy linking, or introduce non-determinism under identical configuration, identical EDD, and identical dependency stack conditions.
+Extensions must not reorder or bypass core stages, alter resolver semantics, introduce lazy linking, or introduce non-determinism under identical configuration, identical CDC, and identical dependency stack conditions.
 
 Extensions operate within the architectural constraints of the immutable core.
 
@@ -88,4 +88,4 @@ The following actions violate the architecture:
 - introducing dependency declarations rejected by the configured parser profile;
 - allowing cyclic dependencies.
 
-Determinism is guaranteed at the level of instance identity produced by the container for identical container configuration, identical parser, identical EDD, and identical dependency stack dynamics. Internal object state is outside the scope of this guarantee.
+Determinism is guaranteed at the level of instance identity produced by the container for identical container configuration, identical parser, identical CDC, and identical dependency stack dynamics. Internal object state is outside the scope of this guarantee.

@@ -95,7 +95,7 @@ For identity semantics at architecture level, `origin` is excluded and all remai
 
 The current code-level contract prohibits adding parser or linking behavior into `DepId` factory, including:
 
-- EDD parsing;
+- CDC parsing;
 - cross-field invariant validation;
 - resolver-specific logic;
 - lifecycle cache semantics;
