@@ -26,6 +26,10 @@ Dependency contracts are interpreted according to the Default CDC Profile, which
 
 The product defines exactly one CDC interpretation: the Default CDC Profile.
 
+The Default CDC Profile is the only CDC interpretation normatively supported and guaranteed by the product.
+
+Alternative profiles may exist in external systems, but they are not covered by the product’s architectural guarantees.
+
 CDC is a string-level contract. `DepId` is the structural canonical identity object produced by CDC interpretation.
 
 Compatibility between applications at the level of dependency contracts is defined by conformance to the Default CDC Profile.

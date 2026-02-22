@@ -14,7 +14,11 @@ CDC is a string-level canonical linking contract. `DepId` is the structural cano
 
 The default profile defines the standard dependency encoding scheme used in module-level dependency descriptors and is the compatibility target for consumers. The profile is designed to be mechanically reconstructible and stable under automated refactoring.
 
-The product defines exactly one CDC interpretation: the Default CDC Profile.
+The product ships and normatively defines one CDC interpretation: the Default CDC Profile.
+
+All architectural guarantees, identity semantics, determinism claims, and compatibility definitions of the product apply exclusively under the Default CDC Profile.
+
+Use of alternative CDC profiles is outside the product’s guaranteed behavior domain and responsibility boundary.
 
 ## Normative Sources
 

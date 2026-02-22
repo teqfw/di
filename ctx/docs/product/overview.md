@@ -70,7 +70,7 @@ The method is defined by the following guarantees:
 - immutability of created objects enforced by the reference implementation;
 - deterministic linking under identical CDC, descriptors, and configuration.
 
-These principles define the architectural scope and limits of the system.
+These principles define the architectural scope and limits of the system. All guarantees in this document apply under the Default CDC Profile shipped with the product.
 
 ## Value
 

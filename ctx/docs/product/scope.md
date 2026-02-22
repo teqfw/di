@@ -10,14 +10,14 @@ The method does not define or depend on domain semantics.
 
 ## Core Responsibility
 
-The product defines the contract surface and guarantees required for compliant applications. The reference implementation enforces these guarantees at runtime:
+The product defines the contract surface and the runtime guarantees required for compliant applications. The reference implementation enforces these guarantees at runtime under the Default CDC Profile shipped with the product:
 
-- interpreting Canonical Dependency Contracts (CDC) according to the Default CDC Profile;
-- transforming CDC into structural canonical representations (`DepId`);
-- performing deterministic runtime linking of dependencies requested by declared metadata;
-- composing module exports according to declared composition semantics;
-- enforcing lifecycle and immutability guarantees;
-- preserving a single isomorphic execution model across browser and Node.js environments.
+- interpret Canonical Dependency Contracts (CDC) according to the Default CDC Profile;
+- transform CDC into structural canonical representations (`DepId`);
+- perform deterministic runtime linking of dependencies requested by declared metadata;
+- compose module exports according to declared composition semantics;
+- enforce lifecycle and immutability guarantees;
+- preserve a single isomorphic execution model across browser and Node.js environments.
 
 Immutable linking semantics are defined over structural canonical dependency representations (`DepId`), not raw CDC string equality.
 
@@ -29,9 +29,15 @@ Configuration defines:
 - debug and testing modes;
 - permitted extension components.
 
-The product defines exactly one CDC interpretation: the Default CDC Profile.
+Configuration must not modify immutable linking semantics, lifecycle semantics, or object immutability enforcement.
 
-Configuration does not modify immutable linking semantics, lifecycle semantics, or object immutability enforcement.
+## CDC Profile Boundary
+
+The product ships and normatively defines one CDC interpretation: the Default CDC Profile.
+
+All architectural guarantees, identity semantics, determinism claims, and compatibility definitions of the product apply exclusively under the Default CDC Profile.
+
+Alternative CDC profiles are outside the product’s guaranteed behavior and responsibility boundary.
 
 ## Supported Concerns Within Scope
 
@@ -51,9 +57,10 @@ The product does not manage:
 - execution policies or scheduling;
 - security policies beyond immutability guarantees;
 - runtime platform behavior;
+- public graph construction APIs, analysis-only modes, or full-application dependency preflight scans;
 - cross-application compatibility of custom dependency encoding schemes.
 
-The product also does not infer dependency structure from behavioral code. Dependency extraction by function source parsing, parameter-name analysis, decorator reflection, or similar introspection mechanisms is outside product scope and is not part of the canonical declaration model.
+Reflection-based dependency inference is outside the product model and must not be introduced as an alternative declaration mechanism.
 
 ## Extensibility Boundary
 
@@ -61,11 +68,14 @@ The reference implementation may expose extension mechanisms, but extensions mus
 
 - change immutable linking semantics under declared contracts;
 - alter structural canonical `DepId` identity semantics;
-- introduce non-deterministic behavior.
+- introduce non-deterministic behavior;
+- introduce reflection-based inference as a dependency declaration mechanism.
 
 ## Evolution Boundary
 
 The method and its guarantees remain stable across product evolution. The Default CDC Profile evolves only under the compatibility and stability policy defined at product level.
+
+Introduction of additional normative CDC profiles within the same product package constitutes architectural evolution and is outside the current product model.
 
 Higher-level systems may be built on top of the reference implementation. The reference implementation remains limited to deterministic runtime dependency linking and disciplined object composition.
 
@@ -73,4 +83,6 @@ Higher-level systems may be built on top of the reference implementation. The re
 
 Within the product boundary, runtime linking operates exclusively on explicit structural declarations.
 
-Dependency requests are expressed as CDC values, and dependency requirements of module exports are expressed through module-level dependency descriptors. Descriptor omission results in zero dependencies. No implicit inference, defaulting-by-reflection, or signature-based reconstruction is permitted within the product boundary.
+Dependency requests are expressed as CDC values, and dependency requirements of module exports are expressed through module-level dependency descriptors. Descriptor omission results in zero dependencies.
+
+Static `import` statements must not be used as an application-level dependency mechanism. No implicit inference, reflection-based reconstruction, or signature-driven dependency extraction is permitted within the product boundary.
