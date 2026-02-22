@@ -56,7 +56,7 @@ export default class TeqFw_Di_Def_Parser {
             const marker = lifecycleMatch[1];
             const wrapperTail = lifecycleMatch[2];
             if (marker === '$') life = TeqFw_Di_Enum_Life.SINGLETON;
-            else if ((marker === '$$') || (marker === '$$$')) life = TeqFw_Di_Enum_Life.INSTANCE;
+            else if ((marker === '$$') || (marker === '$$$')) life = TeqFw_Di_Enum_Life.TRANSIENT;
             else throw new Error('Lifecycle marker overflow.');
 
             core = source.slice(0, lifecycleMatch.index);
@@ -108,7 +108,7 @@ export default class TeqFw_Di_Def_Parser {
         } else if (life === TeqFw_Di_Enum_Life.SINGLETON) {
             exportName = 'default';
             composition = TeqFw_Di_Enum_Composition.FACTORY;
-        } else if (life === TeqFw_Di_Enum_Life.INSTANCE) {
+        } else if (life === TeqFw_Di_Enum_Life.TRANSIENT) {
             composition = TeqFw_Di_Enum_Composition.FACTORY;
             if (exportName === null) exportName = 'default';
         }

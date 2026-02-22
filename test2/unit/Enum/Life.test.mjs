@@ -8,7 +8,7 @@ describe('TeqFw_Di_Enum_Life', () => {
     it('contains only descriptive keys with canonical values', () => {
         assert.deepStrictEqual(TeqFw_Di_Enum_Life, {
             SINGLETON: 'S',
-            INSTANCE: 'I',
+            TRANSIENT: 'T',
         });
     });
 

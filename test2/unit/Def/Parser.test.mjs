@@ -42,19 +42,19 @@ describe('TeqFw_Di_Def_Parser', () => {
             {edd: `${MODULE}__${NAMED_EXPORT}$_${WRAPPER_LOG}`, exp: {life: TeqFw_Di_Enum_Life.SINGLETON, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG]}},
             {edd: `${MODULE}__${NAMED_EXPORT}$_${WRAPPER_LOG}_${WRAPPER_PROXY}`, exp: {life: TeqFw_Di_Enum_Life.SINGLETON, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG, WRAPPER_PROXY]}},
             // transient
-            {edd: `${MODULE}$$`, exp: {life: TeqFw_Di_Enum_Life.INSTANCE, exportName: 'default', composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: []}},
-            {edd: `${MODULE}__${NAMED_EXPORT}$$`, exp: {life: TeqFw_Di_Enum_Life.INSTANCE, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: []}},
-            {edd: `${MODULE}$$_${WRAPPER_LOG}`, exp: {life: TeqFw_Di_Enum_Life.INSTANCE, exportName: 'default', composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG]}},
-            {edd: `${MODULE}$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`, exp: {life: TeqFw_Di_Enum_Life.INSTANCE, exportName: 'default', composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG, WRAPPER_PROXY]}},
-            {edd: `${MODULE}__${NAMED_EXPORT}$$_${WRAPPER_LOG}`, exp: {life: TeqFw_Di_Enum_Life.INSTANCE, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG]}},
-            {edd: `${MODULE}__${NAMED_EXPORT}$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`, exp: {life: TeqFw_Di_Enum_Life.INSTANCE, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG, WRAPPER_PROXY]}},
+            {edd: `${MODULE}$$`, exp: {life: TeqFw_Di_Enum_Life.TRANSIENT, exportName: 'default', composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: []}},
+            {edd: `${MODULE}__${NAMED_EXPORT}$$`, exp: {life: TeqFw_Di_Enum_Life.TRANSIENT, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: []}},
+            {edd: `${MODULE}$$_${WRAPPER_LOG}`, exp: {life: TeqFw_Di_Enum_Life.TRANSIENT, exportName: 'default', composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG]}},
+            {edd: `${MODULE}$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`, exp: {life: TeqFw_Di_Enum_Life.TRANSIENT, exportName: 'default', composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG, WRAPPER_PROXY]}},
+            {edd: `${MODULE}__${NAMED_EXPORT}$$_${WRAPPER_LOG}`, exp: {life: TeqFw_Di_Enum_Life.TRANSIENT, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG]}},
+            {edd: `${MODULE}__${NAMED_EXPORT}$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`, exp: {life: TeqFw_Di_Enum_Life.TRANSIENT, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG, WRAPPER_PROXY]}},
             // explicit direct marker
-            {edd: `${MODULE}$$$`, exp: {life: TeqFw_Di_Enum_Life.INSTANCE, exportName: 'default', composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: []}},
-            {edd: `${MODULE}__${NAMED_EXPORT}$$$`, exp: {life: TeqFw_Di_Enum_Life.INSTANCE, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: []}},
-            {edd: `${MODULE}$$$_${WRAPPER_LOG}`, exp: {life: TeqFw_Di_Enum_Life.INSTANCE, exportName: 'default', composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG]}},
-            {edd: `${MODULE}$$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`, exp: {life: TeqFw_Di_Enum_Life.INSTANCE, exportName: 'default', composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG, WRAPPER_PROXY]}},
-            {edd: `${MODULE}__${NAMED_EXPORT}$$$_${WRAPPER_LOG}`, exp: {life: TeqFw_Di_Enum_Life.INSTANCE, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG]}},
-            {edd: `${MODULE}__${NAMED_EXPORT}$$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`, exp: {life: TeqFw_Di_Enum_Life.INSTANCE, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG, WRAPPER_PROXY]}},
+            {edd: `${MODULE}$$$`, exp: {life: TeqFw_Di_Enum_Life.TRANSIENT, exportName: 'default', composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: []}},
+            {edd: `${MODULE}__${NAMED_EXPORT}$$$`, exp: {life: TeqFw_Di_Enum_Life.TRANSIENT, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: []}},
+            {edd: `${MODULE}$$$_${WRAPPER_LOG}`, exp: {life: TeqFw_Di_Enum_Life.TRANSIENT, exportName: 'default', composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG]}},
+            {edd: `${MODULE}$$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`, exp: {life: TeqFw_Di_Enum_Life.TRANSIENT, exportName: 'default', composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG, WRAPPER_PROXY]}},
+            {edd: `${MODULE}__${NAMED_EXPORT}$$$_${WRAPPER_LOG}`, exp: {life: TeqFw_Di_Enum_Life.TRANSIENT, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG]}},
+            {edd: `${MODULE}__${NAMED_EXPORT}$$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`, exp: {life: TeqFw_Di_Enum_Life.TRANSIENT, exportName: NAMED_EXPORT, composition: TeqFw_Di_Enum_Composition.FACTORY, wrappers: [WRAPPER_LOG, WRAPPER_PROXY]}},
         ];
 
         for (const one of cases) {
@@ -83,7 +83,7 @@ describe('TeqFw_Di_Def_Parser', () => {
                 platform: TeqFw_Di_Enum_Platform.TEQ,
                 moduleName: MODULE,
                 exportName: 'default',
-                life: TeqFw_Di_Enum_Life.INSTANCE,
+                life: TeqFw_Di_Enum_Life.TRANSIENT,
                 composition: TeqFw_Di_Enum_Composition.FACTORY,
                 wrappers: [],
             });
@@ -136,7 +136,7 @@ describe('TeqFw_Di_Def_Parser', () => {
                 platform: TeqFw_Di_Enum_Platform.TEQ,
                 moduleName: MODULE,
                 exportName: 'default',
-                life: TeqFw_Di_Enum_Life.INSTANCE,
+                life: TeqFw_Di_Enum_Life.TRANSIENT,
                 composition: TeqFw_Di_Enum_Composition.FACTORY,
                 wrappers: [],
             });
@@ -144,7 +144,7 @@ describe('TeqFw_Di_Def_Parser', () => {
                 platform: TeqFw_Di_Enum_Platform.TEQ,
                 moduleName: MODULE,
                 exportName: 'default',
-                life: TeqFw_Di_Enum_Life.INSTANCE,
+                life: TeqFw_Di_Enum_Life.TRANSIENT,
                 composition: TeqFw_Di_Enum_Composition.FACTORY,
                 wrappers: [],
             });
@@ -210,7 +210,7 @@ describe('TeqFw_Di_Def_Parser', () => {
                 platform: TeqFw_Di_Enum_Platform.NODE,
                 moduleName: MODULE,
                 exportName: NAMED_EXPORT,
-                life: TeqFw_Di_Enum_Life.INSTANCE,
+                life: TeqFw_Di_Enum_Life.TRANSIENT,
                 composition: TeqFw_Di_Enum_Composition.FACTORY,
                 wrappers: [],
             });
@@ -236,7 +236,7 @@ describe('TeqFw_Di_Def_Parser', () => {
                 platform: TeqFw_Di_Enum_Platform.NPM,
                 moduleName: MODULE,
                 exportName: NAMED_EXPORT,
-                life: TeqFw_Di_Enum_Life.INSTANCE,
+                life: TeqFw_Di_Enum_Life.TRANSIENT,
                 composition: TeqFw_Di_Enum_Composition.FACTORY,
                 wrappers: [],
             });
@@ -256,7 +256,7 @@ describe('TeqFw_Di_Def_Parser', () => {
                 platform: TeqFw_Di_Enum_Platform.TEQ,
                 moduleName: MODULE,
                 exportName: 'default',
-                life: TeqFw_Di_Enum_Life.INSTANCE,
+                life: TeqFw_Di_Enum_Life.TRANSIENT,
                 composition: TeqFw_Di_Enum_Composition.FACTORY,
                 wrappers: [WRAPPER_LOG],
             });

@@ -30,7 +30,7 @@ Architectural documents define semantic meanings of dependency identity (`as-is`
 - `platform: 'teq' | 'node' | 'npm'`
 - `exportName: string | null`
 - `composition: 'A' | 'F'`
-- `life: 'S' | 'I' | null`
+- `life: 'S' | 'T' | null`
 - `wrappers: string[]`
 - `origin: string`
 
@@ -42,7 +42,7 @@ Factory admissibility checks are based on current enum modules:
 
 - `Platform`: `teq | node | npm`
 - `Composition`: `A | F` (`AS_IS | FACTORY`)
-- `Life`: `S | I` (`SINGLETON | INSTANCE`)
+- `Life`: `S | T` (`SINGLETON | TRANSIENT`)
 
 Code-level `life = null` is allowed and represents the non-lifecycle case in the current parser contract.
 
@@ -103,4 +103,4 @@ The current code-level contract prohibits adding parser or linking behavior into
 
 ## Summary
 
-In the current project state, `DepId` is a structural DTO with compact enum literals (`A/F`, `S/I/null`) and a non-throwing normalization factory. Architectural semantics and invariant enforcement remain outside this factory and are handled at parser and immutable-core boundaries.
+In the current project state, `DepId` is a structural DTO with compact enum literals (`A/F`, `S/T/null`) and a non-throwing normalization factory. Architectural semantics and invariant enforcement remain outside this factory and are handled at parser and immutable-core boundaries.

@@ -5,7 +5,7 @@
  */
 const TeqFw_Di_Enum_Life = {
     SINGLETON: 'S',
-    INSTANCE: 'I',
+    TRANSIENT: 'T',
 };
 
 export default TeqFw_Di_Enum_Life;

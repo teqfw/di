@@ -72,7 +72,7 @@ const Composition = {
 
 const Life = {
   SINGLETON: "S",
-  INSTANCE: "I",
+  TRANSIENT: "T",
 };
 ```
 
