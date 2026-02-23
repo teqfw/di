@@ -49,7 +49,8 @@
   "scripts": {
     "rollup": "rollup -c",
     "eslint": "npx eslint './src2/**/*.mjs'",
-    "test:unit": "node --test \"test2/unit/**/*.test.mjs\""
+    "test:unit": "node --test \"test2/unit/**/*.test.mjs\"",
+    "test:integration": "node --test \"test2/integration/**/*.test.mjs\""
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
