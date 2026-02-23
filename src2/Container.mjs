@@ -30,17 +30,21 @@ export default class TeqFw_Di_Container {
         const preprocess = [];
         /** @type {((value: unknown) => unknown)[]} */
         const postprocess = [];
+        /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace$DTO$[]} */
+        const namespaceRoots = [];
+        /** @type {Map<string, unknown>} */
+        const mockRegistry = new Map();
+        let testMode = false;
+        let loggingEnabled = false;
 
         /** @type {TeqFw_Di_Def_Parser} */
         let parser = new TeqFw_Di_Def_Parser();
         /** @type {TeqFw_Di_Dto_Resolver_Config} */
         const configFactory = new TeqFw_Di_Dto_Resolver_Config();
-        /** @type {TeqFw_Di_Resolver} */
-        const resolver = new TeqFw_Di_Resolver({
-            config: configFactory.create({}),
-        });
-        /** @type {TeqFw_Di_Container_Resolve_GraphResolver} */
-        let graphResolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser, resolver});
+        /** @type {TeqFw_Di_Resolver|undefined} */
+        let resolver;
+        /** @type {TeqFw_Di_Container_Resolve_GraphResolver|undefined} */
+        let graphResolver;
         /** @type {TeqFw_Di_Container_Instantiate_Instantiator} */
         const instantiator = new TeqFw_Di_Container_Instantiate_Instantiator();
         /** @type {TeqFw_Di_Container_Lifecycle_Registry} */
@@ -54,6 +58,26 @@ export default class TeqFw_Di_Container {
          */
         const getKey = function (depId) {
             return `${depId.platform}::${depId.moduleName}`;
+        };
+
+        /**
+         * Canonical structural identity excluding `origin`.
+         *
+         * @param {TeqFw_Di_DepId$DTO} depId
+         * @returns {string}
+         */
+        const getMockKey = function (depId) {
+            const exportName = depId.exportName === null ? '' : depId.exportName;
+            const life = depId.life === null ? '' : depId.life;
+            const wrappers = Array.isArray(depId.wrappers) ? depId.wrappers.join('|') : '';
+            return [
+                depId.platform,
+                depId.moduleName,
+                exportName,
+                depId.composition,
+                life,
+                wrappers,
+            ].join('::');
         };
 
         /**
@@ -117,13 +141,46 @@ export default class TeqFw_Di_Container {
         };
 
         /**
+         * @returns {void}
+         */
+        const assertBuilderStage = function () {
+            if (state !== 'notConfigured') throw new Error('Container configuration is locked.');
+        };
+
+        /**
+         * Lazily creates infrastructure and locks builder configuration.
+         *
+         * @returns {void}
+         */
+        const initializeInfrastructure = function () {
+            if (state !== 'notConfigured') return;
+            if (loggingEnabled === true) console.debug('[teqfw/di] Container: initialize operational infrastructure.');
+            state = 'operational';
+            const resolverConfig = configFactory.create({
+                namespaces: namespaceRoots,
+            }, {immutable: true});
+            resolver = new TeqFw_Di_Resolver({config: resolverConfig});
+            graphResolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser, resolver});
+        };
+
+        /**
+         * Emits diagnostic message when logging mode is enabled.
+         *
+         * @param {string} message
+         * @returns {void}
+         */
+        const log = function (message) {
+            if (loggingEnabled === true) console.debug(`[teqfw/di] ${message}`);
+        };
+
+        /**
          * Registers preprocess extension before first resolution.
          *
          * @param {(depId: TeqFw_Di_DepId$DTO) => TeqFw_Di_DepId$DTO} fn
          * @returns {void}
          */
         this.addPreprocess = function (fn) {
-            if (state !== 'notConfigured') throw new Error('Container configuration is locked.');
+            assertBuilderStage();
             preprocess.push(fn);
         };
 
@@ -134,7 +191,7 @@ export default class TeqFw_Di_Container {
          * @returns {void}
          */
         this.addPostprocess = function (fn) {
-            if (state !== 'notConfigured') throw new Error('Container configuration is locked.');
+            assertBuilderStage();
             postprocess.push(fn);
         };
 
@@ -145,9 +202,55 @@ export default class TeqFw_Di_Container {
          * @returns {void}
          */
         this.setParser = function (next) {
-            if (state !== 'notConfigured') throw new Error('Container configuration is locked.');
+            assertBuilderStage();
             parser = next;
-            graphResolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser, resolver});
+        };
+
+        /**
+         * Registers one resolver namespace root before first resolution.
+         *
+         * @param {string} prefix
+         * @param {string} target
+         * @param {string} defaultExt
+         * @returns {void}
+         */
+        this.addNamespaceRoot = function (prefix, target, defaultExt) {
+            assertBuilderStage();
+            namespaceRoots.push({prefix, target, defaultExt});
+        };
+
+        /**
+         * Enables mock registration capability for test scenarios.
+         *
+         * @returns {void}
+         */
+        this.enableTestMode = function () {
+            assertBuilderStage();
+            testMode = true;
+        };
+
+        /**
+         * Enables diagnostic logging before first resolution.
+         *
+         * @returns {void}
+         */
+        this.enableLogging = function () {
+            assertBuilderStage();
+            loggingEnabled = true;
+        };
+
+        /**
+         * Registers test mock by CDC structural identity.
+         *
+         * @param {string} cdc
+         * @param {unknown} mock
+         * @returns {void}
+         */
+        this.register = function (cdc, mock) {
+            assertBuilderStage();
+            if (testMode !== true) throw new Error('Container test mode is disabled.');
+            const depId = parser.parse(cdc);
+            mockRegistry.set(getMockKey(depId), mock);
         };
 
         /**
@@ -158,15 +261,25 @@ export default class TeqFw_Di_Container {
          */
         this.get = async function (cdc) {
             if (state === 'failed') throw new Error('Container is in failed state.');
-            if (state === 'notConfigured') state = 'operational';
 
             try {
+                initializeInfrastructure();
                 /** @type {TeqFw_Di_DepId$DTO} */
                 const parsed = parser.parse(cdc);
+                log(`parse: ${parsed.platform}::${parsed.moduleName}`);
                 /** @type {TeqFw_Di_DepId$DTO} */
                 const root = applyPreprocess(parsed);
+                log(`preprocess: ${root.platform}::${root.moduleName}`);
+                if (testMode === true) {
+                    const key = getMockKey(root);
+                    if (mockRegistry.has(key)) {
+                        log(`mock-hit: ${key}`);
+                        return freeze(mockRegistry.get(key));
+                    }
+                }
                 /** @type {Map<string, {depId: TeqFw_Di_DepId$DTO, namespace: object}>} */
                 const graph = await graphResolver.resolve(root);
+                log(`resolve-graph: nodes=${graph.size}`);
                 /** @type {Map<string, unknown>} */
                 const built = new Map();
 
@@ -198,6 +311,7 @@ export default class TeqFw_Di_Container {
                         const postprocessed = applyPostprocess(instantiated);
                         /** @type {unknown} */
                         const wrapped = wrapperExecutor.execute(node.depId, postprocessed, node.namespace);
+                        log(`build: ${node.depId.platform}::${node.depId.moduleName}`);
                         return freeze(wrapped);
                     });
                     built.set(key, value);

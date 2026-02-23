@@ -81,8 +81,36 @@ In particular:
 - DTO factories MUST expose exactly one public `create(...)` method.
 - Enum modules MUST export a single flat literal object as `default`.
 - No behavioral logic may be introduced into DTO or Enum modules.
-- Semantic constants (composition, life, platform, etc.) MUST be referenced via Enum codifiers from `src2/Enum`.
-- String literals MUST NOT be used in implementation code where an Enum codifier exists.
+- Semantic constants MUST be referenced via Enum codifiers.
+- String literals MUST NOT be used where an Enum codifier exists.
+
+## Fail-Fast Semantics (No Defensive Programming)
+
+Implementation under `src2/` follows strict fail-fast architecture.
+
+Agents MUST assume that:
+
+- DepId DTO instances are structurally valid.
+- Resolver configuration DTO is valid.
+- Enum codifiers are valid.
+- Constructor dependency descriptors are correct.
+- Public API callers provide semantically correct inputs.
+
+Unless explicitly required by a code-level contract document, implementation MUST NOT:
+
+- perform defensive runtime validation of input types,
+- duplicate parser or DTO validation logic,
+- introduce early-guard checks for invariants guaranteed by higher layers,
+- validate constructor dependency descriptor shapes,
+- add “safe” fallback branches,
+- attempt graceful degradation.
+
+This rule applies equally to internal and public methods, including `Container.get`.
+
+If an invariant is violated, the system MUST fail at the point of use.
+Explicit pre-validation for the sole purpose of producing earlier or clearer error messages is prohibited.
+
+Redundant validation logic constitutes architectural violation.
 
 ## Testing Alignment
 
@@ -92,7 +120,7 @@ Unit and integration tests MUST follow:
 
 For every testable source module, exactly one corresponding unit test MUST exist under `test2/unit/`, mirroring directory structure.
 
-Tests MUST use the normative stack:
+Tests MUST use:
 
 - `node:test`
 - `node:assert/strict`
@@ -106,15 +134,13 @@ The file `types.d.ts` defines exported structural type aliases corresponding to 
 When adding or renaming an exported implementation module under `src2/`, agent MUST:
 
 - ensure a corresponding type alias exists in `types.d.ts`;
-- ensure alias mapping follows `ctx/docs/code/structure.md` namespace-to-file mapping rules.
+- ensure alias mapping follows namespace-to-file mapping rules.
 
-Only types intended for global availability across the entire project MAY be placed inside `declare global {}`.
+Only types intended for global availability MAY be placed inside `declare global {}`.
 
-All other types MUST be exported normally from `types.d.ts` and imported explicitly where needed.
+All other types MUST be exported normally and imported explicitly.
 
-Automatic registration of every new type in `declare global {}` is prohibited.
-
-Introducing implicit global types is prohibited.
+Implicit global types are prohibited.
 
 ## Responsibility Boundary
 
@@ -123,22 +149,21 @@ Agents operating under `src2/` are responsible only for:
 - implementation-level correctness,
 - structural compliance,
 - deterministic behavior,
+- strict fail-fast semantics,
 - JSDoc typing discipline,
 - alignment with code-level contracts.
-
-Internal constructor dependency descriptors are treated as trusted project contracts.
-Defensive runtime validation of constructor descriptor shape is optional and SHOULD be omitted unless explicitly required by a code-level contract document.
 
 Agents MUST NOT:
 
 - redefine architecture-level invariants,
 - weaken fail-fast guarantees,
+- introduce defensive runtime validation,
 - modify dependency direction rules,
 - introduce new extension points not defined at code level.
 
 ## Summary
 
-`src2/` is governed by strict structural, typing, and testing invariants defined at the code level.
+`src2/` is governed by strict structural, typing, determinism, and fail-fast invariants.
 
 Implementation must remain:
 
@@ -146,7 +171,7 @@ Implementation must remain:
 - layer-consistent,
 - JSDoc-typed,
 - DTO/Enum-disciplined,
-- free of implicit globals,
+- free of defensive redundancy,
 - compliant with namespace-to-file mapping rules.
 
-Any deviation from these invariants constitutes non-compliant implementation.
+Any deviation constitutes non-compliant implementation.

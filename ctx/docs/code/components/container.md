@@ -4,7 +4,13 @@ Path: `./ctx/docs/code/components/container.md`
 
 ## Purpose
 
-This document defines the implementation-level contract of the `Container` component in `@teqfw/di`. It specifies the public API, configuration model, execution semantics, state model, extension handling, failure behavior, and breaking-change invariants. Architectural linking semantics and structural identity are defined at higher levels and are not restated here.
+This document defines the implementation-level contract of the `Container` component as the **single public entry point** of the `@teqfw/di` product.
+
+`Container` is the only externally visible orchestration boundary. All configuration of parsing, resolution, linking, extension pipelines, namespace mapping, and test overrides MUST be performed exclusively through this component.
+
+Internal components (Parser, Resolver, Lifecycle, DepId factory) are infrastructure details and are not part of the public product surface.
+
+Architectural linking semantics and structural identity are defined at higher levels and are not restated here.
 
 ## Normative References
 
@@ -16,12 +22,25 @@ The container implementation MUST conform to:
 - `ctx/docs/constraints/overview.md`
 - `ctx/docs/code/layout/structure.md`
 - `ctx/docs/code/components/parser.md`
+- `ctx/docs/code/components/resolver.md`
 
 ## Public API
 
-The only resolution entry point is:
+### Constructor
 
-`get(cdc: string): Promise<any>`
+```js
+new Container();
+```
+
+The constructor MUST NOT accept parameters.
+
+All configuration is performed via builder-style methods before the first `get` invocation.
+
+### Resolution Entry Point
+
+```js
+get(cdc: string): Promise<any>
+```
 
 The method MUST:
 
@@ -31,147 +50,232 @@ The method MUST:
 - reject on failure,
 - never return partial results.
 
-The container MUST expose:
-
-- `addPreprocess(fn)`
-- `addPostprocess(fn)`
-
-The constructor MUST NOT accept configuration parameters.
-
-No additional public resolution methods are permitted.
-
 `get` is always asynchronous. Changing this contract constitutes a breaking change.
 
-## Configuration Model
+### Configuration Methods (Builder Stage Only)
 
-The container is instantiated in state `NotConfigured`.
+All configuration methods are permitted **only before the first `get` invocation**.
 
-Configuration consists of:
+After the first `get`, any configuration attempt MUST throw.
 
-- registering preprocess functions,
-- registering postprocess functions,
-- replacing the default parser.
+#### Parser Replacement
 
-Configuration is mutable only in state `NotConfigured`.
+```js
+setParser(parser);
+```
 
-Transition from `NotConfigured` to `Operational` occurs immediately upon entry into the first `get` invocation, before resolution begins.
+Rules:
 
-There is no externally observable `Configured` state.
+- `parser` MUST expose `parse(cdc: string): DepId`.
+- The container MUST NOT validate parser internals beyond structural presence of `parse`.
+- Parser replacement is forbidden after first `get`.
 
-Any attempt to modify configuration after the first `get` invocation MUST throw.
+#### Namespace Registration (Resolver Configuration)
 
-Invocation of `get` in `NotConfigured` without prior configuration is permitted. If resolver configuration is incomplete, resolution fails.
+```js
+addNamespaceRoot(prefix: string, target: string, defaultExt: string)
+```
 
-Registration of the same function multiple times is permitted. Each registration produces a distinct pipeline entry.
+This method accumulates namespace-to-filesystem mapping rules.
 
-## Extension Model
+Rules:
 
-The extension surface consists of two ordered pipelines:
+- Multiple namespace roots are permitted.
+- Resolution rule selection remains the responsibility of Resolver.
+- Container MUST internally construct the resolver configuration snapshot on first `get`.
+- Namespace roots become immutable after first `get`.
 
-- `preprocess[]`
-- `postprocess[]`
+Container MUST NOT expose Resolver DTOs or Resolver constructor publicly.
 
-Multiple functions are permitted in each pipeline. Execution order is defined strictly by registration order.
+#### Extension Pipelines
+
+```js
+addPreprocess(fn);
+addPostprocess(fn);
+```
+
+Execution order is defined strictly by registration order.
 
 Preprocess functions:
 
 - receive a `DepId`,
 - MUST return a `DepId`,
-- MAY return a structurally different `DepId`,
-- MUST preserve structural invariants of `DepId`.
+- MUST preserve structural invariants.
 
 Postprocess functions:
 
-- receive the freshly instantiated object,
+- receive the instantiated object,
 - MAY return a different object,
 - execute before lifecycle enforcement.
 
-Extensions MUST be deterministic under identical configuration and inputs.
+#### Logging Mode
 
-Any exception thrown by an extension is a fatal linking error.
+```js
+enableLogging();
+```
+
+Enables diagnostic logging of container pipeline execution.
+
+Rules:
+
+- MUST be invoked before first `get`.
+- Logging is disabled by default.
+- When enabled, container MAY emit diagnostic messages to `console`.
+- Logging MUST NOT alter linking semantics, lifecycle behavior, state transitions, or determinism.
+- Logging MUST NOT introduce asynchronous behavior or side effects beyond console output.
+
+#### Test Mode
+
+```js
+enableTestMode();
+```
+
+Enables mock registration capability.
+
+Rules:
+
+- MUST be invoked before first `get`.
+- Has no effect on production linking semantics unless mocks are registered.
+- Does not alter resolver configuration or parser behavior.
+
+#### Mock Registration
+
+```js
+register(cdc: string, mock: any)
+```
+
+Rules:
+
+- Allowed only if test mode is enabled.
+- Allowed only before first `get`.
+- The container MUST parse the CDC and register the mock under canonical structural identity (excluding `origin`).
+- During resolution, mock lookup occurs after parse and preprocess, but before resolver stage.
+- Registered mocks bypass resolver, instantiation, and lifecycle stages.
+- Freeze semantics still apply unless explicitly documented otherwise.
+
+Mock registration MUST NOT alter production determinism when test mode is disabled.
+
+## Configuration Model
+
+The container has two operational phases:
+
+1. Builder phase (pre-first-get)
+2. Operational phase (post-first-get)
+
+Configuration is mutable only in Builder phase.
+
+Transition to Operational occurs at the beginning of the first `get` invocation.
+
+Resolver instance and its configuration snapshot are created lazily at that moment.
+
+No reconfiguration is permitted after transition.
 
 ## Resolution Semantics
 
 The container orchestrates the immutable linking pipeline:
 
-CDC → parse → DepId₀ → preprocess[] → DepId₁ → resolve → instantiate → postprocess[] → lifecycle enforcement → freeze → return instance
+CDC → parse → DepId₀ → preprocess[] → DepId₁
+→ mock lookup (if enabled)
+→ resolve → instantiate → postprocess[]
+→ lifecycle enforcement → freeze → return instance
 
-The container MUST invoke stages in this structural order.
+Pipeline stage order MUST NOT change.
 
-Lifecycle-based caching does not alter pipeline structure. For singleton dependencies:
+Mock lookup stage is conditional and only active in test mode.
 
-- resolve, instantiate, postprocess, lifecycle enforcement, and freeze execute exactly once per structural `DepId`,
-- subsequent `get` calls return the cached instance provided by lifecycle,
-- the container does not implement lifecycle-based branching.
+Lifecycle-based caching does not alter pipeline structure.
 
-The container does not perform static import analysis, module graph inspection, or lazy linking.
+Container MUST NOT perform:
 
-Lifecycle is responsible for caching singleton instances and applying freeze before exposure. The container MUST NOT store or manage singleton instances directly.
+- module graph inspection,
+- static analysis,
+- filesystem introspection.
+
+Resolver remains responsible for specifier derivation and namespace matching.
 
 ## State Model
 
-The container has three observable states:
+Container states:
 
-1. NotConfigured
+1. NotConfigured (Builder phase)
 2. Operational
 3. Failed
 
-NotConfigured → Operational occurs at the start of the first `get` invocation.
+Transitions:
 
-If the first invocation fails, the state transition sequence is:
+- NotConfigured → Operational (on first `get`)
+- Operational → Failed (on fatal linking error)
 
-NotConfigured → Operational → Failed
+No transition out of Failed is permitted.
 
-Operational → Failed occurs upon any fatal linking error.
+After Failed:
 
-No transition out of `Failed` is permitted.
-
-After transition to `Failed`:
-
-- all subsequent calls to `get` MUST reject without executing resolution,
+- all `get` calls MUST reject,
 - all configuration methods MUST throw.
-
-No additional states exist.
 
 ## Failure Semantics
 
 Linking is fail-fast.
 
-Any error during parse, preprocess, resolve, instantiate, postprocess, lifecycle enforcement, freeze, or cycle detection:
+Any error during:
 
-- rejects the current `get` call,
-- transitions the container to `Failed`.
+- parse,
+- preprocess,
+- mock lookup,
+- resolve,
+- instantiate,
+- postprocess,
+- lifecycle enforcement,
+- freeze,
+- cycle detection,
 
-No recovery or rollback semantics are permitted.
+MUST:
 
-Partially constructed singleton instances must not persist after failure.
+- reject the current `get`,
+- transition container to Failed.
+
+No recovery semantics are permitted.
 
 ## Determinism Scope
 
-For identical finalized configuration, identical parser, identical CDC interpreted under identical CDC profile configuration, and identical dependency stack conditions, `get` MUST resolve to identical instance identity.
+For identical finalized configuration, identical parser, identical namespace roots, identical test mode state, identical mock registry, and identical CDC inputs interpreted under identical CDC profile configuration:
 
-Invocation order of independent dependencies must not influence outcomes except through lifecycle caching.
+`get` MUST resolve to identical instance identity.
+
+Invocation order of independent dependencies MUST NOT influence outcome except via lifecycle caching.
 
 ## Responsibility Boundary
 
-The container is responsible exclusively for:
+Container is responsible for:
 
-- orchestrating the linking pipeline,
-- enforcing configuration immutability after first use,
+- being the sole public orchestration boundary,
+- collecting builder-stage configuration,
+- constructing resolver and lifecycle internally,
+- enforcing configuration immutability,
+- orchestrating pipeline stages,
 - executing extension pipelines,
 - managing state transitions,
-- enforcing fail-fast behavior,
-- delegating to parser, resolver, and lifecycle.
+- enforcing fail-fast semantics,
+- supporting deterministic test overrides.
+
+Container is not responsible for:
+
+- CDC grammar definition,
+- specifier derivation,
+- namespace matching algorithm,
+- export selection,
+- domain validation.
 
 ## Breaking Change Invariants
 
-The following changes constitute breaking changes:
+Breaking changes include:
 
-- modifying the signature or asynchronous contract of `get`,
-- allowing configuration mutation after first `get`,
+- modifying the signature or async contract of `get`,
+- exposing Resolver or Parser as public components,
+- allowing post-start reconfiguration,
 - altering pipeline stage order,
-- modifying extension execution ordering,
-- relocating caching responsibility from lifecycle to container,
+- changing mock resolution stage position,
+- relocating lifecycle caching into container,
 - altering freeze timing,
 - weakening fail-fast guarantees,
 - changing determinism scope.
@@ -180,4 +284,13 @@ All other refactoring is non-breaking only if these invariants remain intact.
 
 ## Conformance Boundary
 
-The container implementation MUST preserve immutable core semantics, deterministic linking, strict state transitions, extension ordering guarantees, and fail-fast behavior. Structural deviation from these constraints constitutes architectural evolution.
+The container implementation MUST preserve:
+
+- immutable core linking semantics,
+- deterministic runtime behavior,
+- strict builder-to-operational transition,
+- isolation of infrastructure components,
+- test override confinement to explicit test mode,
+- single public orchestration boundary.
+
+Structural deviation constitutes architectural evolution.
