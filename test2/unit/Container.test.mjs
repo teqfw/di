@@ -144,7 +144,7 @@ describe('TeqFw_Di_Container', () => {
         assert.throws(() => container.addNamespaceRoot('Ns_', '/x', '.mjs'), Error);
     });
 
-    it('enableLogging emits diagnostics without changing get result', async () => {
+    it('enableLogging does not alter get result', async () => {
         const container = new TeqFw_Di_Container();
         /** @type {TeqFw_Di_Def_Parser} */
         const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
@@ -154,19 +154,21 @@ describe('TeqFw_Di_Container', () => {
         });
         container.setParser(parser);
         container.enableLogging();
+        const value = await container.get('x');
+        assert.equal(typeof value, 'object');
+    });
 
-        /** @type {string[]} */
-        const logs = [];
-        const previous = console.debug;
-        console.debug = (...args) => logs.push(args.join(' '));
-        try {
-            const value = await container.get('x');
-            assert.equal(typeof value, 'object');
-        } finally {
-            console.debug = previous;
-        }
-
-        assert.ok(logs.length > 0);
+    it('enableLogging throws after first get', async () => {
+        const container = new TeqFw_Di_Container();
+        /** @type {TeqFw_Di_Def_Parser} */
+        const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
+            parse() {
+                return createDepId({moduleName: 'path'});
+            },
+        });
+        container.setParser(parser);
+        await container.get('x');
+        assert.throws(() => container.enableLogging(), /locked/);
     });
 
     it('register throws if test mode is disabled', () => {

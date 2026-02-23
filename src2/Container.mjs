@@ -7,6 +7,7 @@ import TeqFw_Di_Container_Resolve_GraphResolver from './Container/Resolve/GraphR
 import TeqFw_Di_Container_Instantiate_Instantiator from './Container/Instantiate/Instantiator.mjs';
 import TeqFw_Di_Container_Lifecycle_Registry from './Container/Lifecycle/Registry.mjs';
 import TeqFw_Di_Container_Wrapper_Executor from './Container/Wrapper/Executor.mjs';
+import TeqFw_Di_Internal_Logger, {TeqFw_Di_Internal_Logger_Noop} from './Internal/Logger.mjs';
 
 /**
  * @typedef {'notConfigured'|'operational'|'failed'} TeqFw_Di_Container_State
@@ -45,10 +46,12 @@ export default class TeqFw_Di_Container {
         let resolver;
         /** @type {TeqFw_Di_Container_Resolve_GraphResolver|undefined} */
         let graphResolver;
+        /** @type {TeqFw_Di_Container_Lifecycle_Registry|undefined} */
+        let lifecycle;
+        /** @type {{log(message: string): void, error(message: string, error?: unknown): void}} */
+        let logger = TeqFw_Di_Internal_Logger_Noop;
         /** @type {TeqFw_Di_Container_Instantiate_Instantiator} */
         const instantiator = new TeqFw_Di_Container_Instantiate_Instantiator();
-        /** @type {TeqFw_Di_Container_Lifecycle_Registry} */
-        const lifecycle = new TeqFw_Di_Container_Lifecycle_Registry();
         /** @type {TeqFw_Di_Container_Wrapper_Executor} */
         const wrapperExecutor = new TeqFw_Di_Container_Wrapper_Executor();
 
@@ -145,29 +148,35 @@ export default class TeqFw_Di_Container {
         };
 
         /**
+         * Emits builder-stage diagnostics only when logging is enabled.
+         *
+         * @param {string} message
+         * @returns {void}
+         */
+        const logBuilder = function (message) {
+            if (!loggingEnabled) return;
+            logger.log(`Container.builder: ${message}`);
+        };
+
+        /**
          * Lazily creates infrastructure and locks builder configuration.
          *
          * @returns {void}
          */
         const initializeInfrastructure = function () {
             if (state !== 'notConfigured') return;
-            if (loggingEnabled === true) console.debug('[teqfw/di] Container: initialize operational infrastructure.');
+            if (loggingEnabled && (logger === TeqFw_Di_Internal_Logger_Noop)) {
+                logger = new TeqFw_Di_Internal_Logger();
+            }
+            logger.log('Container.transition: notConfigured -> operational.');
             state = 'operational';
             const resolverConfig = configFactory.create({
                 namespaces: namespaceRoots,
             }, {immutable: true});
-            resolver = new TeqFw_Di_Resolver({config: resolverConfig});
-            graphResolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser, resolver});
-        };
-
-        /**
-         * Emits diagnostic message when logging mode is enabled.
-         *
-         * @param {string} message
-         * @returns {void}
-         */
-        const log = function (message) {
-            if (loggingEnabled === true) console.debug(`[teqfw/di] ${message}`);
+            if (typeof parser.setLogger === 'function') parser.setLogger(logger);
+            resolver = new TeqFw_Di_Resolver({config: resolverConfig, logger});
+            graphResolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser, resolver, logger});
+            lifecycle = new TeqFw_Di_Container_Lifecycle_Registry(logger);
         };
 
         /**
@@ -178,6 +187,7 @@ export default class TeqFw_Di_Container {
          */
         this.addPreprocess = function (fn) {
             assertBuilderStage();
+            logBuilder('addPreprocess().');
             preprocess.push(fn);
         };
 
@@ -189,6 +199,7 @@ export default class TeqFw_Di_Container {
          */
         this.addPostprocess = function (fn) {
             assertBuilderStage();
+            logBuilder('addPostprocess().');
             postprocess.push(fn);
         };
 
@@ -201,6 +212,8 @@ export default class TeqFw_Di_Container {
         this.setParser = function (next) {
             assertBuilderStage();
             parser = next;
+            if (typeof parser.setLogger === 'function') parser.setLogger(loggingEnabled ? logger : null);
+            logBuilder('setParser().');
         };
 
         /**
@@ -213,6 +226,7 @@ export default class TeqFw_Di_Container {
          */
         this.addNamespaceRoot = function (prefix, target, defaultExt) {
             assertBuilderStage();
+            logBuilder(`addNamespaceRoot('${prefix}').`);
             namespaceRoots.push({prefix, target, defaultExt});
         };
 
@@ -223,6 +237,7 @@ export default class TeqFw_Di_Container {
          */
         this.enableTestMode = function () {
             assertBuilderStage();
+            logBuilder('enableTestMode().');
             testMode = true;
         };
 
@@ -233,7 +248,11 @@ export default class TeqFw_Di_Container {
          */
         this.enableLogging = function () {
             assertBuilderStage();
+            if (loggingEnabled) return;
             loggingEnabled = true;
+            logger = new TeqFw_Di_Internal_Logger();
+            if (typeof parser.setLogger === 'function') parser.setLogger(logger);
+            logger.log('Container.builder: enableLogging().');
         };
 
         /**
@@ -245,6 +264,7 @@ export default class TeqFw_Di_Container {
          */
         this.register = function (cdc, mock) {
             assertBuilderStage();
+            logBuilder(`register('${cdc}').`);
             if (testMode !== true) throw new Error('Container test mode is disabled.');
             const depId = parser.parse(cdc);
             mockRegistry.set(getMockKey(depId), mock);
@@ -257,26 +277,49 @@ export default class TeqFw_Di_Container {
          * @returns {Promise<unknown>}
          */
         this.get = async function (cdc) {
-            if (state === 'failed') throw new Error('Container is in failed state.');
+            if (state === 'failed') {
+                logger.error(`Container.get: rejected in failed state cdc='${cdc}'.`);
+                throw new Error('Container is in failed state.');
+            }
 
+            /** @type {string} */
+            let stage = 'start';
             try {
+                logger.log(`Container.get: cdc='${cdc}'.`);
                 initializeInfrastructure();
+                logger.log(`Container.state: '${state}'.`);
                 /** @type {TeqFw_Di_DepId$DTO} */
+                stage = 'parse';
+                logger.log('Container.pipeline: parse:entry.');
                 const parsed = parser.parse(cdc);
-                log(`parse: ${parsed.platform}::${parsed.moduleName}`);
+                logger.log(`Container.pipeline: parse:exit '${parsed.platform}::${parsed.moduleName}'.`);
                 /** @type {TeqFw_Di_DepId$DTO} */
+                stage = 'preprocess';
+                logger.log('Container.pipeline: preprocess:entry.');
                 const root = applyPreprocess(parsed);
-                log(`preprocess: ${root.platform}::${root.moduleName}`);
+                logger.log(`Container.pipeline: preprocess:exit '${root.platform}::${root.moduleName}'.`);
                 if (testMode === true) {
+                    stage = 'mock';
+                    logger.log('Container.pipeline: mock-lookup:entry.');
                     const key = getMockKey(root);
                     if (mockRegistry.has(key)) {
-                        log(`mock-hit: ${key}`);
-                        return freeze(mockRegistry.get(key));
+                        logger.log(`Container.pipeline: mock-lookup:hit '${key}'.`);
+                        stage = 'freeze';
+                        logger.log('Container.pipeline: freeze:entry.');
+                        const frozenMock = freeze(mockRegistry.get(key));
+                        logger.log('Container.pipeline: freeze:exit.');
+                        logger.log('Container.pipeline: return:success.');
+                        return frozenMock;
                     }
+                    logger.log(`Container.pipeline: mock-lookup:miss '${key}'.`);
+                } else {
+                    logger.log('Container.pipeline: mock-lookup:disabled.');
                 }
                 /** @type {Map<string, {depId: TeqFw_Di_DepId$DTO, namespace: object}>} */
+                stage = 'resolve';
+                logger.log('Container.pipeline: resolve:entry.');
                 const graph = await graphResolver.resolve(root);
-                log(`resolve-graph: nodes=${graph.size}`);
+                logger.log(`Container.pipeline: resolve:exit nodes=${graph.size}.`);
                 /** @type {Map<string, unknown>} */
                 const built = new Map();
 
@@ -289,7 +332,11 @@ export default class TeqFw_Di_Container {
                     if (!graph.has(key)) throw new Error(`Resolved graph node is missing for '${key}'.`);
 
                     const node = graph.get(key);
+                    stage = 'lifecycle';
+                    logger.log(`Container.pipeline: lifecycle:entry '${node.depId.platform}::${node.depId.moduleName}'.`);
                     const value = lifecycle.apply(node.depId, function () {
+                        stage = 'instantiate';
+                        logger.log(`Container.pipeline: instantiate:entry '${node.depId.platform}::${node.depId.moduleName}'.`);
                         /** @type {Record<string, unknown>} */
                         const deps = {};
                         /** @type {Record<string, unknown>} */
@@ -303,19 +350,31 @@ export default class TeqFw_Di_Container {
                         }
                         /** @type {unknown} */
                         const instantiated = instantiator.instantiate(node.depId, node.namespace, deps);
+                        logger.log(`Container.pipeline: instantiate:exit '${node.depId.platform}::${node.depId.moduleName}'.`);
                         /** @type {unknown} */
+                        stage = 'postprocess';
+                        logger.log(`Container.pipeline: postprocess:entry '${node.depId.platform}::${node.depId.moduleName}'.`);
                         const postprocessed = applyPostprocess(instantiated);
+                        logger.log(`Container.pipeline: postprocess:exit '${node.depId.platform}::${node.depId.moduleName}'.`);
                         /** @type {unknown} */
                         const wrapped = wrapperExecutor.execute(node.depId, postprocessed, node.namespace);
-                        log(`build: ${node.depId.platform}::${node.depId.moduleName}`);
-                        return freeze(wrapped);
+                        stage = 'freeze';
+                        logger.log(`Container.pipeline: freeze:entry '${node.depId.platform}::${node.depId.moduleName}'.`);
+                        const frozen = freeze(wrapped);
+                        logger.log(`Container.pipeline: freeze:exit '${node.depId.platform}::${node.depId.moduleName}'.`);
+                        return frozen;
                     });
+                    logger.log(`Container.pipeline: lifecycle:exit '${node.depId.platform}::${node.depId.moduleName}'.`);
                     built.set(key, value);
                     return value;
                 };
 
-                return build(getKey(root));
+                const result = build(getKey(root));
+                logger.log('Container.pipeline: return:success.');
+                return result;
             } catch (error) {
+                logger.error(`Container.pipeline: failed at stage='${stage}'.`, error);
+                logger.log('Container.transition: operational -> failed.');
                 state = 'failed';
                 throw error;
             }

@@ -15,6 +15,8 @@ export default class TeqFw_Di_Def_Parser {
     constructor() {
         /** @type {TeqFw_Di_DepId} Factory used to construct dependency identity DTO. */
         const depIdFactory = new TeqFw_Di_Dto_DepId();
+        /** @type {{log(message: string): void}|null} */
+        let logger = null;
 
         /**
          * Parses one CDC identifier and returns normalized immutable dependency DTO.
@@ -23,6 +25,7 @@ export default class TeqFw_Di_Def_Parser {
          * @returns {TeqFw_Di_DepId$DTO}
          */
         this.parse = function (cdc) {
+            if (logger) logger.log(`Parser.parse: input='${cdc}'.`);
             if (typeof cdc !== 'string') throw new Error('CDC must be a string.');
             if (cdc.length === 0) throw new Error('CDC must be non-empty.');
             if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(cdc)) throw new Error('CDC must satisfy AsciiCdcIdentifier.');
@@ -117,7 +120,7 @@ export default class TeqFw_Di_Def_Parser {
                 if (exportName === null) exportName = 'default';
             }
 
-            return depIdFactory.create({
+            const depId = depIdFactory.create({
                 moduleName,
                 platform,
                 exportName,
@@ -126,6 +129,18 @@ export default class TeqFw_Di_Def_Parser {
                 wrappers,
                 origin,
             }, {immutable: true});
+            if (logger) logger.log(`Parser.parse: produced='${depId.platform}::${depId.moduleName}'.`);
+            return depId;
+        };
+
+        /**
+         * Sets optional internal logger.
+         *
+         * @param {{log(message: string): void}|null} next
+         * @returns {void}
+         */
+        this.setLogger = function (next) {
+            logger = next;
         };
     }
 }

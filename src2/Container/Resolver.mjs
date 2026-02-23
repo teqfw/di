@@ -4,6 +4,7 @@
  * @typedef {object} TeqFw_Di_Resolver_Dependencies
  * @property {TeqFw_Di_Dto_Resolver_Config$DTO} config Resolver configuration DTO.
  * @property {(specifier: string) => Promise<object>} [importFn] Import function override.
+ * @property {{log(message: string): void, error(message: string, error?: unknown): void}|null} [logger]
  */
 
 /**
@@ -20,7 +21,7 @@ export default class TeqFw_Di_Resolver {
      *
      * @param {TeqFw_Di_Resolver_Dependencies} param0 Resolver dependencies descriptor.
      */
-    constructor({config, importFn = (specifier) => import(specifier)}) {
+    constructor({config, importFn = (specifier) => import(specifier), logger = null}) {
         /** @type {Map<string, Promise<object>>} Cache keyed by `(platform,moduleName)`. */
         const cache = new Map();
         /** @type {TeqFw_Di_Dto_Resolver_Config$DTO} Original config reference captured from dependencies. */
@@ -29,6 +30,8 @@ export default class TeqFw_Di_Resolver {
         let configSnapshot;
         /** @type {(specifier: string) => Promise<object>} Import function used for namespace loading. */
         const importModule = importFn;
+        /** @type {{log(message: string): void, error(message: string, error?: unknown): void}|null} */
+        const log = logger;
 
         /**
          * Creates immutable-in-effect structural snapshot used for all post-start resolutions.
@@ -60,7 +63,9 @@ export default class TeqFw_Di_Resolver {
             /** @type {TeqFw_Di_Resolver_NamespaceRule[]} */
             const items = configSnapshot.namespaces;
             for (const one of items) {
-                if (!moduleName.startsWith(one.prefix)) continue;
+                const match = moduleName.startsWith(one.prefix);
+                if (log) log.log(`Resolver.namespace: prefix='${one.prefix}' match=${String(match)} module='${moduleName}'.`);
+                if (!match) continue;
                 if (one.prefix.length > foundLen) {
                     found = one;
                     foundLen = one.prefix.length;
@@ -104,8 +109,16 @@ export default class TeqFw_Di_Resolver {
          * @returns {string}
          */
         const deriveSpecifier = function (platform, moduleName) {
-            if (platform === 'node') return `node:${moduleName}`;
-            if (platform === 'npm') return moduleName;
+            if (platform === 'node') {
+                const specifier = `node:${moduleName}`;
+                if (log) log.log(`Resolver.specifier: module='${moduleName}' -> '${specifier}'.`);
+                return specifier;
+            }
+            if (platform === 'npm') {
+                const specifier = moduleName;
+                if (log) log.log(`Resolver.specifier: module='${moduleName}' -> '${specifier}'.`);
+                return specifier;
+            }
             if (platform !== 'teq') throw new Error(`Unsupported platform: ${platform}`);
 
             /** @type {TeqFw_Di_Resolver_NamespaceRule} */
@@ -113,7 +126,9 @@ export default class TeqFw_Di_Resolver {
             const remainder = moduleName.slice(rule.prefix.length);
             const relativePath = remainder.split('_').join('/');
             const filePath = appendExt(relativePath, rule.defaultExt);
-            return join(rule.target, filePath);
+            const specifier = join(rule.target, filePath);
+            if (log) log.log(`Resolver.specifier: module='${moduleName}' -> '${specifier}'.`);
+            return specifier;
         };
 
         /**
@@ -134,12 +149,15 @@ export default class TeqFw_Di_Resolver {
             const key = `${platform}::${moduleName}`;
 
             if (cache.has(key)) {
+                if (log) log.log(`Resolver.cache: hit key='${key}'.`);
                 return cache.get(key);
             }
+            if (log) log.log(`Resolver.cache: miss key='${key}'.`);
 
             /** @type {Promise<object>} */
             const promise = (async () => {
                 const specifier = deriveSpecifier(platform, moduleName);
+                if (log) log.log(`Resolver.import: '${specifier}'.`);
                 return importModule(specifier);
             })();
 
@@ -149,6 +167,7 @@ export default class TeqFw_Di_Resolver {
                 return await promise;
             } catch (error) {
                 cache.delete(key);
+                if (log) log.error(`Resolver.cache: evict key='${key}' after failure.`, error);
                 throw error;
             }
         };

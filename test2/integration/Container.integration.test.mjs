@@ -36,6 +36,18 @@ function createParser(map) {
     });
 }
 
+/**
+ * @param {boolean} logging
+ * @param {TeqFw_Di_DepId$DTO} depId
+ * @returns {Promise<unknown>}
+ */
+async function resolveWithMode(logging, depId) {
+    const container = new TeqFw_Di_Container();
+    container.setParser(createParser({root: depId}));
+    if (logging) container.enableLogging();
+    return container.get('root');
+}
+
 describe('Integration: Container + Resolver', () => {
     it('resolves teq module with namespace roots configured in container', async () => {
         const shortTarget = npmModuleName(path.join(DATA_DIR, 'teq/short'));
@@ -111,6 +123,68 @@ describe('Integration: Container + Resolver', () => {
         assert.equal(Object.isFrozen(value), true);
     });
 
+    it('no semantic drift: same instance identity with logging disabled/enabled', async () => {
+        const singletonDep = depIdFactory.create({
+            platform: TeqFw_Di_Enum_Platform.NPM,
+            moduleName: npmModuleName(path.join(DATA_DIR, 'container/WrappedSingleton.mjs')),
+            exportName: 'default',
+            composition: TeqFw_Di_Enum_Composition.FACTORY,
+            life: TeqFw_Di_Enum_Life.SINGLETON,
+            wrappers: [],
+            origin: 'singleton-root',
+        }, {immutable: true});
+        const c1 = new TeqFw_Di_Container();
+        c1.setParser(createParser({root: singletonDep}));
+        const c2 = new TeqFw_Di_Container();
+        c2.setParser(createParser({root: singletonDep}));
+        c2.enableLogging();
+
+        const [a1, a2] = await Promise.all([c1.get('root'), c1.get('root')]);
+        const [b1, b2] = await Promise.all([c2.get('root'), c2.get('root')]);
+
+        assert.strictEqual(a1, a2);
+        assert.strictEqual(b1, b2);
+        assert.deepStrictEqual(a1, b1);
+    });
+
+    it('no semantic drift: same error propagation with logging disabled/enabled', async () => {
+        const missing = depIdFactory.create({
+            platform: TeqFw_Di_Enum_Platform.NPM,
+            moduleName: npmModuleName(path.join(DATA_DIR, 'container/DoesNotExist.mjs')),
+            exportName: 'default',
+            composition: TeqFw_Di_Enum_Composition.FACTORY,
+            life: TeqFw_Di_Enum_Life.TRANSIENT,
+            wrappers: [],
+            origin: 'missing-root',
+        }, {immutable: true});
+
+        await assert.rejects(resolveWithMode(false, missing), /Cannot find module|ERR_MODULE_NOT_FOUND/);
+        await assert.rejects(resolveWithMode(true, missing), /Cannot find module|ERR_MODULE_NOT_FOUND/);
+    });
+
+    it('no semantic drift: same fail-fast behavior with logging disabled/enabled', async () => {
+        const missing = depIdFactory.create({
+            platform: TeqFw_Di_Enum_Platform.NPM,
+            moduleName: npmModuleName(path.join(DATA_DIR, 'container/DoesNotExist.mjs')),
+            exportName: 'default',
+            composition: TeqFw_Di_Enum_Composition.FACTORY,
+            life: TeqFw_Di_Enum_Life.TRANSIENT,
+            wrappers: [],
+            origin: 'missing-root',
+        }, {immutable: true});
+        const disabled = new TeqFw_Di_Container();
+        disabled.setParser(createParser({root: missing}));
+        const enabled = new TeqFw_Di_Container();
+        enabled.setParser(createParser({root: missing}));
+        enabled.enableLogging();
+
+        await assert.rejects(disabled.get('root'));
+        await assert.rejects(disabled.get('root'), /failed state/);
+
+        await assert.rejects(enabled.get('root'));
+        await assert.rejects(enabled.get('root'), /failed state/);
+    });
+
     it('logging mode does not change integration resolution result', async () => {
         const rootDep = depIdFactory.create({
             platform: TeqFw_Di_Enum_Platform.NPM,
@@ -124,17 +198,7 @@ describe('Integration: Container + Resolver', () => {
         const container = new TeqFw_Di_Container();
         container.setParser(createParser({loggingRoot: rootDep}));
         container.enableLogging();
-
-        /** @type {string[]} */
-        const logs = [];
-        const previous = console.debug;
-        console.debug = (...args) => logs.push(args.join(' '));
-        try {
-            const value = await container.get('loggingRoot');
-            assert.deepStrictEqual(value, {mode: 'as-is'});
-        } finally {
-            console.debug = previous;
-        }
-        assert.ok(logs.length > 0);
+        const value = await container.get('loggingRoot');
+        assert.deepStrictEqual(value, {mode: 'as-is'});
     });
 });

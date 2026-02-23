@@ -11,6 +11,7 @@
  * @typedef {object} TeqFw_Di_Container_Resolve_GraphResolver_Dependencies
  * @property {TeqFw_Di_Def_Parser} parser
  * @property {TeqFw_Di_Resolver} resolver
+ * @property {{log(message: string): void}|null} [logger]
  */
 
 /**
@@ -22,7 +23,9 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
     /**
      * @param {TeqFw_Di_Container_Resolve_GraphResolver_Dependencies} deps
      */
-    constructor({parser, resolver}) {
+    constructor({parser, resolver, logger = null}) {
+        /** @type {{log(message: string): void}|null} */
+        const log = logger;
 
         /**
          * @param {TeqFw_Di_DepId$DTO} depId
@@ -74,6 +77,7 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
             try {
                 /** @type {object} */
                 const namespace = await resolver.resolve(depId);
+                if (log) log.log(`GraphResolver.walk: resolved '${key}'.`);
                 out.set(key, {depId, namespace});
 
                 /** @type {unknown} */
@@ -86,6 +90,7 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
                     const nextCdc = /** @type {string} */ (cdc);
                     /** @type {TeqFw_Di_DepId$DTO} */
                     const nextDepId = parser.parse(nextCdc);
+                    if (log) log.log(`GraphResolver.walk: edge '${key}' -> '${nextDepId.platform}::${nextDepId.moduleName}'.`);
                     await walk(nextDepId, out, stack, chain);
                 }
             } finally {

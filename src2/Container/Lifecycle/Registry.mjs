@@ -16,9 +16,11 @@ export default class TeqFw_Di_Container_Lifecycle_Registry {
     /**
      * Creates lifecycle registry instance.
      */
-    constructor() {
+    constructor(logger = null) {
         /** @type {Map<string, unknown>} */
         const singletonCache = new Map();
+        /** @type {{log(message: string): void}|null} */
+        const log = logger;
 
         /**
          * Builds deterministic cache key from structural DepId fields.
@@ -48,10 +50,12 @@ export default class TeqFw_Di_Container_Lifecycle_Registry {
          */
         this.apply = function (depId, producer) {
             if (depId.composition !== TeqFw_Di_Enum_Composition.FACTORY) {
+                if (log) log.log(`Lifecycle.apply: composition='${depId.composition}' cache=skip.`);
                 return producer();
             }
 
             if (depId.life === TeqFw_Di_Enum_Life.TRANSIENT) {
+                if (log) log.log('Lifecycle.apply: transient cache=skip.');
                 return producer();
             }
 
@@ -59,14 +63,18 @@ export default class TeqFw_Di_Container_Lifecycle_Registry {
                 /** @type {string} */
                 const key = buildKey(depId);
                 if (singletonCache.has(key)) {
+                    if (log) log.log(`Lifecycle.cache: hit key='${key}'.`);
                     return singletonCache.get(key);
                 }
+                if (log) log.log(`Lifecycle.cache: miss key='${key}', create.`);
                 /** @type {unknown} */
                 const created = producer();
                 singletonCache.set(key, created);
+                if (log) log.log(`Lifecycle.cache: stored key='${key}'.`);
                 return created;
             }
 
+            if (log) log.log('Lifecycle.apply: no lifecycle marker cache=skip.');
             return producer();
         };
     }
