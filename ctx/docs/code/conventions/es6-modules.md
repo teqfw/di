@@ -115,6 +115,31 @@ The constructor:
 
 Constructor arguments are plain parameters and are not interpreted as dependency injection.
 
+### Constructor Dependency Descriptor Form
+
+When constructor input is a structured descriptor object (for example, service dependencies), constructor parameters MUST use direct object destructuring in the signature.
+
+Required form:
+
+```js
+/**
+ * @typedef {object} UserService$Deps
+ * @property {Namespace_Package_Service_UserRepo$} userRepo
+ * @property {Namespace_Package_Service_Logger$} logger
+ */
+constructor({userRepo, logger}) {
+    logger.log(userRepo.save('User data'));
+}
+```
+
+Rules:
+
+- Descriptor shape MUST be documented with explicit `@typedef`.
+- Constructor `@param` MUST reference that typedef.
+- Destructured properties MUST be used directly in constructor closure.
+- Intermediate alias variables that only duplicate destructured properties (for example `const parser = deps.parser`) SHOULD NOT be introduced.
+- If additional normalization is required, destructuring with defaults is permitted in the signature.
+
 ## Encapsulation and State
 
 Internal state MUST be implemented via constructor-local variables.

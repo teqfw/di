@@ -44,12 +44,14 @@ Descriptor structure:
 Rules:
 
 - Only one positional argument is permitted.
-- The argument MUST be an object.
-- `config` is mandatory.
+- Constructor dependency descriptor is an internal trusted contract.
+- The descriptor shape is defined by JSDoc and project structure, not by defensive runtime checks.
+- `config` is mandatory by contract.
 - `importFn` is optional. If not provided, native dynamic `import()` MUST be used.
 - No additional positional parameters are permitted.
 - No setter-based configuration is permitted.
 - No post-construction mutation of dependencies is permitted.
+- Defensive constructor validation of descriptor shape SHOULD NOT be added for internal modules.
 
 The constructor MUST NOT:
 

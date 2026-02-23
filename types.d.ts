@@ -1,9 +1,19 @@
 type TeqFw_Di_Def_Parser = InstanceType<typeof import("./src2/Def/Parser.mjs").default>;
+export type TeqFw_Di_Container = InstanceType<typeof import("./src2/Container.mjs").default>;
 export type TeqFw_Di_Container_Instantiate_ExportSelector = InstanceType<
   typeof import("./src2/Container/Instantiate/ExportSelector.mjs").default
 >;
 export type TeqFw_Di_Container_Instantiate_Instantiator = InstanceType<
   typeof import("./src2/Container/Instantiate/Instantiator.mjs").default
+>;
+export type TeqFw_Di_Container_Lifecycle_Registry = InstanceType<
+  typeof import("./src2/Container/Lifecycle/Registry.mjs").default
+>;
+export type TeqFw_Di_Container_Resolve_GraphResolver = InstanceType<
+  typeof import("./src2/Container/Resolve/GraphResolver.mjs").default
+>;
+export type TeqFw_Di_Container_Wrapper_Executor = InstanceType<
+  typeof import("./src2/Container/Wrapper/Executor.mjs").default
 >;
 type TeqFw_Di_DepId = InstanceType<typeof import("./src2/Dto/DepId.mjs").default>;
 type TeqFw_Di_Dto_Resolver_Config = InstanceType<typeof import("./src2/Dto/Resolver/Config.mjs").default>;
@@ -22,6 +32,7 @@ export type TeqFw_Di_Dto_Resolver_Config_Namespace$DTO$ = InstanceType<TeqFw_Di_
 export {};
 
 declare global {
+  type TeqFw_Di_Container = InstanceType<typeof import("./src2/Container.mjs").default>;
   type TeqFw_Di_Def_Parser = InstanceType<typeof import("./src2/Def/Parser.mjs").default>;
   type TeqFw_Di_DepId = InstanceType<typeof import("./src2/Dto/DepId.mjs").default>;
   type TeqFw_Di_DepId$DTO = import("./src2/Dto/DepId.mjs").DTO;
@@ -35,5 +46,14 @@ declare global {
   type TeqFw_Di_Enum_Composition = typeof import("./src2/Enum/Composition.mjs").default;
   type TeqFw_Di_Enum_Life = typeof import("./src2/Enum/Life.mjs").default;
   type TeqFw_Di_Enum_Platform = typeof import("./src2/Enum/Platform.mjs").default;
+  type TeqFw_Di_Container_Resolve_GraphResolver = InstanceType<
+    typeof import("./src2/Container/Resolve/GraphResolver.mjs").default
+  >;
+  type TeqFw_Di_Container_Lifecycle_Registry = InstanceType<
+    typeof import("./src2/Container/Lifecycle/Registry.mjs").default
+  >;
+  type TeqFw_Di_Container_Wrapper_Executor = InstanceType<
+    typeof import("./src2/Container/Wrapper/Executor.mjs").default
+  >;
   type TeqFw_Di_Resolver = InstanceType<typeof import("./src2/Resolver.mjs").default>;
 }

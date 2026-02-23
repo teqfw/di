@@ -21,6 +21,7 @@ The following documents are mandatory:
 - `ctx/docs/code/depid.md`
 - `ctx/docs/code/testing.md`
 - `ctx/docs/code/jsdoc-spec.md`
+- `ctx/docs/code/conventions/es6-modules.md`
 - `ctx/docs/code/conventions/teqfw/dto.md`
 - `ctx/docs/code/conventions/teqfw/enum.md`
 
@@ -124,6 +125,9 @@ Agents operating under `src2/` are responsible only for:
 - deterministic behavior,
 - JSDoc typing discipline,
 - alignment with code-level contracts.
+
+Internal constructor dependency descriptors are treated as trusted project contracts.
+Defensive runtime validation of constructor descriptor shape is optional and SHOULD be omitted unless explicitly required by a code-level contract document.
 
 Agents MUST NOT:
 

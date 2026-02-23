@@ -18,21 +18,17 @@ export default class TeqFw_Di_Resolver {
     /**
      * Initializes resolver with runtime dependencies.
      *
-     * @param {TeqFw_Di_Resolver_Dependencies} deps Resolver dependencies descriptor.
+     * @param {TeqFw_Di_Resolver_Dependencies} param0 Resolver dependencies descriptor.
      */
-    constructor(deps) {
-        if (!deps || (typeof deps !== 'object')) throw new Error('Resolver dependencies descriptor must be an object.');
-        if (!('config' in deps) || !deps.config || (typeof deps.config !== 'object')) {
-            throw new Error('Resolver config must be provided in dependencies descriptor.');
-        }
+    constructor({config, importFn = (specifier) => import(specifier)}) {
         /** @type {Map<string, Promise<object>>} Cache keyed by `(platform,moduleName)`. */
         const cache = new Map();
         /** @type {TeqFw_Di_Dto_Resolver_Config$DTO} Original config reference captured from dependencies. */
-        const configInput = deps.config;
+        const configInput = config;
         /** @type {{nodeModulesRoot: (string|undefined), namespaces: TeqFw_Di_Resolver_NamespaceRule[]}|undefined} */
         let configSnapshot;
         /** @type {(specifier: string) => Promise<object>} Import function used for namespace loading. */
-        const importFn = (typeof deps.importFn === 'function') ? deps.importFn : ((specifier) => import(specifier));
+        const importModule = importFn;
 
         /**
          * Creates immutable-in-effect structural snapshot used for all post-start resolutions.
@@ -153,7 +149,7 @@ export default class TeqFw_Di_Resolver {
             /** @type {Promise<object>} */
             const promise = (async () => {
                 const specifier = deriveSpecifier(platform, moduleName);
-                return importFn(specifier);
+                return importModule(specifier);
             })();
 
             cache.set(key, promise);

@@ -15,6 +15,10 @@ describe('TeqFw_Di_Dto_Resolver_Config', () => {
     it('factory exposes only create public method', () => {
         assert.deepStrictEqual(
             Object.getOwnPropertyNames(Factory.prototype).filter((name) => name !== 'constructor'),
+            [],
+        );
+        assert.deepStrictEqual(
+            Object.getOwnPropertyNames(factory).filter((name) => name !== 'constructor'),
             ['create'],
         );
     });
