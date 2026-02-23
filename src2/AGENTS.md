@@ -18,7 +18,6 @@ The following documents are mandatory:
 - `ctx/docs/code/container.md`
 - `ctx/docs/code/resolver.md`
 - `ctx/docs/code/parser.md`
-- `ctx/docs/code/lifecycle.md`
 - `ctx/docs/code/depid.md`
 - `ctx/docs/code/testing.md`
 - `ctx/docs/code/jsdoc-spec.md`
@@ -81,6 +80,8 @@ In particular:
 - DTO factories MUST expose exactly one public `create(...)` method.
 - Enum modules MUST export a single flat literal object as `default`.
 - No behavioral logic may be introduced into DTO or Enum modules.
+- Semantic constants (composition, life, platform, etc.) MUST be referenced via Enum codifiers from `src2/Enum`.
+- String literals MUST NOT be used in implementation code where an Enum codifier exists.
 
 ## Testing Alignment
 

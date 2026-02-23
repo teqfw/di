@@ -72,8 +72,12 @@ Resolver MUST be total over its configured resolver domain. If a source cannot b
 
 Instantiation is a core stage.
 
-Inputs: `DepId₁`, `ModuleNamespace`.
+Inputs: `DepId₁`, `ModuleNamespace`, `ResolvedDependencies`.
 Output: value.
+
+Instantiation receives fully resolved dependency values prepared by the container orchestration layer.
+
+Dependency graph traversal and dependency resolution are not part of the instantiate stage. Instantiate operates strictly on already resolved dependency values.
 
 Instantiation performs two logically distinct operations:
 
@@ -92,15 +96,26 @@ Failure to locate a required export results in immediate termination of linking.
 Composition behavior is determined by `DepId.composition`:
 
 - If `composition = 'as-is'`, the selected export is used directly.
-- If `composition = 'factory'`, the selected export MUST be callable and is invoked to produce a value.
+- If `composition = 'factory'`, the selected export MUST be a synchronous callable (function or constructible class) and is invoked to produce a value.
 
 If `composition = 'factory'` and `exportName = null`, this is an invalid state and linking terminates immediately.
 
-Instantiation MUST depend only on `DepId₁` and `ModuleNamespace`. It must not depend on container runtime state or dependency stack.
+Factory composition is strictly synchronous:
+
+- invocation MUST complete synchronously;
+- the returned value MUST NOT be a Promise or thenable.
+
+If invocation returns a Promise or thenable, linking terminates immediately.
+
+Asynchronous factory functions are not permitted within immutable core linking semantics.
+
+`container.get()` may be asynchronous due to module resolution, but instantiation and composition execution are strictly synchronous operations.
+
+Instantiation MUST depend only on `DepId₁`, `ModuleNamespace`, and `ResolvedDependencies`. It must not depend on container runtime state or dependency stack.
+
+Instantiation MUST NOT perform caching.
 
 Instantiation MUST NOT produce side effects outside the created value.
-
-Instantiation does not perform caching.
 
 ### Postprocess
 

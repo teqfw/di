@@ -2,6 +2,9 @@ type TeqFw_Di_Def_Parser = InstanceType<typeof import("./src2/Def/Parser.mjs").d
 export type TeqFw_Di_Container_Instantiate_ExportSelector = InstanceType<
   typeof import("./src2/Container/Instantiate/ExportSelector.mjs").default
 >;
+export type TeqFw_Di_Container_Instantiate_Instantiator = InstanceType<
+  typeof import("./src2/Container/Instantiate/Instantiator.mjs").default
+>;
 type TeqFw_Di_DepId = InstanceType<typeof import("./src2/Dto/DepId.mjs").default>;
 type TeqFw_Di_Dto_Resolver_Config = InstanceType<typeof import("./src2/Dto/Resolver/Config.mjs").default>;
 type TeqFw_Di_Dto_Resolver_Config_Namespace = InstanceType<
