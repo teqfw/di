@@ -1,6 +1,6 @@
 # Testing Contract
 
-Path: `./ctx/docs/code/testing.md`
+Path: `./ctx/docs/code/layout/testing.md`
 
 ## Purpose
 

@@ -1,7 +1,7 @@
 # Code Conventions (`./ctx/docs/code/conventions/`)
 
 Path: `./ctx/docs/code/conventions/AGENTS.md`
-Version: `20260219`
+Version: `20260223`
 
 ## Purpose
 
@@ -16,6 +16,7 @@ This level specifies code and implementation conventions only. It does not defin
 - `teqfw/` — TEQFW-specific conventions and normative implementation patterns.
 - `AGENTS.md` — this document, defining the purpose, boundaries, and navigational map of the `conventions/` level.
 - `es6-modules.md` — normative ES6 runtime module form and constructor-closure conventions for core package modules.
+- `jsdoc-spec.md` — structural typing and annotation invariants for implementation.
 
 ## Summary
 

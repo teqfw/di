@@ -1,6 +1,6 @@
 # DepId DTO (Code-Level Specification)
 
-Path: `./ctx/docs/code/depid.md`
+Path: `./ctx/docs/code/components/depid.md`
 
 ## Purpose
 
@@ -12,7 +12,7 @@ The `DepId` DTO contract is implementation-level and must remain aligned with:
 
 - `ctx/docs/architecture/depid-model.md`
 - `ctx/docs/architecture/overview.md`
-- `ctx/docs/code/parser.md`
+- `ctx/docs/code/components/parser.md`
 - `src2/Dto/DepId.mjs`
 - `src2/Enum/Platform.mjs`
 - `src2/Enum/Composition.mjs`

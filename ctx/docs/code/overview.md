@@ -4,7 +4,7 @@ Path: `./ctx/docs/code/overview.md`
 
 ## Purpose
 
-The `code` level defines implementation-level invariants of `@teqfw/di`. It specifies how architectural and compositional constraints are realized in source structure, component contracts, dependency direction, and public surface.
+The `code` level defines implementation-level invariants of `@teqfw/di`. It specifies how architectural and compositional constraints are realized through component contracts, engineering conventions, and implementation layout rules.
 
 This level does not redefine system meaning, architectural form, execution dynamics, or environmental constraints. It formalizes implementation obligations and boundaries.
 
@@ -12,12 +12,10 @@ This level does not redefine system meaning, architectural form, execution dynam
 
 The `code` level governs:
 
-- public API contracts of implementation components,
-- internal component interaction contracts,
-- source directory structure,
-- static dependency direction,
-- implementation determinism and fail-fast obligations,
-- test structure requirements.
+- public and internal contracts of implementation components,
+- normative engineering conventions for module and typing form,
+- source and test layout invariants,
+- implementation determinism and fail-fast obligations.
 
 It does not define:
 
@@ -26,24 +24,25 @@ It does not define:
 - runtime deployment environment,
 - organizational procedures.
 
-## Level Structure
+## Internal Structure
 
-The `code` level consists of:
+The `code` level is organized into three subdomains:
 
-- `structure.md` — physical layout and static dependency rules of `src2/`,
-- `parser.md` — parser implementation contract,
-- `container.md` — container implementation contract.
+- `components/` — component implementation contracts (`Container`, `Parser`, `Resolver`, `DepId`) that define interfaces, responsibilities, and behavioral boundaries.
+- `conventions/` — cross-project and framework-specific engineering conventions, including ES module form, JSDoc structural typing rules, and TeqFW-specific DTO/Enum patterns.
+- `layout/` — implementation structure and test-layout invariants (`src2/` organization, dependency direction, and testing contract boundaries).
 
-Each document defines a distinct implementation boundary and must not duplicate statements from other ADSM levels.
+Each subdomain defines a distinct implementation boundary and must not duplicate statements from other ADSM levels.
 
 ## Invariant
 
-All implementation artifacts in `src2/` MUST conform simultaneously to:
+All implementation artifacts MUST conform simultaneously to:
 
 - architectural linking invariants,
 - composition-level execution model,
 - constraints-level prohibitions,
-- structural rules defined in `structure.md`,
-- component contracts defined at this level.
+- component contracts in `components/`,
+- conventions in `conventions/`,
+- structural and testing layout rules in `layout/`.
 
 Violation of any invariant at this level constitutes a non-compliant implementation.

@@ -1,6 +1,6 @@
 # Parser Implementation Contract
 
-Path: `./ctx/docs/code/parser.md`
+Path: `./ctx/docs/code/components/parser.md`
 
 ## 1. Purpose
 

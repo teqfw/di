@@ -1,11 +1,11 @@
 # Code Documentation (`./ctx/docs/code/`)
 
 Path: `./ctx/docs/code/AGENTS.md`
-Version: `20260220`
+Version: `20260223`
 
 ## Purpose
 
-The `ctx/docs/code/` directory defines engineering and implementation-level invariants of the project, including code structure rules and component contracts, without redefining architecture, constraints, composition, environment, or product meaning.
+The `ctx/docs/code/` directory defines engineering and implementation-level invariants of the project, including component contracts, code conventions, and implementation layout rules, without redefining architecture, constraints, composition, environment, or product meaning.
 
 ## Level Boundaries
 
@@ -13,16 +13,11 @@ This level contains only normative rules and contracts for implementation and so
 
 ## Level Map
 
+- `components/` — implementation-level contracts for core components and their public and behavioral boundaries.
 - `conventions/` — engineering conventions and normative code patterns used across the project and in specific frameworks.
+- `layout/` — implementation structure and testing layout invariants for source and verification artifacts.
 - `AGENTS.md` — this document, defining the purpose, boundaries, and navigational map of the `code/` level.
-- `container.md` — container implementation contract.
-- `depid.md` — canonical dependency identity (`DepId`) implementation-level invariants and rules.
-- `jsdoc-spec.md` — structural typing and annotation invariants for implementation.
 - `overview.md` — compact overview of the code level scope and its governed invariants.
-- `parser.md` — parser implementation contract.
-- `resolver.md` — resolver implementation contract.
-- `structure.md` — implementation structure and static dependency rules (including `src2/` invariants).
-- `testing.md` — testing-level implementation invariants and verification conventions for code artifacts.
 
 ## Summary
 

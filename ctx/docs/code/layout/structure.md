@@ -1,6 +1,6 @@
 # Implementation Structure v2
 
-Path: `./ctx/docs/code/structure.md`
+Path: `./ctx/docs/code/layout/structure.md`
 
 ## 1. Scope
 
@@ -194,7 +194,7 @@ JSDoc is the only permitted structural typing mechanism.
 
 Absence of required JSDoc constitutes structural non-compliance.
 
-Detailed typing discipline is defined in `ctx/docs/code/jsdoc-spec.md`.
+Detailed typing discipline is defined in `ctx/docs/code/conventions/jsdoc-spec.md`.
 
 ## 9. Default Parser Location
 
@@ -245,6 +245,6 @@ Each testable source module MUST have exactly one corresponding unit test file.
 
 Integration tests validate the complete linking pipeline.
 
-Testing rules are defined in `ctx/docs/code/testing.md`.
+Testing rules are defined in `ctx/docs/code/layout/testing.md`.
 
 This document defines structural invariants of the v2 implementation. All source artifacts under `src2/` MUST conform to these rules simultaneously.
