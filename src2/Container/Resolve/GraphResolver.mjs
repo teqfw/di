@@ -82,8 +82,10 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
                 /** @type {Record<string, unknown>} */
                 const depsMap = /** @type {Record<string, unknown>} */ (depsDecl);
                 for (const [, cdc] of Object.entries(depsMap)) {
+                    /** @type {string} */
+                    const nextCdc = /** @type {string} */ (cdc);
                     /** @type {TeqFw_Di_DepId$DTO} */
-                    const nextDepId = parser.parse(cdc);
+                    const nextDepId = parser.parse(nextCdc);
                     await walk(nextDepId, out, stack, chain);
                 }
             } finally {

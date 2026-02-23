@@ -295,8 +295,10 @@ export default class TeqFw_Di_Container {
                         /** @type {Record<string, unknown>} */
                         const depsDecl = readDepsDecl(node.namespace);
                         for (const [name, cdc] of Object.entries(depsDecl)) {
+                            /** @type {string} */
+                            const childCdc = /** @type {string} */ (cdc);
                             /** @type {TeqFw_Di_DepId$DTO} */
-                            const childDepId = parser.parse(cdc);
+                            const childDepId = parser.parse(childCdc);
                             deps[name] = build(getKey(childDepId));
                         }
                         /** @type {unknown} */
