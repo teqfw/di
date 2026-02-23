@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Resolver from '../../src2/Resolver.mjs';
-import DepIdFactory from '../../src2/Dto/DepId.mjs';
-import ResolverConfigFactory from '../../src2/Dto/Resolver/Config.mjs';
-import TeqFw_Di_Enum_Platform from '../../src2/Enum/Platform.mjs';
+import TeqFw_Di_Resolver from '../../../src2/Container/Resolver.mjs';
+import DepIdFactory from '../../../src2/Dto/DepId.mjs';
+import ResolverConfigFactory from '../../../src2/Dto/Resolver/Config.mjs';
+import TeqFw_Di_Enum_Platform from '../../../src2/Enum/Platform.mjs';
 
 const depIdFactory = new DepIdFactory();
 const configFactory = new ResolverConfigFactory();
@@ -245,6 +245,16 @@ describe('TeqFw_Di_Resolver', () => {
             await resolver.resolve(createDepId({moduleName: 'Ns_Group_Web_App_Repo'}));
             await assert.rejects(resolver.resolve(createDepId({moduleName: 'Ns_New_Service'})), Error);
             assert.deepStrictEqual(io.calls, ['/lib/group-web/App/Service.mjs', '/lib/group-web/App/Repo.mjs']);
+        });
+    });
+
+    describe('fail-at-point-of-use', () => {
+        it('does not pre-validate resolver config shape', async () => {
+            const io = createImportDouble();
+            const resolver = createResolver(/** @type {any} */ ({
+                namespaces: [{}],
+            }), io.importer);
+            await assert.rejects(resolver.resolve(createDepId({moduleName: 'Ns_App_Service'})), Error);
         });
     });
 

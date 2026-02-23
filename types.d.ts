@@ -20,7 +20,7 @@ type TeqFw_Di_Dto_Resolver_Config = InstanceType<typeof import("./src2/Dto/Resol
 type TeqFw_Di_Dto_Resolver_Config_Namespace = InstanceType<
   typeof import("./src2/Dto/Resolver/Config/Namespace.mjs").default
 >;
-type TeqFw_Di_Resolver = InstanceType<typeof import("./src2/Resolver.mjs").default>;
+type TeqFw_Di_Resolver = InstanceType<typeof import("./src2/Container/Resolver.mjs").default>;
 
 export type TeqFw_Di_DepId$DTO = typeof import("./src2/Dto/DepId.mjs").DTO;
 export type TeqFw_Di_DepId$DTO$ = InstanceType<TeqFw_Di_DepId$DTO>;
@@ -55,5 +55,5 @@ declare global {
   type TeqFw_Di_Container_Wrapper_Executor = InstanceType<
     typeof import("./src2/Container/Wrapper/Executor.mjs").default
   >;
-  type TeqFw_Di_Resolver = InstanceType<typeof import("./src2/Resolver.mjs").default>;
+  type TeqFw_Di_Resolver = InstanceType<typeof import("./src2/Container/Resolver.mjs").default>;
 }

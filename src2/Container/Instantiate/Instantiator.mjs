@@ -95,11 +95,6 @@ export default class TeqFw_Di_Container_Instantiate_Instantiator {
          * @returns {unknown}
          */
         this.instantiate = function (depId, moduleNamespace, resolvedDeps) {
-
-            if (!moduleNamespace || (typeof moduleNamespace !== 'object')) {
-                throw new Error('Module namespace must be an object.');
-            }
-
             /** @type {Factory} */
             const selected = selectExport(depId, moduleNamespace);
 

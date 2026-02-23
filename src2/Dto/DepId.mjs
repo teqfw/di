@@ -42,7 +42,7 @@ export class DTO {
     /** @type {string[]} Wrapper pipeline names. */
     wrappers;
 
-    /** @type {string} Original EDD string. */
+    /** @type {string} Original CDC string. */
     origin;
 }
 

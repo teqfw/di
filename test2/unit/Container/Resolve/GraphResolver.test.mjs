@@ -24,7 +24,7 @@ function createDepId(patch = {}) {
  * @returns {{
  *   parser: TeqFw_Di_Def_Parser,
  *   resolver: TeqFw_Di_Resolver,
- *   setParsed(edd: string, depId: TeqFw_Di_DepId$DTO): void,
+ *   setParsed(cdc: string, depId: TeqFw_Di_DepId$DTO): void,
  *   setNamespace(depId: TeqFw_Di_DepId$DTO, namespace: object): void,
  *   parseCalls: string[],
  *   resolveCalls: string[]
@@ -42,10 +42,10 @@ function createDoubles() {
 
     /** @type {TeqFw_Di_Def_Parser} */
     const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
-        parse(edd) {
-            parseCalls.push(edd);
-            if (!parsed.has(edd)) throw new Error(`Unexpected EDD: ${edd}`);
-            return parsed.get(edd);
+        parse(cdc) {
+            parseCalls.push(cdc);
+            if (!parsed.has(cdc)) throw new Error(`Unexpected CDC: ${cdc}`);
+            return parsed.get(cdc);
         },
     });
 
@@ -62,8 +62,8 @@ function createDoubles() {
     return {
         parser,
         resolver,
-        setParsed(edd, depId) {
-            parsed.set(edd, depId);
+        setParsed(cdc, depId) {
+            parsed.set(cdc, depId);
         },
         setNamespace(depId, namespace) {
             namespaces.set(`${depId.platform}::${depId.moduleName}`, namespace);
@@ -135,13 +135,13 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
         await assert.rejects(resolver.resolve(depA), /Cyclic dependency detected/);
     });
 
-    it('Invalid __deps__ Shape: non-object declaration throws', async () => {
+    it('does not pre-validate __deps__ shape and fails at point of use', async () => {
         const root = createDepId({moduleName: 'App_Root'});
         const io = createDoubles();
         io.setNamespace(root, {__deps__: 'bad'});
         const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
 
-        await assert.rejects(resolver.resolve(root), /Invalid '__deps__'/);
+        await assert.rejects(resolver.resolve(root), /Unexpected CDC/);
     });
 
     it('Duplicate Dependency Resolution: shared module resolved once', async () => {

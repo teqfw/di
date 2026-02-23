@@ -79,18 +79,11 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
                 /** @type {unknown} */
                 const depsDecl = Reflect.get(namespace, '__deps__');
                 if (depsDecl === undefined) return;
-                if (!depsDecl || (typeof depsDecl !== 'object') || Array.isArray(depsDecl)) {
-                    throw new Error(`Invalid '__deps__' declaration in '${key}': object expected.`);
-                }
-
                 /** @type {Record<string, unknown>} */
                 const depsMap = /** @type {Record<string, unknown>} */ (depsDecl);
-                for (const [injectionName, edd] of Object.entries(depsMap)) {
-                    if (typeof edd !== 'string') {
-                        throw new Error(`Invalid '__deps__' entry '${injectionName}' in '${key}': EDD string expected.`);
-                    }
+                for (const [, cdc] of Object.entries(depsMap)) {
                     /** @type {TeqFw_Di_DepId$DTO} */
-                    const nextDepId = parser.parse(edd);
+                    const nextDepId = parser.parse(cdc);
                     await walk(nextDepId, out, stack, chain);
                 }
             } finally {

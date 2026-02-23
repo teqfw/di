@@ -2,7 +2,7 @@
 
 import TeqFw_Di_Def_Parser from './Def/Parser.mjs';
 import TeqFw_Di_Dto_Resolver_Config from './Dto/Resolver/Config.mjs';
-import TeqFw_Di_Resolver from './Resolver.mjs';
+import TeqFw_Di_Resolver from './Container/Resolver.mjs';
 import TeqFw_Di_Container_Resolve_GraphResolver from './Container/Resolve/GraphResolver.mjs';
 import TeqFw_Di_Container_Instantiate_Instantiator from './Container/Instantiate/Instantiator.mjs';
 import TeqFw_Di_Container_Lifecycle_Registry from './Container/Lifecycle/Registry.mjs';
@@ -134,9 +134,6 @@ export default class TeqFw_Di_Container {
             /** @type {unknown} */
             const deps = Reflect.get(namespace, '__deps__');
             if (deps === undefined) return {};
-            if (!deps || (typeof deps !== 'object') || Array.isArray(deps)) {
-                throw new Error('Invalid \'__deps__\' declaration: object expected.');
-            }
             return /** @type {Record<string, unknown>} */ (deps);
         };
 
@@ -297,12 +294,9 @@ export default class TeqFw_Di_Container {
                         const deps = {};
                         /** @type {Record<string, unknown>} */
                         const depsDecl = readDepsDecl(node.namespace);
-                        for (const [name, edd] of Object.entries(depsDecl)) {
-                            if (typeof edd !== 'string') {
-                                throw new Error(`Invalid '__deps__' entry '${name}': EDD string expected.`);
-                            }
+                        for (const [name, cdc] of Object.entries(depsDecl)) {
                             /** @type {TeqFw_Di_DepId$DTO} */
-                            const childDepId = parser.parse(edd);
+                            const childDepId = parser.parse(cdc);
                             deps[name] = build(getKey(childDepId));
                         }
                         /** @type {unknown} */

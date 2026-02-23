@@ -154,12 +154,12 @@ describe('TeqFw_Di_Container_Instantiate_Instantiator', () => {
         assert.throws(() => instantiator.instantiate(depId, {named: 1}, {}), Error);
     });
 
-    it('rejects non-object module namespace', () => {
+    it('does not pre-validate namespace shape and fails at point of use', () => {
         const depId = createDepId({
-            exportName: null,
+            exportName: 'named',
             composition: TeqFw_Di_Enum_Composition.AS_IS
         });
-        assert.throws(() => instantiator.instantiate(depId, null, {}), Error);
-        assert.throws(() => instantiator.instantiate(depId, 'bad', {}), Error);
+        assert.throws(() => instantiator.instantiate(depId, null, {}), TypeError);
+        assert.throws(() => instantiator.instantiate(depId, 'bad', {}), TypeError);
     });
 });

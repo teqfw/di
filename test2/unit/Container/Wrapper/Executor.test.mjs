@@ -63,4 +63,11 @@ describe('TeqFw_Di_Container_Wrapper_Executor', () => {
 
         assert.throws(() => executor.execute(depId, 'X', namespace), Error);
     });
+
+    it('does not pre-validate namespace shape and fails at point of use', () => {
+        const executor = new TeqFw_Di_Container_Wrapper_Executor();
+        const depId = createDepId({wrappers: ['w1']});
+        assert.throws(() => executor.execute(depId, 'X', null), TypeError);
+        assert.throws(() => executor.execute(depId, 'X', 'bad'), TypeError);
+    });
 });

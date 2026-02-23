@@ -6,7 +6,7 @@ import TeqFw_Di_Enum_Platform from '../Enum/Platform.mjs';
 import TeqFw_Di_Dto_DepId from '../Dto/DepId.mjs';
 
 /**
- * Parser for EDD identifiers into immutable dependency identity DTO.
+ * Parser for CDC identifiers into immutable dependency identity DTO.
  */
 export default class TeqFw_Di_Def_Parser {
     /**
@@ -17,19 +17,19 @@ export default class TeqFw_Di_Def_Parser {
         const depIdFactory = new TeqFw_Di_Dto_DepId();
 
         /**
-         * Parses one EDD identifier and returns normalized immutable dependency DTO.
+         * Parses one CDC identifier and returns normalized immutable dependency DTO.
          *
-         * @param {string} edd EDD identifier string.
+         * @param {string} cdc CDC identifier string.
          * @returns {TeqFw_Di_DepId$DTO}
          */
-        this.parse = function (edd) {
-            if (typeof edd !== 'string') throw new Error('EDD must be a string.');
-            if (edd.length === 0) throw new Error('EDD must be non-empty.');
-            if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(edd)) throw new Error('EDD must satisfy AsciiEddIdentifier.');
+        this.parse = function (cdc) {
+            if (typeof cdc !== 'string') throw new Error('CDC must be a string.');
+            if (cdc.length === 0) throw new Error('CDC must be non-empty.');
+            if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(cdc)) throw new Error('CDC must satisfy AsciiCdcIdentifier.');
 
             /** @type {string} */
-            const origin = edd;
-            let source = edd;
+            const origin = cdc;
+            let source = cdc;
             /** @type {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} */
             let platform = TeqFw_Di_Enum_Platform.TEQ;
 

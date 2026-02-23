@@ -37,21 +37,13 @@ export default class TeqFw_Di_Resolver {
          * @returns {{nodeModulesRoot: (string|undefined), namespaces: TeqFw_Di_Resolver_NamespaceRule[]}}
          */
         const makeConfigSnapshot = function (input) {
-            /** @type {TeqFw_Di_Dto_Resolver_Config$DTO|Record<string, unknown>} */
-            const src = (input && (typeof input === 'object')) ? input : {};
-            /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace$DTO$[]} */
-            const namespaces = Array.isArray(src.namespaces) ? src.namespaces : [];
             return {
-                nodeModulesRoot: (typeof src.nodeModulesRoot === 'string') ? src.nodeModulesRoot : undefined,
-                namespaces: namespaces.map((item) => {
-                    /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace$DTO$|Record<string, unknown>} */
-                    const ns = (item && (typeof item === 'object')) ? item : {};
-                    return {
-                        prefix: (typeof ns.prefix === 'string') ? ns.prefix : '',
-                        target: (typeof ns.target === 'string') ? ns.target : '',
-                        defaultExt: (typeof ns.defaultExt === 'string') ? ns.defaultExt : '',
-                    };
-                }),
+                nodeModulesRoot: input.nodeModulesRoot,
+                namespaces: input.namespaces.map((one) => ({
+                    prefix: one.prefix,
+                    target: one.target,
+                    defaultExt: one.defaultExt,
+                })),
             };
         };
 
@@ -68,7 +60,6 @@ export default class TeqFw_Di_Resolver {
             /** @type {TeqFw_Di_Resolver_NamespaceRule[]} */
             const items = configSnapshot.namespaces;
             for (const one of items) {
-                if (typeof one.prefix !== 'string') continue;
                 if (!moduleName.startsWith(one.prefix)) continue;
                 if (one.prefix.length > foundLen) {
                     found = one;

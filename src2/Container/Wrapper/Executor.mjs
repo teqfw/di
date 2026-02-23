@@ -46,14 +46,9 @@ export default class TeqFw_Di_Container_Wrapper_Executor {
          * @returns {unknown}
          */
         this.execute = function (depId, value, moduleNamespace) {
-            if (!moduleNamespace || (typeof moduleNamespace !== 'object')) {
-                throw new Error('Module namespace must be an object.');
-            }
-
             /** @type {unknown} */
             let current = value;
-            /** @type {string[]} */
-            const wrappers = Array.isArray(depId.wrappers) ? depId.wrappers : [];
+            const wrappers = depId.wrappers;
 
             for (const name of wrappers) {
                 if (!(name in moduleNamespace)) {
