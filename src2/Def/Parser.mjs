@@ -9,118 +9,123 @@ import TeqFw_Di_Dto_DepId from '../Dto/DepId.mjs';
  * Parser for EDD identifiers into immutable dependency identity DTO.
  */
 export default class TeqFw_Di_Def_Parser {
-    /** @type {TeqFw_Di_DepId} Factory used to construct dependency identity DTO. */
-    #depIdFactory = new TeqFw_Di_Dto_DepId();
-
     /**
-     * Parses one EDD identifier and returns normalized immutable dependency DTO.
-     *
-     * @param {string} edd EDD identifier string.
-     * @returns {TeqFw_Di_DepId$DTO}
+     * Creates parser instance.
      */
-    parse(edd) {
-        if (typeof edd !== 'string') throw new Error('EDD must be a string.');
-        if (edd.length === 0) throw new Error('EDD must be non-empty.');
-        if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(edd)) throw new Error('EDD must satisfy AsciiEddIdentifier.');
+    constructor() {
+        /** @type {TeqFw_Di_DepId} Factory used to construct dependency identity DTO. */
+        const depIdFactory = new TeqFw_Di_Dto_DepId();
 
-        /** @type {string} */
-        const origin = edd;
-        let source = edd;
-        /** @type {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} */
-        let platform = TeqFw_Di_Enum_Platform.TEQ;
+        /**
+         * Parses one EDD identifier and returns normalized immutable dependency DTO.
+         *
+         * @param {string} edd EDD identifier string.
+         * @returns {TeqFw_Di_DepId$DTO}
+         */
+        this.parse = function (edd) {
+            if (typeof edd !== 'string') throw new Error('EDD must be a string.');
+            if (edd.length === 0) throw new Error('EDD must be non-empty.');
+            if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(edd)) throw new Error('EDD must satisfy AsciiEddIdentifier.');
 
-        if (source.startsWith('node_')) {
-            platform = TeqFw_Di_Enum_Platform.NODE;
-            source = source.slice(5);
-        } else if (source.startsWith('npm_')) {
-            platform = TeqFw_Di_Enum_Platform.NPM;
-            source = source.slice(4);
-        } else if (source.startsWith('teq_')) {
-            throw new Error('Explicit teq_ prefix is forbidden.');
-        }
+            /** @type {string} */
+            const origin = edd;
+            let source = edd;
+            /** @type {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} */
+            let platform = TeqFw_Di_Enum_Platform.TEQ;
 
-        if (source.length === 0) throw new Error('moduleName must be non-empty.');
+            if (source.startsWith('node_')) {
+                platform = TeqFw_Di_Enum_Platform.NODE;
+                source = source.slice(5);
+            } else if (source.startsWith('npm_')) {
+                platform = TeqFw_Di_Enum_Platform.NPM;
+                source = source.slice(4);
+            } else if (source.startsWith('teq_')) {
+                throw new Error('Explicit teq_ prefix is forbidden.');
+            }
 
-        /** @type {RegExp} */
-        const lifecyclePattern = /(\${1,3})(?:_([A-Za-z0-9]+(?:_[A-Za-z0-9]+)*))?$/;
-        /** @type {RegExpMatchArray|null} */
-        const lifecycleMatch = source.match(lifecyclePattern);
+            if (source.length === 0) throw new Error('moduleName must be non-empty.');
 
-        /** @type {typeof TeqFw_Di_Enum_Life[keyof typeof TeqFw_Di_Enum_Life]} */
-        let life = null;
-        /** @type {string[]} */
-        let wrappers = [];
-        let core = source;
+            /** @type {RegExp} */
+            const lifecyclePattern = /(\${1,3})(?:_([A-Za-z0-9]+(?:_[A-Za-z0-9]+)*))?$/;
+            /** @type {RegExpMatchArray|null} */
+            const lifecycleMatch = source.match(lifecyclePattern);
 
-        if (lifecycleMatch) {
-            const marker = lifecycleMatch[1];
-            const wrapperTail = lifecycleMatch[2];
-            if (marker === '$') life = TeqFw_Di_Enum_Life.SINGLETON;
-            else if ((marker === '$$') || (marker === '$$$')) life = TeqFw_Di_Enum_Life.TRANSIENT;
-            else throw new Error('Lifecycle marker overflow.');
+            /** @type {typeof TeqFw_Di_Enum_Life[keyof typeof TeqFw_Di_Enum_Life]} */
+            let life = null;
+            /** @type {string[]} */
+            let wrappers = [];
+            let core = source;
 
-            core = source.slice(0, lifecycleMatch.index);
-            if (wrapperTail) {
-                wrappers = wrapperTail.split('_');
-                for (const one of wrappers) {
-                    if (!one) throw new Error('Wrapper must be non-empty.');
-                    if (one.includes('$')) throw new Error('Wrapper must not contain $.');
-                    if (one.includes('_')) throw new Error('Wrapper must not contain _.');
+            if (lifecycleMatch) {
+                const marker = lifecycleMatch[1];
+                const wrapperTail = lifecycleMatch[2];
+                if (marker === '$') life = TeqFw_Di_Enum_Life.SINGLETON;
+                else if ((marker === '$$') || (marker === '$$$')) life = TeqFw_Di_Enum_Life.TRANSIENT;
+                else throw new Error('Lifecycle marker overflow.');
+
+                core = source.slice(0, lifecycleMatch.index);
+                if (wrapperTail) {
+                    wrappers = wrapperTail.split('_');
+                    for (const one of wrappers) {
+                        if (!one) throw new Error('Wrapper must be non-empty.');
+                        if (one.includes('$')) throw new Error('Wrapper must not contain $.');
+                        if (one.includes('_')) throw new Error('Wrapper must not contain _.');
+                    }
+                }
+            } else {
+                if (source.includes('$')) throw new Error('Invalid lifecycle marker.');
+                /** @type {RegExpMatchArray|null} */
+                const trailing = source.match(/(?:^|[^_])_([a-z][A-Za-z0-9]*)$/);
+                if (trailing) {
+                    throw new Error('Wrapper without lifecycle is forbidden.');
                 }
             }
-        } else {
-            if (source.includes('$')) throw new Error('Invalid lifecycle marker.');
-            /** @type {RegExpMatchArray|null} */
-            const trailing = source.match(/(?:^|[^_])_([a-z][A-Za-z0-9]*)$/);
-            if (trailing) {
-                throw new Error('Wrapper without lifecycle is forbidden.');
+
+            if (core.includes('$$$$')) throw new Error('Lifecycle marker overflow.');
+
+            const firstDelim = core.indexOf('__');
+            const lastDelim = core.lastIndexOf('__');
+            if ((firstDelim !== -1) && (firstDelim !== lastDelim)) throw new Error('Export delimiter must appear at most once.');
+            if (core.startsWith('__') || core.endsWith('__')) throw new Error('Malformed export segment.');
+
+            let moduleName = core;
+            /** @type {string|null} */
+            let exportName = null;
+
+            if (firstDelim !== -1) {
+                moduleName = core.slice(0, firstDelim);
+                exportName = core.slice(firstDelim + 2);
+                if (!exportName) throw new Error('Export must be non-empty.');
+                if (exportName.includes('_')) throw new Error('Export must not contain _.');
+                if (exportName.includes('$')) throw new Error('Export must not contain $.');
             }
-        }
 
-        if (core.includes('$$$$')) throw new Error('Lifecycle marker overflow.');
+            if (!moduleName) throw new Error('moduleName must be non-empty.');
+            if (moduleName.startsWith('_') || moduleName.startsWith('$')) throw new Error('moduleName must not start with _ or $.');
+            if (moduleName.includes('__')) throw new Error('moduleName must not contain __.');
+            if (moduleName.includes('$')) throw new Error('moduleName must not contain $.');
 
-        const firstDelim = core.indexOf('__');
-        const lastDelim = core.lastIndexOf('__');
-        if ((firstDelim !== -1) && (firstDelim !== lastDelim)) throw new Error('Export delimiter must appear at most once.');
-        if (core.startsWith('__') || core.endsWith('__')) throw new Error('Malformed export segment.');
+            /** @type {typeof TeqFw_Di_Enum_Composition[keyof typeof TeqFw_Di_Enum_Composition]} */
+            let composition = TeqFw_Di_Enum_Composition.AS_IS;
+            if (exportName !== null) {
+                composition = TeqFw_Di_Enum_Composition.FACTORY;
+            } else if (life === TeqFw_Di_Enum_Life.SINGLETON) {
+                exportName = 'default';
+                composition = TeqFw_Di_Enum_Composition.FACTORY;
+            } else if (life === TeqFw_Di_Enum_Life.TRANSIENT) {
+                composition = TeqFw_Di_Enum_Composition.FACTORY;
+                if (exportName === null) exportName = 'default';
+            }
 
-        let moduleName = core;
-        /** @type {string|null} */
-        let exportName = null;
-
-        if (firstDelim !== -1) {
-            moduleName = core.slice(0, firstDelim);
-            exportName = core.slice(firstDelim + 2);
-            if (!exportName) throw new Error('Export must be non-empty.');
-            if (exportName.includes('_')) throw new Error('Export must not contain _.');
-            if (exportName.includes('$')) throw new Error('Export must not contain $.');
-        }
-
-        if (!moduleName) throw new Error('moduleName must be non-empty.');
-        if (moduleName.startsWith('_') || moduleName.startsWith('$')) throw new Error('moduleName must not start with _ or $.');
-        if (moduleName.includes('__')) throw new Error('moduleName must not contain __.');
-        if (moduleName.includes('$')) throw new Error('moduleName must not contain $.');
-
-        /** @type {typeof TeqFw_Di_Enum_Composition[keyof typeof TeqFw_Di_Enum_Composition]} */
-        let composition = TeqFw_Di_Enum_Composition.AS_IS;
-        if (exportName !== null) {
-            composition = TeqFw_Di_Enum_Composition.FACTORY;
-        } else if (life === TeqFw_Di_Enum_Life.SINGLETON) {
-            exportName = 'default';
-            composition = TeqFw_Di_Enum_Composition.FACTORY;
-        } else if (life === TeqFw_Di_Enum_Life.TRANSIENT) {
-            composition = TeqFw_Di_Enum_Composition.FACTORY;
-            if (exportName === null) exportName = 'default';
-        }
-
-        return this.#depIdFactory.create({
-            moduleName,
-            platform,
-            exportName,
-            composition,
-            life,
-            wrappers,
-            origin,
-        }, { immutable: true });
+            return depIdFactory.create({
+                moduleName,
+                platform,
+                exportName,
+                composition,
+                life,
+                wrappers,
+                origin,
+            }, {immutable: true});
+        };
     }
 }

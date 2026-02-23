@@ -23,6 +23,12 @@ An ES6 module inside `@teqfw/di` MUST:
 
 Default-exported factory functions are prohibited.
 
+Exception: modules that implement TeqFW DTO or Enum components MAY use their specialized normative form instead of class-default form.
+These exceptions are governed exclusively by:
+
+- `ctx/docs/code/conventions/teqfw/dto.md`
+- `ctx/docs/code/conventions/teqfw/enum.md`
+
 Named exports are permitted only for:
 
 - structural constants,
@@ -31,6 +37,7 @@ Named exports are permitted only for:
 - typedef declarations.
 
 Absence of a class default export constitutes structural non-conformance.
+For DTO and Enum exception modules, absence of a class default export is not a violation if the module conforms to its specialized convention document.
 
 ## Canonical Module Example
 
@@ -167,5 +174,6 @@ Structural conventions must remain stable under static analysis.
 ## Conformance Boundary
 
 Violation of any rule defined in this document constitutes an implementation-level defect.
+DTO and Enum modules are evaluated by their specialized conventions and are excluded from class-default enforcement of this document.
 
 Deviation is not stylistic and must be corrected.
