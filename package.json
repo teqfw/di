@@ -23,6 +23,7 @@
   "files": [
     "dist/",
     "src/",
+    "src2/",
     "CHANGELOG.md",
     "LICENSE",
     "README.md",
