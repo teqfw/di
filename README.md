@@ -3,360 +3,194 @@
 ![npms.io](https://img.shields.io/npm/dm/@teqfw/di)
 ![jsdelivr](https://img.shields.io/jsdelivr/npm/hm/@teqfw/di)
 
-> [!IMPORTANT] > **Breaking Changes in v1.0.0**
->
-> The library has been stable for a long time and is now promoted to its first major version. To improve security, the Object Container can no longer access itself, so all configuration must occur in the Composition Root. This restriction ensures that third-party plugins cannot override or modify the container's internal functionality. Legacy versions are maintained in the `forerunner` branch, and packages like `@teqfw/core` should depend on `@teqfw/di` versions below `1.0.0`.
+Deterministic runtime DI container for native ES modules.
 
-`@teqfw/di` is a lightweight dependency injection container for standard JavaScript, enabling late binding of code
-objects with minimal manual configuration. It integrates smoothly in both browser and Node.js environments, supporting
-flexibility, modularity, and easier testing for your applications.
+`@teqfw/di` uses explicit dependency contracts (CDC strings) and module-level dependency descriptors (`__deps__`).
+It does not infer dependencies from constructor signatures.
 
-Unlike typical object containers, `@teqfw/di` requires no manual registration of objects, instead mapping dependency IDs
-directly to their source paths for greater simplicity. However, for advanced use cases—such as unit testing—it is
-possible to explicitly register singleton objects using the `register(depId, obj)` method (available only in test mode).
-This allows controlled substitution of dependencies without altering the main codebase.
+## Version Line
 
-**This library is specifically optimized for ES6 modules, ensuring top performance and compatibility. It does not
-support CommonJS, AMD, UMD, or other module formats.**
+This branch is the v2 line.
 
-To increase robustness, all instances created by the container are automatically **frozen** using `Object.freeze()`.
-This guarantees immutability of the returned objects, helping prevent accidental modifications and ensuring predictable
-behavior at runtime.
-
-While this library is primarily designed for JavaScript, it is also fully compatible with TypeScript. Developers can use
-TypeScript to compose dependency identifiers in the same way as in JavaScript. It is important to ensure that TypeScript
-transpiles the source code to ES6 modules for proper functionality. With this setup, TypeScript users can effectively
-leverage the benefits of this library without any additional configuration.
-
----
-
-## Design Philosophy
-
-This library is a component of the **TeqFW platform**, an experimental framework grounded in the principles of modular
-monolith design, long-term maintainability, late binding, and immutability-first logic composition.
-
-To explore the conceptual background, see: **[TeqFW Philosophy](./PHILOSOPHY.md)**.
-
----
-
-## Dependency Declaration Model
-
-In `@teqfw/di`, dependencies are declared **exclusively in the constructor (or factory) signature**.
-A component defines its dependencies using a **single object parameter**, where each property name
-is a dependency identifier interpreted by the container.
-
-The container analyzes the constructor signature, resolves all declared identifiers **before object
-creation**, and invokes the constructor with a fully populated argument object. Created objects are isolated from the container.
-
----
-
-## Samples
-
-Explore `@teqfw/di` in action through the following demo applications:
-
-- [demo-di-app](https://flancer64.github.io/demo-di-app/): A simple demonstration of dependency injection with
-  `@teqfw/di`.
-- [demo-wa-esm-openai](https://github.com/flancer64/demo-wa-esm-openai): Integrates OpenAI with ES6 modules.
-- [pwa-wallet](https://github.com/flancer64/pwa-wallet): A progressive web application wallet showcasing the library's
-  modularity.
-- [spa-remote-console](https://github.com/flancer64/spa-remote-console): Demonstrates remote console functionality in a
-  single-page application.
-- [demo-webauthn-pubkey](https://github.com/flancer64/demo-webauthn-pubkey): Uses Web Authentication (WebAuthn) with
-  public key credentials.
-- [tg-bot-habr-demo-grammy](https://github.com/flancer64/tg-bot-habr-demo-grammy): A Telegram bot demo built with the
-  grammY library.
-
-These projects offer practical examples and insights into using `@teqfw/di` effectively!
-
----
-
-## Example of Typical Usage
-
-Using `@teqfw/di` typically involves a few simple steps: organizing the file structure, declaring dependencies,
-configuring the container, and finally retrieving the main object with injected dependencies.
-
-### Step 1: Organize File Structure
-
-Here’s an example of how files might be organized in a project. This structure can vary depending on your project needs,
-as the container can be configured to work with any layout (e.g., within `/home/user/project/`):
-
-```text
-./src/
-    ./Service/
-        ./Customer.js
-        ./Sale.js
-    ./Config.js
-    ./Logger.js
-    ./Main.js
-```
-
-### Step 2: Declare Dependencies
-
-In your code, declare dependencies by specifying them as keys in the constructor. This is the only supported
-way to declare dependencies in `@teqfw/di`. Dependency identifiers here follow a namespace style similar to PHP
-Zend 1, which is used by default in this library. You can also implement a custom parser if you prefer a
-different naming convention or mapping strategy.
-
-```js
-export default class App_Main {
-  constructor({
-    App_Config$: config,
-    App_Logger$: logger,
-    App_Service_Customer$: servCustomer,
-    App_Service_Sale$: servSale,
-  }) {
-    /* ... */
-  }
-}
-```
-
-### Step 3: Configure the Container
-
-Next, set up the container and configure it to use the correct namespace and path for your dependencies:
-
-```js
-import Container from "@teqfw/di";
-
-// Create a new instance of the container
-const container = new Container();
-
-// Get the resolver from the container
-const resolver = container.getResolver();
-
-// Define the namespace root for dependencies, allowing the container to resolve identifiers like 'App_*'
-resolver.addNamespaceRoot("App_", "/home/user/project/src");
-```
-
-### Step 4: Retrieve the Main Object with Dependencies
-
-Finally, retrieve your main application instance. The container automatically injects all declared dependencies:
-
-```js
-// Retrieve the main application instance as a singleton asynchronously
-const app = await container.get("App_Main$");
-```
-
----
-
-## Test Mode Support
-
-`@teqfw/di` supports a dedicated **test mode** to facilitate unit testing and dependency mocking.
-
-When test mode is enabled via `container.enableTestMode()`, you can manually register singleton dependencies using the
-`register(depId, obj)` method:
-
-```js
-container.enableTestMode();
-container.register("App_Service_Customer$", mockCustomerService);
-```
-
-This makes it easy to substitute real implementations with mocks or stubs during tests, without altering production
-logic. Overrides are allowed only in test mode, ensuring clean separation of concerns.
-
-### Mocking Node.js Built-in Modules
-
-A powerful feature of `@teqfw/di` is the ability to mock **Node.js built-in libraries** such as `fs`, `path`, or
-`process`. This is useful for isolating side effects and simulating system behavior:
-
-```js
-container.register("node:fs", {
-  existsSync: (path) => path.endsWith(".html"),
-});
-```
-
-You can also register mocks for custom logic or environment-specific behavior:
-
-```js
-container.register("node:path", {
-  join: (...args) => args.join("/"),
-  resolve: (p) => `/abs/${p}`,
-});
-```
-
-These mocks are injected transparently wherever such modules are used as dependencies, making it possible to write pure,
-isolated, and deterministic unit tests — even for logic that relies on the filesystem or path resolution.
-
----
-
-## Key Benefits
-
-`@teqfw/di` offers the core functionality of any object container — creating objects and injecting dependencies — with
-extensive flexibility and configurability. This allows the library to adapt seamlessly to a wide range of project needs.
-Here’s what makes it stand out:
-
-- **Automatic Dependency Resolution**: The library resolves and injects dependencies by interpreting constructor
-  signatures. This basic functionality works out of the box but can be fully customized if needed.
-
-- **Flexible Dependency ID Configuration**: With customizable parsers and chunks, you can define unique ID schemes for
-  dependencies, making it easy to adapt the library to specific naming conventions or custom mapping rules.
-
-- **Mapping IDs to Source Modules via Resolvers**: Thanks to resolvers, `@teqfw/di` lets you map dependency IDs to their
-  source locations effortlessly. This makes the library adaptable to any project structure or file layout.
-
-- **Immutable Objects for Safer Runtime**: All objects created by the container are frozen by default. This ensures that
-  dependencies cannot be modified once instantiated, eliminating unintended mutations and reinforcing modular,
-  predictable application behavior.
-
-- **Preprocessing for Enhanced Control**: Built-in preprocessing allows modifying dependencies at the time of creation,
-  enabling local overrides or adjustments in functionality. This is especially useful for larger projects, where
-  different teams may tailor dependencies to their specific requirements. The default preprocessing can also be replaced
-  to suit more precise needs.
-
-- **Interfaces and Dependencies Without TypeScript**: `@teqfw/di` allows you to define interfaces using standard
-  JavaScript files with JSDoc annotations. The container supports configuring dependencies to replace interfaces with
-  project-specific implementations, offering flexibility without requiring TypeScript.
-
-- **Postprocessing for Object Customization**: Use postprocessing to add wrappers or extend created objects. This can be
-  valuable for adding factories, logging, or other behavior, tailored to each project’s requirements.
-
-These features make `@teqfw/di` a powerful, adaptable DI container that not only provides ready-to-use solutions but can
-be easily customized to meet unique project demands.
-
----
+- package version: `2.0.0`
+- changelog starts from `2.0.0`
 
 ## Installation
 
-### For Node.js
-
-To install `@teqfw/di` in a Node.js environment, use the following command:
-
-```shell
+```bash
 npm install @teqfw/di
 ```
 
-Then, import and initialize the container:
+## Quick Start
+
+### 1. Define modules with `__deps__`
+
+`src/App/Child.mjs`
 
 ```js
-import Container from "@teqfw/di";
+export default function App_Child() {
+    return {name: 'child'};
+}
+```
 
-/** @type {TeqFw_Di_Container} */
+`src/App/Root.mjs`
+
+```js
+export const __deps__ = {
+    child: 'App_Child$',
+};
+
+export default function App_Root({child}) {
+    return {
+        name: 'root',
+        child,
+    };
+}
+```
+
+### 2. Configure container in composition root
+
+```js
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import Container from '@teqfw/di';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const container = new Container();
+container.addNamespaceRoot('App_', path.resolve(__dirname, './src/App'), '.mjs');
+
+const root = await container.get('App_Root$');
+console.log(root.name);        // root
+console.log(root.child.name);  // child
+console.log(Object.isFrozen(root)); // true
+```
+
+## Dependency Descriptor (`__deps__`)
+
+`__deps__` is a static module export:
+
+```js
+export const __deps__ = {
+    localName: 'Some_CDC',
+};
+```
+
+Rules used by container runtime:
+
+- if `__deps__` is missing: module has zero dependencies
+- keys are local argument names passed into factory/class constructor
+- values are CDC strings
+- dependencies are resolved recursively before instantiation
+
+## CDC Grammar (Default Profile)
+
+Surface form:
+
+```text
+[PlatformPrefix]ModuleName[__ExportName][LifecycleAndWrappers]
+```
+
+Where:
+
+- `PlatformPrefix`: `node_` | `npm_` | omitted (`teq` by default)
+- `Export segment`: `__ExportName`
+- `Lifecycle marker`: `$` | `$$` | `$$$`
+- `Wrappers`: `_<wrapperId>` suffixes after lifecycle marker
+
+Examples:
+
+- `App_Service` - whole module (`as-is`)
+- `App_Service$` - default export as factory with lifecycle marker
+- `App_Service__build$$` - named export `build` with lifecycle marker
+- `App_Service$$_wrapLog_wrapTrace` - wrapper chain in declared order
+- `node_fs` - Node builtin
+- `npm_lodash` - npm package
+
+Notes:
+
+- explicit `teq_` prefix is forbidden
+- wrappers without lifecycle marker are invalid
+- parser is deterministic and fail-fast
+
+## Public API
+
+```js
 const container = new Container();
 ```
 
-### For the Browser (ESM Module)
+Builder stage methods (only before first `get`):
 
-To use `@teqfw/di` in a browser environment with ES modules, include it as follows (~5KB):
+- `setParser(parser)`
+- `addNamespaceRoot(prefix, target, defaultExt)`
+- `addPreprocess(fn)`
+- `addPostprocess(fn)`
+- `enableLogging()`
+- `enableTestMode()`
+- `register(cdc, mock)` (only in test mode)
+
+Resolution:
+
+- `await container.get(cdc)`
+
+Behavioral guarantees:
+
+- configuration is locked after first `get`
+- fail-fast pipeline
+- deterministic linking under identical contracts and config
+- produced values are frozen
+- container enters failed state after fatal linking error
+
+## Wrappers
+
+Wrappers are regular exports of the same module and are executed in declaration order.
+Each wrapper receives current value and must return synchronously.
+
+```js
+export default function App_Service() {
+    return {steps: ['core']};
+}
+
+export function wrapLog(value) {
+    value.steps.push('log');
+    return value;
+}
+```
+
+Request:
+
+```js
+await container.get('App_Service$$_wrapLog');
+```
+
+## Test Mode and Mocks
+
+```js
+container.enableTestMode();
+container.register('App_Service$', {name: 'mock-service'});
+```
+
+Mock lookup uses canonical parsed dependency identity and is applied before resolver/instantiation.
+
+## Browser Usage
+
+ESM via jsDelivr:
 
 ```html
 <script type="module">
-  import Container from "https://cdn.jsdelivr.net/npm/@teqfw/di@latest/+esm";
-
-  /** @type {TeqFw_Di_Container} */
+  import Container from 'https://cdn.jsdelivr.net/npm/@teqfw/di@2/+esm';
   const container = new Container();
 </script>
 ```
 
-### For the Browser (UMD Module)
+## Documentation Source
 
-Alternatively, you can use the UMD version in the browser (~5KB):
+Normative docs live in `ctx/`:
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/@teqfw/di@latest/dist/umd.js"></script>
-<script>
-  /** @type {TeqFw_Di_Container} */
-  const container = new window.TeqFw_Di_Container();
-</script>
-```
-
----
-
-## Using the Container
-
-### In Node.js
-
-1. **Configure Dependency Mapping**: Configure the resolver to detect the platform environment. Then, set up namespace
-   roots to map dependency IDs to their source paths.
-
-   ```js
-   import { platform } from "node:process";
-
-   const resolver = container.getResolver();
-   resolver.setWindowsEnv(platform === "win32"); // Adjusts for Windows environment if needed
-   resolver.addNamespaceRoot("App_", "/path/to/src");
-   ```
-
-2. **Retrieve Singleton Instances**: Retrieve the main application instance as a singleton asynchronously:
-
-   ```js
-   const app = await container.get("App_Main$");
-   ```
-
-### In the Browser
-
-1. **Configure Dependency Mapping**: Set up namespace roots to map dependency IDs to their source paths, using URLs as
-   needed.
-
-   ```js
-   const resolver = container.getResolver();
-   resolver.addNamespaceRoot("App_", "https://cdn.jsdelivr.net/npm/@flancer64/demo-di-app@0.2/src");
-   ```
-
-2. **Retrieve Singleton Instances**: Retrieve the main application instance as a singleton asynchronously:
-
-   ```js
-   const app = await container.get("App_Main$");
-   ```
-
-With these steps, the container is configured to automatically resolve and inject dependencies based on your setup,
-whether in Node.js or in a browser environment.
-
----
-
-## Dependency ID Types
-
-`@teqfw/di` supports various dependency ID formats to match different import styles and object requirements. Here’s a
-quick reference:
-
-| Dependency ID               | Import Style                                           | Description                                                                                           |
-| --------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| `App_Service`               | `import * as Service from './App/Service.js';`         | Imports the entire module as an ES module.                                                            |
-| `App_Service.default`       | `import {default} from './App/Service.js';`            | Imports the default export as-is.                                                                     |
-| `App_Service.name`          | `import {name} from './App/Service.js';`               | Imports a named export as-is.                                                                         |
-| `App_Service$`              | `import {default as Factory} from './App/Service.js';` | Uses default export as a singleton for the container.                                                 |
-| `App_Service$$`             | `import {default as Factory} from './App/Service.js';` | Creates a new instance from the default export for each dependency.                                   |
-| `App_Service.name$`         | `import {name} from './App/Service.js';`               | Uses a named export as a singleton.                                                                   |
-| `App_Service.name$$`        | `import {name} from './App/Service.js';`               | Creates a new instance from a named export for each dependency.                                       |
-| `App_Service.name$$(proxy)` | `import {name} from './App/Service.js';`               | Applies a custom wrapper to the created object in postprocessing, using a handler function `proxy()`. |
-
-### Example Usage
-
-Here’s an example showing a class with multiple dependencies, each using different dependency IDs:
-
-```js
-export default class App_Main {
-  constructor({
-    App_Service: EsModule,
-    "App_Service.default": defaultExportAsIs,
-    "App_Service.name": namedExportAsIs,
-    App_Service$: defaultExportAsSingleton,
-    App_Service$$: defaultExportAsInstance,
-    "App_Service.name$": namedExportAsSingleton,
-    "App_Service.name$$": namedExportAsInstance,
-    "App_Service.name(factory)": factoryToCreateInstancesFromNamedExport,
-  }) {
-    const { default: SrvDef, name: SrvName } = EsModule; // Deconstruct the module and access the exports
-  }
-}
-```
-
----
-
-## Summary
-
-`@teqfw/di` is a versatile and lightweight dependency injection container tailored for modern JavaScript applications.
-With its flexible dependency mapping, customizable ID configurations, and support for dynamic object creation,
-`@teqfw/di` empowers developers to build modular, testable, and scalable codebases.
-
-Whether you’re working in Node.js or a browser environment, `@teqfw/di` provides a solid foundation with built-in
-functionality that you can further adapt to fit your project’s unique requirements. Feel free to explore and extend the
-library as needed to create your ideal development environment.
-
-For any questions, feedback, or collaboration opportunities, please feel free to reach out through the following
-channels:
-
-- **Website**: [wiredgeese.com](https://wiredgeese.com)
-- **LinkedIn**: [LinkedIn Profile](https://www.linkedin.com/in/aleksandrs-gusevs-011ba928/)
-
-You can also leave suggestions, feedback, and feature requests directly on GitHub by opening an issue in the repository.
-
-Happy coding!
+- product overview: `ctx/docs/product/overview.md`
+- default CDC profile: `ctx/docs/product/default-cdc-profile.md`
+- grammar: `ctx/docs/architecture/cdc-profile/default/grammar.md`
+- transformation: `ctx/docs/architecture/cdc-profile/default/transformation.md`
+- validation: `ctx/docs/architecture/cdc-profile/default/validation.md`
+- container contract: `ctx/docs/code/components/container.md`
