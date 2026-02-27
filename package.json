@@ -46,7 +46,7 @@
   "scripts": {
     "rollup": "rollup -c",
     "eslint": "npx eslint './src/**/*.js'",
-    "test:unit": "node --test \"test/**/*.test.mjs\""
+    "test:unit": "node --test"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
