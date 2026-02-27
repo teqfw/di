@@ -34,12 +34,15 @@
   "types": "types.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/esm.js",
-      "require": "./dist/umd.js"
+      "browser": {
+        "import": "./dist/esm.js",
+        "require": "./dist/umd.js"
+      },
+      "import": "./src/Container.mjs",
+      "default": "./src/Container.mjs"
     },
-    "./pre/replace": {
-      "import": "./src/Pre/Replace.js"
-    }
+    "./src/Container.mjs": "./src/Container.mjs",
+    "./src/Config/NamespaceRegistry.mjs": "./src/Config/NamespaceRegistry.mjs"
   },
   "type": "module",
   "repository": {
