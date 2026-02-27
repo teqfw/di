@@ -107,6 +107,10 @@ Postprocess functions:
 - receive the instantiated object,
 - MAY return a different object,
 - execute before lifecycle enforcement.
+- are the normative mechanism for implementing CDC wrapper semantics via `addPostprocess(fn)`.
+- MAY conditionally apply behavior based on `DepId` metadata, including wrapper markers from `DepId.wrappers`.
+
+Wrapper capability is configuration-enabled through postprocess registration and is not built into CDC syntax parsing logic.
 
 #### Logging Mode
 
@@ -169,6 +173,16 @@ Transition to Operational occurs at the beginning of the first `get` invocation.
 Resolver instance and its configuration snapshot are created lazily at that moment.
 
 No reconfiguration is permitted after transition.
+
+### Wrapper Semantics
+
+Wrapper behavior is implemented during the postprocess stage.
+
+Wrapper identifiers are interpreted by registered postprocess logic.
+
+Container MUST NOT automatically resolve wrappers from module exports.
+
+Configuration, including wrapper-related postprocess registration, becomes immutable after the first `get`.
 
 ## Resolution Semantics
 

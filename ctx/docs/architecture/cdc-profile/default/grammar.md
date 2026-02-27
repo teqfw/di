@@ -155,6 +155,16 @@ Wrappers are ordered, participate in structural identity, and preserve declarati
 
 Wrappers are syntactically admissible only when a lifecycle marker is present.
 
+Wrapper identifiers do not belong to module namespace.
+
+Wrapper identifiers MUST NOT be resolved as module exports.
+
+Wrapper semantics are provided exclusively by container postprocess configuration.
+
+Wrapper resolution is independent from module resolution.
+
+> A wrapper marker in CDC activates container-registered postprocess logic. The module being instantiated has no knowledge of wrappers.
+
 ## 10. Error Semantics
 
 On the first violation of lexical admissibility, segmentation rules, or profile constraints, parsing fails by throwing a standard `Error`. No recovery, fallback, or alternative interpretation is permitted.

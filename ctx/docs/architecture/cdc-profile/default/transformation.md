@@ -21,7 +21,33 @@ The transformation is pure, deterministic, and side-effect free.
 
 `DepId.origin` MUST equal the input CDC string exactly, without normalization, trimming, or modification.
 
-## 3. Decomposition
+## 3. Pipeline Alignment
+
+The runtime linking pipeline is:
+
+```
+parse → preprocess → resolve → instantiate → postprocess → lifecycle → freeze
+```
+
+Wrapper application occurs during `postprocess`.
+
+Wrapper handlers are provided via `container.addPostprocess`.
+
+Postprocess functions may inspect parsed `DepId`, including wrapper markers represented in `DepId.wrappers`.
+
+If a wrapper marker is present and no matching postprocess logic handles it, the container MUST fail fast.
+
+### Wrapper Handling
+
+CDC wrapper marker is declarative.
+
+Wrapper behavior is determined exclusively by container configuration.
+
+Multiple wrappers are applied in CDC declaration order.
+
+Wrapper execution MUST be deterministic.
+
+## 4. Decomposition
 
 A CDC string is decomposed into:
 
@@ -34,7 +60,7 @@ A CDC string is decomposed into:
 
 Segmentation and identifier constraints are defined in `ctx/docs/architecture/cdc-profile/default/grammar.md`.
 
-## 4. Platform Mapping
+## 5. Platform Mapping
 
 Platform is derived from a reserved prefix of the CDC string:
 
@@ -44,7 +70,7 @@ Platform is derived from a reserved prefix of the CDC string:
 
 The explicit prefix `teq_` is forbidden and causes transformation failure.
 
-## 5. Lifecycle and Wrapper Mapping
+## 6. Lifecycle and Wrapper Mapping
 
 If a lifecycle marker is present as defined by the grammar, it maps to `DepId.life`:
 
@@ -58,7 +84,7 @@ Wrappers are an ordered suffix list defined only when a lifecycle marker is pres
 
 If a wrapper-without-lifecycle form is present as defined by the grammar, transformation fails.
 
-## 6. Export Mapping
+## 7. Export Mapping
 
 Export is an optional `__ExportName` segment as defined by the grammar.
 
@@ -70,7 +96,7 @@ If export segment is absent:
 
 - `exportName` is derived by composition rules.
 
-## 7. Composition Derivation
+## 8. Composition Derivation
 
 Composition is derived deterministically as follows:
 
@@ -82,7 +108,7 @@ If `composition = 'as-is'`, then `exportName = null`.
 
 If `composition = 'factory'` and export segment is absent, then `exportName = 'default'`.
 
-## 8. Module Name Extraction
+## 9. Module Name Extraction
 
 After removing platform prefix and extracting export, lifecycle, and wrapper segments, the remaining string is `moduleName`.
 
@@ -95,7 +121,7 @@ Constraints:
 
 If any constraint is violated, transformation fails.
 
-## 9. DepId Construction
+## 10. DepId Construction
 
 After all fields are derived, `DepId` is constructed with:
 
@@ -107,11 +133,11 @@ After all fields are derived, `DepId` is constructed with:
 - `life` = derived lifecycle
 - `wrappers` = derived wrapper list
 
-## 10. Invariant Validation
+## 11. Invariant Validation
 
 After construction, structural invariants defined in `ctx/docs/architecture/depid-model.md` MUST hold. If invariants are violated, transformation fails with a standard `Error`.
 
-## 11. Equivalence Classes
+## 12. Equivalence Classes
 
 The default profile defines exactly one equivalence family:
 
@@ -119,7 +145,7 @@ Omission of the export segment in a dependency whose derived `composition = 'fac
 
 No other equivalence classes are defined.
 
-## 12. Injectivity and Determinism
+## 13. Injectivity and Determinism
 
 For the default profile, two distinct CDC strings that are not members of the explicitly defined equivalence family MUST produce distinct `DepId` values.
 

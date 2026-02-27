@@ -29,7 +29,7 @@ npm install @teqfw/di
 
 ```js
 export default function App_Child() {
-    return {name: 'child'};
+  return { name: "child" };
 }
 ```
 
@@ -37,33 +37,33 @@ export default function App_Child() {
 
 ```js
 export const __deps__ = {
-    child: 'App_Child$',
+  child: "App_Child$",
 };
 
-export default function App_Root({child}) {
-    return {
-        name: 'root',
-        child,
-    };
+export default function App_Root({ child }) {
+  return {
+    name: "root",
+    child,
+  };
 }
 ```
 
 ### 2. Configure container in composition root
 
 ```js
-import path from 'node:path';
-import {fileURLToPath} from 'node:url';
-import Container from '@teqfw/di';
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import Container from "@teqfw/di";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const container = new Container();
-container.addNamespaceRoot('App_', path.resolve(__dirname, './src/App'), '.mjs');
+container.addNamespaceRoot("App_", path.resolve(__dirname, "./src/App"), ".mjs");
 
-const root = await container.get('App_Root$');
-console.log(root.name);        // root
-console.log(root.child.name);  // child
+const root = await container.get("App_Root$");
+console.log(root.name); // root
+console.log(root.child.name); // child
 console.log(Object.isFrozen(root)); // true
 ```
 
@@ -73,7 +73,7 @@ console.log(Object.isFrozen(root)); // true
 
 ```js
 export const __deps__ = {
-    localName: 'Some_CDC',
+  localName: "Some_CDC",
 };
 ```
 
@@ -144,31 +144,99 @@ Behavioral guarantees:
 
 ## Wrappers
 
-Wrappers are regular exports of the same module and are executed in declaration order.
-Each wrapper receives current value and must return synchronously.
+Wrappers are postprocess plugins registered during container configuration.
+They are activated by wrapper markers in the CDC string and applied to the produced value after instantiation.
+
+Wrappers:
+
+- are **container-level plugins**
+- are **not module exports**
+- are applied in declared order
+- must return synchronously
+- run before lifecycle enforcement and freeze
+
+Surface form:
+
+```text
+ModuleName$$_wrapperA_wrapperB
+```
+
+Wrappers are part of the dependency contract (CDC).
+They declaratively modify how a resolved value behaves.
+
+---
+
+### Example: Logging Wrapper
+
+Suppose we want to log all method calls of a service without modifying the service itself.
+
+#### Service module
 
 ```js
 export default function App_Service() {
-    return {steps: ['core']};
-}
-
-export function wrapLog(value) {
-    value.steps.push('log');
-    return value;
+  return {
+    sum(a, b) {
+      return a + b;
+    },
+    multiply(a, b) {
+      return a * b;
+    },
+  };
 }
 ```
 
-Request:
+#### Container configuration
 
 ```js
-await container.get('App_Service$$_wrapLog');
+container.addPostprocessWrapper("logIO", (value) => {
+  return new Proxy(value, {
+    get(target, prop, receiver) {
+      const original = Reflect.get(target, prop, receiver);
+
+      if (typeof original !== "function") {
+        return original;
+      }
+
+      return function (...args) {
+        console.log(`[CALL] ${String(prop)} ->`, args);
+        const result = original.apply(this, args);
+        console.log(`[RETURN] ${String(prop)} ->`, result);
+        return result;
+      };
+    },
+  });
+});
 ```
+
+#### Request
+
+```js
+const service = await container.get("App_Service$$_logIO");
+
+service.sum(2, 3);
+// [CALL] sum -> [2, 3]
+// [RETURN] sum -> 5
+```
+
+The module remains unaware of logging.
+The wrapper applies cross-cutting behavior declaratively through CDC.
+
+This allows:
+
+- tracing
+- metrics collection
+- access control
+- behavioral instrumentation
+
+without modifying business logic or module structure.
+
+Wrappers therefore act as a declarative DI-level AOP mechanism.
 
 ## Test Mode and Mocks
 
 ```js
 container.enableTestMode();
-container.register('App_Service$', {name: 'mock-service'});
+container.register("App_Service$", { name: "mock-service" });
 ```
 
 Mock lookup uses canonical parsed dependency identity and is applied before resolver/instantiation.
@@ -179,7 +247,7 @@ ESM via jsDelivr:
 
 ```html
 <script type="module">
-  import Container from 'https://cdn.jsdelivr.net/npm/@teqfw/di@2/+esm';
+  import Container from "https://cdn.jsdelivr.net/npm/@teqfw/di@2/+esm";
   const container = new Container();
 </script>
 ```
