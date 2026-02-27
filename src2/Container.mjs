@@ -165,9 +165,6 @@ export default class TeqFw_Di_Container {
          */
         const initializeInfrastructure = function () {
             if (state !== 'notConfigured') return;
-            if (loggingEnabled && (logger === TeqFw_Di_Internal_Logger_Noop)) {
-                logger = new TeqFw_Di_Internal_Logger();
-            }
             logger.log('Container.transition: notConfigured -> operational.');
             state = 'operational';
             const resolverConfig = configFactory.create({
