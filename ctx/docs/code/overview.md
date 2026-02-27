@@ -30,7 +30,7 @@ The `code` level is organized into three subdomains:
 
 - `components/` — component implementation contracts (`Container`, `Parser`, `Resolver`, `DepId`) that define interfaces, responsibilities, and behavioral boundaries.
 - `conventions/` — cross-project and framework-specific engineering conventions, including ES module form, JSDoc structural typing rules, and TeqFW-specific DTO/Enum patterns.
-- `layout/` — implementation structure and test-layout invariants (`src2/` organization, dependency direction, and testing contract boundaries).
+- `layout/` — implementation structure and test-layout invariants (`src/` organization, dependency direction, and testing contract boundaries).
 
 Each subdomain defines a distinct implementation boundary and must not duplicate statements from other ADSM levels.
 

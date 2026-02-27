@@ -1,4 +1,5 @@
 type TeqFw_Di_Def_Parser = InstanceType<typeof import("./src/Def/Parser.mjs").default>;
+type TeqFw_Di_Config_NamespaceRegistry = InstanceType<typeof import("./src/Config/NamespaceRegistry.mjs").default>;
 export type TeqFw_Di_Container = InstanceType<typeof import("./src/Container.mjs").default>;
 export type TeqFw_Di_Container_Instantiate_ExportSelector = InstanceType<
   typeof import("./src/Container/Instantiate/ExportSelector.mjs").default
@@ -33,6 +34,7 @@ export {};
 
 declare global {
   type TeqFw_Di_Container = InstanceType<typeof import("./src/Container.mjs").default>;
+  type TeqFw_Di_Config_NamespaceRegistry = InstanceType<typeof import("./src/Config/NamespaceRegistry.mjs").default>;
   type TeqFw_Di_Def_Parser = InstanceType<typeof import("./src/Def/Parser.mjs").default>;
   type TeqFw_Di_DepId = InstanceType<typeof import("./src/Dto/DepId.mjs").default>;
   type TeqFw_Di_DepId$DTO = import("./src/Dto/DepId.mjs").DTO;

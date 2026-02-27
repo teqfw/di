@@ -4,24 +4,20 @@ Path: `./ctx/docs/code/layout/structure.md`
 
 ## 1. Scope
 
-Version 2 of the implementation is located exclusively in `./src2/`.
-
-The directory `./src/` is legacy and MUST NOT be modified.
-
-Cross-imports between `src2/` and `src/` are prohibited.
+Implementation is located exclusively in `./src/`.
 
 All implementation source files MUST use the `.mjs` extension.
 
 This document defines structural invariants only. It does not redefine architectural, product, or runtime semantics.
 
-## 2. Root Layout of `src2/`
+## 2. Root Layout of `src/`
 
-The root of `src2/` contains structural layers and primary orchestration modules.
+The root of `src/` contains structural layers and primary orchestration modules.
 
 Mandatory directories:
 
 ```text
-src2/
+src/
   Enum/
   Dto/
   Def/
@@ -83,22 +79,22 @@ Examples:
 
 ```text
 TeqFw_Di_Container
-→ src2/Container.mjs
+→ src/Container.mjs
 
 TeqFw_Di_Resolver
-→ src2/Resolver.mjs
+→ src/Container/Resolver.mjs
 
 TeqFw_Di_Dto_DepId
-→ src2/Dto/DepId.mjs
+→ src/Dto/DepId.mjs
 
 TeqFw_Di_Dto_Resolver_Config
-→ src2/Dto/Resolver/Config.mjs
+→ src/Dto/Resolver/Config.mjs
 
 TeqFw_Di_Dto_Resolver_Config_Namespace
-→ src2/Dto/Resolver/Config/Namespace.mjs
+→ src/Dto/Resolver/Config/Namespace.mjs
 
 TeqFw_Di_Def_Parser
-→ src2/Def/Parser.mjs
+→ src/Def/Parser.mjs
 ```
 
 Each namespace segment corresponds to one directory level.
@@ -167,7 +163,7 @@ Violation of these rules constitutes structural non-compliance.
 The only public entry point of the package is:
 
 ```text
-src2/Container.mjs
+src/Container.mjs
 ```
 
 All other modules are internal implementation components.
@@ -201,7 +197,7 @@ Detailed typing discipline is defined in `ctx/docs/code/conventions/jsdoc-spec.m
 The default CDC profile parser is located at:
 
 ```text
-src2/Def/Parser.mjs
+src/Def/Parser.mjs
 ```
 
 Container uses it by default and MAY allow replacement according to container contract.
@@ -211,7 +207,7 @@ Container uses it by default and MAY allow replacement according to container co
 Freeze enforcement is implemented in:
 
 ```text
-src2/Lifecycle.mjs
+src/Container/Lifecycle/Registry.mjs
 ```
 
 Container MUST NOT perform freeze directly.
@@ -236,10 +232,10 @@ Behavior MUST remain identical across Node.js (ESM mode) and browser environment
 Unit tests are located in:
 
 ```text
-test2/unit/
+test/unit/
 ```
 
-Structure MUST mirror `src2/`.
+Structure MUST mirror `src/`.
 
 Each testable source module MUST have exactly one corresponding unit test file.
 
@@ -247,4 +243,4 @@ Integration tests validate the complete linking pipeline.
 
 Testing rules are defined in `ctx/docs/code/layout/testing.md`.
 
-This document defines structural invariants of the v2 implementation. All source artifacts under `src2/` MUST conform to these rules simultaneously.
+This document defines structural invariants of the current implementation. All source artifacts under `src/` MUST conform to these rules simultaneously.

@@ -12,7 +12,7 @@ This document defines structural rules only. Component-specific logging details 
 
 ## Scope
 
-These principles apply to all implementation modules under `src2/`, including but not limited to:
+These principles apply to all implementation modules under `src/`, including but not limited to:
 
 - Container
 - Parser

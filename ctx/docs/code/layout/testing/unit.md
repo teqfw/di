@@ -10,7 +10,7 @@ This document governs implementation-level unit testing only and does not redefi
 
 ## Scope
 
-The contract applies to all implementation modules located in the primary source directory (e.g., `src2/`).
+The contract applies to all implementation modules located in the primary source directory (e.g., `src/`).
 
 A source file is considered testable if it contains executable logic, structural normalization, or invariant enforcement.
 
@@ -21,19 +21,19 @@ Pure re-export modules containing no logic are exempt from the one-to-one test r
 Unit tests are located exclusively in:
 
 ```txt
-./test2/unit/
+./test/unit/
 ```
 
-The directory structure inside `test2/unit/` MUST mirror the structure of the primary source directory.
+The directory structure inside `test/unit/` MUST mirror the structure of the primary source directory.
 
 For every testable source file, exactly one corresponding unit test file MUST exist.
 
 Example:
 
 ```txt
-src2/Dto/DepId.mjs
+src/Dto/DepId.mjs
 →
-test2/unit/Dto/DepId.test.mjs
+test/unit/Dto/DepId.test.mjs
 ```
 
 Structural mirroring is mandatory.

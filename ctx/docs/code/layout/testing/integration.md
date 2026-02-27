@@ -31,10 +31,10 @@ Integration tests operate strictly at the public container boundary and validate
 Integration tests are located exclusively in:
 
 ```txt
-./test2/integration/
+./test/integration/
 ```
 
-Structural mirroring of `src2/` is not required.
+Structural mirroring of `src/` is not required.
 
 Integration tests are scenario-based and correspond to runtime aspects of the container pipeline rather than to individual source files. Each file represents a distinct semantic domain of runtime behavior.
 

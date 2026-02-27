@@ -4,7 +4,7 @@ Path: `./ctx/docs/code/components/depid.md`
 
 ## Purpose
 
-This document defines the implementation-level contract of `src2/Dto/DepId.mjs` in the current project state. It fixes the DTO shape, normalization rules, immutability mode, and responsibility boundaries of the `DepId` factory without redefining parser grammar or immutable-core architecture semantics.
+This document defines the implementation-level contract of `src/Dto/DepId.mjs` in the current project state. It fixes the DTO shape, normalization rules, immutability mode, and responsibility boundaries of the `DepId` factory without redefining parser grammar or immutable-core architecture semantics.
 
 ## Normative References
 
@@ -13,10 +13,10 @@ The `DepId` DTO contract is implementation-level and must remain aligned with:
 - `ctx/docs/architecture/depid-model.md`
 - `ctx/docs/architecture/overview.md`
 - `ctx/docs/code/components/parser.md`
-- `src2/Dto/DepId.mjs`
-- `src2/Enum/Platform.mjs`
-- `src2/Enum/Composition.mjs`
-- `src2/Enum/Life.mjs`
+- `src/Dto/DepId.mjs`
+- `src/Enum/Platform.mjs`
+- `src/Enum/Composition.mjs`
+- `src/Enum/Life.mjs`
 
 ## Architectural Boundary
 
@@ -48,7 +48,7 @@ Code-level `life = null` is allowed and represents the non-lifecycle case in the
 
 ## Factory Interface
 
-`src2/Dto/DepId.mjs` exports class `Factory` with method `create(input, options)`.
+`src/Dto/DepId.mjs` exports class `Factory` with method `create(input, options)`.
 
 Factory contract:
 
