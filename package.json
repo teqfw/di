@@ -23,9 +23,6 @@
   "files": [
     "dist/",
     "src/",
-    "CHANGELOG.md",
-    "LICENSE",
-    "README.md",
     "teqfw.json",
     "types.d.ts"
   ],
@@ -49,15 +46,15 @@
   "scripts": {
     "rollup": "rollup -c",
     "eslint": "npx eslint './src/**/*.js'",
-    "test:unit": "node --test \"test/**/*.test.mjs\"",
-    "test:integration": "node --test \"test/**/*.test.mjs\""
+    "test:unit": "node --test \"test/**/*.test.mjs\""
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
     "eslint": "^9.33.0",
-    "rollup": "^4.47.1"
+    "rollup": "^4.47.1",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=20"

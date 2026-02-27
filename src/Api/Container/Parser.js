@@ -10,19 +10,25 @@ export default class TeqFw_Di_Api_Container_Parser {
      *
      * @param {TeqFw_Di_Api_Container_Parser_Chunk} chunk
      */
-    addChunk(chunk) {}
+    addChunk(chunk) {
+        throw new Error('TeqFw_Di_Api_Container_Parser#addChunk is abstract.');
+    }
 
     /**
      * Parse given dependency ID and return structured data as DTO.
      * @param {string} depId
      * @returns {TeqFw_Di_DepId}
      */
-    parse(depId) {}
+    parse(depId) {
+        throw new Error('TeqFw_Di_Api_Container_Parser#parse is abstract.');
+    }
 
     /**
      * Sets the default chunk of the parser.
      *
      * @param {TeqFw_Di_Api_Container_Parser_Chunk} chunk
      */
-    setDefaultChunk(chunk) {}
+    setDefaultChunk(chunk) {
+        throw new Error('TeqFw_Di_Api_Container_Parser#setDefaultChunk is abstract.');
+    }
 }

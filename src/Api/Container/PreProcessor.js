@@ -10,7 +10,9 @@ export default class TeqFw_Di_Api_Container_PreProcessor {
      *
      * @param {TeqFw_Di_Api_Container_PreProcessor_Chunk} chunk
      */
-    addChunk(chunk) {}
+    addChunk(chunk) {
+        throw new Error('TeqFw_Di_Api_Container_PreProcessor#addChunk is abstract.');
+    }
 
     /**
      * Modify parsed depID and return it.
@@ -18,6 +20,8 @@ export default class TeqFw_Di_Api_Container_PreProcessor {
      * @param {string[]} stack - The stack of parent IDs.
      * @returns {TeqFw_Di_DepId} -
      */
-    modify(depId, stack) {}
+    modify(depId, stack) {
+        throw new Error('TeqFw_Di_Api_Container_PreProcessor#modify is abstract.');
+    }
 
 }

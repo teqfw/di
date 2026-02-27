@@ -51,7 +51,7 @@ describe('TeqFw_Di_Container_Config', () => {
     });
 
     describe('finalize()', () => {
-        it('returns runtime container API with get() and compose()', async () => {
+        it('returns runtime container API with get()', async () => {
             /** @type {TeqFw_Di_Container_Config} */
             const cfg = new ContainerConfig();
             cfg.resolver().addNamespaceRoot('App_', join(ROOT, 'basic'), 'js');
@@ -59,9 +59,9 @@ describe('TeqFw_Di_Container_Config', () => {
             const container = cfg.finalize();
 
             assert.strictEqual(typeof container.get, 'function', 'Runtime container must have get()');
-            assert.strictEqual(typeof container.compose, 'function', 'Runtime container must have compose()');
+            // assert.strictEqual(typeof container.compose, 'function', 'Runtime container must have compose()');
 
-            const service = await container.compose('App_Service$');
+            const service = await container.get('App_Service$');
             assert.strictEqual(typeof service, 'function');
             service({ hello: 'world' });
         });

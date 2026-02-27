@@ -12,12 +12,16 @@ export default class TeqFw_Di_Api_Container_Parser_Chunk {
      * @param {string} depId
      * @returns {boolean}
      */
-    canParse(depId) {};
+    canParse(depId) {
+        throw new Error('TeqFw_Di_Api_Container_Parser_Chunk#canParse is abstract.');
+    }
 
     /**
      * Parses a string ID for a runtime dependency and returns structured data (DTO).
      * @param {string} depId
      * @returns {TeqFw_Di_DepId}
      */
-    parse(depId) {}
+    parse(depId) {
+        throw new Error('TeqFw_Di_Api_Container_Parser_Chunk#parse is abstract.');
+    }
 };

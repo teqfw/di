@@ -11,6 +11,8 @@ export default class TeqFw_Di_Api_Container_Resolver {
      * @param {string} moduleName 'Vendor_Package_Module'
      * @returns {string} '/home/user/app/node_modules/@vendor/package/src/Module.js'
      */
-    resolve(moduleName) {}
+    resolve(moduleName) {
+        throw new Error('TeqFw_Di_Api_Container_Resolver#resolve is abstract.');
+    }
 
 }

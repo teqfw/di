@@ -10,16 +10,20 @@ export default class TeqFw_Di_Api_Container_PostProcessor {
      *
      * @param {TeqFw_Di_Api_Container_PostProcessor_Chunk} chunk
      */
-    addChunk(chunk) {}
+    addChunk(chunk) {
+        throw new Error('TeqFw_Di_Api_Container_PostProcessor#addChunk is abstract.');
+    }
 
     /**
      * Modifies the result of the object composition.
      *
      * @param {*} obj - The result object to be modified.
      * @param {TeqFw_Di_DepId} depId - The original depID DTO.
-     * @param {string[]} - The stack of parent IDs.
+     * @param {string[]} stack - The stack of parent IDs.
      * @returns {Promise<*>}
      */
-    modify(obj, depId, stack) {}
+    modify(obj, depId, stack) {
+        throw new Error('TeqFw_Di_Api_Container_PostProcessor#modify is abstract.');
+    }
 
 }

@@ -11,35 +11,45 @@ export default class TeqFw_Di_Api_Container_Config {
      *
      * @returns {TeqFw_Di_Api_Container_Parser}
      */
-    parser() { }
+    parser() {
+        throw new Error('TeqFw_Di_Api_Container_Config#parser is abstract.');
+    }
 
     /**
      * Returns the pre-processor configurator.
      *
      * @returns {TeqFw_Di_Api_Container_PreProcessor}
      */
-    preProcessor() { }
+    preProcessor() {
+        throw new Error('TeqFw_Di_Api_Container_Config#preProcessor is abstract.');
+    }
 
     /**
      * Returns the post-processor configurator.
      *
      * @returns {TeqFw_Di_Api_Container_PostProcessor}
      */
-    postProcessor() { }
+    postProcessor() {
+        throw new Error('TeqFw_Di_Api_Container_Config#postProcessor is abstract.');
+    }
 
     /**
      * Returns the resolver configurator.
      *
      * @returns {TeqFw_Di_Api_Container_Resolver}
      */
-    resolver() { }
+    resolver() {
+        throw new Error('TeqFw_Di_Api_Container_Config#resolver is abstract.');
+    }
 
     /**
      * Enables test mode.
      *
      * @returns {void}
      */
-    enableTestMode() { }
+    enableTestMode() {
+        throw new Error('TeqFw_Di_Api_Container_Config#enableTestMode is abstract.');
+    }
 
     /**
      * Registers a singleton or a Node.js module replacement in test mode.
@@ -48,12 +58,16 @@ export default class TeqFw_Di_Api_Container_Config {
      * @param {object} obj
      * @returns {void}
      */
-    register(depId, obj) { }
+    register(depId, obj) {
+        throw new Error('TeqFw_Di_Api_Container_Config#register is abstract.');
+    }
 
     /**
      * Finalizes configuration and returns a runtime container instance.
      *
      * @returns {TeqFw_Di_Api_Container}
      */
-    finalize() { }
+    finalize() {
+        throw new Error('TeqFw_Di_Api_Container_Config#finalize is abstract.');
+    }
 }

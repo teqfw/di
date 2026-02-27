@@ -3,30 +3,18 @@
 ![npms.io](https://img.shields.io/npm/dm/@teqfw/di)
 ![jsdelivr](https://img.shields.io/jsdelivr/npm/hm/@teqfw/di)
 
-> [!IMPORTANT] > **Breaking Changes in v1.0.0**
+> [!WARNING]
+> This branch contains the **legacy v1 line** of `@teqfw/di`.
+> The code here is **manually authored** and is kept for compatibility with existing integrations and previously delivered solutions.
 >
-> The library has been stable for a long time and is now promoted to its first major version. To improve security, the Object Container can no longer access itself, so all configuration must occur in the Composition Root. This restriction ensures that third-party plugins cannot override or modify the container's internal functionality. Legacy versions are maintained in the `forerunner` branch, and packages like `@teqfw/core` should depend on `@teqfw/di` versions below `1.0.0`.
+> Active development has moved to the main branch:
+> **https://github.com/teqfw/di/tree/main**
+>
+> The new container generation is built through an AI-agent workflow and follows a different architecture and dependency model.
+> **Backward compatibility with this v1 line is not guaranteed.**
 
-`@teqfw/di` is a lightweight dependency injection container for standard JavaScript, enabling late binding of code
-objects with minimal manual configuration. It integrates smoothly in both browser and Node.js environments, supporting
-flexibility, modularity, and easier testing for your applications.
-
-Unlike typical object containers, `@teqfw/di` requires no manual registration of objects, instead mapping dependency IDs
-directly to their source paths for greater simplicity. However, for advanced use cases—such as unit testing—it is
-possible to explicitly register singleton objects using the `register(depId, obj)` method (available only in test mode).
-This allows controlled substitution of dependencies without altering the main codebase.
-
-**This library is specifically optimized for ES6 modules, ensuring top performance and compatibility. It does not
-support CommonJS, AMD, UMD, or other module formats.**
-
-To increase robustness, all instances created by the container are automatically **frozen** using `Object.freeze()`.
-This guarantees immutability of the returned objects, helping prevent accidental modifications and ensuring predictable
-behavior at runtime.
-
-While this library is primarily designed for JavaScript, it is also fully compatible with TypeScript. Developers can use
-TypeScript to compose dependency identifiers in the same way as in JavaScript. It is important to ensure that TypeScript
-transpiles the source code to ES6 modules for proper functionality. With this setup, TypeScript users can effectively
-leverage the benefits of this library without any additional configuration.
+`@teqfw/di` v1 is a lightweight dependency injection container for standard JavaScript, enabling late binding of code
+objects with minimal manual configuration. It integrates in both browser and Node.js environments for modularity and testing.
 
 ---
 

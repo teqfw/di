@@ -1,10 +1,10 @@
+import Container from '../Container.js';
+
 /**
  * Runtime configuration facade for the DI container.
  *
- * @implements TeqFw_Di_Api_Container_Config
+ * @implements {TeqFw_Di_Api_Container_Config}
  */
-import Container from '../Container.js';
-
 export default class TeqFw_Di_Container_Config {
     constructor() {
         // VARS

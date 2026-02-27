@@ -13,13 +13,7 @@ export default class TeqFw_Di_Api_Container {
      * @param {string[]} [stack]
      * @returns {Promise<*>}
      */
-    get(depId, stack) { }
-
-    /**
-     * Resolves and creates a root object (composition entry point).
-     *
-     * @param {string} depId
-     * @returns {Promise<*>}
-     */
-    compose(depId) { }
+    get(depId, stack) {
+        throw new Error('TeqFw_Di_Api_Container#get is abstract.');
+    }
 }

@@ -13,5 +13,7 @@ export default class TeqFw_Di_Api_Container_PreProcessor_Chunk {
      * @param {string[]} stack - stack of parents depIds
      * @returns {TeqFw_Di_DepId}
      */
-    modify(depId, originalId, stack) {}
+    modify(depId, originalId, stack) {
+        throw new Error('TeqFw_Di_Api_Container_PreProcessor_Chunk#modify is abstract.');
+    }
 };
