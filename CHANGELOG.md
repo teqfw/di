@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+- Created a dedicated v1 branch before switching package development fully to the agent-driven workflow.
+- This v1 line contains manually authored code.
+- Removed parallel v2 artifacts: `ctx/`, `src2/`, `test2/`.
+
 ## 1.2.0
 
 - Documented the dependency declaration model in the README and product overview.

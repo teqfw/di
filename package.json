@@ -1,6 +1,6 @@
 {
   "name": "@teqfw/di",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Dependency Injection container for ES6 modules that works in both browser and Node.js apps.",
   "keywords": [
     "dependency injection",
@@ -23,7 +23,6 @@
   "files": [
     "dist/",
     "src/",
-    "src2/",
     "CHANGELOG.md",
     "LICENSE",
     "README.md",
@@ -49,9 +48,9 @@
   },
   "scripts": {
     "rollup": "rollup -c",
-    "eslint": "npx eslint './src2/**/*.mjs'",
-    "test:unit": "node --test \"test2/unit/**/*.test.mjs\"",
-    "test:integration": "node --test \"test2/integration/**/*.test.mjs\""
+    "eslint": "npx eslint './src/**/*.js'",
+    "test:unit": "node --test \"test/**/*.test.mjs\"",
+    "test:integration": "node --test \"test/**/*.test.mjs\""
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

@@ -9,5 +9,5 @@
       "@teqfw/di-types": ["types.d.ts"]
     }
   },
-  "include": ["src2", "types.d.ts"]
+  "include": ["src", "types.d.ts"]
 }
