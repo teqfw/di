@@ -1,7 +1,7 @@
 # Code Layout (`./ctx/docs/code/layout/`)
 
 Path: `./ctx/docs/code/layout/AGENTS.md`
-Version: `20260223`
+Version: `20260227`
 
 ## Purpose
 
@@ -13,9 +13,11 @@ This level contains layout and testing-structure rules only. It does not define 
 
 ## Level Map
 
+- `testing/` — layered testing contracts for implementation-level verification (`unit` and `integration`).
 - `AGENTS.md` — this document, defining the purpose, boundaries, and navigational map of the `layout/` level.
+- `logging.md` — logging-level implementation layout invariants and verification boundaries.
 - `structure.md` — implementation structure and static dependency rules (including `src2/` invariants).
-- `testing.md` — testing-level implementation invariants and verification conventions for code artifacts.
+- `testing.md` — overview of normative testing layers and their responsibility boundaries.
 
 ## Summary
 

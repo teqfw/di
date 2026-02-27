@@ -1,115 +1,58 @@
-# Testing Contract
+# Testing Layers
 
 Path: `./ctx/docs/code/layout/testing.md`
 
 ## Purpose
 
-This document defines the normative unit-testing contract of the base package. It specifies placement rules, structural mirroring requirements, isolation constraints, determinism requirements, and failure semantics at the implementation level.
+This document defines the normative testing-layer model of the base package at the implementation level.
 
-This document governs implementation-level testing only and does not redefine architectural or product-level semantics.
+Testing is structured to reflect architectural boundaries of the system. The testing model separates verification of local module contracts from verification of system-level runtime linking semantics.
 
-The only normative testing type defined here is unit testing.
+This document governs implementation-level verification only and does not redefine architectural, composition, constraint, environment, or product-level semantics.
 
-## Scope
+Detailed rules are defined in layer-specific contracts and are not duplicated here.
 
-The contract applies to all implementation modules located in the primary source directory (e.g., `src2/`).
+## Layer Model
 
-A source file is considered testable if it contains executable logic, structural normalization, or invariant enforcement.
+The project defines two normative testing layers:
 
-Pure re-export modules containing no logic are exempt from the one-to-one test requirement.
+- unit testing;
+- integration testing.
 
-## Unit Testing
+Both layers are mandatory and operate at distinct architectural boundaries.
 
-### Structural Mirroring
+The separation of layers is structural and intentional. Each layer verifies a different class of invariants and must not overlap in responsibility.
 
-Unit tests are located exclusively in:
+## Layer Boundaries
 
-```txt
-./test2/unit/
-```
+Unit testing verifies module-level contracts of individual implementation modules. It validates local invariants, deterministic behavior, fail-fast semantics, structural guarantees, and isolation constraints at the source-file boundary.
 
-The directory structure inside `test2/unit/` MUST mirror the structure of the primary source directory.
+Integration testing verifies runtime linking semantics at the container boundary. It validates system-level invariants including composition rules, lifecycle behavior, wrapper execution semantics, test mode behavior, failure-state transitions, and integrity of immutable linking semantics across the full runtime pipeline.
 
-For every testable source file, exactly one corresponding unit test file MUST exist.
+Unit testing protects local correctness.
 
-Example:
+Integration testing protects architectural behavior.
 
-```txt
-src2/Dto/DepId.mjs
-→
-test2/unit/Dto/DepId.test.mjs
-```
+## Layer Interaction
 
-Structural mirroring is mandatory.
+Unit tests and integration tests are complementary.
 
-### Isolation Invariant
+- Unit tests do not validate runtime composition.
+- Integration tests do not validate internal module normalization or isolated invariants.
+- Neither layer substitutes the other.
 
-Unit tests MUST be fully isolated.
+Behavioral validity of the base package requires both layers to pass.
 
-Unit tests MUST NOT perform:
+## Normative References
 
-- filesystem access;
-- network access;
-- timer-based execution;
-- environment-variable access;
-- process-level state mutation.
-
-If a module interacts with external facilities, those interactions MUST be abstracted and controlled within the test boundary.
-
-Unit tests MUST NOT depend on global mutable state.
-
-### Determinism Invariant
-
-For modules that define deterministic behavior, unit tests MUST verify that:
-
-- identical input produces structurally identical output;
-- repeated invocation does not mutate prior results;
-- no hidden state persists across calls.
-
-Determinism verification applies strictly to documented module contracts.
-
-### Failure Semantics
-
-For modules that specify fail-fast behavior, unit tests MUST verify that:
-
-- invalid input results in immediate failure;
-- no partial structures are returned;
-- failure is expressed through standard `Error`.
-
-Error message wording is not part of the contract unless explicitly defined elsewhere.
-
-### Structural Verification
-
-Where applicable, unit tests MUST verify:
-
-- complete structural shape of returned objects;
-- normalization rules;
-- immutability guarantees when specified;
-- absence of unintended mutation.
-
-Unit tests MUST validate only behavior defined in code-level contracts and MUST NOT rely on undocumented internal implementation details.
-
-## Tooling
-
-The normative testing stack consists of:
-
-- `node:test`;
-- `node:assert/strict`.
-
-All unit tests MUST use the normative stack.
-
-## Contract Boundary
-
-This testing contract governs structural and behavioral verification of individual modules.
-
-It does not define integration testing, runtime composition validation, or system-level behavior.
-
-Unit tests operate strictly at the module contract boundary.
+- `./ctx/docs/code/layout/testing/unit.md`
+- `./ctx/docs/code/layout/testing/integration.md`
 
 ## Summary
 
-The base package defines a single normative testing layer: unit testing.
+Implementation-level verification is structured into two normative layers:
 
-Each testable module MUST have exactly one corresponding unit test file. Tests MUST mirror source structure, enforce isolation, validate determinism where specified, verify fail-fast semantics where defined, and remain free of real side effects.
+- Unit testing for module contracts and local invariants.
+- Integration testing for runtime linking semantics and architectural behavior.
 
-No runtime composition semantics, dynamic module loading behavior, or dependency wiring logic are part of this testing contract.
+This layered structure ensures both local correctness and preservation of immutable linking semantics across system evolution.
