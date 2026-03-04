@@ -4,10 +4,7 @@
     "module": "ESNext",
     "checkJs": true,
     "noEmit": true,
-    "baseUrl": ".",
-    "paths": {
-      "@teqfw/di-types": ["types.d.ts"]
-    }
+    "baseUrl": "."
   },
-  "include": ["src", "types.d.ts"]
+  "include": ["src", "test", "types.d.ts"]
 }
