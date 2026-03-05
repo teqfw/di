@@ -18,8 +18,9 @@ The container implementation MUST conform to:
 
 - `ctx/docs/architecture/linking-model.md`
 - `ctx/docs/architecture/depid-model.md`
-- `ctx/docs/composition/overview.md`
-- `ctx/docs/constraints/overview.md`
+- `ctx/docs/architecture/execution-model.md`
+- `ctx/docs/architecture/constraints.md`
+- `ctx/docs/product/constraints.md`
 - `ctx/docs/code/layout/structure.md`
 - `ctx/docs/code/components/parser.md`
 - `ctx/docs/code/components/resolver.md`

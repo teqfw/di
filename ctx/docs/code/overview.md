@@ -4,7 +4,7 @@ Path: `./ctx/docs/code/overview.md`
 
 ## Purpose
 
-The `code` level defines implementation-level invariants of `@teqfw/di`. It specifies how architectural and compositional constraints are realized through component contracts, engineering conventions, and implementation layout rules.
+The `code` level defines implementation-level invariants of `@teqfw/di`. It specifies how product meaning and architectural invariants are realized through component contracts, engineering conventions, and implementation layout rules.
 
 This level does not redefine system meaning, architectural form, execution dynamics, or environmental constraints. It formalizes implementation obligations and boundaries.
 
@@ -39,8 +39,8 @@ Each subdomain defines a distinct implementation boundary and must not duplicate
 All implementation artifacts MUST conform simultaneously to:
 
 - architectural linking invariants,
-- composition-level execution model,
-- constraints-level prohibitions,
+- architectural execution model,
+- product and architectural constraints,
 - component contracts in `components/`,
 - conventions in `conventions/`,
 - structural and testing layout rules in `layout/`.

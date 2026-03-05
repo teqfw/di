@@ -1,11 +1,13 @@
 # Code Documentation (`./ctx/docs/code/`)
 
 Path: `./ctx/docs/code/AGENTS.md`
-Version: `20260223`
+Version: `20260305`
 
 ## Purpose
 
-The `ctx/docs/code/` directory defines engineering and implementation-level invariants of the project, including component contracts, code conventions, and implementation layout rules, without redefining architecture, constraints, composition, environment, or product meaning.
+The `ctx/docs/code/` directory defines engineering and implementation-level invariants of the project, including component contracts, code conventions, and implementation layout rules, without redefining product meaning, architectural form, architectural execution model, or environment assumptions.
+
+In this documentation branch, constraints are expressed at the product and architecture levels, and the execution model is part of architecture. The code level must not redefine those invariants.
 
 ## Level Boundaries
 

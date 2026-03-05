@@ -19,6 +19,7 @@ Documents of this level must remain semantically aligned in product identity (me
 ## Level Map
 
 - `AGENTS.md` — this document, defining purpose, boundaries, and consistency rules of the product level.
+- `constraints.md` — non-negotiable product constraints defining exit from the current product identity.
 - `default-cdc-profile.md` — product-level normative positioning, compatibility guarantees, and stability policy for the default CDC profile.
 - `overview.md` — product overview describing purpose, domain problem, architectural position, and value.
 - `principles.md` — declarative product principles that constrain product behavior and evolution.

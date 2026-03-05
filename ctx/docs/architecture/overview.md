@@ -6,7 +6,7 @@ Path: `./ctx/docs/architecture/overview.md`
 
 The system defines a deterministic runtime linking architecture for ES modules.
 
-All dependencies are declared explicitly as Canonical Dependency Contracts (CDC). The architecture separates dependency declaration from implementation resolution and centralizes binding in a controlled composition phase.
+All dependencies are declared explicitly as Canonical Dependency Contracts (CDC). The architecture separates dependency declaration from implementation resolution and centralizes binding in a container-controlled runtime linking pipeline.
 
 Linking begins only after container configuration is finalized. Reconfiguration after resolution begins is prohibited.
 

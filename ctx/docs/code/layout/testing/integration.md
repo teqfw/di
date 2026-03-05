@@ -16,7 +16,7 @@ Integration tests validate system-level invariants of container behavior, includ
 
 - configuration locking after first resolution;
 - namespace resolution rules, including deterministic longest-prefix selection;
-- dependency graph resolution and completeness of graph construction;
+- request-local dependency graph resolution and completeness of request-local graph construction;
 - cyclic dependency detection and fail-fast behavior;
 - lifecycle semantics for singleton and transient components;
 - wrapper execution order, composition, and constraints;

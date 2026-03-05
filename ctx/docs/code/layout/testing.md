@@ -8,7 +8,7 @@ This document defines the normative testing-layer model of the base package at t
 
 Testing is structured to reflect architectural boundaries of the system. The testing model separates verification of local module contracts from verification of system-level runtime linking semantics.
 
-This document governs implementation-level verification only and does not redefine architectural, composition, constraint, environment, or product-level semantics.
+This document governs implementation-level verification only and does not redefine product meaning, architectural form, architectural execution model, environment assumptions, or level-specific constraints.
 
 Detailed rules are defined in layer-specific contracts and are not duplicated here.
 

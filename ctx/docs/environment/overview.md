@@ -10,17 +10,17 @@ The Environment level defines the execution conditions under which the `@teqfw/d
 
 The container operates in environments that provide native ECMAScript Modules support.
 
-Node.js with native ESM support is required.
-Browser runtime with native ESM support is mandatory and officially supported.
-Deno and Bun are allowed provided they implement standard ESM semantics compatible with the ECMAScript specification.
+- Node.js with native ESM support is required.
+- Browser runtime with native ESM support is mandatory and officially supported.
+- Deno and Bun are allowed provided they implement standard ESM semantics compatible with the ECMAScript specification.
 
 Transpilers, bundlers, alias resolvers, and module transformation tools are not supported as part of the normative execution model. Only the standard ESM loader of the runtime is assumed. Import maps are not part of the container model.
 
 ## 3. Execution Model Assumptions
 
-The current reference implementation assumes a single-threaded execution context per container instance. Worker threads are not supported in the present implementation.
+The runtime is assumed to provide a single JavaScript execution context per container instance.
 
-This is an implementation-level limitation and not an architectural constraint of the product model.
+Worker threads are outside the container execution model. In multi-worker environments, each worker must instantiate its own container instance.
 
 Multi-process environments are allowed. In such environments, the container remains strictly process-local. When used in cluster mode, each worker must instantiate its own container. Container state is not synchronized across processes.
 

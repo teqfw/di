@@ -1,49 +1,52 @@
 # Project Documentation (`./ctx/docs/`)
 
 Path: `./ctx/docs/AGENTS.md`
-Version: `20260219`
+Template Version: `20260305`
 
 ## Purpose
 
-The `ctx/docs/` directory contains the declarative description of the project structured according to ADSM levels and defines the meaning, constraints, structural form, and engineering invariants of the system without including organizational instructions for the agent.
+The `ctx/docs/` directory contains the declarative description of the system organized by ADSM documentation levels. These documents define system meaning, architectural form, operational environment, and engineering implementation rules.
 
-## Level Model
-
-Documentation at the `docs/` level is organized in accordance with the ADSM levels:
-
-- `product/` — system meaning and domain invariants;
-- `constraints/` — mandatory design boundaries and prohibitions;
-- `architecture/` — structural form of the system and its boundaries;
-- `composition/` — execution model and scenario dynamics;
-- `environment/` — execution conditions and infrastructural prerequisites;
-- `code/` — engineering invariants of implementation and code organization conventions.
-
-Each subdirectory defines a distinct type of knowledge and does not duplicate statements established at other levels.
-
-## Level Boundaries
-
-`ctx/docs/` describes the system as a design object: its purpose, constraints, structural form, execution dynamics, and engineering rules. Instructions governing agent behavior, reporting modes, and organizational procedures are excluded from this level and belong exclusively to the `ctx/agent/` branch.
-
-Relationships between subdirectories are defined declaratively through references to documents within `ctx/docs/` without procedural descriptions and without role overlap.
-
-## Document Requirements
-
-Documents at the `docs/` level must be written in a declarative style and define the invariants, boundaries, and definitions of the corresponding ADSM level. Repetition of statements established at other levels is not permitted. Text within paragraphs must be written without manual line breaks and without using section separators such as `---`.
-
-Documentation must comply with the eight ADSM quality criteria: declarativity, completeness, consistency, coherence, density, compactness, non-redundancy, and absence of the obvious.
-
-The size of an individual document must not exceed 5,000 tokens.
+Documentation at this level describes the system as a design object. Organizational instructions, execution procedures, and agent operational rules are excluded and belong to `ctx/agent/`.
 
 ## Level Map
 
-- `architecture/` — declarative description of the system structural form and architectural invariants.
-- `code/` — declarative description of implementation-level engineering invariants and code organization conventions.
-- `composition/` — declarative description of the execution model and scenario dynamics.
-- `constraints/` — declarative description of mandatory design boundaries and prohibitions.
-- `environment/` — declarative description of execution conditions and infrastructural prerequisites.
-- `product/` — declarative description of system meaning and domain invariants.
-- `AGENTS.md` — this document, defining the structure and boundaries of the `docs/` directory.
+- `architecture/` — structural form of the system, architectural entities, boundaries, and interaction model.
+- `code/` — engineering invariants governing how architecture is expressed in source code.
+- `environment/` — runtime environment and infrastructural prerequisites required for system operation.
+- `product/` — system meaning, domain entities, and product-level invariants.
+- `AGENTS.md` — documentation structure and level boundaries of `ctx/docs/`.
+
+## Level Order
+
+Documentation levels form a strict dependency order:
+
+```
+product
+↓
+architecture
+↓
+environment
+↓
+code
+```
+
+Lower levels may refine but must not redefine statements established at higher levels.
+
+## Documentation Rules
+
+Documents in `ctx/docs/` must:
+
+- be declarative and define invariants, boundaries, or definitions of their level;
+- avoid duplication of statements defined at other levels;
+- contain no agent instructions or procedural workflows;
+- use paragraphs without manual line breaks;
+- avoid section separators such as `---`.
+
+Documentation must satisfy the eight ADSM quality criteria: declarativity, completeness, consistency, coherence, density, compactness, non-redundancy, and absence of the obvious.
+
+Individual documents must not exceed 5,000 tokens.
 
 ## Summary
 
-`ctx/docs/AGENTS.md` defines the structure and boundaries of project documentation in accordance with ADSM levels and ensures consistent distribution of meaning, constraints, structural form, execution dynamics, and engineering invariants within the `docs/` branch.
+`ctx/docs/AGENTS.md` defines the documentation structure and boundaries of the `ctx/docs/` branch and serves as the navigational index for ADSM documentation levels.
