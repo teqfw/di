@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.2 - 2026-03-05
+
+- Replaced `tsconfig.json` with `jsconfig.json` for JavaScript type-checking configuration.
+- Updated package publish list to include `jsconfig.json` and exclude legacy `teqfw.json`.
+- Fixed `test:unit` and `test:integration` scripts to run all `*.test.mjs` files in nested directories.
+- Updated package version metadata to `2.0.2`.
+
 ## 2.0.1 - 2026-03-04
 
 - Regenerated `types.d.ts` according to updated type-map conventions.
