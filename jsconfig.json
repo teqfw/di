@@ -3,11 +3,11 @@
     "baseUrl": ".",
     "checkJs": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "noEmit": true,
     "skipLibCheck": true,
-    "target": "ES2022"
+    "target": "ESNext"
   },
-  "include": ["src", "types.d.ts"]
+  "include": ["src", "test", "types.d.ts"]
 }

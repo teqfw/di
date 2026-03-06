@@ -4,7 +4,7 @@ Path: `./ctx/docs/code/components/container.md`
 
 ## Purpose
 
-This document defines the implementation-level contract of the `Container` component as the **single public entry point** of the `@teqfw/di` product.
+This document defines the implementation-level contract of the `Container` component as the single public entry point of the `@teqfw/di` product.
 
 `Container` is the only externally visible orchestration boundary. All configuration of parsing, resolution, linking, extension pipelines, namespace mapping, and test overrides MUST be performed exclusively through this component.
 
@@ -51,11 +51,19 @@ The method MUST:
 - reject on failure,
 - never return partial results.
 
+The return type MUST remain `Promise<any>`.
+
+This requirement exists because the runtime type of the resolved dependency is determined by the CDC identifier and cannot be inferred from the `get` method signature itself.
+
+The container MUST NOT declare the return type of `get` as `Promise<unknown>`.
+
+Static typing of resolved dependencies MUST be applied at the call site using JSDoc annotations and the package type map defined in `types.d.ts`.
+
 `get` is always asynchronous. Changing this contract constitutes a breaking change.
 
 ### Configuration Methods (Builder Stage Only)
 
-All configuration methods are permitted **only before the first `get` invocation**.
+All configuration methods are permitted only before the first `get` invocation.
 
 After the first `get`, any configuration attempt MUST throw.
 
@@ -107,8 +115,8 @@ Postprocess functions:
 
 - receive the instantiated object,
 - MAY return a different object,
-- execute before lifecycle enforcement.
-- are the normative mechanism for implementing CDC wrapper semantics via `addPostprocess(fn)`.
+- execute before lifecycle enforcement,
+- are the normative mechanism for implementing CDC wrapper semantics via `addPostprocess(fn)`,
 - MAY conditionally apply behavior based on `DepId` metadata, including wrapper markers from `DepId.wrappers`.
 
 Wrapper capability is configuration-enabled through postprocess registration and is not built into CDC syntax parsing logic.
@@ -286,6 +294,7 @@ Container is not responsible for:
 Breaking changes include:
 
 - modifying the signature or async contract of `get`,
+- replacing `Promise<any>` with another declared return type for `get`,
 - exposing Resolver or Parser as public components,
 - allowing post-start reconfiguration,
 - altering pipeline stage order,
