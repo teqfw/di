@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.3 - 2026-03-07 - Package agent interface
+
+- Added `ai/` to the published package file list.
+- Updated package version metadata to `2.0.3`.
+
 ## 2.0.2 - 2026-03-05
 
 - Replaced `tsconfig.json` with `jsconfig.json` for JavaScript type-checking configuration.

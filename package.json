@@ -1,6 +1,6 @@
 {
   "name": "@teqfw/di",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Dependency Injection container for ES6 modules that works in both browser and Node.js apps.",
   "keywords": [
     "dependency injection",
@@ -21,6 +21,7 @@
     "url": "https://github.com/flancer64"
   },
   "files": [
+    "ai/",
     "dist/",
     "src/",
     "CHANGELOG.md",
