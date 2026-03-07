@@ -1,13 +1,11 @@
 # AGENTS.md — Entry Instruction for LLM Agents
 
 - Path: `AGENTS.md`
-- Version: `20260214`
+- Version: `20260307`
 
 ## Purpose
 
 This root file defines the invariant rules of ADSM (Agent-Driven Software Management), establishes the roles of the Human and the Agent, specifies the structure of the cognitive context, and determines operational constraints; it is read by the agent before any project-level instructions.
-
----
 
 ## ADSM Principles
 
@@ -19,33 +17,42 @@ A project consists of two interconnected spaces: the **Cognitive Context** (`./c
 
 The Human defines goals, maintains the context, and approves changes; the Agent interprets the context and modifies the product strictly within its boundaries; each iteration terminates with a report.
 
----
-
 ## Roles
 
 **Human:** defines goals, maintains context, approves modifications, evolves structure.
 **Agent:** executes tasks within context boundaries, modifies the product, maintains internal consistency, produces reports.
 
----
-
 ## Minimal Project Structure
 
 ```text
 /
+├─ ai/          ← agent usage interface of the package
 ├─ ctx/         ← cognitive context
 ├─ AGENTS.md    ← agent instruction
 └─ README.md    ← project description
 ```
 
----
+## Package Agent Interface (`./ai/`)
+
+The directory `./ai/` contains the **Agent Interface of the package**. It provides a compact description of the package usage semantics intended for LLM agents that use the package as a dependency.
+
+The documents in this directory describe:
+
+- the architectural concepts of the package
+- the behavior of the dependency container
+- the syntax and semantics of dependency identifiers
+- extension mechanisms
+- typical usage patterns
+
+The `ai/` directory is **not part of the Cognitive Context**. It belongs to the Software Product and serves as a runtime-readable description of the package interface distributed together with the code.
+
+Agents using the package as a dependency should consult the documents in `./ai/` to understand how the package is intended to be used.
 
 ## Context Dependencies
 
 Agent behavior is determined exclusively by documents located in `./ctx/`.
 
 Recommended documents include: `ctx/AGENTS.md` (structure of the project cognitive context), `ctx/agent/AGENTS.md` (local agent rules), and `ctx/docs/product/AGENTS.md` (base product description).
-
----
 
 ## AGENTS.md Hierarchy
 
@@ -54,8 +61,6 @@ If additional `AGENTS.md` files exist in subdirectories (for example, `ctx/docs/
 ### ADSM Rule
 
 When executing a task in directory `X`, the working context of the agent is the aggregate of all `AGENTS.md` files located along the path from the project root to directory `X`; rules defined in deeper directories override rules from higher levels within their scope; all discovered `AGENTS.md` files must be interpreted as a single coherent rule system; overlaps are resolved according to directory hierarchy; invariants defined in the root `AGENTS.md` are mandatory and cannot be overridden.
-
----
 
 ## Requirements for Local AGENTS.md (Level Maps)
 
@@ -80,25 +85,17 @@ Formatting requirements: the list begins with directories followed by files; dir
 
 The level map defines the boundaries of the governed space, provides documentation navigation without filesystem analysis, and ensures structural uniformity of context levels in accordance with this root document.
 
----
-
 ## `@LLM-DOC` Comments
 
 `@LLM-DOC` defines a protected context embedded in source code; it is permitted only in source files; it must be written in English; the agent must recognize the marker and must not modify or remove it; violation constitutes an `execution error`.
-
----
 
 ## Reporting
 
 Each iteration must produce a report located at `./ctx/agent/report/YYYY/MM/DD/HH-MM-{title}.md`; the report must contain the goal, performed actions, and produced artifacts; absence of a report constitutes an `execution error`; if `ctx/agent/report-template.md` exists, it must be used; an iteration is incomplete until the report is created.
 
----
-
 ## Compatibility
 
 The root `AGENTS.md` defines methodological invariants and is reused without modification across projects; project-specific rules are defined only within `./ctx/` and in `@LLM-DOC`.
-
----
 
 ## `output.md` Files
 
