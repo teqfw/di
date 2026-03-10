@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.4 - 2026-03-10 - LLM-first project positioning
+
+- Reframed `README.md` around TeqFW architecture, runtime linking, and LLM-agent-oriented development.
+- Rewrote `PHILOSOPHY.md` into a concise statement of TeqFW principles for human and machine-oriented development.
+- Updated package version metadata to `2.0.4`.
+
 ## 2.0.3 - 2026-03-07 - Package agent interface
 
 - Added `ai/` to the published package file list.

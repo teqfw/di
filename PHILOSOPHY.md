@@ -1,175 +1,67 @@
 # Philosophy of the TeqFW Platform
 
-**The philosophy of Tequila Framework (TeqFW)** is my personal approach to organizing web application development. I,
-Alex Gusev, have shaped this approach based on my own experience, which focuses on **modular monoliths** with a single
-database. This document reflects that specific context and does not aim to be universal.
+Version: `20260310`
 
-Some of the principles presented may be applicable more broadly, while others may be irrelevant (or even
-counterproductive) outside monolithic architectures. It is important to keep this limitation in mind when interpreting
-the material.
+Tequila Framework (TeqFW) is an architectural philosophy for building web applications in the era of LLM agents. The approach was developed by Alex Gusev based on practical experience designing modular monolith systems with a single database and a unified JavaScript codebase running across browser and server environments. TeqFW focuses specifically on web applications because the browser is the most universal runtime environment available today and JavaScript is the only language natively executed within it.
 
-The document is intended to provide cognitive context for both human and artificial intelligences. It addresses both
-specific aspects of web development and more general software architecture issues, emphasizing the reduction of
-excessive complexity, improved structuring, and adaptability to changes.
+TeqFW is not intended to be a universal software architecture. Its principles are designed specifically for web application development in an environment where LLM agents participate in writing and maintaining code. In other domains such as high-performance distributed systems, embedded software, or traditional human-centric development, different architectural approaches may be more appropriate. TeqFW should therefore be understood as a contextual architecture optimized for web platforms, modular monolith systems, and code produced and evolved with the assistance of LLM agents.
 
-**Tequila Framework (TeqFW)** is not a finished product but an evolving experimental platform. It serves as a testbed
-for the principles outlined here and is actively used in development.
+Within this context the framework emphasizes structural clarity, explicit contracts, and resilience to change. These characteristics make systems easier to evolve over time and easier for both human developers and automated agents to understand.
+
+## Architectural Context
+
+Traditional software architectures assume that humans write and maintain most of the code. Developers rely heavily on implicit knowledge, informal conventions, and flexible interpretation of system structure. In such environments architecture often contains many implicit relationships between modules, configurations, and build tools that experienced developers learn to navigate intuitively.
+
+When LLM agents become active participants in development this assumption changes. Language models analyze source code primarily as structured text and therefore perform best when systems expose predictable structures and explicit relationships between components. Architectures that rely on implicit coupling or hidden wiring mechanisms are significantly harder for automated agents to analyze reliably.
+
+TeqFW therefore prioritizes structural transparency. Instead of relying on implicit module relationships, the architecture encourages explicit contracts, predictable namespaces, and runtime linking mechanisms that make the structure of the application visible. Runtime linking replaces compile-time wiring as the primary mechanism of system composition, allowing dependency relationships to remain explicit and analyzable.
+
+## Why Traditional Architectures Break With LLM Agents
+
+Many widely used software architectures evolved around the assumption that developers manually write and refactor code. As a result these systems often rely on implicit relationships such as static imports, reflection-based dependency discovery, or complex build pipelines. Human developers can usually navigate these structures using experience and intuition.
+
+For automated agents these mechanisms introduce ambiguity. When dependencies are discovered implicitly or hidden behind build configurations the structure of the system becomes difficult to reconstruct from source code alone. This increases the likelihood of incorrect modifications, architectural drift, and inconsistent integration.
+
+TeqFW addresses this problem by emphasizing explicit contracts and runtime composition. Instead of inferring system structure indirectly, the architecture makes dependencies and module relationships visible and deterministic. This shift makes the system easier to analyze, generate, and evolve programmatically.
 
 ## Core Principles of TeqFW
 
-1. **Use a Unified Development Language:** JavaScript (ES6+) is used on both the client and server sides, ensuring code
-   integrity, reducing duplication, and lowering cognitive load.
+The following principles form the foundation of the framework. They are not independent ideas but consequences of the architectural context described above.
 
-2. **Enable Late Binding for Flexibility:** Dynamic dependency management through an object container and ES6 module
-   namespaces. This reduces tight coupling between modules, simplifies system expansion, and makes the code more
-   adaptable.
+### 1. Use a Unified Development Language
 
-3. **Design for Evolutionary Code Resilience:** Code is designed with inevitable changes in mind to minimize adaptation
-   costs and facilitate expansion without modifying existing components.
+TeqFW uses modern JavaScript (ES6+) across the entire application stack. JavaScript is the only language natively supported by browsers and through Node.js it is also widely used for server-side development. Using a single language enables the creation of isomorphic systems where code can operate in both environments. A unified language reduces cognitive overhead, simplifies onboarding, and allows both developers and automated agents to work with a consistent representation of the system.
 
-4. **Separate Data and Logic Functionally:** Isolation of data structures (DTO) and logic handlers. This approach makes
-   code easier to test, maintain, and reuse.
+### 2. Enable Late Binding for Flexibility
 
-5. **Use Namespaces for Structure and Isolation:** Each type of entity—npm packages, ES6 modules, database tables, CLI
-   commands, or configurations—has its own namespace. This ensures clear project structure, reduces conflicts, and
-   simplifies code navigation.
+TeqFW favors late binding of dependencies. Instead of wiring modules together through static imports and compile-time coupling, dependencies are resolved dynamically through a container and namespace-based addressing. Late binding reduces tight coupling between components, simplifies the replacement of implementations, and improves testability by allowing dependencies to be substituted without modifying existing modules. This approach also keeps dependency relationships explicit and therefore easier for automated systems to analyze.
 
-6. **Favor Pure JavaScript Without Compilation:** Using modern JavaScript (ES6+) without TypeScript or version
-   downgrading. The code remains transparent and accessible, simplifying maintenance, library integration, and speeding
-   up development.
+### 3. Design for Evolutionary Code Resilience
 
-7. **Optimize Code and Docs for LLMs:** Code and documentation are organized to be easily analyzed and supplemented by
-   language models. Clear structure, standardized templates, and predictable conventions simplify automation and code
-   generation.
+Software systems inevitably evolve as requirements change. TeqFW encourages designing code structures that can absorb change with minimal modifications to existing components. This is achieved through flexible data processing, clearly defined interaction contracts between components, and reliance on late binding rather than rigid compile-time dependencies. Systems built with these principles remain adaptable and require less refactoring as they grow.
 
-## Principles in Detail
+### 4. Separate Data and Logic Functionally
 
-### Use a Unified Development Language
+TeqFW encourages a clear separation between data structures and logic handlers. Data objects contain state while handlers operate on those objects without maintaining internal state. This separation improves testability, reduces side effects, and allows handlers to be implemented as stateless components. The system becomes a network of data-processing nodes where handlers receive structured data, transform it, and produce new results. Such a structure is easier for both humans and automated agents to analyze and extend.
 
-Using modern JavaScript (ES6+) at all application levels eliminates the need to switch between different languages and
-simplifies knowledge sharing among developers. This is especially important in small teams and projects with limited
-resources, where minimizing cognitive load accelerates work.
+### 5. Use Namespaces for Structure and Isolation
 
-Browsers support only JavaScript (among high-level languages), and thanks to Node.js, it has become widespread in server
-development. This enables writing **isomorphic code** that can be reused on both client and server sides, reducing logic
-duplication.
+Namespaces provide predictable structure and reduce conflicts across large systems. Every entity within the system such as modules, packages, database tables, APIs, and configuration elements exists within a defined namespace. This ensures that each component occupies a clear position within the project hierarchy and allows developers and automated agents to navigate the system more easily. A consistent namespace structure also simplifies integration between independent modules.
 
-A unified language simplifies code maintenance and accelerates the onboarding of new developers into the project.
+### 6. Favor Pure JavaScript with JSDoc Instead of TypeScript Compilation
 
-### Enable Late Binding for Flexibility
+TeqFW favors pure JavaScript with JSDoc annotations instead of TypeScript compilation. This approach preserves the advantages of type systems while avoiding the additional compilation layer introduced by TypeScript. JSDoc annotations allow IDEs and analysis tools to infer types and provide autocompletion while the runtime code remains identical to the source code. In environments where automated agents interact with the codebase this single-layer architecture reduces complexity because there is only one representation of the program instead of separate source and compiled versions.
 
-Late binding ensures architectural flexibility by allowing dynamic dependency management without tight coupling between
-modules. Instead of direct imports, ES6 module namespaces and an object container are used to handle instantiation and
-component replacement at runtime.
+### 7. Optimize Code and Documentation for LLM Agents
 
-This approach reduces the risk of application "breakage" due to changes, simplifies system expansion, and makes the code
-more adaptable. Components can be replaced without deep refactoring, and the dependency mechanism remains transparent
-and predictable.
+TeqFW assumes that LLM agents participate in the development process. To support this collaboration code and documentation are organized to maximize machine analyzability. Predictable file structures, explicit dependency declarations, standardized module conventions, and consistent documentation formats help automated systems analyze the project and generate new components that follow existing architectural rules. These conventions allow LLM agents to assist with code generation, refactoring, and documentation maintenance while preserving architectural consistency.
 
-Late binding also improves testability: modules can be replaced with stubs or alternative implementations, making it
-easier to isolate tests. In team development, this simplifies understanding of complex dependencies and makes system
-maintenance more manageable.
+### 8. Provide Explicit Machine Interfaces
 
-### Design for Evolutionary Code Resilience
-
-Code is designed to adapt to inevitable changes in requirements, APIs, and data with minimal overhead. This is achieved
-through approaches that allow **expanding functionality without significant modifications to existing code**.
-
-Key techniques:
-
-- **Flexible input data processing.** Using function argument destructuring and the "ignore unknown attributes"
-  principle in data structures allows adding new parameters and properties without modifying existing handlers.
-- **Clear interaction contracts.** Separating interfaces from implementations reduces the impact of changes while
-  maintaining system predictability.
-- **Late binding.** Components depend on abstractions rather than specific implementations, enabling code adaptation
-  without directly modifying dependencies (see **Enable Late Binding for Flexibility** principle).
-
-These methods make the code less fragile and allow the system to evolve while reducing complexity and refactoring
-volume.
-
-### Separate Data and Logic Functionally
-
-Code is divided into **data structures (DTO) and logic handlers**, eliminating state within handlers and making them
-independent of data. DTOs contain all necessary information and are passed between handlers that perform operations on
-them.
-
-This approach offers several key advantages:
-
-- **Handlers can be singletons.** Since they do not store state, they are execution-context-independent and can be
-  shared across the entire application.
-- **The program consists of data processing nodes.** The code is structured as a set of functions that receive data,
-  process it, and pass it on.
-- **Changeability through pure logic.** Logic remains separate from data structures, allowing modifications without
-  affecting handlers and vice versa.
-- **Minimized side effects.** Handlers do not depend on global state, making the system more predictable.
-
-### Use Namespaces for Structure and Isolation
-
-Namespaces ensure a clear project structure and prevent conflicts by allowing each entity to reserve its name and build
-its own hierarchy. This principle applies at all levels:
-
-- **Packages and modules.** npm packages and ES6 modules are organized into predictable namespaces, avoiding dependency
-  conflicts.
-- **Files and classes.** File and class names reflect their purpose and relationships with other components, simplifying
-  project navigation and structure.
-- **Database tables.** Table names are structured to avoid collisions and logically group data.
-- **Endpoints and APIs.** Namespaces are used in routing and APIs, ensuring consistent addressing.
-- **Configurations and CLI commands.** Settings and commands are organized hierarchically to prevent duplication.
-
-Code is designed to operate in an environment with other code. Each unit within its namespace reserves a name and builds
-a downward hierarchy, creating a predictable interaction structure.
-
-### Favor Pure JavaScript Without Compilation
-
-Tequila Framework uses modern JavaScript (ES6+) without version downgrading or strict TypeScript typing. The code
-remains in its original form, making it transparent, accessible, and easy to maintain.
-
-Key characteristics:
-
-- **No compilation.** Developers work with pure JavaScript without intermediate transformations, speeding up debugging
-  and simplifying maintenance.
-- **JSDoc instead of TypeScript.** JSDoc annotations allow IDEs to understand data structures and provide
-  autocompletion, maintaining flexibility without strict typing.
-- **Maximum compatibility.** The code easily integrates with any libraries and tools, as it does not require adaptation
-  to strict type contracts.
-- **Fast development.** Changes are immediately reflected in the code without requiring a rebuild, increasing
-  development speed.
-
-### Optimize Code and Docs for LLMs
-
-Architecture, code, and documentation are designed for easy analysis and use by language models (LLM). This improves the
-efficiency of **automatic code completion, generation of template solutions, and integration with AI tools**.
-
-For this, the following practices are applied:
-
-- **Predictable project structure.** Clear file organization, logical naming, and standardized conventions.
-- **Unified code templates.** Repetitive structures and a predictable format help models understand and supplement the
-  code.
-- **Optimized abstraction depth.** Code is organized to maintain modularity while avoiding excessive nesting.
-- **Automated annotations.** JSDoc and standardized comments ensure precise code generation and documentation.
-
-This approach allows LLM agents to:
-
-- Quickly analyze code and suggest corrections.
-- Automatically supplement documentation and comment code.
-- Generate new modules according to the project's architectural standards.
-- Simplify CI/CD integration by checking code compliance with style and conventions.
-
-LLMs become part of the development process, helping not only with writing code but also keeping it up to date, reducing
-developers' routine workload.
+Traditional software systems expose interfaces for users and other systems such as user interfaces, APIs, and command-line tools. When automated agents become part of the development process it becomes useful to expose a similar interface for machines. TeqFW therefore encourages software packages to include an explicit machine interface describing how the system should be used. This interface typically takes the form of structured documentation distributed alongside the package and designed specifically for LLM agents. Such documentation describes the public contract of the package, expected integration patterns, and architectural assumptions in a concise and analyzable format. Human developers may rely on README files and source code while automated agents can rely on dedicated machine-oriented documentation.
 
 ## Conclusion
 
-The principles outlined in this document form an approach to **modular monolith** development, focused on
-predictability, structure, and adaptability. They enable building architectures where code remains flexible,
-transparent, and easily extensible.
+The TeqFW philosophy describes an approach to building modular monolith web applications in a development environment where LLM agents assist in producing and maintaining code. The framework emphasizes predictable architecture, explicit dependency relationships, runtime flexibility through late binding, and structural clarity that benefits both human developers and automated systems.
 
-These ideas do not require complex theoretical justifications or significant time investments for validation. They aim
-to simplify integration, reduce unnecessary complexity, and enhance the potential for automation. **Standardized
-structures, predictable namespaces, and development without transpilation** create an environment where the code is
-understandable both for developers and language models (LLM).
-
-The **Tequila Framework (TeqFW)** platform demonstrates these principles in action. While still evolving, it already
-supports real-world development. This approach may serve not only as a foundation for proprietary tools, but also as
-inspiration for rethinking conventional software architecture, prioritizing clarity, modularity, and adaptability over
-unnecessary complexity.
+By combining explicit contracts, namespace-driven organization, runtime linking, and machine-oriented documentation, TeqFW explores how software architecture can evolve when automated agents become a permanent part of the development process. Rather than replacing traditional architectures, the framework demonstrates how systems may be structured differently when code generation and maintenance increasingly involve collaboration between humans and intelligent agents.

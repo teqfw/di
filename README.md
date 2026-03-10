@@ -3,17 +3,141 @@
 ![npms.io](https://img.shields.io/npm/dm/@teqfw/di)
 ![jsdelivr](https://img.shields.io/jsdelivr/npm/hm/@teqfw/di)
 
-Deterministic runtime DI container for native ES modules.
+**Runtime dependency linker for JavaScript applications designed for development with LLM agents.**
 
-`@teqfw/di` uses explicit dependency contracts (CDC strings) and module-level dependency descriptors (`__deps__`).
-It does not infer dependencies from constructor signatures.
+`@teqfw/di` is the core infrastructure of the **Tequila Framework (TeqFW)** — an architectural approach for building web applications in which **humans design system architecture and specifications, while LLM agents generate and maintain the implementation.**
 
-## Version Line
+Instead of wiring modules through static imports, TeqFW applications declare **explicit dependency contracts**, and the container performs **deterministic runtime linking**.
 
-This branch is the v2 line.
+The result is an application architecture that is easier to:
 
-- package version: `2.0.0`
-- changelog starts from `2.0.0`
+- analyze
+- generate
+- refactor
+- extend
+
+— both for **human developers and AI agents**.
+
+## The Shift in Software Development
+
+Large language models are becoming a permanent part of the development process.
+
+However, most software architectures were designed for **human-written code**, not for **code generated and maintained by AI agents**.
+
+Typical JavaScript applications rely on:
+
+- static imports
+- implicit dependency graphs
+- tight coupling to file structure
+- constructor-based dependency inference
+
+These patterns work well for humans but are difficult for automated agents to reason about reliably.
+
+**TeqFW proposes a different architecture.**
+
+Modules declare **explicit dependency contracts**, and a runtime container resolves those contracts deterministically.
+
+This transforms the dependency graph into something that can be **analyzed, generated and modified programmatically.**
+
+## What This Library Provides
+
+`@teqfw/di` implements the runtime container that enables this architecture.
+
+It provides:
+
+- deterministic runtime linking of ES modules
+- explicit dependency contracts (**CDC — Canonical Dependency Codes**)
+- module dependency descriptors (`__deps__`)
+- namespace-based module resolution
+- runtime lifecycle management
+- wrapper-based behavioral extensions
+
+The container acts as a **runtime linker for JavaScript applications**.
+
+## Designed for Development with LLM Agents
+
+When software is generated or maintained by LLM agents, several structural problems appear.
+
+| Problem          | Traditional Architecture | TeqFW Approach     |
+| ---------------- | ------------------------ | ------------------ |
+| Dependencies     | implicit imports         | explicit contracts |
+| Dependency graph | implicit                 | deterministic      |
+| Refactoring      | fragile                  | stable             |
+| Testing          | manual wiring            | container driven   |
+| AI compatibility | accidental               | intentional        |
+
+TeqFW structures the application so that **LLM agents can reliably understand and modify the system.**
+
+## Agent-Driven Implementation
+
+Starting from version **2.0.0**, the source code of this library is **written primarily by Codex agents**.
+
+The development workflow follows **specification-driven development**:
+
+1. The human architect defines **product specifications**
+2. LLM agents generate the implementation
+3. The generated code is reviewed and integrated
+
+This workflow follows the **ADSM methodology (Agent-Driven Software Management)** developed by **Alex Gusev**.
+
+Earlier versions of the library (<2.0.0) were written manually.
+The current version demonstrates how software can be developed using **human-defined architecture and AI-generated code**.
+
+## Learn the Architecture (Interactive Onboarding)
+
+Understanding this architecture can take time.
+
+To make onboarding easier, an **interactive AI assistant** [is available](https://fly.wiredgeese.com/flancer/gpt/teqfw/guide/di/).
+
+The assistant can explain:
+
+- how the container works
+- what Canonical Dependency Codes are
+- how modules declare dependencies
+- how runtime linking works
+- how to integrate the library in real applications
+
+The assistant acts as **interactive documentation** for the project.
+
+Custom onboarding assistants like this can also be created **as a service** for other projects and libraries.
+
+## Agent Interface (Documentation for LLM Agents)
+
+This package includes **agent interface documentation** intended for LLM agents that use the library as an npm dependency.
+
+These documents are distributed inside the package in:
+
+```txt
+./ai/
+```
+
+The files in this directory describe the **public interface of the package in an agent-friendly form**.
+
+They explain:
+
+- the container API
+- dependency descriptors (`__deps__`)
+- Canonical Dependency Codes (CDC)
+- dependency resolution behavior
+- integration patterns
+
+Human developers typically read the README and source code, while **LLM agents can rely on the documentation in `./ai/`.**
+
+## Tequila Framework Philosophy
+
+`@teqfw/di` is the core building block of the **Tequila Framework (TeqFW)** ecosystem.
+
+TeqFW is based on several architectural principles:
+
+- runtime late binding between components
+- namespace-based module organization
+- modular monolith architecture
+- pure JavaScript without compilation
+- system structures optimized for collaboration with LLM agents
+
+Full philosophy:
+
+`PHILOSOPHY.md`
 
 ## Installation
 
@@ -21,13 +145,13 @@ This branch is the v2 line.
 npm install @teqfw/di
 ```
 
-## Quick Start
+## Quick Example
 
-### 1. Define modules with `__deps__`
+### Define modules
 
 `src/App/Child.mjs`
 
-```js
+```javascript
 export default function App_Child() {
   return { name: "child" };
 }
@@ -35,7 +159,7 @@ export default function App_Child() {
 
 `src/App/Root.mjs`
 
-```js
+```javascript
 export const __deps__ = {
   child: "App_Child$",
 };
@@ -48,9 +172,9 @@ export default function App_Root({ child }) {
 }
 ```
 
-### 2. Configure container in composition root
+### Configure container
 
-```js
+```javascript
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import Container from "@teqfw/di";
@@ -59,68 +183,73 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const container = new Container();
+
 container.addNamespaceRoot("App_", path.resolve(__dirname, "./src/App"), ".mjs");
 
 const root = await container.get("App_Root$");
-console.log(root.name); // root
-console.log(root.child.name); // child
-console.log(Object.isFrozen(root)); // true
+
+console.log(root.name);
+console.log(root.child.name);
 ```
 
-## Dependency Descriptor (`__deps__`)
+The container:
 
-`__deps__` is a static module export:
+- loads modules
+- resolves dependency contracts
+- constructs the object graph
+- returns **frozen linked objects**
 
-```js
+## Dependency Contracts (`__deps__`)
+
+Modules declare dependencies using a static export.
+
+```javascript
 export const __deps__ = {
-  localName: "Some_CDC",
+  localName: "Dependency_CDC",
 };
 ```
 
-Rules used by container runtime:
+Rules:
 
-- if `__deps__` is missing: module has zero dependencies
-- keys are local argument names passed into factory/class constructor
-- values are CDC strings
-- dependencies are resolved recursively before instantiation
+- if `__deps__` is absent — module has no dependencies
+- keys correspond to constructor argument names
+- values are CDC dependency identifiers
+- dependencies are resolved recursively
 
-## CDC Grammar (Default Profile)
+## Canonical Dependency Codes (CDC)
 
-Surface form:
+CDC identifiers describe **how dependencies should be resolved**.
 
-```text
+General form:
+
+```txt
 [PlatformPrefix]ModuleName[__ExportName][LifecycleAndWrappers]
+```
+
+Examples:
+
+```txt
+App_Service
+App_Service$
+App_Service__build$$
+App_Service$$_wrapLog_wrapTrace
+node_fs
+npm_lodash
 ```
 
 Where:
 
-- `PlatformPrefix`: `node_` | `npm_` | omitted (`teq` by default)
-- `Export segment`: `__ExportName`
-- `Lifecycle marker`: `$` | `$$` | `$$$`
-- `Wrappers`: `_<wrapperId>` suffixes after lifecycle marker
-
-Examples:
-
-- `App_Service` - whole module (`as-is`)
-- `App_Service$` - default export as factory with lifecycle marker
-- `App_Service__build$$` - named export `build` with lifecycle marker
-- `App_Service$$_wrapLog_wrapTrace` - wrapper chain in declared order
-- `node_fs` - Node builtin
-- `npm_lodash` - npm package
-
-Notes:
-
-- explicit `teq_` prefix is forbidden
-- wrappers without lifecycle marker are invalid
-- parser is deterministic and fail-fast
+- `$` singleton lifecycle
+- `$$` new instance lifecycle
+- wrappers modify runtime behavior
 
 ## Public API
 
-```js
+```javascript
 const container = new Container();
 ```
 
-Builder stage methods (only before first `get`):
+Configuration methods (before first `get`):
 
 - `setParser(parser)`
 - `addNamespaceRoot(prefix, target, defaultExt)`
@@ -128,137 +257,79 @@ Builder stage methods (only before first `get`):
 - `addPostprocess(fn)`
 - `enableLogging()`
 - `enableTestMode()`
-- `register(cdc, mock)` (only in test mode)
+- `register(cdc, mock)`
 
-Resolution:
+Dependency resolution:
 
-- `await container.get(cdc)`
+```javascript
+await container.get(cdc);
+```
 
-Behavioral guarantees:
+Behavior:
 
-- configuration is locked after first `get`
-- fail-fast pipeline
-- deterministic linking under identical contracts and config
-- produced values are frozen
-- container enters failed state after fatal linking error
+- deterministic linking
+- fail-fast resolution pipeline
+- immutable returned objects
+- container enters failed state on fatal errors
 
 ## Wrappers
 
-Wrappers are postprocess plugins registered during container configuration.
-They are activated by wrapper markers in the CDC string and applied to the produced value after instantiation.
+Wrappers allow cross-cutting behavior to be applied declaratively.
 
-Wrappers:
+Example CDC:
 
-- are **container-level plugins**
-- are **not module exports**
-- are applied in declared order
-- must return synchronously
-- run before lifecycle enforcement and freeze
-
-Surface form:
-
-```text
-ModuleName$$_wrapperA_wrapperB
+```txt
+App_Service$$_log_trace
 ```
 
-Wrappers are part of the dependency contract (CDC).
-They declaratively modify how a resolved value behaves.
+Wrappers can implement:
 
----
-
-### Example: Logging Wrapper
-
-Suppose we want to log all method calls of a service without modifying the service itself.
-
-#### Service module
-
-```js
-export default function App_Service() {
-  return {
-    sum(a, b) {
-      return a + b;
-    },
-    multiply(a, b) {
-      return a * b;
-    },
-  };
-}
-```
-
-#### Container configuration
-
-```js
-container.addPostprocessWrapper("logIO", (value) => {
-  return new Proxy(value, {
-    get(target, prop, receiver) {
-      const original = Reflect.get(target, prop, receiver);
-
-      if (typeof original !== "function") {
-        return original;
-      }
-
-      return function (...args) {
-        console.log(`[CALL] ${String(prop)} ->`, args);
-        const result = original.apply(this, args);
-        console.log(`[RETURN] ${String(prop)} ->`, result);
-        return result;
-      };
-    },
-  });
-});
-```
-
-#### Request
-
-```js
-const service = await container.get("App_Service$$_logIO");
-
-service.sum(2, 3);
-// [CALL] sum -> [2, 3]
-// [RETURN] sum -> 5
-```
-
-The module remains unaware of logging.
-The wrapper applies cross-cutting behavior declaratively through CDC.
-
-This allows:
-
+- logging
+- metrics
 - tracing
-- metrics collection
-- access control
+- security checks
 - behavioral instrumentation
 
-without modifying business logic or module structure.
+This acts as a lightweight **DI-level AOP mechanism.**
 
-Wrappers therefore act as a declarative DI-level AOP mechanism.
+## Test Mode
 
-## Test Mode and Mocks
-
-```js
+```javascript
 container.enableTestMode();
-container.register("App_Service$", { name: "mock-service" });
+
+container.register("App_Service$", mockService);
 ```
 
-Mock lookup uses canonical parsed dependency identity and is applied before resolver/instantiation.
+Mocks are resolved before module instantiation.
 
 ## Browser Usage
-
-ESM via jsDelivr:
 
 ```html
 <script type="module">
   import Container from "https://cdn.jsdelivr.net/npm/@teqfw/di@2/+esm";
+
   const container = new Container();
 </script>
 ```
 
-## Documentation Source
+## Documentation
 
-Normative docs live in `ctx/`:
+Detailed documentation lives in `ctx/`:
 
-- product overview: `ctx/docs/product/overview.md`
-- default CDC profile: `ctx/docs/product/default-cdc-profile.md`
-- grammar: `ctx/docs/architecture/cdc-profile/default/grammar.md`
-- transformation: `ctx/docs/architecture/cdc-profile/default/transformation.md`
-- validation: `ctx/docs/architecture/cdc-profile/default/validation.md`
-- container contract: `ctx/docs/code/components/container.md`
+- `ctx/docs/product/overview.md`
+- `ctx/docs/product/default-cdc-profile.md`
+- `ctx/docs/architecture/cdc-profile/default/grammar.md`
+- `ctx/docs/architecture/cdc-profile/default/transformation.md`
+- `ctx/docs/architecture/cdc-profile/default/validation.md`
+- `ctx/docs/code/components/container.md`
+
+## Author
+
+**Alex Gusev**
+
+Creator of:
+
+- **Tequila Framework (TeqFW)**
+- **ADSM (Agent-Driven Software Management)**
+
+The project explores how software architecture evolves when **LLM agents become active participants in the development process**.
