@@ -50,13 +50,14 @@ This mechanism separates module implementation from dependency binding and allow
 Agents should read the documents in this directory in the following order:
 
 1. **AGENTS.md** — overview of the package and navigation of the Agent Interface.
-2. **concepts.md** — architectural concepts and design principles.
-3. **container.md** — container responsibilities and dependency resolution pipeline.
-4. **dependency-id.md** — syntax and semantics of dependency identifiers.
-5. **extensions.md** — extension mechanisms such as preprocessors and wrappers.
-6. **usage.md** — minimal usage scenarios and examples.
+2. **package-api.ts** — machine-readable contract of the supported programmatic API, public entrypoints, structural contracts, and internal exclusions.
+3. **concepts.md** — architectural concepts and design principles.
+4. **container.md** — container responsibilities and dependency resolution pipeline.
+5. **dependency-id.md** — syntax and semantics of dependency identifiers.
+6. **extensions.md** — extension mechanisms such as preprocessors and wrappers.
+7. **usage.md** — minimal usage scenarios and examples.
 
-This sequence reflects the conceptual flow required to understand the package: architectural model → operational mechanism → dependency addressing → extension points → practical usage.
+This sequence reflects the intended agent workflow: contract surface first, then architectural model, operational mechanism, dependency addressing, extension points, and practical usage.
 
 ## Interface Scope
 
