@@ -19,6 +19,9 @@ import TeqFw_Di_Internal_Logger, {TeqFw_Di_Internal_Logger_Noop} from './Interna
  * Executes immutable linking pipeline:
  * parse -> preprocess -> resolve graph -> instantiate -> postprocess ->
  * lifecycle -> freeze -> return.
+ *
+ * @LLM-DOC
+ * Spec: ./ctx/docs/code/components/container.md
  */
 export default class TeqFw_Di_Container {
     /**
@@ -271,7 +274,7 @@ export default class TeqFw_Di_Container {
          * Resolves dependency by CDC and returns frozen linked value.
          *
          * @param {string} cdc
-         * @returns {Promise<unknown>}
+         * @returns {Promise<any>}
          */
         this.get = async function (cdc) {
             if (state === 'failed') {
