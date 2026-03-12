@@ -25,7 +25,6 @@
     "dist/",
     "src/",
     "CHANGELOG.md",
-    "jsconfig.json",
     "LICENSE",
     "README.md",
     "types.d.ts"
