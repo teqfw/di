@@ -8,4 +8,4 @@ const TeqFw_Di_Enum_Composition = {
     FACTORY: 'F',
 };
 
-export default TeqFw_Di_Enum_Composition;
+export default Object.freeze(TeqFw_Di_Enum_Composition);

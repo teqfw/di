@@ -3,23 +3,23 @@
 import TeqFw_Di_Enum_Composition from '../Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../Enum/Life.mjs';
 import TeqFw_Di_Enum_Platform from '../Enum/Platform.mjs';
-import TeqFw_Di_Dto_DepId from '../Dto/DepId.mjs';
+import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../Dto/DepId.mjs';
 
 /**
- * Parser for CDC identifiers into immutable dependency identity DTO.
- */
+ * Parser for CDC identifiers into frozen dependency identity DTO.
+*/
 export default class TeqFw_Di_Def_Parser {
     /**
      * Creates parser instance.
      */
     constructor() {
-        /** @type {TeqFw_Di_DepId} Factory used to construct dependency identity DTO. */
-        const depIdFactory = new TeqFw_Di_Dto_DepId();
+        /** @type {TeqFw_Di_Dto_DepId$Factory} Factory used to construct dependency identity DTO. */
+        const depIdFactory = new TeqFw_Di_Dto_DepId_Factory();
         /** @type {{log(message: string): void}|null} */
         let logger = null;
 
         /**
-         * Parses one CDC identifier and returns normalized immutable dependency DTO.
+         * Parses one CDC identifier and returns normalized frozen dependency DTO.
          *
          * @param {string} cdc CDC identifier string.
          * @returns {TeqFw_Di_DepId$DTO}
@@ -128,7 +128,7 @@ export default class TeqFw_Di_Def_Parser {
                 life,
                 wrappers,
                 origin,
-            }, {immutable: true});
+            });
             if (logger) logger.log(`Parser.parse: produced='${depId.platform}::${depId.moduleName}'.`);
             return depId;
         };

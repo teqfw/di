@@ -4,12 +4,12 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 
 import TeqFw_Di_Container from '../../src/Container.mjs';
-import TeqFw_Di_Dto_DepId from '../../src/Dto/DepId.mjs';
+import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../../src/Dto/DepId.mjs';
 import TeqFw_Di_Enum_Composition from '../../src/Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../../src/Enum/Life.mjs';
 import TeqFw_Di_Enum_Platform from '../../src/Enum/Platform.mjs';
 
-const depIdFactory = new TeqFw_Di_Dto_DepId();
+const depIdFactory = new TeqFw_Di_Dto_DepId_Factory();
 
 /**
  * @param {Partial<TeqFw_Di_DepId$DTO>} [patch]
@@ -25,7 +25,7 @@ function createDepId(patch = {}) {
         wrappers: [],
         origin: 'unit-test',
         ...patch,
-    }, {immutable: true});
+    });
 }
 
 describe('TeqFw_Di_Container', () => {

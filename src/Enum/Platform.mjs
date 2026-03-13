@@ -9,4 +9,4 @@ const TeqFw_Di_Enum_Platform = {
     NPM: 'npm',
 };
 
-export default TeqFw_Di_Enum_Platform;
+export default Object.freeze(TeqFw_Di_Enum_Platform);

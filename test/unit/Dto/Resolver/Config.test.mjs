@@ -2,14 +2,14 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import * as ModuleConfig from '../../../../src/Dto/Resolver/Config.mjs';
-import Factory, {DTO} from '../../../../src/Dto/Resolver/Config.mjs';
-import NamespaceFactory, {DTO as NamespaceDTO} from '../../../../src/Dto/Resolver/Config/Namespace.mjs';
+import DTO, {Factory} from '../../../../src/Dto/Resolver/Config.mjs';
+import NamespaceDTO, {Factory as NamespaceFactory} from '../../../../src/Dto/Resolver/Config/Namespace.mjs';
 
 describe('TeqFw_Di_Dto_Resolver_Config', () => {
     const factory = new Factory();
 
     it('exports only factory and DTO', () => {
-        assert.deepStrictEqual(Object.keys(ModuleConfig).sort(), ['DTO', 'default']);
+        assert.deepStrictEqual(Object.keys(ModuleConfig).sort(), ['Factory', 'default']);
     });
 
     it('factory exposes only create public method', () => {
@@ -96,21 +96,17 @@ describe('TeqFw_Di_Dto_Resolver_Config', () => {
         assert.doesNotThrow(() => factory.create({nodeModulesRoot: {unexpected: true}}));
     });
 
-    it('is mutable by default', () => {
+    it('is frozen after creation', () => {
         const dto = factory.create({});
-        assert.ok(!Object.isFrozen(dto));
-        assert.ok(!Object.isFrozen(dto.namespaces));
-        dto.nodeModulesRoot = '/changed';
-        dto.namespaces.push({unexpected: true});
-        assert.strictEqual(dto.nodeModulesRoot, '/changed');
-        assert.strictEqual(dto.namespaces.length, 1);
+        assert.ok(Object.isFrozen(dto));
+        assert.ok(Object.isFrozen(dto.namespaces));
     });
 
-    it('is frozen in immutable mode at factory structural level', () => {
-        const dto = factory.create(
-            {namespaces: [{prefix: 'A_', target: '/a', defaultExt: 'mjs'}], nodeModulesRoot: '/root'},
-            {immutable: true},
-        );
+    it('freezes nested namespace DTOs as well', () => {
+        const dto = factory.create({
+            namespaces: [{prefix: 'A_', target: '/a', defaultExt: 'mjs'}],
+            nodeModulesRoot: '/root',
+        });
         assert.ok(Object.isFrozen(dto));
         assert.ok(Object.isFrozen(dto.namespaces));
         assert.ok(Object.isFrozen(dto.namespaces[0]));

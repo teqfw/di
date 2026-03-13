@@ -5,7 +5,7 @@ import TeqFw_Di_Enum_Life from '../Enum/Life.mjs';
 import TeqFw_Di_Enum_Platform from '../Enum/Platform.mjs';
 
 /**
- * DTO and factory for dependency identity records.
+ * DTO for dependency identity records and its factory.
  */
 
 /** @type {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} */
@@ -23,7 +23,7 @@ const LIFE_VALUES = new Set(Object.values(TeqFw_Di_Enum_Life));
 /**
  * Runtime DTO for parsed dependency identity.
  */
-export class DTO {
+export default class DTO {
     /** @type {string} Resolved module namespace. */
     moduleName;
 
@@ -47,17 +47,16 @@ export class DTO {
 }
 
 /**
- * Factory for dependency identity DTO with optional immutability.
+ * Factory for immutable dependency identity DTO.
  */
-export default class Factory {
+export class Factory {
     /**
-     * Creates normalized dependency identity DTO.
+     * Creates normalized frozen dependency identity DTO.
      *
      * @param {unknown} [input]
-     * @param {{immutable?: boolean}} [options]
      * @returns {TeqFw_Di_DepId$DTO}
      */
-    create(input, options) {
+    create(input) {
         /** @type {Record<string, unknown>} */
         const source = (input && typeof input === 'object')
             ? /** @type {Record<string, unknown>} */ (input)
@@ -121,11 +120,7 @@ export default class Factory {
                 ? source.origin
                 : '';
 
-        if (options?.immutable === true) {
-            Object.freeze(dto.wrappers);
-            Object.freeze(dto);
-        }
-
-        return dto;
+        Object.freeze(dto.wrappers);
+        return Object.freeze(dto);
     }
 }

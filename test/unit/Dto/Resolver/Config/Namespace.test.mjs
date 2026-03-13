@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import * as Module from '../../../../../src/Dto/Resolver/Config/Namespace.mjs';
-import Factory, {DTO} from '../../../../../src/Dto/Resolver/Config/Namespace.mjs';
+import DTO, {Factory} from '../../../../../src/Dto/Resolver/Config/Namespace.mjs';
 
 describe('TeqFw_Di_Dto_Resolver_Config_Namespace', () => {
     const factory = new Factory();
 
     it('exports only factory and DTO', () => {
-        assert.deepStrictEqual(Object.keys(Module).sort(), ['DTO', 'default']);
+        assert.deepStrictEqual(Object.keys(Module).sort(), ['Factory', 'default']);
     });
 
     it('factory exposes only create public method', () => {
@@ -55,15 +55,13 @@ describe('TeqFw_Di_Dto_Resolver_Config_Namespace', () => {
         assert.strictEqual(Object.prototype.hasOwnProperty.call(dto, 'extra'), false);
     });
 
-    it('is mutable by default', () => {
+    it('is frozen after creation', () => {
         const dto = factory.create({});
-        assert.ok(!Object.isFrozen(dto));
-        dto.prefix = 'Changed_';
-        assert.strictEqual(dto.prefix, 'Changed_');
+        assert.ok(Object.isFrozen(dto));
     });
 
-    it('is shallow frozen in immutable mode', () => {
-        const dto = factory.create({}, {immutable: true});
+    it('rejects mutation after creation', () => {
+        const dto = factory.create({});
         assert.ok(Object.isFrozen(dto));
         assert.throws(() => {
             dto.prefix = 'Changed_';

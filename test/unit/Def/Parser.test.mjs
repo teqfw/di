@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Def_Parser from '../../../src/Def/Parser.mjs';
-import {DTO as TeqFw_Di_Dto_DepId_DTO} from '../../../src/Dto/DepId.mjs';
+import TeqFw_Di_Dto_DepId_DTO from '../../../src/Dto/DepId.mjs';
 import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
 import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';

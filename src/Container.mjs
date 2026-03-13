@@ -1,7 +1,7 @@
 // @ts-check
 
 import TeqFw_Di_Def_Parser from './Def/Parser.mjs';
-import TeqFw_Di_Dto_Resolver_Config from './Dto/Resolver/Config.mjs';
+import {Factory as TeqFw_Di_Dto_Resolver_Config_Factory} from './Dto/Resolver/Config.mjs';
 import TeqFw_Di_Resolver from './Container/Resolver.mjs';
 import TeqFw_Di_Container_Resolve_GraphResolver from './Container/Resolve/GraphResolver.mjs';
 import TeqFw_Di_Container_Instantiate_Instantiator from './Container/Instantiate/Instantiator.mjs';
@@ -34,7 +34,7 @@ export default class TeqFw_Di_Container {
         const preprocess = [];
         /** @type {((value: unknown) => unknown)[]} */
         const postprocess = [];
-        /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace$DTO$[]} */
+        /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace$DTO[]} */
         const namespaceRoots = [];
         /** @type {Map<string, unknown>} */
         const mockRegistry = new Map();
@@ -43,8 +43,8 @@ export default class TeqFw_Di_Container {
 
         /** @type {TeqFw_Di_Def_Parser} */
         let parser = new TeqFw_Di_Def_Parser();
-        /** @type {TeqFw_Di_Dto_Resolver_Config} */
-        const configFactory = new TeqFw_Di_Dto_Resolver_Config();
+        /** @type {TeqFw_Di_Dto_Resolver_Config$Factory} */
+        const configFactory = new TeqFw_Di_Dto_Resolver_Config_Factory();
         /** @type {TeqFw_Di_Resolver|undefined} */
         let resolver;
         /** @type {TeqFw_Di_Container_Resolve_GraphResolver|undefined} */
@@ -172,7 +172,7 @@ export default class TeqFw_Di_Container {
             state = 'operational';
             const resolverConfig = configFactory.create({
                 namespaces: namespaceRoots,
-            }, {immutable: true});
+            });
             if (typeof parser.setLogger === 'function') parser.setLogger(logger);
             resolver = new TeqFw_Di_Resolver({config: resolverConfig, logger});
             graphResolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser, resolver, logger});

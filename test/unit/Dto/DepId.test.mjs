@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import Factory, {DTO} from '../../../src/Dto/DepId.mjs';
+import DTO, {Factory} from '../../../src/Dto/DepId.mjs';
 import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
 import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
@@ -75,20 +75,14 @@ describe('TeqFw_Di_Dto_DepId', () => {
         assert.notStrictEqual(dto.wrappers, wrappers);
     });
 
-    it('freezes wrappers in immutable mode', () => {
-        const dto = factory.create({wrappers: ['w1']}, {immutable: true});
+    it('always freezes wrappers', () => {
+        const dto = factory.create({wrappers: ['w1']});
         assert.ok(Object.isFrozen(dto.wrappers));
     });
 
-    it('freezes DTO in immutable mode', () => {
-        const dto = factory.create({}, {immutable: true});
+    it('always freezes DTO', () => {
+        const dto = factory.create({});
         assert.ok(Object.isFrozen(dto));
-    });
-
-    it('does not freeze in mutable mode', () => {
-        const dto = factory.create({}, {immutable: false});
-        assert.ok(!Object.isFrozen(dto));
-        assert.ok(!Object.isFrozen(dto.wrappers));
     });
 
     it('does not throw on invalid input', () => {

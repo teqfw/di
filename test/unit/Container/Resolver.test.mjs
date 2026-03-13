@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Resolver from '../../../src/Container/Resolver.mjs';
-import DepIdFactory from '../../../src/Dto/DepId.mjs';
-import ResolverConfigFactory from '../../../src/Dto/Resolver/Config.mjs';
+import {Factory as DepIdFactory} from '../../../src/Dto/DepId.mjs';
+import {Factory as ResolverConfigFactory} from '../../../src/Dto/Resolver/Config.mjs';
 import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
 
 const depIdFactory = new DepIdFactory();
@@ -240,8 +240,12 @@ describe('TeqFw_Di_Resolver', () => {
             io.setModule('/lib/group-web/App/Repo.mjs', {});
             const resolver = createResolver(config, io.importer);
             await resolver.resolve(createDepId({moduleName: 'Ns_Group_Web_App_Service'}));
-            config.namespaces[1].target = '/hijacked';
-            config.namespaces.push({prefix: 'Ns_New_', target: '/new', defaultExt: '.mjs'});
+            assert.throws(() => {
+                config.namespaces[1].target = '/hijacked';
+            }, TypeError);
+            assert.throws(() => {
+                config.namespaces.push({prefix: 'Ns_New_', target: '/new', defaultExt: '.mjs'});
+            }, TypeError);
             await resolver.resolve(createDepId({moduleName: 'Ns_Group_Web_App_Repo'}));
             await assert.rejects(resolver.resolve(createDepId({moduleName: 'Ns_New_Service'})), Error);
             assert.deepStrictEqual(io.calls, ['/lib/group-web/App/Service.mjs', '/lib/group-web/App/Repo.mjs']);
