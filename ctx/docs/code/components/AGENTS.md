@@ -1,7 +1,7 @@
 # Code Components (`./ctx/docs/code/components/`)
 
 Path: `./ctx/docs/code/components/AGENTS.md`
-Version: `20260223`
+Version: `20260313`
 
 ## Purpose
 
@@ -16,6 +16,8 @@ This level contains component contracts only. It does not define generic coding 
 - `AGENTS.md` — this document, defining the purpose, boundaries, and navigational map of the `components/` level.
 - `container.md` — container implementation contract.
 - `depid.md` — canonical dependency identity (`DepId`) implementation-level invariants and rules.
+- `logging.md` — logging component implementation contract and its behavioral boundaries.
+- `namespace-registry.md` — namespace registry implementation contract and its responsibility boundaries.
 - `parser.md` — parser implementation contract.
 - `resolver.md` — resolver implementation contract.
 

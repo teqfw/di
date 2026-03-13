@@ -1,7 +1,7 @@
 # Code Conventions (`./ctx/docs/code/convention/`)
 
 Path: `./ctx/docs/code/convention/AGENTS.md`
-Version: `20260223`
+Version: `20260313`
 
 ## Purpose
 

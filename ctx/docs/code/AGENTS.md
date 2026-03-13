@@ -1,7 +1,7 @@
 # Code Documentation (`./ctx/docs/code/`)
 
 Path: `./ctx/docs/code/AGENTS.md`
-Version: `20260305`
+Version: `20260313`
 
 ## Purpose
 
