@@ -1,11 +1,11 @@
-# Code Conventions (`./ctx/docs/code/conventions/`)
+# Code Conventions (`./ctx/docs/code/convention/`)
 
-Path: `./ctx/docs/code/conventions/AGENTS.md`
+Path: `./ctx/docs/code/convention/AGENTS.md`
 Version: `20260223`
 
 ## Purpose
 
-The `ctx/docs/code/conventions/` directory contains implementation-level conventions that define normative engineering patterns and code organization rules used across the project.
+The `ctx/docs/code/convention/` directory contains implementation-level conventions that define normative engineering patterns and code organization rules used across the project.
 
 ## Level Boundaries
 
@@ -20,4 +20,4 @@ This level specifies code and implementation conventions only. It does not defin
 
 ## Summary
 
-`ctx/docs/code/conventions/` provides structured access to engineering conventions and serves as the entry point for project- and framework-specific code convention documents.
+`ctx/docs/code/convention/` provides structured access to engineering conventions and serves as the entry point for project- and framework-specific code convention documents.

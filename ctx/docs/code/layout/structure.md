@@ -190,7 +190,7 @@ JSDoc is the only permitted structural typing mechanism.
 
 Absence of required JSDoc constitutes structural non-compliance.
 
-Detailed typing discipline is defined in `ctx/docs/code/conventions/jsdoc-spec.md`.
+Detailed typing discipline is defined in `ctx/docs/code/convention/jsdoc-spec.md`.
 
 ## 9. Default Parser Location
 

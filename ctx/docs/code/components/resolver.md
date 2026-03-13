@@ -17,7 +17,7 @@ The resolver implementation MUST conform to:
 - `ctx/docs/architecture/constraints.md`
 - `ctx/docs/code/layout/structure.md`
 - `ctx/docs/environment/overview.md`
-- `ctx/docs/code/conventions/teqfw/dto.md`
+- `ctx/docs/code/convention/teqfw/dto.md`
 
 ## Constructor Contract
 
@@ -109,7 +109,7 @@ Configuration is provided at construction time via dependency descriptor.
 Configuration DTOs are defined in:
 
 ```
-ctx/docs/code/conventions/teqfw/dto.md
+ctx/docs/code/convention/teqfw/dto.md
 ```
 
 Structural form of `TeqFw_Di_Dto_Resolver_Config$DTO`:

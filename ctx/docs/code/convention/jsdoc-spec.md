@@ -1,6 +1,6 @@
 # JSDoc Structural Typing Specification
 
-Path: `./ctx/docs/code/conventions/jsdoc-spec.md`
+Path: `./ctx/docs/code/convention/jsdoc-spec.md`
 Version: 20260223
 
 ## 1. Purpose

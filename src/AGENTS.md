@@ -21,9 +21,9 @@ The following documents are mandatory:
 - `ctx/docs/code/depid.md`
 - `ctx/docs/code/testing.md`
 - `ctx/docs/code/jsdoc-spec.md`
-- `ctx/docs/code/conventions/es6-modules.md`
-- `ctx/docs/code/conventions/teqfw/dto.md`
-- `ctx/docs/code/conventions/teqfw/enum.md`
+- `ctx/docs/code/convention/es6-modules.md`
+- `ctx/docs/code/convention/teqfw/dto.md`
+- `ctx/docs/code/convention/teqfw/enum.md`
 
 Agent MUST read and follow them before generating or modifying code.
 
@@ -72,8 +72,8 @@ Absence of required JSDoc constitutes non-compliance.
 
 All DTO and Enum implementations MUST strictly follow:
 
-- `ctx/docs/code/conventions/teqfw/dto.md`
-- `ctx/docs/code/conventions/teqfw/enum.md`
+- `ctx/docs/code/convention/teqfw/dto.md`
+- `ctx/docs/code/convention/teqfw/enum.md`
 
 In particular:
 
