@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.5 - 2026-03-13 - Convention alignment release
+
+- Fixed the `Container.get` JSDoc return typing.
+- Removed `jsconfig.json` from the published package metadata.
+- Aligned DTO and Enum modules with the updated TeqFW convention documents.
+- Updated package version metadata to `2.0.5`.
+
 ## 2.0.4 - 2026-03-10 - LLM-first project positioning
 
 - Reframed `README.md` around TeqFW architecture, runtime linking, and LLM-agent-oriented development.
