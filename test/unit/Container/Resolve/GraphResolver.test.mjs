@@ -21,6 +21,24 @@ function createDepId(patch = {}) {
 }
 
 /**
+ * @param {TeqFw_Di_DepId$DTO} depId
+ * @returns {string}
+ */
+function makeDepKey(depId) {
+    const exportName = depId.exportName === null ? '' : depId.exportName;
+    const life = depId.life === null ? '' : depId.life;
+    const wrappers = Array.isArray(depId.wrappers) ? depId.wrappers.join('|') : '';
+    return [
+        depId.platform,
+        depId.moduleName,
+        exportName,
+        depId.composition,
+        life,
+        wrappers,
+    ].join('::');
+}
+
+/**
  * @returns {{
  *   parser: TeqFw_Di_Def_Parser,
  *   resolver: TeqFw_Di_Resolver,
@@ -83,7 +101,7 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
         const graph = await resolver.resolve(root);
 
         assert.equal(graph.size, 1);
-        assert.ok(graph.has('teq::App_Root'));
+        assert.ok(graph.has(makeDepKey(root)));
         assert.deepStrictEqual(io.parseCalls, []);
         assert.deepStrictEqual(io.resolveCalls, ['teq::App_Root']);
     });
@@ -100,8 +118,8 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
         const graph = await resolver.resolve(root);
 
         assert.equal(graph.size, 2);
-        assert.ok(graph.has('teq::App_A'));
-        assert.ok(graph.has('teq::App_B'));
+        assert.ok(graph.has(makeDepKey(root)));
+        assert.ok(graph.has(makeDepKey(depB)));
     });
 
     it('Multi-Level Dependency: A -> B -> C resolved once each', async () => {
@@ -163,6 +181,35 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
 
         assert.equal(graph.size, 4);
         assert.deepStrictEqual(io.resolveCalls, ['teq::App_A', 'teq::App_B', 'teq::App_D', 'teq::App_C']);
+    });
+
+    it('separates graph nodes for default and named exports from same module', async () => {
+        const root = createDepId({moduleName: 'App_Root'});
+        const depDefault = createDepId({
+            moduleName: 'App_Module',
+            exportName: 'default',
+            composition: 'F',
+            life: 'S',
+        });
+        const depFactory = createDepId({
+            moduleName: 'App_Module',
+            exportName: 'Factory',
+            composition: 'F',
+            life: 'S',
+        });
+        const io = createDoubles();
+        io.setNamespace(root, {__deps__: {a: 'App_Module$', b: 'App_Module__Factory$'}});
+        io.setNamespace(depDefault, {default: () => ({kind: 'default'})});
+        io.setNamespace(depFactory, {Factory: () => ({kind: 'factory'})});
+        io.setParsed('App_Module$', depDefault);
+        io.setParsed('App_Module__Factory$', depFactory);
+        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+
+        const graph = await resolver.resolve(root);
+
+        assert.equal(graph.size, 3);
+        assert.ok(graph.has(makeDepKey(depDefault)));
+        assert.ok(graph.has(makeDepKey(depFactory)));
     });
 
     it('Resolver Failure Propagation: forwards thrown error', async () => {

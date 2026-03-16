@@ -224,6 +224,8 @@ Mock lookup stage is conditional and only active in test mode.
 
 Lifecycle-based caching does not alter pipeline structure.
 
+Graph node keys, build-stage memoization keys, mock registry keys, and singleton cache keys MUST use full structural `DepId` identity excluding `origin`: `platform`, `moduleName`, `exportName`, `composition`, `life`, and ordered `wrappers`. In particular, dependencies that differ only by `exportName` (for example `Ns_Module$` and `Ns_Module__Factory$`) MUST be treated as different identities and MUST NOT collide.
+
 Container MUST NOT perform:
 
 - module graph inspection,

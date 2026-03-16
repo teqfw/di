@@ -65,16 +65,6 @@ export default class TeqFw_Di_Container {
          * @returns {string}
          */
         const getKey = function (depId) {
-            return `${depId.platform}::${depId.moduleName}`;
-        };
-
-        /**
-         * Canonical structural identity excluding `origin`.
-         *
-         * @param {TeqFw_Di_DepId$DTO} depId
-         * @returns {string}
-         */
-        const getMockKey = function (depId) {
             const exportName = depId.exportName === null ? '' : depId.exportName;
             const life = depId.life === null ? '' : depId.life;
             const wrappers = Array.isArray(depId.wrappers) ? depId.wrappers.join('|') : '';
@@ -86,6 +76,16 @@ export default class TeqFw_Di_Container {
                 life,
                 wrappers,
             ].join('::');
+        };
+
+        /**
+         * Canonical structural identity excluding `origin`.
+         *
+         * @param {TeqFw_Di_DepId$DTO} depId
+         * @returns {string}
+         */
+        const getMockKey = function (depId) {
+            return getKey(depId);
         };
 
         /**

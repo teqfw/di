@@ -4,7 +4,7 @@
  * Resolve-stage graph builder.
  *
  * Recursively resolves module namespaces and their declared `__deps__`
- * into a deterministic map keyed by `${platform}::${moduleName}`.
+ * into a deterministic map keyed by structural DepId identity.
  */
 
 /**
@@ -32,14 +32,6 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
          * @returns {string}
          */
         const makeNodeKey = function (depId) {
-            return `${depId.platform}::${depId.moduleName}`;
-        };
-
-        /**
-         * @param {TeqFw_Di_DepId$DTO} depId
-         * @returns {string}
-         */
-        const makeDepIdentity = function (depId) {
             /** @type {string} */
             const wrappers = Array.isArray(depId.wrappers) ? depId.wrappers.join('|') : '';
             return [
@@ -61,7 +53,7 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
          */
         const walk = async function (depId, out, stack, chain) {
             /** @type {string} */
-            const identity = makeDepIdentity(depId);
+            const identity = makeNodeKey(depId);
             if (stack.has(identity)) {
                 /** @type {string} */
                 const cycle = [...chain, identity].join(' -> ');

@@ -73,6 +73,24 @@ describe('TeqFw_Di_Container_Lifecycle_Registry', () => {
         assert.notStrictEqual(a1, b1);
     });
 
+    it('independent keys: default and named exports in same module do not collide', () => {
+        const registry = new TeqFw_Di_Container_Lifecycle_Registry();
+        const depDefault = createDepId({moduleName: 'App_Module', exportName: 'default'});
+        const depFactory = createDepId({moduleName: 'App_Module', exportName: 'Factory'});
+        let calls = 0;
+        const producer = () => ({id: ++calls});
+
+        const d1 = registry.apply(depDefault, producer);
+        const f1 = registry.apply(depFactory, producer);
+        const d2 = registry.apply(depDefault, producer);
+        const f2 = registry.apply(depFactory, producer);
+
+        assert.equal(calls, 2);
+        assert.strictEqual(d1, d2);
+        assert.strictEqual(f1, f2);
+        assert.notStrictEqual(d1, f1);
+    });
+
     it('no effect on AS_IS composition: does not cache even with singleton life marker', () => {
         const registry = new TeqFw_Di_Container_Lifecycle_Registry();
         const depId = createDepId({

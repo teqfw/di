@@ -40,4 +40,20 @@ describe('Integration 40: lifecycle', () => {
         assert.strictEqual(first.kind, 'protected-proxy');
         assert.strictEqual(first, second);
     });
+
+    it('keeps singleton identities separate for default and named exports from same module', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+
+        const defaultFirst = await container.get('Fx_SharedExports$');
+        const factoryFirst = await container.get('Fx_SharedExports__Factory$');
+        const defaultSecond = await container.get('Fx_SharedExports$');
+        const factorySecond = await container.get('Fx_SharedExports__Factory$');
+
+        assert.equal(defaultFirst.kind, 'default');
+        assert.equal(factoryFirst.kind, 'factory');
+        assert.strictEqual(defaultFirst, defaultSecond);
+        assert.strictEqual(factoryFirst, factorySecond);
+        assert.notStrictEqual(defaultFirst, factoryFirst);
+    });
 });
