@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.1.0 - 2026-03-16 - Protected proxy lifecycle handling
+
+- Fixed container lifecycle handling for protected proxy components that reject `.then` probing or freezing.
+- Clarified and documented the sync-only composition contract for factories and wrappers.
+- Simplified Promise contract checks and aligned related tests with the updated runtime behavior.
+- Updated package version metadata to `2.1.0`.
+
 ## 2.0.5 - 2026-03-13 - Convention alignment release
 
 - Fixed the `Container.get` JSDoc return typing.
