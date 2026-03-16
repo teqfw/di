@@ -113,6 +113,26 @@ describe('TeqFw_Di_Container_Instantiate_Instantiator', () => {
         assert.throws(() => instantiator.instantiate(depId, namespace, {}), Error);
     });
 
+    it('factory result may be proxy that throws on `.then` access', () => {
+        const depId = createDepId({
+            exportName: 'make',
+            composition: TeqFw_Di_Enum_Composition.FACTORY
+        });
+        const proxy = new Proxy({ok: true}, {
+            get(target, prop, receiver) {
+                if (prop === 'then') throw new Error('then access denied');
+                return Reflect.get(target, prop, receiver);
+            }
+        });
+        const namespace = {
+            make: () => proxy,
+        };
+
+        const result = instantiator.instantiate(depId, namespace, {});
+
+        assert.strictEqual(result, proxy);
+    });
+
     it('constructor error is propagated', () => {
         class Broken {
             constructor() {

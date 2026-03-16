@@ -29,4 +29,15 @@ describe('Integration 40: lifecycle', () => {
 
         assert.notStrictEqual(first, second);
     });
+
+    it('keeps proxy-wrapped singleton even when freeze cannot define properties', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+
+        const first = await container.get('Fx_ProtectedProxy$');
+        const second = await container.get('Fx_ProtectedProxy$');
+
+        assert.strictEqual(first.kind, 'protected-proxy');
+        assert.strictEqual(first, second);
+    });
 });

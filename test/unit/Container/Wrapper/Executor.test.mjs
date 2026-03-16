@@ -56,6 +56,24 @@ describe('TeqFw_Di_Container_Wrapper_Executor', () => {
         assert.throws(() => executor.execute(depId, 'X', namespace), Error);
     });
 
+    it('wrapper result may be proxy that throws on `.then` access', () => {
+        const executor = new TeqFw_Di_Container_Wrapper_Executor();
+        const depId = createDepId({wrappers: ['protect']});
+        const proxy = new Proxy({ok: true}, {
+            get(target, prop, receiver) {
+                if (prop === 'then') throw new Error('then access denied');
+                return Reflect.get(target, prop, receiver);
+            }
+        });
+        const namespace = {
+            protect: () => proxy,
+        };
+
+        const result = executor.execute(depId, 'X', namespace);
+
+        assert.equal(result, proxy);
+    });
+
     it('missing wrapper error', () => {
         const executor = new TeqFw_Di_Container_Wrapper_Executor();
         const depId = createDepId({wrappers: ['missing']});

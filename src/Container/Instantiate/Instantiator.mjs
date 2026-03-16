@@ -80,10 +80,7 @@ export default class TeqFw_Di_Container_Instantiate_Instantiator {
                 return false;
             }
 
-            /** @type {{ then?: unknown }} */
-            const maybeThenable = value;
-
-            return (typeof maybeThenable.then === 'function');
+            return (value instanceof Promise);
         };
 
         /**

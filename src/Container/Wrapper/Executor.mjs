@@ -22,9 +22,7 @@ export default class TeqFw_Di_Container_Wrapper_Executor {
             if ((value === null) || (value === undefined)) return false;
             const type = typeof value;
             if ((type !== 'object') && (type !== 'function')) return false;
-            /** @type {{ then?: unknown }} */
-            const maybeThenable = value;
-            return (typeof maybeThenable.then === 'function');
+            return (value instanceof Promise);
         };
 
         /**
