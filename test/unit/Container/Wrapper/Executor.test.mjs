@@ -46,7 +46,7 @@ describe('TeqFw_Di_Container_Wrapper_Executor', () => {
         assert.equal(result, 'XAB');
     });
 
-    it('thenable rejection', () => {
+    it('Promise rejection', () => {
         const executor = new TeqFw_Di_Container_Wrapper_Executor();
         const depId = createDepId({wrappers: ['asyncWrap']});
         const namespace = {

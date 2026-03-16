@@ -103,9 +103,11 @@ If `composition = 'factory'` and `exportName = null`, this is an invalid state a
 Factory composition is strictly synchronous:
 
 - invocation MUST complete synchronously;
-- the returned value MUST NOT be a Promise or thenable.
+- the returned value MUST NOT be a `Promise`.
 
-If invocation returns a Promise or thenable, linking terminates immediately.
+If invocation returns a `Promise`, linking terminates immediately.
+
+Generic thenable probing by reading `.then` on arbitrary returned values is prohibited at immutable-core boundary because such probing is not side-effect free for protected proxy wrappers.
 
 Asynchronous factory functions are not permitted within immutable core linking semantics.
 

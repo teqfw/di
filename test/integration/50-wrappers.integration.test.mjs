@@ -19,13 +19,13 @@ describe('Integration 50: wrappers', () => {
         assert.deepEqual(value.steps, ['core', 'wrapFirst', 'wrapSecond']);
     });
 
-    it('rejects thenable wrapper return (wrapper must be synchronous)', async () => {
+    it('rejects Promise wrapper return (wrapper must be synchronous)', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
 
         await assert.rejects(
             () => container.get('Fx_Wrapped$$_wrapThenable'),
-            /must return synchronously \(non-thenable\)/
+            /must return synchronously \(non-Promise\)/
         );
     });
 });
