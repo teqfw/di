@@ -53,8 +53,8 @@ The exact semantics of dependency identifiers are defined in **dependency-id.md*
 
 The container operates in three states:
 
-- **initial** — the container is being configured and dependencies may be registered.
-- **active** — the container resolves dependencies and produces linked objects.
+- **notConfigured** — the container is being configured and dependencies may be registered.
+- **operational** — the container resolves dependencies and produces linked objects.
 - **failed** — the container has encountered an unrecoverable error.
 
 If an error occurs during dependency resolution or any pipeline stage, the container transitions to the **failed** state. Once the container enters this state, all subsequent dependency requests are rejected.

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.0 - 2026-03-16 - Agent interface alignment release
+
+- Clarified lifecycle marker semantics in the agent interface documentation to match parser behavior (`$`, `$$`, and `$$$`).
+- Updated container state model terminology in agent documentation to align with runtime state names.
+- Updated package version metadata to `2.2.0`.
+
 ## 2.1.0 - 2026-03-16 - Protected proxy lifecycle handling
 
 - Fixed container lifecycle handling for protected proxy components that reject `.then` probing or freezing.

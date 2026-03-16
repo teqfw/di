@@ -84,8 +84,8 @@ Lifecycle markers define how the container instantiates and returns objects.
 The following markers are supported:
 
 - **`$`** — singleton lifecycle; the container creates the object once and returns the same instance for subsequent requests.
-- **`$$`** — factory lifecycle; a new instance is created for each request.
-- **`$$$`** — transient lifecycle; the container delegates lifecycle management entirely to the caller.
+- **`$$`** — transient lifecycle; a new instance is created for each request.
+- **`$$$`** — transient lifecycle alias; behaves the same as `$$`.
 
 Lifecycle markers are appended at the end of the identifier.
 
