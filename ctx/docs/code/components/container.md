@@ -193,6 +193,22 @@ Container MUST NOT automatically resolve wrappers from module exports.
 
 Configuration, including wrapper-related postprocess registration, becomes immutable after the first `get`.
 
+### Synchronous Composition Boundary
+
+The container implementation enforces synchronous object composition at immutable-core stage.
+
+Rules:
+
+- factory composition (`composition = 'factory'`) MUST return a non-`Promise` value;
+- wrapper execution MUST return a non-`Promise` value at every wrapper step;
+- returning a `Promise` from factory or wrapper is a fail-fast error;
+- asynchronous support is intentionally out of scope for composition stage.
+
+Detection boundary:
+
+- asynchronous violation is detected by nominal `value instanceof Promise` check;
+- container MUST NOT perform generic thenable probing via `.then` access on arbitrary values.
+
 ## Resolution Semantics
 
 The container orchestrates the immutable linking pipeline:

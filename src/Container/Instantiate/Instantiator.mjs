@@ -64,29 +64,6 @@ export default class TeqFw_Di_Container_Instantiate_Instantiator {
         };
 
         /**
-         * Detects Promise-like asynchronous return values.
-         *
-         * @param {unknown} value
-         * @returns {boolean}
-         */
-        const isThenable = function (value) {
-            if ((value === null) || (value === undefined)) {
-                return false;
-            }
-
-            const type = typeof value;
-
-            if ((type !== 'object') && (type !== 'function')) {
-                return false;
-            }
-
-            /** @type {{ then?: unknown }} */
-            const maybeThenable = value;
-
-            return (typeof maybeThenable.then === 'function');
-        };
-
-        /**
          * Produces a value from a resolved module namespace and dependency map.
          *
          * @param {TeqFw_Di_DepId$DTO} depId
@@ -126,9 +103,9 @@ export default class TeqFw_Di_Container_Instantiate_Instantiator {
                     result = Fn(resolvedDeps);
                 }
 
-                if (isThenable(result)) {
+                if (result instanceof Promise) {
                     throw new Error(
-                        'Factory composition must return synchronously (non-thenable).'
+                        'Factory composition must return synchronously (non-Promise).'
                     );
                 }
 

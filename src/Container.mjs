@@ -38,6 +38,8 @@ export default class TeqFw_Di_Container {
         const namespaceRoots = [];
         /** @type {Map<string, unknown>} */
         const mockRegistry = new Map();
+        /** @type {WeakMap<object, object>} */
+        const promiseSafeCache = new WeakMap();
         let testMode = false;
         let loggingEnabled = false;
 
@@ -98,8 +100,39 @@ export default class TeqFw_Di_Container {
             if ((type !== 'object') && (type !== 'function')) return value;
             if (Object.prototype.toString.call(value) === '[object Module]') return value;
             if (Object.isFrozen(value)) return value;
-            Object.freeze(value);
+            try {
+                Object.freeze(value);
+            } catch (error) {
+                logger.log(`Container.freeze: skipped (${String(error)}).`);
+            }
             return value;
+        };
+
+        /**
+         * Ensures async `get()` can resolve objects whose proxy `get('then')` throws.
+         *
+         * @param {unknown} value
+         * @returns {unknown}
+         */
+        const asPromiseSafe = function (value) {
+            if ((value === null) || (value === undefined)) return value;
+            const type = typeof value;
+            if ((type !== 'object') && (type !== 'function')) return value;
+            const obj = /** @type {object} */ (value);
+            if (promiseSafeCache.has(obj)) return promiseSafeCache.get(obj);
+            try {
+                void Reflect.get(obj, 'then');
+                return value;
+            } catch {
+                const wrapped = new Proxy(obj, {
+                    get(target, property, receiver) {
+                        if (property === 'then') return undefined;
+                        return Reflect.get(target, property, receiver);
+                    },
+                });
+                promiseSafeCache.set(obj, wrapped);
+                return wrapped;
+            }
         };
 
         /**
@@ -309,7 +342,7 @@ export default class TeqFw_Di_Container {
                         const frozenMock = freeze(mockRegistry.get(key));
                         logger.log('Container.pipeline: freeze:exit.');
                         logger.log('Container.pipeline: return:success.');
-                        return frozenMock;
+                        return asPromiseSafe(frozenMock);
                     }
                     logger.log(`Container.pipeline: mock-lookup:miss '${key}'.`);
                 } else {
@@ -371,7 +404,7 @@ export default class TeqFw_Di_Container {
 
                 const result = build(getKey(root));
                 logger.log('Container.pipeline: return:success.');
-                return result;
+                return asPromiseSafe(result);
             } catch (error) {
                 logger.error(`Container.pipeline: failed at stage='${stage}'.`, error);
                 logger.log('Container.transition: operational -> failed.');

@@ -13,21 +13,6 @@ export default class TeqFw_Di_Container_Wrapper_Executor {
      */
     constructor() {
         /**
-         * Detects Promise-like asynchronous return values.
-         *
-         * @param {unknown} value
-         * @returns {boolean}
-         */
-        const isThenable = function (value) {
-            if ((value === null) || (value === undefined)) return false;
-            const type = typeof value;
-            if ((type !== 'object') && (type !== 'function')) return false;
-            /** @type {{ then?: unknown }} */
-            const maybeThenable = value;
-            return (typeof maybeThenable.then === 'function');
-        };
-
-        /**
          * Narrows unknown export to unary wrapper callable.
          *
          * @param {unknown} value
@@ -60,8 +45,8 @@ export default class TeqFw_Di_Container_Wrapper_Executor {
                     throw new Error(`Wrapper '${name}' must be callable.`);
                 }
                 current = candidate(current);
-                if (isThenable(current)) {
-                    throw new Error(`Wrapper '${name}' must return synchronously (non-thenable).`);
+                if (current instanceof Promise) {
+                    throw new Error(`Wrapper '${name}' must return synchronously (non-Promise).`);
                 }
             }
 
