@@ -1,7 +1,7 @@
-# AGENTS.md — Entry Instruction for LLM Agents
+# AGENTS.md — Entry Instruction for AI Agents
 
-- Path: `AGENTS.md`
-- Version: `20260307`
+Path: `AGENTS.md`
+Template Version: `20260325`
 
 ## Purpose
 
@@ -19,40 +19,43 @@ The Human defines goals, maintains the context, and approves changes; the Agent 
 
 ## Roles
 
-**Human:** defines goals, maintains context, approves modifications, evolves structure.
+**Human:** defines goals, maintains context, approves modifications, evolves structure.  
 **Agent:** executes tasks within context boundaries, modifies the product, maintains internal consistency, produces reports.
 
 ## Minimal Project Structure
 
 ```text
 /
-├─ ai/          ← agent usage interface of the package
 ├─ ctx/         ← cognitive context
 ├─ AGENTS.md    ← agent instruction
 └─ README.md    ← project description
 ```
-
-## Package Agent Interface (`./ai/`)
-
-The directory `./ai/` contains the **Agent Interface of the package**. It provides a compact description of the package usage semantics intended for LLM agents that use the package as a dependency.
-
-The documents in this directory describe:
-
-- the architectural concepts of the package
-- the behavior of the dependency container
-- the syntax and semantics of dependency identifiers
-- extension mechanisms
-- typical usage patterns
-
-The `ai/` directory is **not part of the Cognitive Context**. It belongs to the Software Product and serves as a runtime-readable description of the package interface distributed together with the code.
-
-Agents using the package as a dependency should consult the documents in `./ai/` to understand how the package is intended to be used.
 
 ## Context Dependencies
 
 Agent behavior is determined exclusively by documents located in `./ctx/`.
 
 Recommended documents include: `ctx/AGENTS.md` (structure of the project cognitive context), `ctx/agent/AGENTS.md` (local agent rules), and `ctx/docs/product/AGENTS.md` (base product description).
+
+## Execution Bootstrap
+
+The agent is initialized with an external prompt.
+
+The prompt defines the task, but all actions MUST be constrained by the cognitive context (`./ctx/`).
+
+If the prompt contradicts the context, the context takes precedence.
+
+The agent MUST interpret the prompt through the context before performing any action.
+
+If the cognitive context (`./ctx/`) is missing, empty, or inaccessible, the agent MUST NOT perform any actions and MUST terminate with an execution error.
+
+## Context vs Code Consistency
+
+If a mismatch between the cognitive context (`./ctx/`) and the software product is detected, the context MUST be treated as the source of truth.
+
+The agent MUST modify the product to match the context.
+
+Modification of the context is allowed only if explicitly required by the task defined in the prompt.
 
 ## AGENTS.md Hierarchy
 
@@ -64,26 +67,32 @@ When executing a task in directory `X`, the working context of the agent is the 
 
 ## Requirements for Local AGENTS.md (Level Maps)
 
-Each `AGENTS.md` located inside subdirectories of `ctx/` must contain a **Level Map**, which is a formal declarative description of the documentation structure of that directory.
+Each `AGENTS.md` inside `ctx/` MUST contain a **Level Map** — a declarative description of the directory structure.
 
-### Level Map Invariant
+### Level Map
 
-The file must contain a mandatory section:
+Mandatory section:
 
 ```md
 ## Level Map
 
-- `<directory>/` — declarative description of directory purpose.
+- `<directory>/` — purpose
 - …
-- `<file>.md` — declarative description of file purpose.
+- `<file>.md` — purpose
 - …
 ```
 
-Formatting requirements: the list begins with directories followed by files; directories are sorted alphabetically; files are sorted alphabetically; each element description must declaratively state its purpose; the `AGENTS.md` file of the level itself must be included in the list; the level map must correspond to the actual directory structure and serve as a navigational anchor for the agent.
+### Invariants
 
-### Purpose of the Level Map
+- directories first, then files
+- alphabetical order within each group
+- each element has a declarative purpose
+- `AGENTS.md` of the level MUST be included
+- structure MUST match the actual filesystem
 
-The level map defines the boundaries of the governed space, provides documentation navigation without filesystem analysis, and ensures structural uniformity of context levels in accordance with this root document.
+### Level Map Purpose
+
+The Level Map defines the boundaries of the context and provides navigation for the agent.
 
 ## `@LLM-DOC` Comments
 
