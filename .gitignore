@@ -2,6 +2,7 @@
 /.nyc_output/
 /.vscode/
 /**/output.md
+/ctx/
 /dist/
 /jsdoc/
 /node_modules/
