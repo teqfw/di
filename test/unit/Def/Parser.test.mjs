@@ -126,6 +126,17 @@ describe('TeqFw_Di_Def_Parser', () => {
                 },
             },
             {
+                cdc: `node:fs/promises`,
+                expected: {
+                    platform: TeqFw_Di_Enum_Platform.NODE,
+                    moduleName: 'fs/promises',
+                    exportName: null,
+                    life: null,
+                    composition: TeqFw_Di_Enum_Composition.AS_IS,
+                    wrappers: [],
+                },
+            },
+            {
                 cdc: `npm:@vendor/package`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.NPM,
@@ -176,6 +187,7 @@ describe('TeqFw_Di_Def_Parser', () => {
             'teq:Module',
             'teq:Module$',
             'node:',
+            'node:fs:promises',
             'npm:',
             'node:fs$__default',
             'npm:@vendor/package__named_export',

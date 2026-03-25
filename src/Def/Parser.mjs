@@ -98,7 +98,11 @@ export default class TeqFw_Di_Def_Parser {
             if (moduleName.includes('__')) throw new Error('moduleName must not contain __.');
             if (moduleName.includes('$')) throw new Error('moduleName must not contain $.');
             if (platform !== TeqFw_Di_Enum_Platform.NPM) {
-                if (!/^[A-Za-z_][$0-9A-Za-z_]*$/.test(moduleName)) {
+                if (platform === TeqFw_Di_Enum_Platform.NODE) {
+                    if (!/^[A-Za-z_][$0-9A-Za-z_/-]*$/.test(moduleName)) {
+                        throw new Error('node moduleName must satisfy the built-in specifier form.');
+                    }
+                } else if (!/^[A-Za-z_][$0-9A-Za-z_]*$/.test(moduleName)) {
                     throw new Error('moduleName must satisfy the canonical identifier form.');
                 }
             } else if (!/^[@A-Za-z_][$0-9A-Za-z_./-]*$/.test(moduleName)) {
