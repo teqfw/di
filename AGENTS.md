@@ -57,6 +57,21 @@ The agent MUST modify the product to match the context.
 
 Modification of the context is allowed only if explicitly required by the task defined in the prompt.
 
+## Repository Boundaries
+
+The cognitive context (`./ctx/`) MAY be mounted from a separate repository.
+
+In such cases, the context and the product MUST be treated as independent version-controlled spaces.
+
+### Rules
+
+- Changes in `./ctx/` MUST be committed and pushed to the context repository.
+- Changes outside `./ctx/` MUST be committed and pushed to the product repository.
+- The agent MUST NOT mix changes between these repositories.
+- The agent MUST NOT remove, replace, or unmount the `./ctx/` directory.
+
+Violation of these rules constitutes an execution error.
+
 ## AGENTS.md Hierarchy
 
 If additional `AGENTS.md` files exist in subdirectories (for example, `ctx/docs/architecture/AGENTS.md` or `src/module/AGENTS.md`), they are treated as part of the cognitive context within the boundaries of their directory level.
@@ -100,7 +115,19 @@ The Level Map defines the boundaries of the context and provides navigation for 
 
 ## Reporting
 
-Each iteration must produce a report located at `./ctx/agent/report/YYYY/MM/DD/HH-MM-{title}.md`; the report must contain the goal, performed actions, and produced artifacts; absence of a report constitutes an `execution error`; if `ctx/agent/report-template.md` exists, it must be used; an iteration is incomplete until the report is created.
+Each iteration MUST produce a report located at `./ctx/agent/report/YYYY/MM/DD/HH-MM-{title}.md`.
+
+The report MUST contain:
+
+- goal
+- performed actions
+- produced artifacts
+
+Absence of a report constitutes an `execution error`.
+
+If `ctx/agent/report-template.md` exists, it MUST be used.
+
+An iteration is incomplete until the report is created.
 
 ## Compatibility
 
@@ -108,4 +135,4 @@ The root `AGENTS.md` defines methodological invariants and is reused without mod
 
 ## `output.md` Files
 
-Files named `output.md` are not part of the cognitive context and must be ignored by the agent.
+Files named `output.md` are not part of the cognitive context and MUST be ignored by the agent.
