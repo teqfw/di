@@ -28,7 +28,7 @@ export default class TeqFw_Di_Def_Parser {
             if (logger) logger.log(`Parser.parse: input='${cdc}'.`);
             if (typeof cdc !== 'string') throw new Error('CDC must be a string.');
             if (cdc.length === 0) throw new Error('CDC must be non-empty.');
-            if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(cdc)) throw new Error('CDC must satisfy AsciiCdcIdentifier.');
+            if (!/^[\x00-\x7F]+$/.test(cdc)) throw new Error('CDC must be ASCII.');
 
             /** @type {string} */
             const origin = cdc;
@@ -36,55 +36,45 @@ export default class TeqFw_Di_Def_Parser {
             /** @type {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} */
             let platform = TeqFw_Di_Enum_Platform.TEQ;
 
-            if (source.startsWith('node_')) {
+            if (source.startsWith('node:')) {
                 platform = TeqFw_Di_Enum_Platform.NODE;
                 source = source.slice(5);
-            } else if (source.startsWith('npm_')) {
+            } else if (source.startsWith('npm:')) {
                 platform = TeqFw_Di_Enum_Platform.NPM;
                 source = source.slice(4);
-            } else if (source.startsWith('teq_')) {
-                throw new Error('Explicit teq_ prefix is forbidden.');
+            } else if (source.startsWith('teq:')) {
+                throw new Error('Explicit teq: prefix is forbidden.');
             }
 
             if (source.length === 0) throw new Error('moduleName must be non-empty.');
 
-            /** @type {RegExp} */
-            const lifecyclePattern = /(\${1,3})(?:_([A-Za-z0-9]+(?:_[A-Za-z0-9]+)*))?$/;
-            /** @type {RegExpMatchArray|null} */
-            const lifecycleMatch = source.match(lifecyclePattern);
-
-            /** @type {typeof TeqFw_Di_Enum_Life[keyof typeof TeqFw_Di_Enum_Life]} */
+            /** @type {typeof TeqFw_Di_Enum_Life[keyof typeof TeqFw_Di_Enum_Life] | null} */
             let life = null;
+            let lifecycleDeclared = false;
             /** @type {string[]} */
             let wrappers = [];
             let core = source;
 
-            if (lifecycleMatch) {
-                const marker = lifecycleMatch[1];
-                const wrapperTail = lifecycleMatch[2];
+            const markerMatch = core.match(/(\${1,3})(?:_[a-z][0-9A-Za-z]*)*$/);
+            if (markerMatch) {
+                const marker = markerMatch[1];
+                const suffix = markerMatch[0].slice(marker.length);
+                lifecycleDeclared = true;
                 if (marker === '$') life = TeqFw_Di_Enum_Life.SINGLETON;
-                else if ((marker === '$$') || (marker === '$$$')) life = TeqFw_Di_Enum_Life.TRANSIENT;
-                else throw new Error('Lifecycle marker overflow.');
+                else if (marker === '$$') life = TeqFw_Di_Enum_Life.TRANSIENT;
+                else if (marker === '$$$') life = null;
+                else throw new Error('Lifecycle marker is invalid.');
 
-                core = source.slice(0, lifecycleMatch.index);
-                if (wrapperTail) {
-                    wrappers = wrapperTail.split('_');
-                    for (const one of wrappers) {
-                        if (!one) throw new Error('Wrapper must be non-empty.');
-                        if (one.includes('$')) throw new Error('Wrapper must not contain $.');
-                        if (one.includes('_')) throw new Error('Wrapper must not contain _.');
-                    }
+                core = core.slice(0, markerMatch.index);
+                if (suffix.length > 0) {
+                    wrappers = suffix.slice(1).split('_');
                 }
             } else {
-                if (source.includes('$')) throw new Error('Invalid lifecycle marker.');
-                /** @type {RegExpMatchArray|null} */
-                const trailing = source.match(/(?:^|[^_])_([a-z][A-Za-z0-9]*)$/);
-                if (trailing) {
+                if (source.includes('$')) throw new Error('Invalid lifecycle encoding.');
+                if (/(?:^|[^_])_[a-z][0-9A-Za-z]*$/.test(source)) {
                     throw new Error('Wrapper without lifecycle is forbidden.');
                 }
             }
-
-            if (core.includes('$$$$')) throw new Error('Lifecycle marker overflow.');
 
             const firstDelim = core.indexOf('__');
             const lastDelim = core.lastIndexOf('__');
@@ -107,17 +97,21 @@ export default class TeqFw_Di_Def_Parser {
             if (moduleName.startsWith('_') || moduleName.startsWith('$')) throw new Error('moduleName must not start with _ or $.');
             if (moduleName.includes('__')) throw new Error('moduleName must not contain __.');
             if (moduleName.includes('$')) throw new Error('moduleName must not contain $.');
+            if (platform !== TeqFw_Di_Enum_Platform.NPM) {
+                if (!/^[A-Za-z_][$0-9A-Za-z_]*$/.test(moduleName)) {
+                    throw new Error('moduleName must satisfy the canonical identifier form.');
+                }
+            } else if (!/^[@A-Za-z_][$0-9A-Za-z_./-]*$/.test(moduleName)) {
+                throw new Error('npm moduleName must satisfy the package specifier form.');
+            }
 
             /** @type {typeof TeqFw_Di_Enum_Composition[keyof typeof TeqFw_Di_Enum_Composition]} */
             let composition = TeqFw_Di_Enum_Composition.AS_IS;
             if (exportName !== null) {
                 composition = TeqFw_Di_Enum_Composition.FACTORY;
-            } else if (life === TeqFw_Di_Enum_Life.SINGLETON) {
+            } else if (lifecycleDeclared) {
+                composition = TeqFw_Di_Enum_Composition.FACTORY;
                 exportName = 'default';
-                composition = TeqFw_Di_Enum_Composition.FACTORY;
-            } else if (life === TeqFw_Di_Enum_Life.TRANSIENT) {
-                composition = TeqFw_Di_Enum_Composition.FACTORY;
-                if (exportName === null) exportName = 'default';
             }
 
             const depId = depIdFactory.create({
