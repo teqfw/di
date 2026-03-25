@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.1 - 2026-03-25 - Patch release preparation
+
+* Updated package version metadata to `2.3.1`.
+* Prepared the repository for release by including the current working tree state.
+
 ## 2.3.0 - 2026-03-25 - Release preparation update
 
 - Updated package version metadata to `2.3.0`.
