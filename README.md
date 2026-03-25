@@ -233,12 +233,16 @@ App_Service
 App_Service$
 App_Service__build$$
 App_Service$$_wrapLog_wrapTrace
-node_fs
-npm_lodash
+node:fs
+npm:@humanfs/core
+node:worker_threads
+npm:lodash
 ```
 
 Where:
 
+- `node:` platform prefix for Node.js built-in modules
+- `npm:` platform prefix for npm packages
 - `$` singleton lifecycle
 - `$$` new instance lifecycle
 - wrappers modify runtime behavior
@@ -291,6 +295,13 @@ Wrappers can implement:
 - behavioral instrumentation
 
 This acts as a lightweight **DI-level AOP mechanism.**
+
+Platform-specific examples:
+
+```txt
+node:worker_threads
+npm:@humanfs/core
+```
 
 ## Test Mode
 

@@ -200,11 +200,18 @@ Typical usage:
 CDC may reference runtime platform modules.
 
 ```text
-node_fs
-npm_lodash
+node:fs
+npm:@humanfs/core
+node:worker_threads
+npm:lodash
 ```
 
 These identifiers provide access to Node.js built-ins and npm packages.
+
+Typical usage:
+
+- `node:worker_threads` for Node.js worker-thread primitives
+- `npm:@humanfs/core` for a scoped npm package dependency
 
 ### Root Graph Resolution
 

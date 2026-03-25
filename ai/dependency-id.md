@@ -32,14 +32,16 @@ A CDC may reference modules provided by the runtime platform or external package
 
 The following prefixes are supported:
 
-- **`node_`** — reference a built-in Node.js module.
-- **`npm_`** — reference a module from the npm ecosystem.
+- **`node:`** — reference a built-in Node.js module.
+- **`npm:`** — reference a module from the npm ecosystem.
 
 Examples:
 
 ```txt
-node_fs$
-npm_lodash$
+node:fs$
+npm:@humanfs/core$
+node:worker_threads$
+npm:lodash$
 ```
 
 If no platform prefix is present, the identifier refers to an application module resolved through namespace mapping.
@@ -102,6 +104,13 @@ App_Service_User$$_wrapLog_wrapTrace
 In this example the container creates a new instance and applies the wrappers `wrapLog` and `wrapTrace` during the postprocess stage.
 
 Wrapper behavior is described in **extensions.md**.
+
+Platform-specific examples:
+
+```txt
+node:worker_threads$
+npm:@humanfs/core$
+```
 
 ## Resolution Semantics
 
