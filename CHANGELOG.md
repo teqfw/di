@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.0 - 2026-03-25 - Release preparation update
+
+- Updated package version metadata to `2.3.0`.
+- Included the current working tree changes in the release preparation commit.
+
 ## 2.2.0 - 2026-03-16 - Agent interface alignment release
 
 - Clarified lifecycle marker semantics in the agent interface documentation to match parser behavior (`$`, `$$`, and `$$$`).
