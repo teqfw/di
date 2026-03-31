@@ -56,4 +56,16 @@ describe('Integration 40: lifecycle', () => {
         assert.strictEqual(factoryFirst, factorySecond);
         assert.notStrictEqual(defaultFirst, factoryFirst);
     });
+
+    it('applies preprocess and postprocess in registration order', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        container.addPreprocess((depId) => ({...depId, moduleName: depId.moduleName.replace('Singleton', 'Transient')}));
+        container.addPostprocess((value) => ({...value, steps: [...(value.steps ?? []), 'post1']}));
+        container.addPostprocess((value) => ({...value, steps: [...value.steps, 'post2']}));
+
+        const value = await container.get('Fx_Singleton$');
+
+        assert.deepStrictEqual(value.steps, ['post1', 'post2']);
+    });
 });

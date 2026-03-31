@@ -23,6 +23,7 @@ declare global {
   type TeqFw_Di_Enum_Life = typeof import("./src/Enum/Life.mjs").default;
   type TeqFw_Di_Enum_Platform = typeof import("./src/Enum/Platform.mjs").default;
   type TeqFw_Di_Internal_Logger = import("./src/Internal/Logger.mjs").default;
+  type TeqFw_Di_Internal_Logger_Noop = typeof import("./src/Internal/Logger.mjs").TeqFw_Di_Internal_Logger_Noop;
   type TeqFw_Di_Resolver = import("./src/Container/Resolver.mjs").default;
 }
 

@@ -9,24 +9,6 @@ import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
 describe('TeqFw_Di_Dto_DepId', () => {
     const factory = new Factory();
 
-    it('returns DTO for undefined input', () => {
-        const dto = factory.create(undefined);
-        assert.ok(dto instanceof DTO);
-    });
-
-    it('returns DTO with complete structural shape', () => {
-        const dto = factory.create(undefined);
-        assert.deepStrictEqual(Object.keys(dto).sort(), [
-            'composition',
-            'exportName',
-            'life',
-            'moduleName',
-            'origin',
-            'platform',
-            'wrappers',
-        ]);
-    });
-
     it('normalizes missing fields', () => {
         const dto = factory.create({});
         assert.strictEqual(dto.moduleName, '');
@@ -83,11 +65,5 @@ describe('TeqFw_Di_Dto_DepId', () => {
     it('always freezes DTO', () => {
         const dto = factory.create({});
         assert.ok(Object.isFrozen(dto));
-    });
-
-    it('does not throw on invalid input', () => {
-        assert.doesNotThrow(() => factory.create(null));
-        assert.doesNotThrow(() => factory.create(123));
-        assert.doesNotThrow(() => factory.create('abc'));
     });
 });

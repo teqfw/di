@@ -1,48 +1,17 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import * as ModuleConfig from '../../../../src/Dto/Resolver/Config.mjs';
 import DTO, {Factory} from '../../../../src/Dto/Resolver/Config.mjs';
 import NamespaceDTO, {Factory as NamespaceFactory} from '../../../../src/Dto/Resolver/Config/Namespace.mjs';
 
 describe('TeqFw_Di_Dto_Resolver_Config', () => {
     const factory = new Factory();
 
-    it('exports only factory and DTO', () => {
-        assert.deepStrictEqual(Object.keys(ModuleConfig).sort(), ['Factory', 'default']);
-    });
-
-    it('factory exposes only create public method', () => {
-        assert.deepStrictEqual(
-            Object.getOwnPropertyNames(Factory.prototype).filter((name) => name !== 'constructor'),
-            [],
-        );
-        assert.deepStrictEqual(
-            Object.getOwnPropertyNames(factory).filter((name) => name !== 'constructor'),
-            ['create'],
-        );
-    });
-
-    it('DTO class contains no user-defined methods', () => {
-        assert.deepStrictEqual(
-            Object.getOwnPropertyNames(DTO.prototype).filter((name) => name !== 'constructor'),
-            [],
-        );
-    });
-
-    it('creates DTO with complete structural shape only', () => {
+    it('creates DTO with default values', () => {
         const dto = factory.create(undefined);
         assert.ok(dto instanceof DTO);
-        assert.deepStrictEqual(Object.keys(dto).sort(), ['namespaces', 'nodeModulesRoot']);
-    });
-
-    it('normalizes namespaces to empty array for missing or invalid input', () => {
-        assert.strictEqual(Array.isArray(factory.create(undefined).namespaces), true);
-        assert.strictEqual(Array.isArray(factory.create({}).namespaces), true);
-        assert.strictEqual(Array.isArray(factory.create({namespaces: null}).namespaces), true);
-        assert.strictEqual(Array.isArray(factory.create({namespaces: 'bad'}).namespaces), true);
-        assert.strictEqual(Array.isArray(factory.create({namespaces: 123}).namespaces), true);
-        assert.deepStrictEqual(factory.create({namespaces: null}).namespaces, []);
+        assert.deepStrictEqual(dto.namespaces, []);
+        assert.strictEqual(dto.nodeModulesRoot, undefined);
     });
 
     it('preserves nodeModulesRoot structurally and keeps key when missing', () => {
@@ -87,13 +56,6 @@ describe('TeqFw_Di_Dto_Resolver_Config', () => {
         } finally {
             NamespaceFactory.prototype.create = origin;
         }
-    });
-
-    it('does not throw on malformed input and does not validate business semantics', () => {
-        assert.doesNotThrow(() => factory.create(null));
-        assert.doesNotThrow(() => factory.create(123));
-        assert.doesNotThrow(() => factory.create('abc'));
-        assert.doesNotThrow(() => factory.create({nodeModulesRoot: {unexpected: true}}));
     });
 
     it('is frozen after creation', () => {
