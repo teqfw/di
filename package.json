@@ -45,22 +45,28 @@
     "./src/Config/NamespaceRegistry.mjs": "./src/Config/NamespaceRegistry.mjs"
   },
   "type": "module",
+  "teqfw": {
+    "namespaces": [
+      {
+        "prefix": "TeqFw_Di_",
+        "path": "./src",
+        "ext": ".mjs"
+      }
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/teqfw/di.git"
   },
   "scripts": {
     "rollup": "rollup -c",
-    "eslint": "npx eslint './src/**/*.mjs'",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "find test/unit -name '*.test.mjs' -print0 | xargs -0 node --test",
     "test:integration": "find test/integration -name '*.test.mjs' -print0 | xargs -0 node --test"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^1.0.0",
-    "eslint": "^10.0.2",
     "rollup": "^4.59.0"
   },
   "engines": {
