@@ -47,7 +47,7 @@ The core operations are:
 - **addPreprocess(handler)** — register a handler that can transform dependency identifiers before resolution.
 - **addPostprocess(handler)** — register a handler that can modify created objects after instantiation.
 
-The exact semantics of dependency identifiers are defined in **dependency-id.md**.
+The exact semantics of dependency identifiers are defined in **dependency-id.md**. Dependency descriptors are export-scoped: canonical descriptors are hierarchical and keyed by export name, while flat descriptors are shorthand for limited single-export cases.
 
 ## Container State Model
 

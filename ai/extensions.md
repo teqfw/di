@@ -54,6 +54,8 @@ App_Service_User$$_wrapLog_wrapTrace
 
 In this example the container creates a new instance of the dependency and applies the wrappers `wrapLog` and `wrapTrace` during the postprocess stage.
 
+Wrappers do not change the structure of `__deps__`. Dependency descriptors remain either hierarchical export-scoped descriptors, shorthand flat descriptors for limited single-export cases, or omitted entirely for empty-descriptor modules.
+
 ## Execution Order
 
 Multiple wrappers may be applied to a single dependency. Wrappers are executed in the order in which they appear in the CDC.

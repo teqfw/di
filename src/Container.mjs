@@ -167,12 +167,20 @@ export default class TeqFw_Di_Container {
 
         /**
          * @param {object} namespace
+         * @param {TeqFw_Di_DepId$DTO} depId
          * @returns {Record<string, unknown>}
          */
-        const readDepsDecl = function (namespace) {
+        const readDepsDecl = function (namespace, depId) {
             /** @type {unknown} */
             const deps = Reflect.get(namespace, '__deps__');
             if (deps === undefined) return {};
+            if ((deps !== null) && (typeof deps === 'object') && !Array.isArray(deps)) {
+                const exportName = depId.exportName === null ? 'default' : depId.exportName;
+                const exportScoped = Reflect.get(/** @type {object} */ (deps), exportName);
+                if ((exportScoped !== undefined) && (exportScoped !== null) && (typeof exportScoped === 'object') && !Array.isArray(exportScoped)) {
+                    return /** @type {Record<string, unknown>} */ (exportScoped);
+                }
+            }
             return /** @type {Record<string, unknown>} */ (deps);
         };
 
@@ -373,7 +381,7 @@ export default class TeqFw_Di_Container {
                         /** @type {Record<string, unknown>} */
                         const deps = {};
                         /** @type {Record<string, unknown>} */
-                        const depsDecl = readDepsDecl(node.namespace);
+                        const depsDecl = readDepsDecl(node.namespace, node.depId);
                         for (const [name, cdc] of Object.entries(depsDecl)) {
                             /** @type {string} */
                             const childCdc = /** @type {string} */ (cdc);

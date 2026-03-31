@@ -41,6 +41,8 @@ Dependency identifiers define:
 - which export must be used
 - whether the dependency represents a singleton or a new instance
 
+Module dependency descriptors complement CDCs by declaring export-scoped dependency maps. The canonical form is hierarchical and keyed by export name; a flat descriptor is shorthand for limited single-export cases; omission means there are no dependencies.
+
 The identifier syntax and resolution rules are described in **dependency-id.md**.
 
 ## Namespaces

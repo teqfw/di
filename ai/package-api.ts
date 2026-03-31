@@ -267,14 +267,14 @@ export const PACKAGE_API: PackageApiContract = {
             kind: 'module-contract',
             summary: 'Shape expected from application modules resolved by the container.',
             fields: {
-                __deps__: 'Optional top-level Record<string, string> mapping constructor keys to CDC strings.',
+                __deps__: 'Optional export-scoped dependency descriptor. Canonical form is hierarchical: Record<exportName, Record<dependencyKey, CDC string>>. A flat Record<dependencyKey, CDC string> is shorthand for limited single-export cases.',
                 moduleNamespace: 'Whole ES module namespace object returned for as-is CDC without selected export.',
                 defaultExport: 'Used when the parsed DepId selects exportName="default" for factory composition.',
                 namedExports: 'May be selected via __ExportName for factory composition and may also provide wrapper functions.',
                 wrapperExport: 'Named export whose identifier appears in depId.wrappers; it must be synchronous and unary.',
             },
             notes: [
-                'The current runtime reads namespace.__deps__ directly; it does not use export-scoped dependency maps.',
+                'The current runtime accepts both export-scoped hierarchical descriptors and the flat shorthand form for limited single-export cases.',
                 'Wrapper functions are exported by the same resolved module namespace, not registered globally in the container.',
             ],
         },
@@ -429,7 +429,7 @@ export const PACKAGE_API: PackageApiContract = {
     operationalNotes: [
         'Only two runtime entrypoints are supported by package.json exports: @teqfw/di and @teqfw/di/src/Config/NamespaceRegistry.mjs.',
         'Resolved values are frozen before being returned.',
-        'The current runtime reads __deps__ as a flat top-level map exported by the module namespace.',
+        'Dependency descriptors are canonical when hierarchical and export-scoped; flat descriptors are shorthand for limited single-export cases; omission means no dependencies.',
         'With the default parser, CDC without lifecycle returns the whole module namespace as-is; named export selection implies factory composition.',
         'Named wrapper exports are executed after addPostprocess() hooks and before freeze.',
         'In the current implementation, CDC markers $$ and $$$ both end up as transient/no-cache behavior.',

@@ -223,28 +223,37 @@ The container:
 
 ## Dependency Contracts (`__deps__`)
 
-Modules declare dependencies using a static export.
+Modules declare dependencies using a static export descriptor.
 
 ```javascript
 export const __deps__ = {
-  localName: "Dependency_CDC",
+  default: {
+    localName: "Dependency_CDC",
+  },
+  Factory: {
+    localName: "Dependency_CDC",
+  },
 };
 ```
 
 Rules:
 
+- the canonical form is hierarchical and keyed by export name
+- each export entry maps constructor argument names to CDC dependency identifiers
 - if `__deps__` is absent — module has no dependencies
-- keys correspond to constructor argument names in the export they describe
-- values are CDC dependency identifiers
+- a flat `__deps__` object is a shorthand allowed only for limited single-export cases
 - dependencies are resolved recursively
 
-When a module exposes both a default export and a named export, `__deps__` can describe either one through the CDC export selector.
-
-Example:
+Canonical example:
 
 ```javascript
 export const __deps__ = {
-  cast: "Fl32_Web_Helper_Cast$",
+  default: {
+    cast: "Fl32_Web_Helper_Cast$",
+  },
+  Factory: {
+    cast: "Fl32_Web_Helper_Cast$",
+  },
 };
 
 export default class RuntimeWrapper {
@@ -269,6 +278,40 @@ In this pattern:
 - the default export is the runtime wrapper or module shell
 - the named `Factory` export is the DI-managed component
 - `__deps__` applies to the export selected by the CDC, such as `App_Module__Factory$`
+
+Shorthand example for a single-export module:
+
+```javascript
+export const __deps__ = {
+  cast: "Fl32_Web_Helper_Cast$",
+};
+
+export default class RuntimeWrapper {
+  constructor() {
+    return {
+      mode: "runtime-wrapper",
+    };
+  }
+}
+```
+
+Empty descriptor example:
+
+```javascript
+export default class App_Empty {
+  constructor() {
+    this.ready = function () {
+      return true;
+    };
+  }
+}
+```
+
+In this pattern:
+
+- the module has no declared dependencies
+- `__deps__` is omitted entirely
+- the empty form is valid and intentionally explicit through omission
 
 ## Canonical Dependency Codes (CDC)
 

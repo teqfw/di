@@ -10,7 +10,7 @@ The container performs deterministic runtime linking of ES modules and returns f
 
 ## Module Structure
 
-Modules intended for container linking may expose a default export, a named export, or both. The static dependency descriptor `__deps__` describes the dependencies of the export selected by the CDC.
+Modules intended for container linking may expose a default export, a named export, or both. The static dependency descriptor `__deps__` is canonical when it is hierarchical and keyed by export name. It describes the dependencies of the export selected by the CDC.
 
 Dependencies are injected into the constructor as a single structured object. In TeqFW-style modules the public API is defined inside the constructor through assignments to `this`, while internal state may be held in constructor-local variables captured by closures.
 
@@ -20,7 +20,12 @@ Example module:
 // @ts-check
 
 export const __deps__ = {
-  cast: "Fl32_Web_Helper_Cast$",
+  default: {
+    cast: "Fl32_Web_Helper_Cast$",
+  },
+  Factory: {
+    cast: "Fl32_Web_Helper_Cast$",
+  },
 };
 
 /**
@@ -70,12 +75,13 @@ export default class App_Child {
 
 Rules:
 
+- the canonical form of `__deps__` is hierarchical and keyed by export name
+- each export entry maps constructor dependency names to CDC identifiers
 - if `__deps__` is absent the module has no dependencies
-- keys correspond to constructor dependency names in the export they describe
-- values are CDC identifiers
+- a flat `__deps__` object is shorthand for limited single-export cases
 - dependencies are resolved recursively before instantiation
 
-When the CDC selects `App_Module$`, the container uses the default export. When the CDC selects `App_Module__Factory$`, the container uses the named `Factory` export. In the first case the default export can act as a runtime wrapper or module shell; in the second case the named export is the DI-managed component that receives `__deps__`.
+When the CDC selects `App_Module$`, the container uses the default export. When the CDC selects `App_Module__Factory$`, the container uses the named `Factory` export. In the first case the default export can act as a runtime wrapper or module shell; in the second case the named export is the DI-managed component that receives `__deps__.Factory`.
 
 ## Container Configuration
 
@@ -187,11 +193,16 @@ Typical usage:
 - factory entry points
 - specialized constructors
 
-For modules with a runtime default export and a DI-managed named export, the descriptor follows the named export, for example:
+For modules with a runtime default export and a DI-managed named export, the canonical descriptor follows the export-scoped hierarchical form, for example:
 
 ```js
 export const __deps__ = {
-  cast: "Fl32_Web_Helper_Cast$",
+  default: {
+    cast: "Fl32_Web_Helper_Cast$",
+  },
+  Factory: {
+    cast: "Fl32_Web_Helper_Cast$",
+  },
 };
 
 export default class RuntimeWrapper {
@@ -218,6 +229,32 @@ App_Service$$_log_trace
 ```
 
 The container creates the dependency and applies wrappers in declared order.
+
+### Shorthand Form
+
+Some single-export modules may use a flat `__deps__` object as shorthand.
+
+```js
+export const __deps__ = {
+  cast: "Fl32_Web_Helper_Cast$",
+};
+```
+
+This form is a convenience for limited cases and does not replace the canonical hierarchical model.
+
+### Empty Descriptor
+
+Modules with no declared dependencies omit `__deps__` entirely.
+
+```js
+export default class App_Empty {
+  constructor() {
+    this.ready = function () {
+      return true;
+    };
+  }
+}
+```
 
 Typical usage:
 
@@ -252,7 +289,7 @@ Applications typically resolve a single root dependency.
 const root = await container.get("App_Root$");
 ```
 
-The container recursively resolves all dependencies declared through `__deps__` and constructs the object graph.
+The container recursively resolves all dependencies declared through `__deps__` and constructs the object graph. Empty descriptor modules omit `__deps__` entirely.
 
 ## Wrapper-Based Behavioral Composition
 

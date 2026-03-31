@@ -76,7 +76,14 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
                 const depsDecl = Reflect.get(namespace, '__deps__');
                 if (depsDecl === undefined) return;
                 /** @type {Record<string, unknown>} */
-                const depsMap = /** @type {Record<string, unknown>} */ (depsDecl);
+                let depsMap = /** @type {Record<string, unknown>} */ (depsDecl);
+                if ((depsDecl !== null) && (typeof depsDecl === 'object') && !Array.isArray(depsDecl)) {
+                    const exportName = depId.exportName === null ? 'default' : depId.exportName;
+                    const exportScoped = Reflect.get(/** @type {object} */ (depsDecl), exportName);
+                    if ((exportScoped !== undefined) && (exportScoped !== null) && (typeof exportScoped === 'object') && !Array.isArray(exportScoped)) {
+                        depsMap = /** @type {Record<string, unknown>} */ (exportScoped);
+                    }
+                }
                 for (const [, cdc] of Object.entries(depsMap)) {
                     /** @type {string} */
                     const nextCdc = /** @type {string} */ (cdc);
