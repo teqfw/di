@@ -157,18 +157,41 @@ export default function App_Child() {
 }
 ```
 
+`src/App/Helper/Cast.mjs`
+
+```javascript
+export default function App_Helper_Cast() {
+  return function cast(value) {
+    return String(value);
+  };
+}
+```
+
 `src/App/Root.mjs`
 
 ```javascript
 export const __deps__ = {
-  child: "App_Child$",
+  cast: "App_Helper_Cast$",
 };
 
-export default function App_Root({ child }) {
-  return {
-    name: "root",
-    child,
-  };
+export default class RuntimeWrapper {
+  constructor() {
+    return {
+      mode: "runtime-wrapper",
+    };
+  }
+}
+
+export class Factory {
+  constructor({ cast }) {
+    this.configure = function (params = {}) {
+      return {
+        name: "factory",
+        cast,
+        params,
+      };
+    };
+  }
 }
 ```
 
@@ -186,10 +209,9 @@ const container = new Container();
 
 container.addNamespaceRoot("App_", path.resolve(__dirname, "./src/App"), ".mjs");
 
-const root = await container.get("App_Root$");
+const factory = await container.get("App_Root__Factory$");
 
-console.log(root.name);
-console.log(root.child.name);
+console.log(factory.configure().mode);
 ```
 
 The container:
@@ -212,9 +234,41 @@ export const __deps__ = {
 Rules:
 
 - if `__deps__` is absent — module has no dependencies
-- keys correspond to constructor argument names
+- keys correspond to constructor argument names in the export they describe
 - values are CDC dependency identifiers
 - dependencies are resolved recursively
+
+When a module exposes both a default export and a named export, `__deps__` can describe either one through the CDC export selector.
+
+Example:
+
+```javascript
+export const __deps__ = {
+  cast: "Fl32_Web_Helper_Cast$",
+};
+
+export default class RuntimeWrapper {
+  constructor() {
+    return {
+      mode: "runtime-wrapper",
+    };
+  }
+}
+
+export class Factory {
+  constructor({ cast }) {
+    this.configure = function (params = {}) {
+      // DI-managed component
+    };
+  }
+}
+```
+
+In this pattern:
+
+- the default export is the runtime wrapper or module shell
+- the named `Factory` export is the DI-managed component
+- `__deps__` applies to the export selected by the CDC, such as `App_Module__Factory$`
 
 ## Canonical Dependency Codes (CDC)
 
