@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.0 - 2026-03-31 - Test coverage cleanup
+
+* Removed low-value unit tests in favor of broader integration coverage.
+* Moved the useful preprocess/postprocess order scenario into integration tests.
+* Updated package version metadata to `2.4.0`.
+
 ## 2.3.1 - 2026-03-25 - Patch release preparation
 
 * Updated package version metadata to `2.3.1`.
