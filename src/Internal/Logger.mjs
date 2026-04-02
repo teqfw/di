@@ -1,6 +1,11 @@
 // @ts-check
 
 /**
+ * @namespace TeqFw_Di_Internal_Logger
+ * @description Internal console logger for diagnostics.
+ */
+
+/**
  * Internal synchronous console logger.
  *
  * This module is internal infrastructure and must not be exposed as a public API.

@@ -1,5 +1,10 @@
 // @ts-check
 
+/**
+ * @namespace TeqFw_Di_Dto_DepId
+ * @description Dependency identity DTO and factory.
+ */
+
 import TeqFw_Di_Enum_Composition from '../Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../Enum/Life.mjs';
 import TeqFw_Di_Enum_Platform from '../Enum/Platform.mjs';
@@ -54,7 +59,7 @@ export class Factory {
      * Creates normalized frozen dependency identity DTO.
      *
      * @param {unknown} [input]
-     * @returns {TeqFw_Di_DepId$DTO}
+     * @returns {TeqFw_Di_DepId__DTO}
      */
     create(input) {
         /** @type {Record<string, unknown>} */

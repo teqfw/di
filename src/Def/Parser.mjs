@@ -1,5 +1,10 @@
 // @ts-check
 
+/**
+ * @namespace TeqFw_Di_Def_Parser
+ * @description CDC parser that builds dependency identity DTOs.
+ */
+
 import TeqFw_Di_Enum_Composition from '../Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../Enum/Life.mjs';
 import TeqFw_Di_Enum_Platform from '../Enum/Platform.mjs';
@@ -13,7 +18,7 @@ export default class TeqFw_Di_Def_Parser {
      * Creates parser instance.
      */
     constructor() {
-        /** @type {TeqFw_Di_Dto_DepId$Factory} Factory used to construct dependency identity DTO. */
+        /** @type {TeqFw_Di_Dto_DepId__Factory} Factory used to construct dependency identity DTO. */
         const depIdFactory = new TeqFw_Di_Dto_DepId_Factory();
         /** @type {{log(message: string): void}|null} */
         let logger = null;
@@ -22,7 +27,7 @@ export default class TeqFw_Di_Def_Parser {
          * Parses one CDC identifier and returns normalized frozen dependency DTO.
          *
          * @param {string} cdc CDC identifier string.
-         * @returns {TeqFw_Di_DepId$DTO}
+         * @returns {TeqFw_Di_DepId__DTO}
          */
         this.parse = function (cdc) {
             if (logger) logger.log(`Parser.parse: input='${cdc}'.`);

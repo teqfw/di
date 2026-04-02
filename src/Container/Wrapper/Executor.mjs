@@ -1,6 +1,11 @@
 // @ts-check
 
 /**
+ * @namespace TeqFw_Di_Container_Wrapper_Executor
+ * @description Applies wrapper pipeline to resolved values.
+ */
+
+/**
  * Wrapper-stage executor.
  *
  * Executes wrapper pipeline declared in `depId.wrappers` using functions
@@ -25,7 +30,7 @@ export default class TeqFw_Di_Container_Wrapper_Executor {
         /**
          * Applies wrappers in declaration order.
          *
-         * @param {TeqFw_Di_DepId$DTO} depId
+         * @param {TeqFw_Di_DepId__DTO} depId
          * @param {unknown} value
          * @param {object} moduleNamespace
          * @returns {unknown}

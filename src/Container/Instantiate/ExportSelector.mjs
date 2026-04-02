@@ -1,6 +1,11 @@
 // @ts-check
 
 /**
+ * @namespace TeqFw_Di_Container_Instantiate_ExportSelector
+ * @description Selects target export from loaded module namespace.
+ */
+
+/**
  * Instantiate-stage export selector.
  *
  * Selects exactly one export from an already loaded ES module namespace object
@@ -15,7 +20,7 @@ export default class TeqFw_Di_Container_Instantiate_ExportSelector {
          * Selects a raw export value from module namespace.
          *
          * @param {object} namespace Loaded ES module namespace object.
-         * @param {TeqFw_Di_DepId$DTO} depId Dependency identity DTO.
+         * @param {TeqFw_Di_DepId__DTO} depId Dependency identity DTO.
          * @returns {unknown} Raw selected export value.
          */
         this.select = function (namespace, depId) {

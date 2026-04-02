@@ -1,5 +1,10 @@
 // @ts-check
 
+/**
+ * @namespace TeqFw_Di_Container
+ * @description DI container orchestration entry point.
+ */
+
 import TeqFw_Di_Def_Parser from './Def/Parser.mjs';
 import {Factory as TeqFw_Di_Dto_Resolver_Config_Factory} from './Dto/Resolver/Config.mjs';
 import TeqFw_Di_Resolver from './Container/Resolver.mjs';
@@ -30,11 +35,11 @@ export default class TeqFw_Di_Container {
     constructor() {
         /** @type {TeqFw_Di_Container_State} */
         let state = 'notConfigured';
-        /** @type {((depId: TeqFw_Di_DepId$DTO) => TeqFw_Di_DepId$DTO)[]} */
+        /** @type {((depId: TeqFw_Di_DepId__DTO) => TeqFw_Di_DepId__DTO)[]} */
         const preprocess = [];
         /** @type {((value: unknown) => unknown)[]} */
         const postprocess = [];
-        /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace$DTO[]} */
+        /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace__DTO[]} */
         const namespaceRoots = [];
         /** @type {Map<string, unknown>} */
         const mockRegistry = new Map();
@@ -45,7 +50,7 @@ export default class TeqFw_Di_Container {
 
         /** @type {TeqFw_Di_Def_Parser} */
         let parser = new TeqFw_Di_Def_Parser();
-        /** @type {TeqFw_Di_Dto_Resolver_Config$Factory} */
+        /** @type {TeqFw_Di_Dto_Resolver_Config__Factory} */
         const configFactory = new TeqFw_Di_Dto_Resolver_Config_Factory();
         /** @type {TeqFw_Di_Resolver|undefined} */
         let resolver;
@@ -61,7 +66,7 @@ export default class TeqFw_Di_Container {
         const wrapperExecutor = new TeqFw_Di_Container_Wrapper_Executor();
 
         /**
-         * @param {TeqFw_Di_DepId$DTO} depId
+         * @param {TeqFw_Di_DepId__DTO} depId
          * @returns {string}
          */
         const getKey = function (depId) {
@@ -81,7 +86,7 @@ export default class TeqFw_Di_Container {
         /**
          * Canonical structural identity excluding `origin`.
          *
-         * @param {TeqFw_Di_DepId$DTO} depId
+         * @param {TeqFw_Di_DepId__DTO} depId
          * @returns {string}
          */
         const getMockKey = function (depId) {
@@ -138,11 +143,11 @@ export default class TeqFw_Di_Container {
         /**
          * Applies ordered preprocess pipeline.
          *
-         * @param {TeqFw_Di_DepId$DTO} depId
-         * @returns {TeqFw_Di_DepId$DTO}
+         * @param {TeqFw_Di_DepId__DTO} depId
+         * @returns {TeqFw_Di_DepId__DTO}
          */
         const applyPreprocess = function (depId) {
-            /** @type {TeqFw_Di_DepId$DTO} */
+            /** @type {TeqFw_Di_DepId__DTO} */
             let current = depId;
             for (const fn of preprocess) {
                 current = fn(current);
@@ -167,7 +172,7 @@ export default class TeqFw_Di_Container {
 
         /**
          * @param {object} namespace
-         * @param {TeqFw_Di_DepId$DTO} depId
+         * @param {TeqFw_Di_DepId__DTO} depId
          * @returns {Record<string, unknown>}
          */
         const readDepsDecl = function (namespace, depId) {
@@ -223,7 +228,7 @@ export default class TeqFw_Di_Container {
         /**
          * Registers preprocess extension before first resolution.
          *
-         * @param {(depId: TeqFw_Di_DepId$DTO) => TeqFw_Di_DepId$DTO} fn
+         * @param {(depId: TeqFw_Di_DepId__DTO) => TeqFw_Di_DepId__DTO} fn
          * @returns {void}
          */
         this.addPreprocess = function (fn) {
@@ -329,12 +334,12 @@ export default class TeqFw_Di_Container {
                 logger.log(`Container.get: cdc='${cdc}'.`);
                 initializeInfrastructure();
                 logger.log(`Container.state: '${state}'.`);
-                /** @type {TeqFw_Di_DepId$DTO} */
+                /** @type {TeqFw_Di_DepId__DTO} */
                 stage = 'parse';
                 logger.log('Container.pipeline: parse:entry.');
                 const parsed = parser.parse(cdc);
                 logger.log(`Container.pipeline: parse:exit '${parsed.platform}::${parsed.moduleName}'.`);
-                /** @type {TeqFw_Di_DepId$DTO} */
+                /** @type {TeqFw_Di_DepId__DTO} */
                 stage = 'preprocess';
                 logger.log('Container.pipeline: preprocess:entry.');
                 const root = applyPreprocess(parsed);
@@ -356,7 +361,7 @@ export default class TeqFw_Di_Container {
                 } else {
                     logger.log('Container.pipeline: mock-lookup:disabled.');
                 }
-                /** @type {Map<string, {depId: TeqFw_Di_DepId$DTO, namespace: object}>} */
+                /** @type {Map<string, {depId: TeqFw_Di_DepId__DTO, namespace: object}>} */
                 stage = 'resolve';
                 logger.log('Container.pipeline: resolve:entry.');
                 const graph = await graphResolver.resolve(root);
@@ -385,7 +390,7 @@ export default class TeqFw_Di_Container {
                         for (const [name, cdc] of Object.entries(depsDecl)) {
                             /** @type {string} */
                             const childCdc = /** @type {string} */ (cdc);
-                            /** @type {TeqFw_Di_DepId$DTO} */
+                            /** @type {TeqFw_Di_DepId__DTO} */
                             const childDepId = parser.parse(childCdc);
                             deps[name] = build(getKey(childDepId));
                         }

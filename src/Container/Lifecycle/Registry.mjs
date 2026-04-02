@@ -1,5 +1,10 @@
 // @ts-check
 
+/**
+ * @namespace TeqFw_Di_Container_Lifecycle_Registry
+ * @description Lifecycle policy cache for produced values.
+ */
+
 import TeqFw_Di_Enum_Composition from '../../Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../../Enum/Life.mjs';
 
@@ -25,7 +30,7 @@ export default class TeqFw_Di_Container_Lifecycle_Registry {
         /**
          * Builds deterministic cache key from structural DepId fields.
          *
-         * @param {TeqFw_Di_DepId$DTO} depId
+         * @param {TeqFw_Di_DepId__DTO} depId
          * @returns {string}
          */
         const buildKey = function (depId) {
@@ -44,7 +49,7 @@ export default class TeqFw_Di_Container_Lifecycle_Registry {
         /**
          * Returns value according to lifecycle policy.
          *
-         * @param {TeqFw_Di_DepId$DTO} depId
+         * @param {TeqFw_Di_DepId__DTO} depId
          * @param {() => unknown} producer
          * @returns {unknown}
          */

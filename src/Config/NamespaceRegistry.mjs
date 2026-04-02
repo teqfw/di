@@ -1,6 +1,11 @@
 // @ts-check
 
 /**
+ * @namespace TeqFw_Di_Config_NamespaceRegistry
+ * @description Deterministic loader for package namespace rules.
+ */
+
+/**
  * @typedef {object} TeqFw_Di_Config_NamespaceRegistry_Dependencies
  * @property {{readFile(path: string, encoding: string): Promise<string>, readdir(path: string): Promise<string[]>, realpath(path: string): Promise<string>, stat(path: string): Promise<{isDirectory(): boolean}>}} fs
  * @property {{join(...paths: string[]): string, dirname(path: string): string, relative(from: string, to: string): string, resolve(...paths: string[]): string, isAbsolute(path: string): boolean}} path
@@ -19,7 +24,7 @@
  */
 export default class TeqFw_Di_Config_NamespaceRegistry {
     /**
-     * @param {TeqFw_Di_Config_NamespaceRegistry_Dependencies} dependencies
+     * @param {TeqFw_Di_Config_NamespaceRegistry_Dependencies} deps
      */
     constructor({fs, path, appRoot}) {
         const appRootAbs = path.resolve(appRoot);

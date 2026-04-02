@@ -1,5 +1,10 @@
 // @ts-check
 
+/**
+ * @namespace TeqFw_Di_Container_Instantiate_Instantiator
+ * @description Instantiates selected exports using composition rules.
+ */
+
 import TeqFw_Di_Enum_Composition from '../../Enum/Composition.mjs';
 
 /**
@@ -30,7 +35,7 @@ export default class TeqFw_Di_Container_Instantiate_Instantiator {
         /**
          * Selects the value used by composition.
          *
-         * @param {TeqFw_Di_DepId$DTO} depId
+         * @param {TeqFw_Di_DepId__DTO} depId
          * @param {object} moduleNamespace
          * @returns {Factory}
          */
@@ -66,7 +71,7 @@ export default class TeqFw_Di_Container_Instantiate_Instantiator {
         /**
          * Produces a value from a resolved module namespace and dependency map.
          *
-         * @param {TeqFw_Di_DepId$DTO} depId
+         * @param {TeqFw_Di_DepId__DTO} depId
          * @param {object} moduleNamespace
          * @param {Record<string, unknown>} resolvedDeps
          * @returns {unknown}

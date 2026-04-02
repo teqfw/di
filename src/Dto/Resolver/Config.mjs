@@ -1,5 +1,10 @@
 // @ts-check
 
+/**
+ * @namespace TeqFw_Di_Dto_Resolver_Config
+ * @description Resolver configuration DTO and factory.
+ */
+
 import {Factory as TeqFw_Di_Dto_Resolver_Config_Namespace_Factory} from './Config/Namespace.mjs';
 
 /**
@@ -10,7 +15,7 @@ import {Factory as TeqFw_Di_Dto_Resolver_Config_Namespace_Factory} from './Confi
  * Runtime DTO for resolver configuration.
  */
 export default class DTO {
-    /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace$DTO[]} Namespace resolution rules. */
+    /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace__DTO[]} Namespace resolution rules. */
     namespaces;
 
     /** @type {string|undefined} Optional node_modules root prefix for npm modules. */
@@ -31,14 +36,14 @@ export class Factory {
         /**
          * Creates normalized frozen resolver configuration DTO.
          *
-         * @param {Partial<TeqFw_Di_Dto_Resolver_Config$DTO>|Record<string, unknown>} [input] Source values.
-         * @returns {TeqFw_Di_Dto_Resolver_Config$DTO}
+         * @param {Partial<TeqFw_Di_Dto_Resolver_Config__DTO>|Record<string, unknown>} [input] Source values.
+         * @returns {TeqFw_Di_Dto_Resolver_Config__DTO}
          */
         this.create = function (input) {
-            /** @type {Partial<TeqFw_Di_Dto_Resolver_Config$DTO>|Record<string, unknown>} */
+            /** @type {Partial<TeqFw_Di_Dto_Resolver_Config__DTO>|Record<string, unknown>} */
             const source = (input && (typeof input === 'object')) ? input : {};
 
-            /** @type {TeqFw_Di_Dto_Resolver_Config$DTO} */
+            /** @type {TeqFw_Di_Dto_Resolver_Config__DTO} */
             const dto = new DTO();
             /** @type {unknown[]} */
             const items = Array.isArray(source.namespaces) ? source.namespaces : [];

@@ -1,6 +1,11 @@
 // @ts-check
 
 /**
+ * @namespace TeqFw_Di_Container_Resolve_GraphResolver
+ * @description Dependency graph resolver for container preloading.
+ */
+
+/**
  * Resolve-stage graph builder.
  *
  * Recursively resolves module namespaces and their declared `__deps__`
@@ -15,7 +20,7 @@
  */
 
 /**
- * @typedef {{depId: TeqFw_Di_DepId$DTO, namespace: object}} TeqFw_Di_Container_Resolve_GraphResolver_Node
+ * @typedef {{depId: TeqFw_Di_DepId__DTO, namespace: object}} TeqFw_Di_Container_Resolve_GraphResolver_Node
  */
 
 export default class TeqFw_Di_Container_Resolve_GraphResolver {
@@ -28,7 +33,7 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
         const log = logger;
 
         /**
-         * @param {TeqFw_Di_DepId$DTO} depId
+         * @param {TeqFw_Di_DepId__DTO} depId
          * @returns {string}
          */
         const makeNodeKey = function (depId) {
@@ -45,7 +50,7 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
         };
 
         /**
-         * @param {TeqFw_Di_DepId$DTO} depId
+         * @param {TeqFw_Di_DepId__DTO} depId
          * @param {Map<string, TeqFw_Di_Container_Resolve_GraphResolver_Node>} out
          * @param {Set<string>} stack
          * @param {string[]} chain
@@ -87,7 +92,7 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
                 for (const [, cdc] of Object.entries(depsMap)) {
                     /** @type {string} */
                     const nextCdc = /** @type {string} */ (cdc);
-                    /** @type {TeqFw_Di_DepId$DTO} */
+                    /** @type {TeqFw_Di_DepId__DTO} */
                     const nextDepId = parser.parse(nextCdc);
                     if (log) log.log(`GraphResolver.walk: edge '${key}' -> '${nextDepId.platform}::${nextDepId.moduleName}'.`);
                     await walk(nextDepId, out, stack, chain);
@@ -101,7 +106,7 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
         /**
          * Resolves full dependency graph for a root depId.
          *
-         * @param {TeqFw_Di_DepId$DTO} depId
+         * @param {TeqFw_Di_DepId__DTO} depId
          * @returns {Promise<Map<string, TeqFw_Di_Container_Resolve_GraphResolver_Node>>}
          */
         this.resolve = async function (depId) {
