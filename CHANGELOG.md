@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.0 - 2026-04-04 - Parser and documentation refinement
+
+* Clarified JSDoc typing and module headers to align with TeqFW specifications.
+* Allowed parser recognition of Node.js built-ins that include underscores in their names.
+* Updated package version metadata to `2.5.0`.
+
 ## 2.4.0 - 2026-03-31 - Test coverage cleanup
 
 * Removed low-value unit tests in favor of broader integration coverage.
