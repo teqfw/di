@@ -76,7 +76,7 @@ export default class TeqFw_Di_Def_Parser {
                 }
             } else {
                 if (source.includes('$')) throw new Error('Invalid lifecycle encoding.');
-                if (/(?:^|[^_])_[a-z][0-9A-Za-z]*$/.test(source)) {
+                if ((platform !== TeqFw_Di_Enum_Platform.NODE) && /(?:^|[^_])_[a-z][0-9A-Za-z]*$/.test(source)) {
                     throw new Error('Wrapper without lifecycle is forbidden.');
                 }
             }

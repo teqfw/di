@@ -137,6 +137,50 @@ describe('TeqFw_Di_Def_Parser', () => {
                 },
             },
             {
+                cdc: `node:child_process`,
+                expected: {
+                    platform: TeqFw_Di_Enum_Platform.NODE,
+                    moduleName: 'child_process',
+                    exportName: null,
+                    life: null,
+                    composition: TeqFw_Di_Enum_Composition.AS_IS,
+                    wrappers: [],
+                },
+            },
+            {
+                cdc: `node:worker_threads`,
+                expected: {
+                    platform: TeqFw_Di_Enum_Platform.NODE,
+                    moduleName: 'worker_threads',
+                    exportName: null,
+                    life: null,
+                    composition: TeqFw_Di_Enum_Composition.AS_IS,
+                    wrappers: [],
+                },
+            },
+            {
+                cdc: `node:worker_threads$`,
+                expected: {
+                    platform: TeqFw_Di_Enum_Platform.NODE,
+                    moduleName: 'worker_threads',
+                    exportName: 'default',
+                    life: TeqFw_Di_Enum_Life.SINGLETON,
+                    composition: TeqFw_Di_Enum_Composition.FACTORY,
+                    wrappers: [],
+                },
+            },
+            {
+                cdc: `node:child_process__execFile`,
+                expected: {
+                    platform: TeqFw_Di_Enum_Platform.NODE,
+                    moduleName: 'child_process',
+                    exportName: 'execFile',
+                    life: null,
+                    composition: TeqFw_Di_Enum_Composition.FACTORY,
+                    wrappers: [],
+                },
+            },
+            {
                 cdc: `npm:@vendor/package`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.NPM,
