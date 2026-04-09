@@ -43,6 +43,20 @@ describe('Integration 35: dependency fixture forms', () => {
         assert.equal(value.start().toISOString(), '2026-03-31T00:00:00.000Z');
     });
 
+    it('resolves named-only __deps__ without a default entry', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        container.enableTestMode();
+
+        const defaultValue = await container.get('TestSample_NamedOnly$');
+        const factoryValue = await container.get('TestSample_NamedOnly__Factory$');
+
+        assert.equal(typeof defaultValue.start, 'function');
+        assert.equal(defaultValue.getStartedAt(), null);
+        assert.equal(typeof factoryValue.startAt, 'function');
+        assert.equal(factoryValue.startAt().toISOString(), '2026-03-31T00:00:00.000Z');
+    });
+
     it('resolves empty descriptor modules without mock dependencies', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');

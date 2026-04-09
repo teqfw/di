@@ -159,7 +159,46 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
         io.setNamespace(root, {__deps__: 'bad'});
         const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
 
-        await assert.rejects(resolver.resolve(root), /Unexpected CDC/);
+        await assert.rejects(resolver.resolve(root), /__deps__ must be a plain object/);
+    });
+
+    it('rejects nested __deps__ values deeper than two levels', async () => {
+        const root = createDepId({moduleName: 'App_Root'});
+        const io = createDoubles();
+        io.setNamespace(root, {__deps__: {default: {svc: {bad: 'App_B'}}}});
+        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+
+        await assert.rejects(resolver.resolve(root), /export entries must map dependency names to CDC strings/);
+    });
+
+    it('treats named-only __deps__ as empty for default export', async () => {
+        const root = createDepId({moduleName: 'App_Root'});
+        const depB = createDepId({moduleName: 'App_B'});
+        const io = createDoubles();
+        io.setNamespace(root, {__deps__: {Factory: {b: 'App_B'}}});
+        io.setNamespace(depB, {});
+        io.setParsed('App_B', depB);
+        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+
+        const graph = await resolver.resolve(root);
+
+        assert.equal(graph.size, 1);
+        assert.deepStrictEqual(io.parseCalls, []);
+    });
+
+    it('resolves named-only __deps__ for the matching export', async () => {
+        const root = createDepId({moduleName: 'App_Root', exportName: 'Factory', composition: 'F'});
+        const depB = createDepId({moduleName: 'App_B'});
+        const io = createDoubles();
+        io.setNamespace(root, {__deps__: {Factory: {b: 'App_B'}}});
+        io.setNamespace(depB, {});
+        io.setParsed('App_B', depB);
+        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+
+        const graph = await resolver.resolve(root);
+
+        assert.equal(graph.size, 2);
+        assert.deepStrictEqual(io.parseCalls, ['App_B']);
     });
 
     it('Duplicate Dependency Resolution: shared module resolved once', async () => {

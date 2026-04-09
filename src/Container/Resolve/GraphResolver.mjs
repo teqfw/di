@@ -81,12 +81,24 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
                 const depsDecl = Reflect.get(namespace, '__deps__');
                 if (depsDecl === undefined) return;
                 /** @type {Record<string, unknown>} */
-                let depsMap = /** @type {Record<string, unknown>} */ (depsDecl);
-                if ((depsDecl !== null) && (typeof depsDecl === 'object') && !Array.isArray(depsDecl)) {
-                    const exportName = depId.exportName === null ? 'default' : depId.exportName;
-                    const exportScoped = Reflect.get(/** @type {object} */ (depsDecl), exportName);
-                    if ((exportScoped !== undefined) && (exportScoped !== null) && (typeof exportScoped === 'object') && !Array.isArray(exportScoped)) {
-                        depsMap = /** @type {Record<string, unknown>} */ (exportScoped);
+                let depsMap = {};
+                if ((depsDecl === null) || (typeof depsDecl !== 'object') || Array.isArray(depsDecl)) {
+                    throw new Error('__deps__ must be a plain object.');
+                }
+                const exportName = depId.exportName === null ? 'default' : depId.exportName;
+                const exportScoped = Reflect.get(/** @type {object} */ (depsDecl), exportName);
+                if ((exportScoped !== undefined) && (exportScoped !== null) && (typeof exportScoped === 'object') && !Array.isArray(exportScoped)) {
+                    const values = Object.values(/** @type {Record<string, unknown>} */ (exportScoped));
+                    if (!values.every((value) => typeof value === 'string')) {
+                        throw new Error('__deps__ export entries must map dependency names to CDC strings.');
+                    }
+                    depsMap = /** @type {Record<string, unknown>} */ (exportScoped);
+                } else if (exportName === 'default') {
+                    const values = Object.values(/** @type {Record<string, unknown>} */ (depsDecl));
+                    if (values.every((value) => typeof value === 'string')) {
+                        depsMap = /** @type {Record<string, unknown>} */ (depsDecl);
+                    } else if (!values.every((value) => (value !== null) && (typeof value === 'object') && !Array.isArray(value))) {
+                        throw new Error('__deps__ must be either flat or export-scoped.');
                     }
                 }
                 for (const [, cdc] of Object.entries(depsMap)) {

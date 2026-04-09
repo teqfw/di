@@ -78,7 +78,8 @@ Rules:
 - the canonical form of `__deps__` is hierarchical and keyed by export name
 - each export entry maps constructor dependency names to CDC identifiers
 - if `__deps__` is absent the module has no dependencies
-- a flat `__deps__` object is shorthand for limited single-export cases
+- a flat `__deps__` object is shorthand for a dependency-free default export or limited single-export cases
+- a named export may declare dependencies without requiring a `default` entry
 - dependencies are resolved recursively before instantiation
 
 When the CDC selects `App_Module$`, the container uses the default export. When the CDC selects `App_Module__Factory$`, the container uses the named `Factory` export. In the first case the default export can act as a runtime wrapper or module shell; in the second case the named export is the DI-managed component that receives `__deps__.Factory`.

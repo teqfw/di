@@ -267,14 +267,14 @@ export const PACKAGE_API: PackageApiContract = {
             kind: 'module-contract',
             summary: 'Shape expected from application modules resolved by the container.',
             fields: {
-                __deps__: 'Optional export-scoped dependency descriptor. Canonical form is hierarchical: Record<exportName, Record<dependencyKey, CDC string>>. A flat Record<dependencyKey, CDC string> is shorthand for limited single-export cases.',
+                __deps__: 'Optional dependency descriptor. Accepted forms are: absent/empty, a flat Record<dependencyKey, CDC string> for a dependency-free default export or limited single-export shorthand, or a hierarchical Record<exportName, Record<dependencyKey, CDC string>> for named exports.',
                 moduleNamespace: 'Whole ES module namespace object returned for as-is CDC without selected export.',
                 defaultExport: 'Used when the parsed DepId selects exportName="default" for factory composition.',
                 namedExports: 'May be selected via __ExportName for factory composition and may also provide wrapper functions.',
                 wrapperExport: 'Named export whose identifier appears in depId.wrappers; it must be synchronous and unary.',
             },
             notes: [
-                'The current runtime accepts both export-scoped hierarchical descriptors and the flat shorthand form for limited single-export cases.',
+                'The runtime accepts hierarchical descriptors for named exports and the flat shorthand form for dependency-free default exports or limited single-export cases.',
                 'Wrapper functions are exported by the same resolved module namespace, not registered globally in the container.',
             ],
         },
