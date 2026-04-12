@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.1 - 2026-04-12 - Documentation refresh and dependency fix
+
+* Fixed named-only `__deps__` resolution in the container and updated the related tests.
+* Rewrote the README and refreshed the `ai/` agent documentation for the current release line.
+* Updated package version metadata to `2.5.1`.
+
 ## 2.5.0 - 2026-04-04 - Parser and documentation refinement
 
 * Clarified JSDoc typing and module headers to align with TeqFW specifications.
