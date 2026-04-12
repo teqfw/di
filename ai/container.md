@@ -42,12 +42,15 @@ The container exposes a minimal public interface used by application code and co
 
 The core operations are:
 
+- **addNamespaceRoot(prefix, target, defaultExt)** — register namespace resolution rule for Teq modules.
 - **register(identifier, value)** — register a predefined dependency or instance in the container.
 - **get(identifier)** — resolve a dependency identifier and return the linked object.
 - **addPreprocess(handler)** — register a handler that can transform dependency identifiers before resolution.
 - **addPostprocess(handler)** — register a handler that can modify created objects after instantiation.
 
 The exact semantics of dependency identifiers are defined in **dependency-id.md**. Dependency descriptors are export-scoped: canonical descriptors are hierarchical and keyed by export name, while flat descriptors are shorthand for limited single-export cases.
+
+`addNamespaceRoot(prefix, target, defaultExt)` accepts a module-specifier base. The `target` may point to a filesystem-backed path or to a URL-backed import base depending on runtime environment.
 
 ## Container State Model
 

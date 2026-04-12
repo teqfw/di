@@ -47,9 +47,9 @@ The identifier syntax and resolution rules are described in **dependency-id.md**
 
 ## Namespaces
 
-Namespaces provide deterministic mapping between logical identifiers and module locations. Each package defines a namespace root that corresponds to a directory containing source modules.
+Namespaces provide deterministic mapping between logical identifiers and module locations. Each package defines one or more namespace roots that map a CDC prefix to a module-specifier base.
 
-The container resolves identifiers by applying namespace rules that translate identifier prefixes into filesystem paths. This mechanism allows modules to be referenced through stable logical names instead of file paths.
+The container resolves identifiers by applying namespace rules that translate identifier prefixes into module specifiers. In Node.js this often means filesystem-backed paths. In browser-oriented or isomorphic systems this may also mean URL-based import roots.
 
 Namespace resolution ensures:
 

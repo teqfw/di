@@ -14,46 +14,26 @@ Modules intended for container linking may expose a default export, a named expo
 
 Dependencies are injected into the constructor as a single structured object. In TeqFW-style modules the public API is defined inside the constructor through assignments to `this`, while internal state may be held in constructor-local variables captured by closures.
 
-Example module:
+Minimal single-export example:
 
 ```js
 // @ts-check
 
 export const __deps__ = {
-  default: {
-    cast: "Fl32_Web_Helper_Cast$",
-  },
-  Factory: {
-    cast: "Fl32_Web_Helper_Cast$",
-  },
+  cast: "App_Helper_Cast$",
 };
 
-/**
- * Runtime wrapper that can hold non-DI behavior.
- */
-
-export default class RuntimeWrapper {
-  constructor() {
-    return proxy;
-  }
-}
-
-/**
- * @typedef {Object} App_Factory$Deps
- * @property {object} cast
- */
-
-export class Factory {
+export default class App_Root {
   /**
-   * @param {App_Factory$Deps} deps
+   * @param {{cast: (value: unknown) => string}} deps
    */
   constructor({ cast }) {
-    this.configure = function (params = {}) {
-      return {
-        mode: "factory",
-        cast,
-        params,
-      };
+    return {
+      configure(params = {}) {
+        return {
+          name: cast(params.name ?? "app"),
+        };
+      },
     };
   }
 }
@@ -64,12 +44,10 @@ Dependency module:
 ```js
 // @ts-check
 
-export default class App_Child {
-  constructor() {
-    this.getName = function () {
-      return "child";
-    };
-  }
+export default function App_Helper_Cast() {
+  return function cast(value) {
+    return String(value);
+  };
 }
 ```
 
@@ -82,7 +60,37 @@ Rules:
 - a named export may declare dependencies without requiring a `default` entry
 - dependencies are resolved recursively before instantiation
 
-When the CDC selects `App_Module$`, the container uses the default export. When the CDC selects `App_Module__Factory$`, the container uses the named `Factory` export. In the first case the default export can act as a runtime wrapper or module shell; in the second case the named export is the DI-managed component that receives `__deps__.Factory`.
+When the CDC selects `App_Module$`, the container uses the default export. When the CDC selects `App_Module__Factory$`, the container uses the named export `Factory`.
+
+Canonical export-scoped form:
+
+```js
+export const __deps__ = {
+  default: {
+    cast: "App_Helper_Cast$",
+  },
+  Factory: {
+    cast: "App_Helper_Cast$",
+  },
+};
+
+export default class RuntimeWrapper {
+  constructor() {
+    return {mode: "wrapper"};
+  }
+}
+
+export class Factory {
+  constructor({ cast }) {
+    this.configure = function (params = {}) {
+      return {
+        mode: "factory",
+        name: cast(params.name ?? "app"),
+      };
+    };
+  }
+}
+```
 
 ## Container Configuration
 
@@ -102,6 +110,13 @@ container.addNamespaceRoot("App_", path.resolve(__dirname, "./src/App"), ".mjs")
 ```
 
 Configuration must be completed before the first dependency resolution.
+
+Browser-oriented or isomorphic configuration may also use URL-based import roots:
+
+```js
+container.addNamespaceRoot("App_", "https://cdn.example.com/app", ".mjs");
+container.addNamespaceRoot("Web_", "//cdn.example.com/web", ".mjs");
+```
 
 ## Resolving Dependencies
 
@@ -123,8 +138,7 @@ The container:
 Example usage:
 
 ```js
-console.log(root.getName());
-console.log(root.getChild().getName());
+console.log(root.configure({name: 123}).name);
 console.log(Object.isFrozen(root));
 ```
 
@@ -208,14 +222,14 @@ export const __deps__ = {
 
 export default class RuntimeWrapper {
   constructor() {
-    return proxy;
+    return {mode: "wrapper"};
   }
 }
 
 export class Factory {
   constructor({ cast }) {
     this.configure = function (params = {}) {
-      return { cast, params };
+      return {cast, params};
     };
   }
 }
@@ -237,7 +251,7 @@ Some single-export modules may use a flat `__deps__` object as shorthand.
 
 ```js
 export const __deps__ = {
-  cast: "Fl32_Web_Helper_Cast$",
+  cast: "App_Helper_Cast$",
 };
 ```
 

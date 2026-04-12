@@ -6,7 +6,7 @@ Version: 20260331
 
 This directory provides the **Agent Interface** of the package. It contains a compact usage-oriented description intended for LLM agents that use the package as a dependency. The documents describe how the package is applied by external code and exclude development methodology, repository organization, testing infrastructure, and other internal aspects of the project.
 
-The package implements a **dependency container for ES modules** based on runtime late binding. Dependencies between modules are resolved by the container using structured dependency identifiers and deterministic namespace resolution rules rather than static imports. The container dynamically loads ES modules, instantiates exported factories, and returns linked objects according to dependency identifier semantics.
+The package implements a **deterministic runtime dependency linker for ES modules** based on late binding. Dependencies between modules are resolved by the container using structured dependency identifiers and namespace resolution rules rather than application-level static imports. The container dynamically loads ES modules, instantiates exports according to CDC semantics, and returns linked frozen values.
 
 ## When to Use This Package
 
@@ -17,8 +17,17 @@ This package should be used when a system requires the following capabilities:
 - deterministic dependency resolution
 - controlled instantiation of components
 - modules that remain environment-agnostic across Node.js and browser runtimes
+- explicit machine-readable dependency structure for agent-assisted maintenance
 
 The container serves as the **composition root** of the application. Application modules declare dependencies and receive instantiated objects from the container rather than resolving dependencies directly.
+
+This package is primarily a fit for:
+
+- modular monolith web applications
+- isomorphic JavaScript systems with shared browser/server code
+- pure JavaScript + JSDoc codebases
+
+It is usually not a natural fit for TypeScript-first architectures built around decorators, metadata, or framework-managed DI conventions.
 
 ## Architectural Model
 
@@ -42,6 +51,7 @@ In this model:
 - ES modules provide implementations.
 - CDC identifiers define dependency contracts.
 - the container performs deterministic runtime linking.
+- linked values are frozen before they are returned.
 
 This mechanism separates module implementation from dependency binding and allows systems to assemble component graphs dynamically while preserving deterministic behavior.
 
@@ -59,6 +69,13 @@ Agents should read the documents in this directory in the following order:
 
 This sequence reflects the intended agent workflow: contract surface first, then architectural model, operational mechanism, dependency addressing, extension points, and practical usage.
 
+Agents that need a working integration should prefer:
+
+1. `package-api.ts` for the programmatic surface,
+2. `usage.md` for examples,
+3. `dependency-id.md` for CDC details,
+4. `container.md` for behavioral guarantees.
+
 ## Interface Scope
 
 The documents in this directory define the supported usage semantics of the package. Behaviors not described here should be treated as undefined and should not be inferred. The interface intentionally contains only the information required to correctly apply the package in external code.
@@ -73,3 +90,5 @@ The package follows architectural principles used in the **Tequila Framework (Te
 - development in modern JavaScript without compilation
 
 Understanding the broader TeqFW ecosystem is not required to use the package, but the container follows the same architectural philosophy.
+
+For agent usage, this directory is the package's machine-oriented interface. Prefer these documents over inferring behavior from repository-level prose.

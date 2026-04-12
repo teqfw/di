@@ -48,7 +48,7 @@ If no platform prefix is present, the identifier refers to an application module
 
 ## Module Identification
 
-The **ModuleName** identifies the module that provides the dependency. Module identifiers use namespace-based naming and are translated into filesystem paths according to namespace resolution rules described in **container.md**.
+The **ModuleName** identifies the module that provides the dependency. Module identifiers use namespace-based naming and are translated into module specifiers according to namespace resolution rules described in **container.md**.
 
 Identifier segments separated by underscores correspond to directory boundaries in the module path.
 
@@ -58,11 +58,13 @@ Example:
 App_Service_User
 ```
 
-maps to a module located at:
+maps to a module path such as:
 
 ```txt
 AppRoot/Service/User.js
 ```
+
+In URL-backed namespace configurations the same logical name may instead map to a URL-based module specifier with the same segment structure.
 
 ## Export Selection
 
