@@ -455,14 +455,11 @@ In other words, the package ships a human-facing README and a machine-oriented i
 
 ## Further Reading
 
-- Product overview: `ctx/docs/product/overview.md`
-- Product domain model and boundaries: `ctx/docs/product/domain.md`
-- Product use cases: `ctx/docs/product/use-cases.md`
-- Product glossary: `ctx/docs/product/glossary.md`
-- Default CDC profile and compatibility surface: `ctx/docs/product/default-cdc-profile.md`
-- Architecture overview: `ctx/docs/architecture/overview.md`
-- Runtime linking model: `ctx/docs/architecture/linking-model.md`
-- Container implementation contract: `ctx/docs/code/components/container.md`
+- Usage guide: `ai/usage.md`
+- Container API notes: `ai/container.md`
+- Dependency descriptor concepts: `ai/concepts.md`
+- Dependency ID format: `ai/dependency-id.md`
+- Extension points: `ai/extensions.md`
 - Project philosophy and intended application domain: `PHILOSOPHY.md`
 
 ## TeqFW Context
