@@ -3,7 +3,7 @@
 ![npms.io](https://img.shields.io/npm/dm/@teqfw/di)
 ![jsdelivr](https://img.shields.io/jsdelivr/npm/hm/@teqfw/di)
 
-**Deterministic runtime dependency linker for ES modules, built for pure JavaScript applications with explicit contracts.**
+**Deterministic runtime dependency linker for ES modules, built for long-lived web applications in pure JavaScript with explicit contracts and active agent assistance.**
 
 `@teqfw/di` is a runtime container for JavaScript applications that want **late binding**, **explicit dependency declarations**, and **deterministic runtime linking** instead of application-level wiring through static imports.
 
@@ -11,8 +11,13 @@ It is the reference implementation of the **Tequila Framework (TeqFW)** method: 
 
 In practice, "reference implementation of a method" means this package is not only a container library. It is also the concrete runtime model for a broader way of structuring JavaScript applications around explicit contracts, namespace-based addressing, and late binding.
 
+The primary fit is **solo developers and very small teams building long-lived web applications with active use of coding agents**. In that setting, the package gives one human a dependency model that remains explicit enough to supervise while still letting agents generate and maintain large parts of the structural code surface.
+
+The package also aligns naturally with **ADSM (Agent Driven Software Management)**, a methodology for human-agent software development built around a maintained cognitive context: <http://fly.wiredgeese.com/flancer/leanpub/adsm-en/>
+
 This package is designed primarily for:
 
+- solo developers and very small teams building long-lived web applications;
 - modular monolith web applications;
 - isomorphic JavaScript systems that share code between browser and server;
 - pure JavaScript + JSDoc codebases;
@@ -30,6 +35,8 @@ This package is designed primarily for:
 - wrapper-based extension points for cross-cutting behavior.
 
 The result is an application structure that is easier to analyze, test, replace, and evolve when dependency relationships need to remain explicit.
+
+For the target niche, the practical gain is architectural supervision. Instead of asking one human to recover hidden dependency structure from static imports, framework conventions, decorators, and generator output, the package keeps the dependency model in one explicit runtime contract surface that agents can produce mechanically and humans can still review directly.
 
 ## How It Fits in JavaScript
 
@@ -53,6 +60,8 @@ For TypeScript-first ecosystems, other DI approaches are often a more natural fi
 
 This is not presented as the only correct way to structure JavaScript. It is a deliberate alternative for projects that benefit from stronger runtime explicitness and machine-reconstructible structure.
 
+It is especially relevant when a product will outlive its initial prototype and the main engineering challenge becomes keeping agent-generated changes coherent over time inside a small team.
+
 ## Comparison
 
 | Concern | Common TS/JS Approach | `@teqfw/di` |
@@ -62,6 +71,18 @@ This is not presented as the only correct way to structure JavaScript. It is a d
 | Structural source of truth | spread across code, metadata, config | declared in module contracts |
 | Best fit | TypeScript-first applications | pure JavaScript + JSDoc, isomorphic modular systems |
 | LLM readability | mixed, often indirect | intentionally explicit |
+
+## Best Fit
+
+`@teqfw/di` is primarily a fit when most of the following are true:
+
+- one developer or a very small team remains the long-term architectural owner of the product;
+- coding agents are used actively for implementation, maintenance, or refactoring;
+- the application is a modular monolith or another web-oriented system that shares code between browser and server;
+- explicit runtime contracts are more valuable than compile-time import wiring;
+- pure JavaScript + JSDoc is preferred over a TypeScript-first authoring model.
+
+It is usually not the best fit for short-lived prototypes, teams that already depend heavily on decorator-driven TypeScript frameworks, or applications where mainstream framework conventions are more important than explicit machine-reconstructible dependency structure.
 
 ## Installation
 

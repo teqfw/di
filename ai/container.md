@@ -1,75 +1,84 @@
 # container.md
 
-Version: 20260331
+Version: 20260606
 
-## Role of the Container
+## Role
 
-The container provides the operational mechanism that links ES modules at runtime. It resolves dependency identifiers, loads modules, instantiates exported factories, and returns fully linked objects. The container serves as the composition root of the system and centralizes all dependency resolution.
+The container is the runtime composition root of the package. It interprets CDC identifiers, resolves them into modules, produces linked values, and returns frozen results.
 
-Application modules do not resolve dependencies themselves and do not construct collaborators directly. Instead, they request dependencies from the container using dependency identifiers.
+Application modules do not resolve dependencies themselves. They declare dependency contracts and rely on the container to perform linking.
 
-## Container Responsibilities
+## Configuration Stage
 
-The container performs the following responsibilities:
+Before the first `get()`, the container is in builder stage.
 
-- interpret dependency identifiers
-- resolve identifiers into module locations
-- load ES modules dynamically
-- instantiate exported factories
-- apply preprocess and postprocess handlers
-- manage object lifecycle semantics
-- freeze linked objects before returning them
+During this stage external code may:
 
-These responsibilities ensure deterministic runtime linking between modules.
+- register namespace roots with `addNamespaceRoot()`;
+- replace the CDC parser with `setParser()`;
+- add preprocess hooks with `addPreprocess()`;
+- add postprocess hooks with `addPostprocess()`;
+- enable diagnostics with `enableLogging()`;
+- enable test-only mock registration with `enableTestMode()` and `register()`.
 
-## Dependency Resolution Pipeline
+On the first `get()`:
 
-When a dependency is requested, the container processes the request through a deterministic pipeline consisting of the following stages:
+- configuration is locked;
+- namespace rules are snapshotted;
+- internal resolution infrastructure is created.
 
-1. **Parse** — interpret the dependency identifier.
-2. **Preprocess** — allow registered preprocess handlers to transform the identifier.
-3. **Resolve** — translate the identifier into a module reference.
-4. **Instantiate** — load the module and create the object using the selected export.
-5. **Postprocess** — apply wrapper handlers to the created object.
-6. **Lifecycle** — apply lifecycle semantics such as singleton caching or instance creation.
-7. **Freeze** — freeze the resulting object before returning it.
+After the first `get()`, builder-stage methods are no longer supported.
 
-This pipeline ensures that all dependencies are created and linked through a consistent process.
+## Resolution Pipeline
 
-## Container API
+For each `get(cdc)` request the container applies this pipeline:
 
-The container exposes a minimal public interface used by application code and configuration code.
+1. `Parse` — convert the CDC string into a DepId DTO.
+2. `Preprocess hooks` — transform the DepId DTO through ordered `addPreprocess()` hooks.
+3. `Resolve` — map the identifier to a concrete module location.
+4. `Instantiate` — load the module and either return the selected export as-is or instantiate it according to lifecycle composition rules.
+5. `Postprocess hooks` — apply ordered `addPostprocess()` value transforms.
+6. `Wrapper exports` — apply ordered wrapper exports selected by CDC suffixes.
+7. `Lifecycle` — apply singleton caching or transient behavior.
+8. `Freeze` — freeze the resolved value before returning it.
 
-The core operations are:
+The pipeline is deterministic for a fixed configuration and input CDC.
 
-- **addNamespaceRoot(prefix, target, defaultExt)** — register namespace resolution rule for Teq modules.
-- **register(identifier, value)** — register a predefined dependency or instance in the container.
-- **get(identifier)** — resolve a dependency identifier and return the linked object.
-- **addPreprocess(handler)** — register a handler that can transform dependency identifiers before resolution.
-- **addPostprocess(handler)** — register a handler that can modify created objects after instantiation.
-
-The exact semantics of dependency identifiers are defined in **dependency-id.md**. Dependency descriptors are export-scoped: canonical descriptors are hierarchical and keyed by export name, while flat descriptors are shorthand for limited single-export cases.
-
-`addNamespaceRoot(prefix, target, defaultExt)` accepts a module-specifier base. The `target` may point to a filesystem-backed path or to a URL-backed import base depending on runtime environment.
-
-## Container State Model
+## State Model
 
 The container operates in three states:
 
-- **notConfigured** — the container is being configured and dependencies may be registered.
-- **operational** — the container resolves dependencies and produces linked objects.
-- **failed** — the container has encountered an unrecoverable error.
+- `builder` — configuration is still mutable.
+- `operational` — dependency resolution is active.
+- `failed` — a fatal pipeline error has occurred.
 
-If an error occurs during dependency resolution or any pipeline stage, the container transitions to the **failed** state. Once the container enters this state, all subsequent dependency requests are rejected.
+State transitions:
+
+- construction starts in `builder`;
+- the first successful or failed `get()` transitions the container out of mutable builder configuration;
+- a fatal resolution error moves the container to `failed`.
+
+## Freeze Semantics
+
+Values returned by the container are frozen before they are returned to callers.
+
+Freeze happens after:
+
+- instantiation;
+- postprocess hooks;
+- wrapper exports;
+- lifecycle application.
+
+This means consumers receive stable linked values and should not mutate them.
+
+## Failure Semantics
+
+If any fatal error occurs during parsing, preprocessing, resolution, instantiation, postprocessing, wrapping, or lifecycle handling, the container enters `failed` state.
+
+Once in `failed` state:
+
+- the current `get()` request rejects;
+- all subsequent `get()` calls reject;
+- the container does not attempt partial recovery.
 
 This fail-fast behavior prevents partially linked systems from continuing execution.
-
-## Object Linking and Freezing
-
-Objects returned by the container represent linked components of the application. After an object is created and all pipeline stages are completed, the container freezes the object before returning it.
-
-Freezing ensures that:
-
-- linked objects cannot be modified by consumers
-- shared instances remain stable
-- the container remains the only authority responsible for object construction and linking

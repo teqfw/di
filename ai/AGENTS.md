@@ -1,94 +1,62 @@
 # AGENTS.md
 
-Version: 20260331
+Version: 20260606
 
-## Package Purpose
+## Purpose
 
-This directory provides the **Agent Interface** of the package. It contains a compact usage-oriented description intended for LLM agents that use the package as a dependency. The documents describe how the package is applied by external code and exclude development methodology, repository organization, testing infrastructure, and other internal aspects of the project.
+This file defines the `ai/` level for agent-facing package documentation included in the distributable package.
 
-The package implements a **deterministic runtime dependency linker for ES modules** based on late binding. Dependencies between modules are resolved by the container using structured dependency identifiers and namespace resolution rules rather than application-level static imports. The container dynamically loads ES modules, instantiates exports according to CDC semantics, and returns linked frozen values.
+The `ai/` directory provides a compact machine-oriented interface for agents that need to understand and use the package correctly.
 
-## When to Use This Package
+## Level Boundary
 
-This package should be used when a system requires the following capabilities:
+This level defines:
 
-- runtime dependency injection
-- late binding between ES modules
-- deterministic dependency resolution
-- controlled instantiation of components
-- modules that remain environment-agnostic across Node.js and browser runtimes
-- explicit machine-readable dependency structure for agent-assisted maintenance
+- what documents exist in `ai/`;
+- what each document is for;
+- how an agent should navigate this directory;
+- which documents describe supported usage.
 
-The container serves as the **composition root** of the application. Application modules declare dependencies and receive instantiated objects from the container rather than resolving dependencies directly.
+This level does not define:
 
-This package is primarily a fit for:
+- repository organization;
+- development workflow;
+- testing strategy;
+- internal implementation details that are not part of the supported surface;
+- behavior not described by the documents in `ai/`.
 
-- modular monolith web applications
-- isomorphic JavaScript systems with shared browser/server code
-- pure JavaScript + JSDoc codebases
+## Level Map
 
-It is usually not a natural fit for TypeScript-first architectures built around decorators, metadata, or framework-managed DI conventions.
+- `AGENTS.md` — entry point for this level; defines scope, navigation, and authority.
+- `concepts.md` — core concepts behind runtime linking and dependency contracts.
+- `container.md` — container lifecycle, state model, and resolution pipeline.
+- `dependency-id.md` — normative CDC grammar and interpretation rules.
+- `extensions.md` — preprocess hooks, postprocess hooks, and wrapper exports.
+- `package-api.ts` — machine-readable contract of the supported programmatic surface.
+- `usage.md` — canonical usage patterns and short integration recipes.
 
-## Architectural Model
+## Reading Guide
 
-The system is based on four mechanisms:
+Read documents by task:
 
-- **Late binding of dependencies at runtime**, allowing modules to remain independent of specific implementations.
-- **A container responsible for dependency resolution and instantiation**, which loads modules and produces linked objects.
-- **Structured dependency identifiers**, interpreted by the container to determine how a dependency must be resolved.
-- **Namespace mapping rules**, which deterministically translate identifiers into module locations.
+- for supported imports and public surface, start with `package-api.ts`;
+- for CDC syntax and meaning, read `dependency-id.md`;
+- for runtime behavior of the container, read `container.md`;
+- for extension behavior, read `extensions.md`;
+- for practical integration examples, read `usage.md`;
+- for conceptual orientation, read `concepts.md`.
 
-Together these mechanisms form a deterministic runtime linking system for ES modules.
+If the task is broad or unclear, read in this order:
 
-## Runtime Linking Model
+1. `AGENTS.md`
+2. `package-api.ts`
+3. `usage.md`
+4. `dependency-id.md`
+5. `container.md`
+6. remaining documents as needed
 
-The container acts as a runtime linker for ES modules.
+## Authority
 
-Instead of relying on static `import` statements, modules declare dependency contracts through `__deps__` descriptors and CDC identifiers. When a dependency is requested, the container resolves the identifier, loads the required module, constructs the object graph, and returns the linked result.
+The documents in `ai/` define the supported agent-facing usage semantics of the package.
 
-In this model:
-
-- ES modules provide implementations.
-- CDC identifiers define dependency contracts.
-- the container performs deterministic runtime linking.
-- linked values are frozen before they are returned.
-
-This mechanism separates module implementation from dependency binding and allows systems to assemble component graphs dynamically while preserving deterministic behavior.
-
-## Reading Order
-
-Agents should read the documents in this directory in the following order:
-
-1. **AGENTS.md** — overview of the package and navigation of the Agent Interface.
-2. **package-api.ts** — machine-readable contract of the supported programmatic API, public entrypoints, structural contracts, and internal exclusions.
-3. **concepts.md** — architectural concepts and design principles.
-4. **container.md** — container responsibilities and dependency resolution pipeline.
-5. **dependency-id.md** — syntax and semantics of dependency identifiers.
-6. **extensions.md** — extension mechanisms such as preprocessors and wrappers.
-7. **usage.md** — minimal usage scenarios and examples.
-
-This sequence reflects the intended agent workflow: contract surface first, then architectural model, operational mechanism, dependency addressing, extension points, and practical usage.
-
-Agents that need a working integration should prefer:
-
-1. `package-api.ts` for the programmatic surface,
-2. `usage.md` for examples,
-3. `dependency-id.md` for CDC details,
-4. `container.md` for behavioral guarantees.
-
-## Interface Scope
-
-The documents in this directory define the supported usage semantics of the package. Behaviors not described here should be treated as undefined and should not be inferred. The interface intentionally contains only the information required to correctly apply the package in external code.
-
-## Relation to TeqFW
-
-The package follows architectural principles used in the **Tequila Framework (TeqFW)** platform, including:
-
-- late binding between components
-- separation of data structures and logic handlers
-- namespace-based module organization
-- development in modern JavaScript without compilation
-
-Understanding the broader TeqFW ecosystem is not required to use the package, but the container follows the same architectural philosophy.
-
-For agent usage, this directory is the package's machine-oriented interface. Prefer these documents over inferring behavior from repository-level prose.
+Agents should rely on these documents for package use and should treat behavior not described here as undefined.

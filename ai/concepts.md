@@ -1,68 +1,25 @@
 # concepts.md
 
-Version: 20260331
-
-## Purpose of the Container
-
-The container provides a deterministic mechanism for linking ES modules at runtime. Instead of static imports between modules, dependencies are resolved through a central container that loads modules, instantiates exported factories, and returns linked objects. This approach separates module implementation from dependency resolution and allows systems to assemble components dynamically.
+Version: 20260606
 
 ## Late Binding
 
-Dependencies between modules are resolved at runtime rather than during module loading. Modules do not import their collaborators directly and therefore remain independent of concrete implementations. The container performs dependency resolution when an object is requested, which allows components to be replaced, extended, or mocked without modifying module code.
+Dependencies are resolved at runtime rather than through direct static imports between application modules. This keeps modules independent of concrete implementations and moves dependency binding into the container.
 
-Late binding enables the following properties:
+## Runtime Linker
 
-- reduced coupling between modules
-- runtime replacement of implementations
-- simplified testing through dependency substitution
-- compatibility with different runtime environments
+The container acts as a runtime linker for ES modules. It interprets CDC identifiers, resolves modules, selects exports, and produces linked values for callers.
 
-## Dependency Container
+## Dependency Contracts
 
-The container acts as the composition root of the application. It receives dependency requests expressed as identifiers, resolves them into module locations, loads the corresponding ES modules, and produces linked objects.
+Dependencies are declared through CDC strings and module-level `__deps__` descriptors. Together they form the contract between module code and runtime composition.
 
-The container is responsible for:
+The canonical `__deps__` form is hierarchical and keyed by export name.
 
-- translating dependency identifiers into module references
-- loading ES modules dynamically
-- instantiating exported factories
-- applying preprocessing and postprocessing steps
-- returning fully linked objects to the caller
+## Namespace Mapping
 
-Application modules do not construct their dependencies directly and do not perform dependency resolution.
+Logical module identifiers are translated into module-specifier bases through namespace roots. This keeps dependency addressing independent from concrete filesystem paths or URL locations.
 
-## Dependency Identifiers
+## Immutable Linked Values
 
-Dependencies are addressed using structured identifiers interpreted by the container. An identifier describes how the dependency should be resolved and how the resulting object should be instantiated.
-
-Dependency identifiers define:
-
-- which module provides the dependency
-- which export must be used
-- whether the dependency represents a singleton or a new instance
-
-Module dependency descriptors complement CDCs by declaring export-scoped dependency maps. The canonical form is hierarchical and keyed by export name; a flat descriptor is shorthand for limited single-export cases; omission means there are no dependencies.
-
-The identifier syntax and resolution rules are described in **dependency-id.md**.
-
-## Namespaces
-
-Namespaces provide deterministic mapping between logical identifiers and module locations. Each package defines one or more namespace roots that map a CDC prefix to a module-specifier base.
-
-The container resolves identifiers by applying namespace rules that translate identifier prefixes into module specifiers. In Node.js this often means filesystem-backed paths. In browser-oriented or isomorphic systems this may also mean URL-based import roots.
-
-Namespace resolution ensures:
-
-- predictable module addressing
-- isolation between packages
-- consistent mapping between identifiers and modules
-
-## Immutable Linked Objects
-
-Objects returned by the container represent linked components of the application and are treated as immutable values. After an object is created and linked, it is frozen to prevent runtime modification.
-
-Immutability ensures that:
-
-- components behave consistently after linking
-- shared instances cannot be altered by consumers
-- the container remains the single authority responsible for object construction
+Values returned by the container are frozen after linking. Consumers should treat them as stable resolved values rather than mutable construction targets.

@@ -1,56 +1,52 @@
 # dependency-id.md
 
-Version: 20260331
+Version: 20260606
 
 ## Purpose
 
-Dependencies in the container are addressed using **Canonical Dependency Codes (CDC)**. A CDC is a structured identifier interpreted by the container to determine which module must be loaded, which export must be used, and how the resulting object must be instantiated.
+Dependencies in the container are addressed using **Canonical Dependency Codes (CDC)**. A CDC is a structured identifier interpreted by the container to determine which module must be loaded, which export must be selected, and whether the resolved value is returned as-is or instantiated with lifecycle semantics.
 
-CDC provides a stable logical addressing mechanism that is independent of file paths and runtime environments.
-
-## Canonical Form
-
-A CDC follows the canonical structure:
+## Grammar
 
 ```txt
-[PlatformPrefix]ModuleName[__ExportName][Lifecycle][WrapperSuffixes]
+CDC := [PlatformPrefix]ModuleName[__ExportName][Lifecycle][WrapperSuffixes]
 ```
 
-The components have the following roles:
+Component order is fixed.
 
-- **PlatformPrefix** — optional prefix identifying a platform module source.
-- **ModuleName** — logical module identifier within a namespace.
-- **ExportName** — optional named export selector.
-- **Lifecycle** — marker defining instantiation semantics.
-- **WrapperSuffixes** — optional sequence of wrapper identifiers.
+- `PlatformPrefix` is optional.
+- `__ExportName` is optional.
+- `Lifecycle` is optional.
+- `WrapperSuffixes` are optional and require a lifecycle marker.
 
-Each CDC is interpreted deterministically by the container.
+## Components
 
-## Platform Prefix
+- `PlatformPrefix` — optional source selector such as `node:` or `npm:`.
+- `ModuleName` — logical module identifier inside a namespace.
+- `__ExportName` — optional named export selector. Omission means the default export for composition, or whole-module namespace for as-is resolution.
+- `Lifecycle` — optional instantiation marker.
+- `WrapperSuffixes` — optional ordered wrapper export names appended after the lifecycle marker.
 
-A CDC may reference modules provided by the runtime platform or external packages.
+## Platform Prefixes
 
-The following prefixes are supported:
+Supported prefixes:
 
-- **`node:`** — reference a built-in Node.js module.
-- **`npm:`** — reference a module from the npm ecosystem.
+- `node:` — reference a built-in Node.js module.
+- `npm:` — reference an npm package.
+
+If no platform prefix is present, the identifier refers to an application module resolved through namespace roots.
 
 Examples:
 
 ```txt
-node:fs$
-npm:@humanfs/core$
-node:worker_threads$
-npm:lodash$
+node:fs
+npm:@humanfs/core
+App_Service_User$
 ```
-
-If no platform prefix is present, the identifier refers to an application module resolved through namespace mapping.
 
 ## Module Identification
 
-The **ModuleName** identifies the module that provides the dependency. Module identifiers use namespace-based naming and are translated into module specifiers according to namespace resolution rules described in **container.md**.
-
-Identifier segments separated by underscores correspond to directory boundaries in the module path.
+`ModuleName` identifies the provider module. Identifier segments separated by underscores correspond to path segments inside the configured namespace root.
 
 Example:
 
@@ -58,19 +54,17 @@ Example:
 App_Service_User
 ```
 
-maps to a module path such as:
+may map to a module-specifier base such as:
 
 ```txt
-AppRoot/Service/User.js
+AppRoot/Service/User.mjs
 ```
 
-In URL-backed namespace configurations the same logical name may instead map to a URL-based module specifier with the same segment structure.
+The base may be filesystem-backed or URL-backed depending on runtime configuration.
 
 ## Export Selection
 
-A CDC may reference either the default export of a module or a named export.
-
-Named exports are selected using a double underscore separator.
+Named exports are selected with a double underscore separator.
 
 Examples:
 
@@ -79,49 +73,73 @@ App_Service_User$
 App_Service_User__Factory$
 ```
 
-The first identifier resolves the module default export. The second resolves the named export `Factory`.
+- `App_Service_User$` selects the default export for lifecycle-based composition.
+- `App_Service_User__Factory$` selects the named export `Factory` for lifecycle-based composition.
 
 ## Lifecycle Markers
 
-Lifecycle markers define how the container instantiates and returns objects.
+Supported lifecycle markers:
 
-The following markers are supported:
+- `$` — singleton lifecycle; create once and reuse the same instance.
+- `$$` — transient lifecycle; create a new instance each time.
+- `$$$` — transient alias; behaves the same as `$$` in the current implementation.
 
-- **`$`** — singleton lifecycle; the container creates the object once and returns the same instance for subsequent requests.
-- **`$$`** — transient lifecycle; a new instance is created for each request.
-- **`$$$`** — transient lifecycle alias; behaves the same as `$$`.
+If the lifecycle marker is omitted, the selected module export is resolved **as-is** and is not instantiated by lifecycle rules.
 
-Lifecycle markers are appended at the end of the identifier.
+Examples:
+
+```txt
+App_Math
+App_Service$
+App_Task$$
+```
 
 ## Wrapper Suffixes
 
-Wrappers allow postprocessing of created objects. Wrapper identifiers are appended after the lifecycle marker and separated by underscores.
+Wrapper suffixes are appended after the lifecycle marker and separated by underscores.
 
 Example:
 
 ```txt
-App_Service_User$$_wrapLog_wrapTrace
+App_Service$$_wrapLog_wrapTrace
 ```
 
-In this example the container creates a new instance and applies the wrappers `wrapLog` and `wrapTrace` during the postprocess stage.
+In this example the container creates a transient instance, then applies wrapper exports `wrapLog` and `wrapTrace` in the declared order.
 
-Wrapper behavior is described in **extensions.md**.
+Wrapper exports are described in `extensions.md`.
 
-Platform-specific examples:
+## Interpretation Rules
+
+When the container receives a CDC it interprets it in this order:
+
+1. determine the platform prefix and module namespace;
+2. resolve the module identifier into a module location;
+3. select the default export, a named export, or the whole module namespace for as-is resolution;
+4. apply lifecycle semantics if a lifecycle marker is present;
+5. apply wrapper exports if wrapper suffixes are present.
+
+Important rules:
+
+- no lifecycle marker means as-is resolution of the selected export;
+- wrapper suffixes are meaningful only for lifecycle-based composition;
+- named export selection does not by itself imply singleton or transient behavior;
+- lifecycle and wrappers are interpreted after export selection.
+
+## Canonical Examples
 
 ```txt
-node:worker_threads$
-npm:@humanfs/core$
+App_Math
+App_Service$
+App_Service__Factory$
+App_Task$$_wrapLog
+node:fs
+npm:@humanfs/core
 ```
 
-## Resolution Semantics
+These examples cover:
 
-When the container receives a CDC it performs the following interpretation steps:
-
-1. determine the platform prefix and module namespace
-2. resolve the module identifier into a module location
-3. select the requested export
-4. apply lifecycle semantics
-5. apply wrapper suffixes if present
-
-These interpretation steps integrate with the dependency resolution pipeline described in **container.md**.
+- as-is module or export resolution;
+- singleton composition;
+- named export composition;
+- transient composition with wrapper exports;
+- platform module access.

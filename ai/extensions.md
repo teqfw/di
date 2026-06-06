@@ -1,73 +1,103 @@
 # extensions.md
 
-Version: 20260331
+Version: 20260606
 
 ## Purpose
 
-The container supports controlled extension of the dependency resolution process through **preprocess handlers** and **postprocess wrappers**. These mechanisms allow the behavior of dependency resolution and object creation to be adjusted without modifying container internals.
+The container supports controlled extension of dependency resolution through three distinct mechanisms:
 
-Extensions are registered during container configuration and become part of the deterministic resolution pipeline.
+- preprocess hooks;
+- postprocess hooks;
+- wrapper exports.
 
-## Extension Points
+These mechanisms are related but not interchangeable.
 
-Two extension points are available:
+## Preprocess Hooks
 
-- **Preprocess handlers** — transform dependency identifiers before resolution.
-- **Postprocess wrappers** — modify or decorate created objects after instantiation.
+Preprocess hooks transform CDC identities before resolution.
 
-These extension points correspond to the preprocess and postprocess stages of the container pipeline described in **container.md**.
+Signature:
 
-## Preprocess Handlers
+```js
+(depId) => depId
+```
 
-Preprocess handlers receive a dependency identifier before it is interpreted by the container. A handler may transform the identifier and return a modified value that continues through the resolution pipeline.
+Properties:
 
-Typical uses of preprocess handlers include:
+- registered with `addPreprocess()`;
+- run in declared order;
+- receive and return DepId DTO values;
+- affect identifier interpretation before module resolution.
 
-- rewriting dependency identifiers
-- applying identifier aliases
-- enforcing project-specific identifier conventions
+Typical uses:
 
-Preprocess handlers operate only on identifiers and do not interact with instantiated objects.
+- CDC alias rewriting;
+- policy-driven identifier normalization;
+- project-specific prefix adaptation.
 
-## Postprocess Wrappers
+## Postprocess Hooks
 
-Postprocess wrappers operate on objects created by the container. A wrapper receives the instantiated object and may return a modified or decorated version.
+Postprocess hooks transform resolved values after instantiation and before wrapper exports.
 
-Wrappers are typically used for:
+Signature:
 
-- logging or tracing
-- instrumentation
-- capability injection
-- runtime adaptation of object behavior
+```js
+(value) => value
+```
 
-Wrappers do not modify the dependency resolution logic itself and operate only after object instantiation.
+Properties:
 
-## Wrapper Selection
+- registered with `addPostprocess()`;
+- run for every resolved value;
+- run in declared order;
+- do not alter CDC parsing or module resolution.
 
-Wrappers are applied when their identifiers appear in a CDC. Wrapper identifiers are appended after the lifecycle marker and separated by underscores.
+Typical uses:
+
+- global instrumentation;
+- value normalization;
+- cross-cutting adaptation applied uniformly to all resolved values.
+
+## Wrapper Exports
+
+Wrapper exports are selected directly from CDC suffixes and are resolved from the same module namespace as the dependency being composed.
+
+Signature:
+
+```js
+(value) => value
+```
+
+Properties:
+
+- selected by wrapper suffixes such as `_wrapLog`;
+- applied only when present in the CDC;
+- executed after postprocess hooks and before freeze;
+- not registered globally in the container.
 
 Example:
 
 ```txt
-App_Service_User$$_wrapLog_wrapTrace
+App_Service$$_wrapLog_wrapTrace
 ```
 
-In this example the container creates a new instance of the dependency and applies the wrappers `wrapLog` and `wrapTrace` during the postprocess stage.
-
-Wrappers do not change the structure of `__deps__`. Dependency descriptors remain either hierarchical export-scoped descriptors, shorthand flat descriptors for limited single-export cases, or omitted entirely for empty-descriptor modules.
+In this example the container composes the dependency, applies postprocess hooks, then applies wrapper exports `wrapLog` and `wrapTrace` in that order.
 
 ## Execution Order
 
-Multiple wrappers may be applied to a single dependency. Wrappers are executed in the order in which they appear in the CDC.
+The extension-related execution order is:
 
-Each wrapper receives the object returned by the previous wrapper and may return a new object that becomes the input to the next wrapper.
+1. preprocess hooks;
+2. instantiation or as-is resolution;
+3. postprocess hooks;
+4. wrapper exports;
+5. freeze.
 
-## Extension Constraints
+## Constraints
 
-Extensions must satisfy the following constraints:
+Extensions must satisfy these constraints:
 
-- they must be registered before the container becomes active
-- they must be deterministic and free of side effects that alter container state
-- they must not bypass lifecycle semantics enforced by the container
-
-These constraints ensure that extensions do not compromise deterministic dependency resolution.
+- they must be registered before the first `get()` if they use container registration APIs;
+- they should be deterministic for the same input;
+- they must not rely on mutating frozen returned values;
+- they must not bypass lifecycle semantics enforced by the container.

@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "checkJs": true,
     "forceConsistentCasingInFileNames": true,
     "module": "nodenext",
