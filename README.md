@@ -3,35 +3,39 @@
 ![npms.io](https://img.shields.io/npm/dm/@teqfw/di)
 ![jsdelivr](https://img.shields.io/jsdelivr/npm/hm/@teqfw/di)
 
-**Namespace-based component addressing and deterministic runtime linking for pure JavaScript ES modules.**
+**Enterprise-style component addressing and deterministic runtime linking for pure JavaScript ES modules.**
 
-`@teqfw/di` replaces file-based application dependency wiring with namespace-based component addressing and deterministic runtime linking for JavaScript ES module applications.
+`@teqfw/di` brings an enterprise development mindset to JavaScript: components are addressed by stable namespaces, dependencies are declared as explicit contracts, and application wiring is performed by a deterministic runtime linker.
 
-JavaScript applications commonly express dependencies through static imports that point to concrete file paths, URLs, package specifiers, framework conventions, or bundler-controlled module graphs. This works well for small applications, but it couples application dependency intent to the way code is physically located and loaded.
+It is not primarily “another dependency injection library”.
 
-`@teqfw/di` introduces a different model. Application components are addressed by stable namespace-based component addresses. Those addresses are encoded as **Canonical Dependency Codes (CDC)** and declared in source modules through `__deps__`. A runtime container then resolves the declarations through finalized namespace roots and links the required objects deterministically.
+It is a way to move JavaScript applications from file-path-based dependency wiring toward namespace-based component composition — a model familiar from enterprise ecosystems such as Java and C#, but implemented for pure JavaScript ES modules without TypeScript metadata, decorators, reflection, or framework-managed injection.
 
-The ES module system remains the underlying code loading mechanism. The package does not replace ESM. It replaces application-level dependency wiring through static imports.
-
-The package is the reference implementation of the **Tequila Framework (TeqFW)** dependency method: a way to structure modular monolith and isomorphic web applications around namespaces, explicit dependency contracts, and deterministic late binding.
+The package is the reference implementation of the **Tequila Framework (TeqFW)** dependency method.
 
 ## Why This Package Exists
 
-Traditional JavaScript web development often treats the file system and module specifiers as the primary way to express application structure.
+JavaScript started as a language for browser scripts and web pages. Its mainstream dependency model still reflects that history.
 
-A module usually says not only what it needs, but also where that dependency is located:
+Most JavaScript applications express dependencies through static imports:
 
 ```javascript
 import Repository from "../repository/UserRepository.js";
 ```
 
-This binds the source module to a concrete file path or module specifier. As the application grows, dependency structure becomes scattered across imports, framework conventions, decorators, generated code, and local wiring.
+This works well when the codebase is small.
 
-Enterprise ecosystems such as Java, C#, and PHP have long used namespaces, component identifiers, dependency inversion, and runtime composition to keep large systems maintainable. JavaScript has the technical ability to load ES modules dynamically, but mainstream JavaScript development rarely uses namespaces as the primary application-level addressing model.
+But as an application grows, the module no longer says only what it needs. It also hard-codes where that dependency is physically located. Application intent becomes mixed with file layout, package layout, URL layout, bundler rules, framework conventions, and local wiring decisions.
 
-`@teqfw/di` brings that enterprise-style addressing model to pure JavaScript.
+That coupling is manageable in small projects.
 
-Instead of making application modules depend on file paths, the package lets them depend on namespace-based component addresses:
+It becomes a structural problem in long-lived applications.
+
+Enterprise ecosystems such as Java and C# solved this problem differently. They developed a mindset based on namespaces, dependency inversion, IoC containers, component identifiers, explicit contracts, and runtime composition. The goal was not abstraction for its own sake. The goal was architectural manageability at scale.
+
+`@teqfw/di` transfers that mindset into pure JavaScript.
+
+Instead of depending on a file path, a module declares that it needs a component:
 
 ```javascript
 export const __deps__ = {
@@ -39,23 +43,83 @@ export const __deps__ = {
 };
 ```
 
-This declaration says that the module needs `App_User_Repository`, without hard-coding where its source file is located or how that dependency should be loaded in a particular runtime environment.
+This declaration says:
+
+> This module needs the `App_User_Repository` component.
+
+It does not say where the file is located.
+
+The mapping from logical component address to concrete ES module location is handled by the container through namespace roots.
+
+## Why This Matters Now
+
+AI-assisted development changes the practical scale of JavaScript projects.
+
+One developer working with coding agents can now build and maintain systems whose size and complexity were previously typical for enterprise teams. The limiting factor is no longer only code generation speed. The limiting factor is architectural supervision.
+
+Agents can produce code quickly.
+
+But if dependency structure is hidden inside static imports, framework conventions, decorators, generated code, and local wiring, the human supervisor must reconstruct architectural intent indirectly.
+
+That does not scale.
+
+`@teqfw/di` makes dependency intent explicit, source-attached, and machine-reconstructible.
+
+A coding agent can generate `__deps__` declarations mechanically.
+
+A human can review dependency intent directly as data.
+
+The container can resolve those declarations deterministically at runtime.
+
+The result is not just a technical mechanism. It is a different way to organize JavaScript code for human-agent software development.
 
 ## Product Goal
 
-The goal of `@teqfw/di` is to make namespace-based component addressing and late binding practical in pure JavaScript applications.
+The goal of `@teqfw/di` is to make enterprise-style component addressing and late binding practical in pure JavaScript applications.
 
-The package gives applications a dependency model that is:
+It gives JavaScript applications a dependency model that is:
 
+- based on stable namespace-based component addresses;
 - explicit in source artifacts;
-- based on stable component addresses rather than local file paths;
-- deterministic at runtime under finalized configuration;
+- deterministic under finalized runtime configuration;
 - usable across browser and Node.js environments;
 - readable by humans;
 - reconstructible by coding agents;
 - independent from TypeScript metadata, decorators, reflection, and framework-managed injection.
 
-The intended result is not abstraction for its own sake. The intended result is architectural supervision: dependency relationships remain visible enough for one human to review while agents generate, maintain, and refactor parts of the codebase.
+The intended result is architectural supervision.
+
+A developer should be able to see what a component needs without tracing import paths across the filesystem. An agent should be able to modify code without silently destroying the dependency structure. A runtime should be able to link components through explicit contracts rather than heuristic inference.
+
+## Core Idea
+
+Static imports answer this question:
+
+> Where is the code?
+
+Canonical Dependency Codes answer a different question:
+
+> What component is needed?
+
+That difference is the core of the package.
+
+```javascript
+import Repository from "../repository/UserRepository.js";
+```
+
+This binds a module to a concrete module specifier.
+
+```javascript
+export const __deps__ = {
+  repository: "App_User_Repository$",
+};
+```
+
+This binds a module to a logical component address.
+
+The first form is file-oriented.
+
+The second form is architecture-oriented.
 
 ## How the Model Works
 
@@ -75,13 +139,13 @@ A **namespace** defines a stable application-level addressing space.
 
 A **component address** identifies a component inside that namespace.
 
-A **CDC** encodes the component address and linking semantics such as export selection, lifecycle, wrappers, or platform-specific access.
+A **CDC** — Canonical Dependency Code — encodes the component address and linking semantics such as export selection, lifecycle, wrappers, or platform-specific access.
 
 A module declares its dependencies through `__deps__`.
 
 A **namespace root** maps a namespace prefix to a concrete runtime module location, such as a filesystem directory in Node.js or a URL base in the browser.
 
-The container resolves CDC values under finalized configuration, imports the necessary ES modules, links declared dependencies, and returns linked objects.
+The container resolves CDC values under finalized configuration, imports the required ES modules, links declared dependencies, and returns linked objects.
 
 The linking happens at runtime, but it is not heuristic. The container does not infer dependencies from behavior, constructor signatures, decorators, reflection, or naming guesses.
 
@@ -98,15 +162,14 @@ For identical dependency declarations, CDC values, namespace roots, module expor
 - lifecycle control for singleton and new-instance dependencies;
 - immutable linked objects;
 - wrapper-based extension points for cross-cutting behavior;
-- one dependency model that can be used in both browser and Node.js environments.
-
-The result is an application structure that is easier to analyze, test, replace, and evolve when dependency relationships need to remain explicit.
+- one dependency model for browser and Node.js environments;
+- source structure that remains legible to humans and LLM agents.
 
 ## Why It Matters for Browser and Node.js
 
-Browser and Node.js environments use ES modules, but they do not make application-level dependency wiring automatically environment-independent.
+Browser and Node.js environments both support ES modules, but they do not provide an environment-independent application wiring model.
 
-Static imports usually contain concrete module specifiers. Those specifiers often depend on file layout, package layout, URL layout, bundler configuration, or runtime-specific rules.
+Static imports usually contain concrete module specifiers. Those specifiers depend on file layout, package layout, URL layout, bundler configuration, or runtime-specific rules.
 
 `@teqfw/di` moves application dependency intent away from those concrete specifiers.
 
@@ -130,15 +193,33 @@ The module still runs as ESM. The difference is that application dependency wiri
 
 This package is designed for codebases where LLM agents participate in implementation and maintenance.
 
-AI-assisted development changes the practical scale of solo web development. One developer working with coding agents can now build and maintain systems whose size and structural complexity were previously more typical for enterprise teams.
+In agent-assisted development, the main risk is not that agents cannot generate code. The risk is that they generate code faster than the architecture can be supervised.
 
-That makes dependency structure more important, not less important.
+Hidden wiring amplifies that risk.
 
-Agents can generate and modify code quickly, but hidden dependency structure amplifies disorder. If application wiring is scattered across static imports, decorators, framework conventions, and generated code, a human supervisor must reconstruct architectural intent indirectly.
+If dependency structure is scattered across imports, decorators, framework conventions, generated files, and local composition code, both the human and the agent must reconstruct intent indirectly.
 
-`@teqfw/di` makes dependency intent source-attached and explicit. Agents can produce `__deps__` mechanically, and humans can review dependency intent directly as data.
+`@teqfw/di` makes dependency intent visible:
 
-Agent readability is not a separate feature. It is a consequence of explicit namespace-based dependency structure.
+```javascript
+export const __deps__ = {
+  repository: "App_User_Repository$",
+  logger: "App_Logger$",
+  config: "App_Config$",
+};
+```
+
+This is not just executable configuration.
+
+It is an architectural statement attached to the source module.
+
+Agents can produce it.
+
+Humans can review it.
+
+The container can execute it.
+
+That makes dependency structure part of the shared cognitive field between the human developer, coding agents, and runtime system.
 
 ## Who It Is For
 
@@ -149,9 +230,10 @@ This package is designed primarily for:
 - modular monolith web applications;
 - isomorphic JavaScript systems that share code between browser and server;
 - pure JavaScript + JSDoc codebases;
-- projects where explicit dependency structure is more important than minimal local ceremony.
+- projects where explicit dependency structure is more important than minimal local ceremony;
+- applications expected to grow beyond prototype size.
 
-The package also aligns naturally with **[ADSM (Agent Driven Software Management)](http://fly.wiredgeese.com/flancer/leanpub/adsm-en/)**, a methodology for human-agent software development built around a maintained cognitive context.
+It is usually not the best fit for short-lived prototypes, teams already committed to decorator-driven TypeScript frameworks, or applications where mainstream framework conventions are more important than explicit machine-reconstructible dependency structure.
 
 ## How It Fits in JavaScript
 
@@ -165,15 +247,25 @@ Most JavaScript and TypeScript projects express application dependency structure
 - framework conventions;
 - TypeScript-first source architecture;
 - decorators or metadata-driven injection;
-- framework-managed DI.
+- framework-managed DI;
+- bundler-controlled module graphs.
 
-`@teqfw/di` makes a different tradeoff. It favors **namespace-based component addresses** and **explicit runtime contracts** over hidden or inferred wiring.
+`@teqfw/di` makes a different tradeoff.
 
-Instead of relying on TypeScript metadata, reflection, decorators, or framework-specific dependency rules, modules declare dependencies directly as data and the container resolves them deterministically at runtime.
+It favors namespace-based component addresses and explicit runtime contracts over hidden or inferred wiring.
 
-TypeScript has had a major influence on the JavaScript ecosystem, and that influence has been broadly positive. At the same time, TeqFW targets a different design space: **pure JavaScript + JSDoc**, isomorphic runtime behavior, namespace-based addressing, and codebases where one explicit structural representation is more valuable than TypeScript-oriented convenience.
+TypeScript has had a major influence on the JavaScript ecosystem, and that influence has been broadly positive. At the same time, TeqFW targets a different design space:
 
-This is not presented as the only correct way to structure JavaScript. It is a deliberate alternative for projects that benefit from stronger runtime explicitness and machine-reconstructible structure.
+- pure JavaScript + JSDoc;
+- no transpilation requirement;
+- isomorphic runtime behavior;
+- namespace-based addressing;
+- explicit dependency declarations;
+- source artifacts readable by humans and agents.
+
+This is not presented as the only correct way to structure JavaScript.
+
+It is a deliberate alternative for projects that benefit from stronger runtime explicitness and machine-reconstructible structure.
 
 ## Comparison
 
@@ -186,6 +278,7 @@ This is not presented as the only correct way to structure JavaScript. It is a d
 | Cross-environment wiring      | Often handled by bundlers, adapters, or duplicated specifiers | Controlled through namespace roots                  |
 | Best fit                      | TypeScript-first applications and framework-led projects      | Pure JavaScript + JSDoc, isomorphic modular systems |
 | Agent readability             | Mixed, often indirect                                         | Intentionally explicit and reconstructible          |
+| Architectural mindset         | Local module graph                                            | Enterprise-style component composition              |
 
 ## Best Fit
 
@@ -199,7 +292,13 @@ This is not presented as the only correct way to structure JavaScript. It is a d
 - pure JavaScript + JSDoc is preferred over a TypeScript-first authoring model;
 - the product is expected to outlive its initial prototype.
 
-It is usually not the best fit for short-lived prototypes, teams that already depend heavily on decorator-driven TypeScript frameworks, or applications where mainstream framework conventions are more important than explicit machine-reconstructible dependency structure.
+It is usually not the best fit when:
+
+- the project is a short-lived prototype;
+- the team is fully invested in a framework-managed DI model;
+- TypeScript decorators and metadata are central to the architecture;
+- file-based imports are sufficient and architectural supervision is not a concern;
+- minimal local ceremony is more important than explicit dependency structure.
 
 ## Installation
 
@@ -258,7 +357,12 @@ const service = await container.get("App_User_Service$");
 const profile = await service.getProfile(42);
 
 console.log(profile);
-// { id: 42, name: "User 42" }
+```
+
+Output:
+
+```javascript
+{ id: 42, name: "User 42" }
 ```
 
 In this flow the container:
@@ -451,7 +555,7 @@ Those files are intended for system prompts, examples, and agent consumption. Th
 - CDC behavior;
 - integration patterns.
 
-In other words, the package ships a human-facing README and a machine-oriented interface for agents that need to use it as a dependency.
+The package ships both a human-facing README and a machine-oriented interface for agents that need to use it as a dependency.
 
 ## Further Reading
 
@@ -464,8 +568,12 @@ In other words, the package ships a human-facing README and a machine-oriented i
 
 ## TeqFW Context
 
-`@teqfw/di` is the core dependency-linking building block of the Tequila Framework (TeqFW).
+`@teqfw/di` is the core dependency-linking building block of the Tequila Framework.
 
 TeqFW is aimed at building modular monolith web applications with a unified JavaScript codebase across browser and server runtimes. The method favors namespace-based component addressing, late binding, explicit contracts, pure JavaScript, and source artifacts that remain legible to both humans and LLM agents.
 
-The broader TeqFW position is that AI-assisted development changes not only how code is written, but also what kind of structure a solo developer needs in order to supervise a growing application. `@teqfw/di` is one concrete answer to that change at the dependency-linking level.
+The broader TeqFW position is that AI-assisted development changes not only how code is written, but also what kind of structure a solo developer needs in order to supervise a growing application.
+
+When JavaScript applications reach enterprise scale under human-agent development, file-path-based dependency wiring becomes too local and too implicit.
+
+`@teqfw/di` is one answer to that change: enterprise-style component composition for pure JavaScript.
