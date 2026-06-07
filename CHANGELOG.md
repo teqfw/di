@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.1 - 2026-06-07 - Type declarations cleanup
+
+* Removed stale `TeqFw_Di_Def_Parser` and `ExportSelector` aliases from `types.d.ts`.
+* Updated the parser type alias to `TeqFw_Di_Parser` and aligned it with the moved `src/Parser.mjs` component.
+* Updated package version metadata to `2.6.1`.
+
 ## 2.6.0 - 2026-06-07 - Parser relocation and contract clarification
 
 * Moved the parser component from the legacy `Def/` path to `src/Parser.mjs` and aligned the related unit test layout with the component structure.
