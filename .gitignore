@@ -2,7 +2,8 @@
 /.idea/
 /.nyc_output/
 /.vscode/
-/**/output.md
+/**/output*.md
+/**/output*.zip
 /ctx/
 /dist/
 /jsdoc/
