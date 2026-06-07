@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.6.0 - 2026-06-07 - Parser relocation and contract clarification
+
+* Moved the parser component from the legacy `Def/` path to `src/Parser.mjs` and aligned the related unit test layout with the component structure.
+* Removed the internal `ExportSelector` duplicate and kept the runtime orchestration behind a dedicated internal coordinator.
+* Clarified and documented the CDC contract so the canonical `__default` form and shorthand lifecycle forms remain supported together.
+* Updated the code and context documentation to separate public API, contract-internal modules, and component layout more explicitly.
+* Updated package version metadata to `2.6.0`.
+
 ## 2.5.1 - 2026-04-12 - Documentation refresh and dependency fix
 
 * Fixed named-only `__deps__` resolution in the container and updated the related tests.
