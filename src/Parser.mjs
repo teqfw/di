@@ -1,19 +1,19 @@
 // @ts-check
 
 /**
- * @namespace TeqFw_Di_Def_Parser
+ * @namespace TeqFw_Di_Parser
  * @description CDC parser that builds dependency identity DTOs.
  */
 
-import TeqFw_Di_Enum_Composition from '../Enum/Composition.mjs';
-import TeqFw_Di_Enum_Life from '../Enum/Life.mjs';
-import TeqFw_Di_Enum_Platform from '../Enum/Platform.mjs';
-import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../Dto/DepId.mjs';
+import TeqFw_Di_Enum_Composition from './Enum/Composition.mjs';
+import TeqFw_Di_Enum_Life from './Enum/Life.mjs';
+import TeqFw_Di_Enum_Platform from './Enum/Platform.mjs';
+import {Factory as TeqFw_Di_Dto_DepId_Factory} from './Dto/DepId.mjs';
 
 /**
  * Parser for CDC identifiers into frozen dependency identity DTO.
 */
-export default class TeqFw_Di_Def_Parser {
+export default class TeqFw_Di_Parser {
     /**
      * Creates parser instance.
      */
@@ -24,35 +24,36 @@ export default class TeqFw_Di_Def_Parser {
         let logger = null;
 
         /**
-         * Parses one CDC identifier and returns normalized frozen dependency DTO.
+         * Detects platform prefix and strips it from the source string.
          *
-         * @param {string} cdc CDC identifier string.
-         * @returns {TeqFw_Di_DepId__DTO}
+         * @param {string} source CDC source without validation.
+         * @returns {{platform: typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform], source: string}}
          */
-        this.parse = function (cdc) {
-            if (logger) logger.log(`Parser.parse: input='${cdc}'.`);
-            if (typeof cdc !== 'string') throw new Error('CDC must be a string.');
-            if (cdc.length === 0) throw new Error('CDC must be non-empty.');
-            if (!/^[\x00-\x7F]+$/.test(cdc)) throw new Error('CDC must be ASCII.');
-
-            /** @type {string} */
-            const origin = cdc;
-            let source = cdc;
+        const detectPlatform = function (source) {
             /** @type {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} */
             let platform = TeqFw_Di_Enum_Platform.TEQ;
-
             if (source.startsWith('node:')) {
                 platform = TeqFw_Di_Enum_Platform.NODE;
-                source = source.slice(5);
-            } else if (source.startsWith('npm:')) {
+                return {platform, source: source.slice(5)};
+            }
+            if (source.startsWith('npm:')) {
                 platform = TeqFw_Di_Enum_Platform.NPM;
-                source = source.slice(4);
-            } else if (source.startsWith('teq:')) {
+                return {platform, source: source.slice(4)};
+            }
+            if (source.startsWith('teq:')) {
                 throw new Error('Explicit teq: prefix is forbidden.');
             }
+            return {platform, source};
+        };
 
-            if (source.length === 0) throw new Error('moduleName must be non-empty.');
-
+        /**
+         * Parses lifecycle and wrapper suffix from the source string.
+         *
+         * @param {string} source CDC source without platform prefix.
+         * @param {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} platform
+         * @returns {{core: string, life: typeof TeqFw_Di_Enum_Life[keyof typeof TeqFw_Di_Enum_Life] | null, lifecycleDeclared: boolean, wrappers: string[]}}
+         */
+        const parseLifecycle = function (source, platform) {
             /** @type {typeof TeqFw_Di_Enum_Life[keyof typeof TeqFw_Di_Enum_Life] | null} */
             let life = null;
             let lifecycleDeclared = false;
@@ -74,13 +75,24 @@ export default class TeqFw_Di_Def_Parser {
                 if (suffix.length > 0) {
                     wrappers = suffix.slice(1).split('_');
                 }
-            } else {
-                if (source.includes('$')) throw new Error('Invalid lifecycle encoding.');
-                if ((platform !== TeqFw_Di_Enum_Platform.NODE) && /(?:^|[^_])_[a-z][0-9A-Za-z]*$/.test(source)) {
-                    throw new Error('Wrapper without lifecycle is forbidden.');
-                }
+                return {core, life, lifecycleDeclared, wrappers};
             }
 
+            if (source.includes('$')) throw new Error('Invalid lifecycle encoding.');
+            if ((platform !== TeqFw_Di_Enum_Platform.NODE) && /(?:^|[^_])_[a-z][0-9A-Za-z]*$/.test(source)) {
+                throw new Error('Wrapper without lifecycle is forbidden.');
+            }
+
+            return {core, life, lifecycleDeclared, wrappers};
+        };
+
+        /**
+         * Splits module and export names from canonical core string.
+         *
+         * @param {string} core CDC core without lifecycle suffix.
+         * @returns {{moduleName: string, exportName: string|null}}
+         */
+        const parseModuleExport = function (core) {
             const firstDelim = core.indexOf('__');
             const lastDelim = core.lastIndexOf('__');
             if ((firstDelim !== -1) && (firstDelim !== lastDelim)) throw new Error('Export delimiter must appear at most once.');
@@ -98,6 +110,17 @@ export default class TeqFw_Di_Def_Parser {
                 if (exportName.includes('$')) throw new Error('Export must not contain $.');
             }
 
+            return {moduleName, exportName};
+        };
+
+        /**
+         * Validates canonical module name for platform-specific rules.
+         *
+         * @param {string} moduleName
+         * @param {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} platform
+         * @returns {void}
+         */
+        const assertModuleName = function (moduleName, platform) {
             if (!moduleName) throw new Error('moduleName must be non-empty.');
             if (moduleName.startsWith('_') || moduleName.startsWith('$')) throw new Error('moduleName must not start with _ or $.');
             if (moduleName.includes('__')) throw new Error('moduleName must not contain __.');
@@ -113,23 +136,47 @@ export default class TeqFw_Di_Def_Parser {
             } else if (!/^[@A-Za-z_][$0-9A-Za-z_./-]*$/.test(moduleName)) {
                 throw new Error('npm moduleName must satisfy the package specifier form.');
             }
+        };
+
+        /**
+         * Parses one CDC identifier and returns normalized frozen dependency DTO.
+         *
+         * @param {string} cdc CDC identifier string.
+         * @returns {TeqFw_Di_DepId__DTO}
+         */
+        this.parse = function (cdc) {
+            if (logger) logger.log(`Parser.parse: input='${cdc}'.`);
+            if (typeof cdc !== 'string') throw new Error('CDC must be a string.');
+            if (cdc.length === 0) throw new Error('CDC must be non-empty.');
+            if (!/^[\x00-\x7F]+$/.test(cdc)) throw new Error('CDC must be ASCII.');
+
+            /** @type {string} */
+            const origin = cdc;
+            const detected = detectPlatform(cdc);
+            const platform = detected.platform;
+            const source = detected.source;
+            if (source.length === 0) throw new Error('moduleName must be non-empty.');
+            const lifecycle = parseLifecycle(source, platform);
+            const split = parseModuleExport(lifecycle.core);
+            assertModuleName(split.moduleName, platform);
 
             /** @type {typeof TeqFw_Di_Enum_Composition[keyof typeof TeqFw_Di_Enum_Composition]} */
             let composition = TeqFw_Di_Enum_Composition.AS_IS;
+            let exportName = split.exportName;
             if (exportName !== null) {
                 composition = TeqFw_Di_Enum_Composition.FACTORY;
-            } else if (lifecycleDeclared) {
-                composition = TeqFw_Di_Enum_Composition.FACTORY;
+            } else if (lifecycle.lifecycleDeclared) {
                 exportName = 'default';
+                composition = TeqFw_Di_Enum_Composition.FACTORY;
             }
 
             const depId = depIdFactory.create({
-                moduleName,
+                moduleName: split.moduleName,
                 platform,
                 exportName,
                 composition,
-                life,
-                wrappers,
+                life: lifecycle.life,
+                wrappers: lifecycle.wrappers,
                 origin,
             });
             if (logger) logger.log(`Parser.parse: produced='${depId.platform}::${depId.moduleName}'.`);

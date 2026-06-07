@@ -139,6 +139,21 @@ export default class TeqFw_Di_Config_NamespaceRegistry {
         };
 
         /**
+         * Checks whether package.json exists inside a dependency directory.
+         *
+         * @param {string} candidateAbs
+         * @returns {Promise<boolean>}
+         */
+        const hasPackageJson = async function (candidateAbs) {
+            try {
+                await fs.stat(path.join(candidateAbs, 'package.json'));
+                return true;
+            } catch {
+                return false;
+            }
+        };
+
+        /**
          * @param {string} packageName
          * @param {string} fromPackageRootAbs
          * @returns {Promise<string>}
@@ -147,19 +162,8 @@ export default class TeqFw_Di_Config_NamespaceRegistry {
             let cursor = fromPackageRootAbs;
             while (isInside(appRootAbs, cursor)) {
                 const candidate = path.join(cursor, 'node_modules', packageName);
-                if (await isDirectory(candidate)) {
-                    const packageJsonAbs = path.join(candidate, 'package.json');
-                    const hasPackageJson = await (async () => {
-                        try {
-                            await fs.stat(packageJsonAbs);
-                            return true;
-                        } catch {
-                            return false;
-                        }
-                    })();
-                    if (hasPackageJson) {
-                        return path.resolve(candidate);
-                    }
+                if (await isDirectory(candidate) && (await hasPackageJson(candidate))) {
+                    return path.resolve(candidate);
                 }
                 if (cursor === appRootAbs) break;
                 const parent = path.dirname(cursor);
@@ -174,7 +178,7 @@ export default class TeqFw_Di_Config_NamespaceRegistry {
          */
         this.build = async function () {
             /** @type {{name: string, rootAbs: string}[]} */
-            const queue = [{name: '<root>', rootAbs: appRootAbs}];
+            const queue = [{rootAbs: appRootAbs}];
             /** @type {Set<string>} */
             const visitedRoots = new Set();
             /** @type {Set<string>} */
@@ -201,7 +205,7 @@ export default class TeqFw_Di_Config_NamespaceRegistry {
 
                 for (const depName of meta.dependencies) {
                     const depRootAbs = await resolveDependencyPackageRoot(depName, packageRootAbs);
-                    queue.push({name: depName, rootAbs: depRootAbs});
+                    queue.push({rootAbs: depRootAbs});
                 }
             }
 

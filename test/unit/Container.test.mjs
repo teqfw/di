@@ -42,8 +42,8 @@ describe('TeqFw_Di_Container', () => {
 
     it('get is asynchronous and resolves value', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Def_Parser} */
-        const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
+        /** @type {TeqFw_Di_Parser} */
+        const parser = /** @type {TeqFw_Di_Parser} */ ({
             parse() {
                 return createDepId({moduleName: 'path'});
             },
@@ -61,8 +61,8 @@ describe('TeqFw_Di_Container', () => {
     it('setParser before first get is applied', async () => {
         const container = new TeqFw_Di_Container();
         let calls = 0;
-        /** @type {TeqFw_Di_Def_Parser} */
-        const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
+        /** @type {TeqFw_Di_Parser} */
+        const parser = /** @type {TeqFw_Di_Parser} */ ({
             parse() {
                 calls += 1;
                 return createDepId({moduleName: 'path'});
@@ -87,8 +87,8 @@ describe('TeqFw_Di_Container', () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Ns_', shortTarget, '.mjs');
         container.addNamespaceRoot('Ns_Long_', longTarget, '.mjs');
-        /** @type {TeqFw_Di_Def_Parser} */
-        const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
+        /** @type {TeqFw_Di_Parser} */
+        const parser = /** @type {TeqFw_Di_Parser} */ ({
             parse() {
                 return createDepId({
                     platform: TeqFw_Di_Enum_Platform.TEQ,
@@ -107,8 +107,8 @@ describe('TeqFw_Di_Container', () => {
 
     it('preprocess and postprocess execute in registration order', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Def_Parser} */
-        const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
+        /** @type {TeqFw_Di_Parser} */
+        const parser = /** @type {TeqFw_Di_Parser} */ ({
             parse() {
                 return createDepId({moduleName: 'path'});
             },
@@ -126,8 +126,8 @@ describe('TeqFw_Di_Container', () => {
 
     it('configuration is locked after first get', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Def_Parser} */
-        const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
+        /** @type {TeqFw_Di_Parser} */
+        const parser = /** @type {TeqFw_Di_Parser} */ ({
             parse() {
                 return createDepId({moduleName: 'path'});
             },
@@ -146,8 +146,8 @@ describe('TeqFw_Di_Container', () => {
 
     it('enableLogging does not alter get result', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Def_Parser} */
-        const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
+        /** @type {TeqFw_Di_Parser} */
+        const parser = /** @type {TeqFw_Di_Parser} */ ({
             parse() {
                 return createDepId({moduleName: 'path'});
             },
@@ -160,8 +160,8 @@ describe('TeqFw_Di_Container', () => {
 
     it('enableLogging throws after first get', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Def_Parser} */
-        const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
+        /** @type {TeqFw_Di_Parser} */
+        const parser = /** @type {TeqFw_Di_Parser} */ ({
             parse() {
                 return createDepId({moduleName: 'path'});
             },
@@ -178,8 +178,8 @@ describe('TeqFw_Di_Container', () => {
 
     it('registered mock bypasses resolver, instantiation and lifecycle but keeps freeze', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Def_Parser} */
-        const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
+        /** @type {TeqFw_Di_Parser} */
+        const parser = /** @type {TeqFw_Di_Parser} */ ({
             parse(cdc) {
                 if (cdc === 'registered' || cdc === 'root') {
                     return createDepId({
@@ -208,8 +208,8 @@ describe('TeqFw_Di_Container', () => {
     it('failed state blocks subsequent get calls', async () => {
         const container = new TeqFw_Di_Container();
         let calls = 0;
-        /** @type {TeqFw_Di_Def_Parser} */
-        const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
+        /** @type {TeqFw_Di_Parser} */
+        const parser = /** @type {TeqFw_Di_Parser} */ ({
             parse() {
                 calls += 1;
                 throw new Error('parse failed');
@@ -225,8 +225,8 @@ describe('TeqFw_Di_Container', () => {
 
     it('preprocess runs before mock lookup', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Def_Parser} */
-        const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
+        /** @type {TeqFw_Di_Parser} */
+        const parser = /** @type {TeqFw_Di_Parser} */ ({
             parse(cdc) {
                 if (cdc === 'registered' || cdc === 'root') {
                     return createDepId({

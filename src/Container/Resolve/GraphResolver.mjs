@@ -14,7 +14,7 @@
 
 /**
  * @typedef {object} TeqFw_Di_Container_Resolve_GraphResolver_Dependencies
- * @property {TeqFw_Di_Def_Parser} parser
+ * @property {TeqFw_Di_Parser} parser
  * @property {TeqFw_Di_Resolver} resolver
  * @property {{log(message: string): void}|null} [logger]
  */
@@ -22,6 +22,9 @@
 /**
  * @typedef {{depId: TeqFw_Di_DepId__DTO, namespace: object}} TeqFw_Di_Container_Resolve_GraphResolver_Node
  */
+
+import {buildDependencyKey} from '../../Internal/DependencyKey.mjs';
+import {readDepsDecl} from '../../Internal/DepsDecl.mjs';
 
 export default class TeqFw_Di_Container_Resolve_GraphResolver {
 
@@ -36,18 +39,7 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
          * @param {TeqFw_Di_DepId__DTO} depId
          * @returns {string}
          */
-        const makeNodeKey = function (depId) {
-            /** @type {string} */
-            const wrappers = Array.isArray(depId.wrappers) ? depId.wrappers.join('|') : '';
-            return [
-                depId.platform,
-                depId.moduleName,
-                depId.exportName === null ? '' : depId.exportName,
-                depId.composition,
-                depId.life === null ? '' : depId.life,
-                wrappers,
-            ].join('::');
-        };
+        const makeNodeKey = buildDependencyKey;
 
         /**
          * @param {TeqFw_Di_DepId__DTO} depId
@@ -77,35 +69,11 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
                 if (log) log.log(`GraphResolver.walk: resolved '${key}'.`);
                 out.set(key, {depId, namespace});
 
-                /** @type {unknown} */
-                const depsDecl = Reflect.get(namespace, '__deps__');
-                if (depsDecl === undefined) return;
                 /** @type {Record<string, unknown>} */
-                let depsMap = {};
-                if ((depsDecl === null) || (typeof depsDecl !== 'object') || Array.isArray(depsDecl)) {
-                    throw new Error('__deps__ must be a plain object.');
-                }
-                const exportName = depId.exportName === null ? 'default' : depId.exportName;
-                const exportScoped = Reflect.get(/** @type {object} */ (depsDecl), exportName);
-                if ((exportScoped !== undefined) && (exportScoped !== null) && (typeof exportScoped === 'object') && !Array.isArray(exportScoped)) {
-                    const values = Object.values(/** @type {Record<string, unknown>} */ (exportScoped));
-                    if (!values.every((value) => typeof value === 'string')) {
-                        throw new Error('__deps__ export entries must map dependency names to CDC strings.');
-                    }
-                    depsMap = /** @type {Record<string, unknown>} */ (exportScoped);
-                } else if (exportName === 'default') {
-                    const values = Object.values(/** @type {Record<string, unknown>} */ (depsDecl));
-                    if (values.every((value) => typeof value === 'string')) {
-                        depsMap = /** @type {Record<string, unknown>} */ (depsDecl);
-                    } else if (!values.every((value) => (value !== null) && (typeof value === 'object') && !Array.isArray(value))) {
-                        throw new Error('__deps__ must be either flat or export-scoped.');
-                    }
-                }
-                for (const [, cdc] of Object.entries(depsMap)) {
-                    /** @type {string} */
-                    const nextCdc = /** @type {string} */ (cdc);
+                const depsMap = readDepsDecl(namespace, depId);
+                for (const nextCdc of Object.values(depsMap)) {
                     /** @type {TeqFw_Di_DepId__DTO} */
-                    const nextDepId = parser.parse(nextCdc);
+                    const nextDepId = parser.parse(/** @type {string} */ (nextCdc));
                     if (log) log.log(`GraphResolver.walk: edge '${key}' -> '${nextDepId.platform}::${nextDepId.moduleName}'.`);
                     await walk(nextDepId, out, stack, chain);
                 }

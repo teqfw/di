@@ -7,6 +7,7 @@
 
 import TeqFw_Di_Enum_Composition from '../../Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../../Enum/Life.mjs';
+import {buildDependencyKey} from '../../Internal/DependencyKey.mjs';
 
 /**
  * Lifecycle-stage registry for produced dependency values.
@@ -33,18 +34,7 @@ export default class TeqFw_Di_Container_Lifecycle_Registry {
          * @param {TeqFw_Di_DepId__DTO} depId
          * @returns {string}
          */
-        const buildKey = function (depId) {
-            /** @type {string} */
-            const wrappers = Array.isArray(depId.wrappers) ? depId.wrappers.join('|') : '';
-            return [
-                depId.platform,
-                depId.moduleName,
-                depId.exportName === null ? '' : depId.exportName,
-                depId.composition,
-                depId.life === null ? '' : depId.life,
-                wrappers,
-            ].join('::');
-        };
+        const buildKey = buildDependencyKey;
 
         /**
          * Returns value according to lifecycle policy.

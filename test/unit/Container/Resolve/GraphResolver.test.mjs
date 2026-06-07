@@ -40,7 +40,7 @@ function makeDepKey(depId) {
 
 /**
  * @returns {{
- *   parser: TeqFw_Di_Def_Parser,
+ *   parser: TeqFw_Di_Parser,
  *   resolver: TeqFw_Di_Resolver,
  *   setParsed(cdc: string, depId: TeqFw_Di_DepId$DTO): void,
  *   setNamespace(depId: TeqFw_Di_DepId$DTO, namespace: object): void,
@@ -58,8 +58,8 @@ function createDoubles() {
     /** @type {string[]} */
     const resolveCalls = [];
 
-    /** @type {TeqFw_Di_Def_Parser} */
-    const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
+    /** @type {TeqFw_Di_Parser} */
+    const parser = /** @type {TeqFw_Di_Parser} */ ({
         parse(cdc) {
             parseCalls.push(cdc);
             if (!parsed.has(cdc)) throw new Error(`Unexpected CDC: ${cdc}`);
@@ -237,10 +237,10 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
             life: 'S',
         });
         const io = createDoubles();
-        io.setNamespace(root, {__deps__: {a: 'App_Module$', b: 'App_Module__Factory$'}});
+        io.setNamespace(root, {__deps__: {a: 'App_Module__default$', b: 'App_Module__Factory$'}});
         io.setNamespace(depDefault, {default: () => ({kind: 'default'})});
         io.setNamespace(depFactory, {Factory: () => ({kind: 'factory'})});
-        io.setParsed('App_Module$', depDefault);
+        io.setParsed('App_Module__default$', depDefault);
         io.setParsed('App_Module__Factory$', depFactory);
         const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
 
@@ -253,8 +253,8 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
 
     it('Resolver Failure Propagation: forwards thrown error', async () => {
         const depA = createDepId({moduleName: 'App_A'});
-        /** @type {TeqFw_Di_Def_Parser} */
-        const parser = /** @type {TeqFw_Di_Def_Parser} */ ({
+        /** @type {TeqFw_Di_Parser} */
+        const parser = /** @type {TeqFw_Di_Parser} */ ({
             parse() {
                 throw new Error('not used');
             },

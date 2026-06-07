@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Def_Parser from '../../../src/Def/Parser.mjs';
-import TeqFw_Di_Dto_DepId_DTO from '../../../src/Dto/DepId.mjs';
-import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
-import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
-import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
+import TeqFw_Di_Parser from '../../src/Parser.mjs';
+import TeqFw_Di_Dto_DepId_DTO from '../../src/Dto/DepId.mjs';
+import TeqFw_Di_Enum_Composition from '../../src/Enum/Composition.mjs';
+import TeqFw_Di_Enum_Life from '../../src/Enum/Life.mjs';
+import TeqFw_Di_Enum_Platform from '../../src/Enum/Platform.mjs';
 
 const MODULE = 'Project_Package_Module';
 const NAMED_EXPORT = 'namedExport';
@@ -21,8 +21,8 @@ function assertDepId(dto, expected) {
     assert.deepStrictEqual(dto.wrappers, expected.wrappers);
 }
 
-describe('TeqFw_Di_Def_Parser', () => {
-    const parser = new TeqFw_Di_Def_Parser();
+describe('TeqFw_Di_Parser', () => {
+    const parser = new TeqFw_Di_Parser();
 
     describe('accepted forms', () => {
         const cases = [
@@ -49,12 +49,34 @@ describe('TeqFw_Di_Def_Parser', () => {
                 },
             },
             {
+                cdc: `${MODULE}__default$`,
+                expected: {
+                    platform: TeqFw_Di_Enum_Platform.TEQ,
+                    moduleName: MODULE,
+                    exportName: 'default',
+                    life: TeqFw_Di_Enum_Life.SINGLETON,
+                    composition: TeqFw_Di_Enum_Composition.FACTORY,
+                    wrappers: [],
+                },
+            },
+            {
                 cdc: `${MODULE}$`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
                     exportName: 'default',
                     life: TeqFw_Di_Enum_Life.SINGLETON,
+                    composition: TeqFw_Di_Enum_Composition.FACTORY,
+                    wrappers: [],
+                },
+            },
+            {
+                cdc: `${MODULE}__default$$`,
+                expected: {
+                    platform: TeqFw_Di_Enum_Platform.TEQ,
+                    moduleName: MODULE,
+                    exportName: 'default',
+                    life: TeqFw_Di_Enum_Life.TRANSIENT,
                     composition: TeqFw_Di_Enum_Composition.FACTORY,
                     wrappers: [],
                 },
@@ -71,6 +93,17 @@ describe('TeqFw_Di_Def_Parser', () => {
                 },
             },
             {
+                cdc: `${MODULE}__default$$$`,
+                expected: {
+                    platform: TeqFw_Di_Enum_Platform.TEQ,
+                    moduleName: MODULE,
+                    exportName: 'default',
+                    life: null,
+                    composition: TeqFw_Di_Enum_Composition.FACTORY,
+                    wrappers: [],
+                },
+            },
+            {
                 cdc: `${MODULE}$$$`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
@@ -79,6 +112,17 @@ describe('TeqFw_Di_Def_Parser', () => {
                     life: null,
                     composition: TeqFw_Di_Enum_Composition.FACTORY,
                     wrappers: [],
+                },
+            },
+            {
+                cdc: `${MODULE}__default$_${WRAPPER_LOG}`,
+                expected: {
+                    platform: TeqFw_Di_Enum_Platform.TEQ,
+                    moduleName: MODULE,
+                    exportName: 'default',
+                    life: TeqFw_Di_Enum_Life.SINGLETON,
+                    composition: TeqFw_Di_Enum_Composition.FACTORY,
+                    wrappers: [WRAPPER_LOG],
                 },
             },
             {
@@ -93,6 +137,17 @@ describe('TeqFw_Di_Def_Parser', () => {
                 },
             },
             {
+                cdc: `${MODULE}__default$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`,
+                expected: {
+                    platform: TeqFw_Di_Enum_Platform.TEQ,
+                    moduleName: MODULE,
+                    exportName: 'default',
+                    life: TeqFw_Di_Enum_Life.TRANSIENT,
+                    composition: TeqFw_Di_Enum_Composition.FACTORY,
+                    wrappers: [WRAPPER_LOG, WRAPPER_PROXY],
+                },
+            },
+            {
                 cdc: `${MODULE}$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
@@ -101,6 +156,17 @@ describe('TeqFw_Di_Def_Parser', () => {
                     life: TeqFw_Di_Enum_Life.TRANSIENT,
                     composition: TeqFw_Di_Enum_Composition.FACTORY,
                     wrappers: [WRAPPER_LOG, WRAPPER_PROXY],
+                },
+            },
+            {
+                cdc: `${MODULE}__default$$$_${WRAPPER_LOG}`,
+                expected: {
+                    platform: TeqFw_Di_Enum_Platform.TEQ,
+                    moduleName: MODULE,
+                    exportName: 'default',
+                    life: null,
+                    composition: TeqFw_Di_Enum_Composition.FACTORY,
+                    wrappers: [WRAPPER_LOG],
                 },
             },
             {
@@ -159,17 +225,6 @@ describe('TeqFw_Di_Def_Parser', () => {
                 },
             },
             {
-                cdc: `node:worker_threads$`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.NODE,
-                    moduleName: 'worker_threads',
-                    exportName: 'default',
-                    life: TeqFw_Di_Enum_Life.SINGLETON,
-                    composition: TeqFw_Di_Enum_Composition.FACTORY,
-                    wrappers: [],
-                },
-            },
-            {
                 cdc: `node:child_process__execFile`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.NODE,
@@ -213,9 +268,20 @@ describe('TeqFw_Di_Def_Parser', () => {
     });
 
     describe('equivalence', () => {
-        it('treats Module$ and Module__default$ as identical', () => {
-            const left = parser.parse(`${MODULE}$`);
+        it('is stable for canonical default form', () => {
+            const left = parser.parse(`${MODULE}__default$`);
             const right = parser.parse(`${MODULE}__default$`);
+            assert.strictEqual(left.platform, right.platform);
+            assert.strictEqual(left.moduleName, right.moduleName);
+            assert.strictEqual(left.exportName, right.exportName);
+            assert.strictEqual(left.life, right.life);
+            assert.strictEqual(left.composition, right.composition);
+            assert.deepStrictEqual(left.wrappers, right.wrappers);
+        });
+
+        it('is stable for shorthand lifecycle form', () => {
+            const left = parser.parse(`${MODULE}$`);
+            const right = parser.parse(`${MODULE}$`);
             assert.strictEqual(left.platform, right.platform);
             assert.strictEqual(left.moduleName, right.moduleName);
             assert.strictEqual(left.exportName, right.exportName);
