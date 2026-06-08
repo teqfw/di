@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.6.2 - 2026-06-08 - Documentation alignment and container simplification
+
+* Removed the legacy `setParser()` extension point and flattened the internal container implementation layout.
+* Updated the `ctx/docs/code` documentation to match the current container pipeline, namespace registry flow, and namespace-mapping model.
+* Refined the public code-facing documentation so it no longer describes parser replacement or wrapper handling in obsolete terms.
+* Updated package version metadata to `2.6.2`.
+
 ## 2.6.1 - 2026-06-07 - Type declarations cleanup
 
 * Removed stale `TeqFw_Di_Def_Parser` and `ExportSelector` aliases from `types.d.ts`.

@@ -555,7 +555,6 @@ const container = new Container();
 
 Configure it before the first `get(...)`:
 
-- `setParser(parser)`
 - `addNamespaceRoot(prefix, target, defaultExt)`
 - `addPreprocess(fn)`
 - `addPostprocess(fn)`

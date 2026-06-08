@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container_Lifecycle_Registry from '../../../../src/Container/Lifecycle/Registry.mjs';
-import TeqFw_Di_Enum_Composition from '../../../../src/Enum/Composition.mjs';
-import TeqFw_Di_Enum_Life from '../../../../src/Enum/Life.mjs';
+import TeqFw_Di_Container_Lifecycle_Registry from '../../../src/Container/Lifecycle.mjs';
+import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
+import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
 
 /**
  * @param {Partial<TeqFw_Di_DepId$DTO>} [patch]

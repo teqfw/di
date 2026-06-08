@@ -42,83 +42,38 @@ describe('TeqFw_Di_Container', () => {
 
     it('get is asynchronous and resolves value', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Parser} */
-        const parser = /** @type {TeqFw_Di_Parser} */ ({
-            parse() {
-                return createDepId({moduleName: 'path'});
-            },
-        });
-        container.setParser(parser);
+        const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
+        container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
 
-        const promise = container.get('any');
+        const promise = container.get('TestSample_Empty$');
         assert.ok(promise instanceof Promise);
         const value = await promise;
 
         assert.equal(typeof value, 'object');
-        assert.equal(typeof value.join, 'function');
-    });
-
-    it('setParser before first get is applied', async () => {
-        const container = new TeqFw_Di_Container();
-        let calls = 0;
-        /** @type {TeqFw_Di_Parser} */
-        const parser = /** @type {TeqFw_Di_Parser} */ ({
-            parse() {
-                calls += 1;
-                return createDepId({moduleName: 'path'});
-            },
-        });
-        container.setParser(parser);
-
-        await container.get('custom');
-        assert.equal(calls, 1);
-    });
-
-    it('setParser does not pre-validate parser shape (fail at point of use)', async () => {
-        const container = new TeqFw_Di_Container();
-        container.setParser(/** @type {any} */ ({}));
-        await assert.rejects(container.get('x'));
+        assert.equal(typeof value.start, 'function');
     });
 
     it('namespace roots are accumulated and used on first get only', async () => {
-        const dataDir = pathToFileURL(path.resolve('test/_data/integration/modules/teq')).href;
-        const shortTarget = `${dataDir}/short`;
-        const longTarget = `${dataDir}/long`;
+        const dataDir = pathToFileURL(path.resolve('test/integration/fixture')).href;
         const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('Ns_', shortTarget, '.mjs');
-        container.addNamespaceRoot('Ns_Long_', longTarget, '.mjs');
-        /** @type {TeqFw_Di_Parser} */
-        const parser = /** @type {TeqFw_Di_Parser} */ ({
-            parse() {
-                return createDepId({
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: 'Ns_Long_Service',
-                    origin: 'teq-cdc',
-                });
-            },
-        });
-        container.setParser(parser);
+        container.addNamespaceRoot('Fx_', dataDir, '.mjs');
+        container.addNamespaceRoot('Fx_Graph_', dataDir, '.mjs');
 
-        const value = await container.get('teq');
+        const value = await container.get('Fx_Graph_Root$');
 
-        assert.equal(value.tag, 'long');
-        assert.throws(() => container.addNamespaceRoot('Ns_After_', '/after', '.mjs'), Error);
+        assert.equal(value.name, 'root');
+        assert.throws(() => container.addNamespaceRoot('Fx_After_', '/after', '.mjs'), Error);
     });
 
     it('preprocess and postprocess execute in registration order', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Parser} */
-        const parser = /** @type {TeqFw_Di_Parser} */ ({
-            parse() {
-                return createDepId({moduleName: 'path'});
-            },
-        });
-        container.setParser(parser);
-        container.addPreprocess((depId) => createDepId({...depId, moduleName: 'path/posix'}));
+        const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
+        container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
+        container.addPreprocess((depId) => createDepId({...depId, moduleName: 'TestSample_NamedOnly'}));
         container.addPostprocess(() => ({order: [1]}));
         container.addPostprocess((value) => ({order: [...value.order, 2]}));
 
-        const value = await container.get('x');
+        const value = await container.get('TestSample_Empty$');
 
         assert.deepStrictEqual(value.order, [1, 2]);
         assert.ok(Object.isFrozen(value));
@@ -126,19 +81,13 @@ describe('TeqFw_Di_Container', () => {
 
     it('configuration is locked after first get', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Parser} */
-        const parser = /** @type {TeqFw_Di_Parser} */ ({
-            parse() {
-                return createDepId({moduleName: 'path'});
-            },
-        });
-        container.setParser(parser);
+        const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
+        container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
 
-        await container.get('x');
+        await container.get('TestSample_Empty$');
 
         assert.throws(() => container.addPreprocess((depId) => depId), Error);
         assert.throws(() => container.addPostprocess((value) => value), Error);
-        assert.throws(() => container.setParser(parser), Error);
         assert.throws(() => container.enableLogging(), Error);
         assert.throws(() => container.enableTestMode(), Error);
         assert.throws(() => container.addNamespaceRoot('Ns_', '/x', '.mjs'), Error);
@@ -146,28 +95,18 @@ describe('TeqFw_Di_Container', () => {
 
     it('enableLogging does not alter get result', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Parser} */
-        const parser = /** @type {TeqFw_Di_Parser} */ ({
-            parse() {
-                return createDepId({moduleName: 'path'});
-            },
-        });
-        container.setParser(parser);
+        const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
+        container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
         container.enableLogging();
-        const value = await container.get('x');
+        const value = await container.get('TestSample_Empty$');
         assert.equal(typeof value, 'object');
     });
 
     it('enableLogging throws after first get', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Parser} */
-        const parser = /** @type {TeqFw_Di_Parser} */ ({
-            parse() {
-                return createDepId({moduleName: 'path'});
-            },
-        });
-        container.setParser(parser);
-        await container.get('x');
+        const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
+        container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
+        await container.get('TestSample_Empty$');
         assert.throws(() => container.enableLogging(), /locked/);
     });
 
@@ -178,28 +117,12 @@ describe('TeqFw_Di_Container', () => {
 
     it('registered mock bypasses resolver, instantiation and lifecycle but keeps freeze', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Parser} */
-        const parser = /** @type {TeqFw_Di_Parser} */ ({
-            parse(cdc) {
-                if (cdc === 'registered' || cdc === 'root') {
-                    return createDepId({
-                        platform: TeqFw_Di_Enum_Platform.NODE,
-                        moduleName: 'path',
-                        exportName: 'default',
-                        composition: TeqFw_Di_Enum_Composition.FACTORY,
-                        life: TeqFw_Di_Enum_Life.SINGLETON,
-                        wrappers: [],
-                        origin: cdc,
-                    });
-                }
-                throw new Error(`Unexpected CDC: ${cdc}`);
-            },
-        });
-        container.setParser(parser);
+        const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
+        container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
         container.enableTestMode();
-        container.register('registered', {kind: 'mock'});
+        container.register('TestSample_Empty$', {kind: 'mock'});
 
-        const value = await container.get('root');
+        const value = await container.get('TestSample_Empty$');
 
         assert.deepStrictEqual(value, {kind: 'mock'});
         assert.equal(Object.isFrozen(value), true);
@@ -207,54 +130,28 @@ describe('TeqFw_Di_Container', () => {
 
     it('failed state blocks subsequent get calls', async () => {
         const container = new TeqFw_Di_Container();
-        let calls = 0;
-        /** @type {TeqFw_Di_Parser} */
-        const parser = /** @type {TeqFw_Di_Parser} */ ({
-            parse() {
-                calls += 1;
-                throw new Error('parse failed');
-            },
-        });
-        container.setParser(parser);
+        const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
+        container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
 
-        await assert.rejects(container.get('x'), /parse failed/);
+        await assert.rejects(container.get('TestSample_Missing$'));
         await assert.rejects(container.get('x'), /failed state/);
-        assert.equal(calls, 1);
         assert.throws(() => container.addPreprocess((depId) => depId), /locked/);
     });
 
     it('preprocess runs before mock lookup', async () => {
         const container = new TeqFw_Di_Container();
-        /** @type {TeqFw_Di_Parser} */
-        const parser = /** @type {TeqFw_Di_Parser} */ ({
-            parse(cdc) {
-                if (cdc === 'registered' || cdc === 'root') {
-                    return createDepId({
-                        platform: TeqFw_Di_Enum_Platform.NODE,
-                        moduleName: 'path',
-                        exportName: 'default',
-                        composition: TeqFw_Di_Enum_Composition.FACTORY,
-                        life: TeqFw_Di_Enum_Life.SINGLETON,
-                        wrappers: [],
-                        origin: cdc,
-                    });
-                }
-                throw new Error(`Unexpected CDC: ${cdc}`);
-            },
-        });
-        container.setParser(parser);
+        const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
+        container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
         container.enableTestMode();
-        container.register('registered', {mocked: true});
+        container.register('TestSample_Empty$', {mocked: true});
         container.addPreprocess((depId) => createDepId({
             ...depId,
-            exportName: null,
-            composition: TeqFw_Di_Enum_Composition.AS_IS,
-            life: null,
+            moduleName: 'TestSample_NamedOnly',
         }));
 
-        const value = await container.get('root');
+        const value = await container.get('TestSample_Empty$');
 
         assert.notDeepStrictEqual(value, {mocked: true});
-        assert.equal(typeof value.dirname, 'function');
+        assert.equal(typeof value.start, 'function');
     });
 });

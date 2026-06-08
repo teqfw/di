@@ -15,7 +15,6 @@ Before the first `get()`, the container is in builder stage.
 During this stage external code may:
 
 - register namespace roots with `addNamespaceRoot()`;
-- replace the CDC parser with `setParser()`;
 - add preprocess hooks with `addPreprocess()`;
 - add postprocess hooks with `addPostprocess()`;
 - enable diagnostics with `enableLogging()`;

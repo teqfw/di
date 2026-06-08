@@ -5,9 +5,9 @@
  * @description Lifecycle policy cache for produced values.
  */
 
-import TeqFw_Di_Enum_Composition from '../../Enum/Composition.mjs';
-import TeqFw_Di_Enum_Life from '../../Enum/Life.mjs';
-import {buildDependencyKey} from '../../Internal/DependencyKey.mjs';
+import TeqFw_Di_Enum_Composition from '../Enum/Composition.mjs';
+import TeqFw_Di_Enum_Life from '../Enum/Life.mjs';
+import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
 
 /**
  * Lifecycle-stage registry for produced dependency values.

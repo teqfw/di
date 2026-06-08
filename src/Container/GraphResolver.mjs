@@ -23,8 +23,8 @@
  * @typedef {{depId: TeqFw_Di_DepId__DTO, namespace: object}} TeqFw_Di_Container_Resolve_GraphResolver_Node
  */
 
-import {buildDependencyKey} from '../../Internal/DependencyKey.mjs';
-import {readDepsDecl} from '../../Internal/DepsDecl.mjs';
+import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
+import {readDepsDecl} from '../Internal/DepsDecl.mjs';
 
 export default class TeqFw_Di_Container_Resolve_GraphResolver {
 

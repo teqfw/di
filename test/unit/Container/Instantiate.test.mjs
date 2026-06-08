@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container_Instantiate_Instantiator from '../../../../src/Container/Instantiate/Instantiator.mjs';
-import TeqFw_Di_Enum_Composition from '../../../../src/Enum/Composition.mjs';
+import TeqFw_Di_Container_Instantiate_Instantiator from '../../../src/Container/Instantiate.mjs';
+import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
 
 /**
  * @param {Partial<TeqFw_Di_DepId$DTO>} [patch]

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container_Wrapper_Executor from '../../../../src/Container/Wrapper/Executor.mjs';
+import TeqFw_Di_Container_Wrapper_Executor from '../../../src/Container/Executor.mjs';
 
 /**
  * @param {Partial<TeqFw_Di_DepId$DTO>} [patch]

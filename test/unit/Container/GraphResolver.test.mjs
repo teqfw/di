@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container_Resolve_GraphResolver from '../../../../src/Container/Resolve/GraphResolver.mjs';
+import TeqFw_Di_Container_Resolve_GraphResolver from '../../../src/Container/GraphResolver.mjs';
 
 /**
  * @param {Partial<TeqFw_Di_DepId$DTO>} [patch]

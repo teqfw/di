@@ -97,16 +97,6 @@ export const PACKAGE_API: PackageApiContract = {
                     summary: 'Creates a container in builder stage. The constructor accepts no arguments.',
                 },
                 {
-                    name: 'setParser',
-                    signature: 'setParser(parser: { parse(cdc: string): TeqFw_Di_DepId$DTO }): void',
-                    stage: 'builder',
-                    summary: 'Replaces the default CDC parser before the first resolution.',
-                    constraints: [
-                        'Allowed only before the first get().',
-                        'The parser contract is structural. The package does not export the default parser runtime class.',
-                    ],
-                },
-                {
                     name: 'addNamespaceRoot',
                     signature: 'addNamespaceRoot(prefix: string, target: string, defaultExt: string): void',
                     stage: 'builder',
@@ -233,19 +223,6 @@ export const PACKAGE_API: PackageApiContract = {
             ],
         },
         {
-            name: 'Parser Protocol',
-            kind: 'protocol',
-            aliases: ['TeqFw_Di_Def_Parser'],
-            summary: 'Structural contract accepted by Container.setParser().',
-            fields: {
-                parse: '(cdc: string) => TeqFw_Di_DepId$DTO',
-            },
-            notes: [
-                'The package does not export the default parser runtime class through package exports.',
-                'External code may provide any object that satisfies the parse() contract.',
-            ],
-        },
-        {
             name: 'DepId Enums',
             kind: 'enum',
             aliases: [
@@ -304,34 +281,27 @@ export const PACKAGE_API: PackageApiContract = {
         },
         {
             alias: 'TeqFw_Di_Container_Instantiate_Instantiator',
-            source: './src/Container/Instantiate/Instantiator.mjs',
+            source: './src/Container/Instantiate.mjs',
             exposure: 'internal',
             reason: 'Internal immutable-core helper. Not exported via package.json.',
         },
         {
             alias: 'TeqFw_Di_Container_Lifecycle_Registry',
-            source: './src/Container/Lifecycle/Registry.mjs',
+            source: './src/Container/Lifecycle.mjs',
             exposure: 'internal',
             reason: 'Internal lifecycle cache component. Not exported via package.json.',
         },
         {
             alias: 'TeqFw_Di_Container_Resolve_GraphResolver',
-            source: './src/Container/Resolve/GraphResolver.mjs',
+            source: './src/Container/GraphResolver.mjs',
             exposure: 'internal',
             reason: 'Internal graph builder used by Container.get(). Not exported via package.json.',
         },
         {
             alias: 'TeqFw_Di_Container_Wrapper_Executor',
-            source: './src/Container/Wrapper/Executor.mjs',
+            source: './src/Container/Executor.mjs',
             exposure: 'internal',
             reason: 'Internal wrapper-stage executor. Not exported via package.json.',
-        },
-        {
-            alias: 'TeqFw_Di_Def_Parser',
-            source: './src/Def/Parser.mjs',
-            exposure: 'public-structural',
-            reason: 'Container.setParser() accepts this structural contract, but the runtime class is not importable from the package.',
-            canonicalUse: 'Typing/protocol alias for custom parser implementations.',
         },
         {
             alias: 'TeqFw_Di_DepId',
@@ -432,7 +402,6 @@ export const PACKAGE_API: PackageApiContract = {
         'Only two runtime entrypoints are supported by package.json exports: @teqfw/di and @teqfw/di/src/Config/NamespaceRegistry.mjs.',
         'Resolved values are frozen before being returned.',
         'The hierarchical export-scoped descriptor is canonical. The flat shorthand descriptor is supported only for default-export-only modules.',
-        'With the default parser, CDC without lifecycle resolves the selected module export as-is.',
         'Named wrapper exports are executed after addPostprocess() hooks and before freeze.',
         'In the current implementation, CDC markers $$ and $$$ both end up as transient/no-cache behavior.',
         'types.d.ts is broader than the runtime import surface. Presence of an alias there does not by itself make the underlying module a supported runtime entrypoint.',

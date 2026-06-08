@@ -5,7 +5,7 @@
  * @description Instantiates selected exports using composition rules.
  */
 
-import TeqFw_Di_Enum_Composition from '../../Enum/Composition.mjs';
+import TeqFw_Di_Enum_Composition from '../Enum/Composition.mjs';
 
 /**
  * Instantiate-stage immutable core executor.
