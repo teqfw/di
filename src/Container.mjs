@@ -8,10 +8,10 @@
 import TeqFw_Di_Parser from './Parser.mjs';
 import {Factory as TeqFw_Di_Dto_Resolver_Config_Factory} from './Dto/Resolver/Config.mjs';
 import TeqFw_Di_Resolver from './Container/Resolver.mjs';
-import TeqFw_Di_Container_Resolve_GraphResolver from './Container/GraphResolver.mjs';
-import TeqFw_Di_Container_Instantiate_Instantiator from './Container/Instantiate.mjs';
-import TeqFw_Di_Container_Lifecycle_Registry from './Container/Lifecycle.mjs';
-import TeqFw_Di_Container_Wrapper_Executor from './Container/Executor.mjs';
+import TeqFw_Di_Container_GraphResolver from './Container/GraphResolver.mjs';
+import TeqFw_Di_Container_Instantiate from './Container/Instantiate.mjs';
+import TeqFw_Di_Container_Lifecycle from './Container/Lifecycle.mjs';
+import TeqFw_Di_Container_Executor from './Container/Executor.mjs';
 import {executeContainerPipeline} from './Container/Pipeline.mjs';
 import TeqFw_Di_Internal_Logger, {TeqFw_Di_Internal_Logger_Noop} from './Internal/Logger.mjs';
 import {buildDependencyKey} from './Internal/DependencyKey.mjs';
@@ -46,16 +46,16 @@ export default class TeqFw_Di_Container {
         const configFactory = new TeqFw_Di_Dto_Resolver_Config_Factory();
         /** @type {TeqFw_Di_Resolver|undefined} */
         let resolver;
-        /** @type {TeqFw_Di_Container_Resolve_GraphResolver|undefined} */
+        /** @type {TeqFw_Di_Container_GraphResolver|undefined} */
         let graphResolver;
-        /** @type {TeqFw_Di_Container_Lifecycle_Registry|undefined} */
+        /** @type {TeqFw_Di_Container_Lifecycle|undefined} */
         let lifecycle;
         /** @type {{log(message: string): void, error(message: string, error?: unknown): void}} */
         let logger = TeqFw_Di_Internal_Logger_Noop;
-        /** @type {TeqFw_Di_Container_Instantiate_Instantiator} */
-        const instantiator = new TeqFw_Di_Container_Instantiate_Instantiator();
-        /** @type {TeqFw_Di_Container_Wrapper_Executor} */
-        const wrapperExecutor = new TeqFw_Di_Container_Wrapper_Executor();
+        /** @type {TeqFw_Di_Container_Instantiate} */
+        const instantiator = new TeqFw_Di_Container_Instantiate();
+        /** @type {TeqFw_Di_Container_Executor} */
+        const wrapperExecutor = new TeqFw_Di_Container_Executor();
 
         const getKey = buildDependencyKey;
         const getMockKey = buildDependencyKey;
@@ -104,8 +104,8 @@ export default class TeqFw_Di_Container {
             const resolverConfig = configFactory.create({namespaces: namespaceRoots});
             if (typeof parser.setLogger === 'function') parser.setLogger(logger);
             resolver = new TeqFw_Di_Resolver({config: resolverConfig, logger});
-            graphResolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser, resolver, logger});
-            lifecycle = new TeqFw_Di_Container_Lifecycle_Registry(logger);
+            graphResolver = new TeqFw_Di_Container_GraphResolver({parser, resolver, logger});
+            lifecycle = new TeqFw_Di_Container_Lifecycle(logger);
         };
 
         /**

@@ -1,7 +1,7 @@
 // @ts-check
 
 /**
- * @namespace TeqFw_Di_Container_Instantiate_Instantiator
+ * @namespace TeqFw_Di_Container_Instantiate
  * @description Instantiates selected exports using composition rules.
  */
 
@@ -25,7 +25,7 @@ import TeqFw_Di_Enum_Composition from '../Enum/Composition.mjs';
 /**
  * @typedef {CallableFactory | ConstructableFactory} Factory
  */
-export default class TeqFw_Di_Container_Instantiate_Instantiator {
+export default class TeqFw_Di_Container_Instantiate {
 
     /**
      * Creates instantiator instance.

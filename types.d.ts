@@ -1,10 +1,10 @@
 declare global {
   type TeqFw_Di_Config_NamespaceRegistry = import("./src/Config/NamespaceRegistry.mjs").default;
   type TeqFw_Di_Container = import("./src/Container.mjs").default;
-  type TeqFw_Di_Container_Instantiate_Instantiator = import("./src/Container/Instantiate.mjs").default;
-  type TeqFw_Di_Container_Lifecycle_Registry = import("./src/Container/Lifecycle.mjs").default;
-  type TeqFw_Di_Container_Resolve_GraphResolver = import("./src/Container/GraphResolver.mjs").default;
-  type TeqFw_Di_Container_Wrapper_Executor = import("./src/Container/Executor.mjs").default;
+  type TeqFw_Di_Container_Instantiate = import("./src/Container/Instantiate.mjs").default;
+  type TeqFw_Di_Container_Lifecycle = import("./src/Container/Lifecycle.mjs").default;
+  type TeqFw_Di_Container_GraphResolver = import("./src/Container/GraphResolver.mjs").default;
+  type TeqFw_Di_Container_Executor = import("./src/Container/Executor.mjs").default;
   type TeqFw_Di_Parser = import("./src/Parser.mjs").default;
   type TeqFw_Di_DepId = import("./src/Dto/DepId.mjs").default;
   type TeqFw_Di_DepId__DTO = import("./src/Dto/DepId.mjs").default;

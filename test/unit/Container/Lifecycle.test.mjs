@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container_Lifecycle_Registry from '../../../src/Container/Lifecycle.mjs';
+import TeqFw_Di_Container_Lifecycle from '../../../src/Container/Lifecycle.mjs';
 import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
 
@@ -22,9 +22,9 @@ function createDepId(patch = {}) {
     });
 }
 
-describe('TeqFw_Di_Container_Lifecycle_Registry', () => {
+describe('TeqFw_Di_Container_Lifecycle', () => {
     it('singleton reuse: returns same value and calls producer once', () => {
-        const registry = new TeqFw_Di_Container_Lifecycle_Registry();
+        const registry = new TeqFw_Di_Container_Lifecycle();
         const depId = createDepId({
             composition: TeqFw_Di_Enum_Composition.FACTORY,
             life: TeqFw_Di_Enum_Life.SINGLETON,
@@ -40,7 +40,7 @@ describe('TeqFw_Di_Container_Lifecycle_Registry', () => {
     });
 
     it('transient passthrough: produces new value for each call', () => {
-        const registry = new TeqFw_Di_Container_Lifecycle_Registry();
+        const registry = new TeqFw_Di_Container_Lifecycle();
         const depId = createDepId({
             composition: TeqFw_Di_Enum_Composition.FACTORY,
             life: TeqFw_Di_Enum_Life.TRANSIENT,
@@ -56,7 +56,7 @@ describe('TeqFw_Di_Container_Lifecycle_Registry', () => {
     });
 
     it('independent keys: different depIds have independent singleton cache entries', () => {
-        const registry = new TeqFw_Di_Container_Lifecycle_Registry();
+        const registry = new TeqFw_Di_Container_Lifecycle();
         const depA = createDepId({moduleName: 'App_A'});
         const depB = createDepId({moduleName: 'App_B'});
         let calls = 0;
@@ -74,7 +74,7 @@ describe('TeqFw_Di_Container_Lifecycle_Registry', () => {
     });
 
     it('independent keys: default and named exports in same module do not collide', () => {
-        const registry = new TeqFw_Di_Container_Lifecycle_Registry();
+        const registry = new TeqFw_Di_Container_Lifecycle();
         const depDefault = createDepId({moduleName: 'App_Module', exportName: 'default'});
         const depFactory = createDepId({moduleName: 'App_Module', exportName: 'Factory'});
         let calls = 0;
@@ -92,7 +92,7 @@ describe('TeqFw_Di_Container_Lifecycle_Registry', () => {
     });
 
     it('no effect on AS_IS composition: does not cache even with singleton life marker', () => {
-        const registry = new TeqFw_Di_Container_Lifecycle_Registry();
+        const registry = new TeqFw_Di_Container_Lifecycle();
         const depId = createDepId({
             composition: TeqFw_Di_Enum_Composition.AS_IS,
             life: TeqFw_Di_Enum_Life.SINGLETON,

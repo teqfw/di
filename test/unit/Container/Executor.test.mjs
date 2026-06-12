@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container_Wrapper_Executor from '../../../src/Container/Executor.mjs';
+import TeqFw_Di_Container_Executor from '../../../src/Container/Executor.mjs';
 
 /**
  * @param {Partial<TeqFw_Di_DepId$DTO>} [patch]
@@ -20,9 +20,9 @@ function createDepId(patch = {}) {
     });
 }
 
-describe('TeqFw_Di_Container_Wrapper_Executor', () => {
+describe('TeqFw_Di_Container_Executor', () => {
     it('single wrapper', () => {
-        const executor = new TeqFw_Di_Container_Wrapper_Executor();
+        const executor = new TeqFw_Di_Container_Executor();
         const depId = createDepId({wrappers: ['log']});
         const namespace = {
             log: (value) => `${String(value)}!`,
@@ -34,7 +34,7 @@ describe('TeqFw_Di_Container_Wrapper_Executor', () => {
     });
 
     it('multiple wrappers preserve declaration order', () => {
-        const executor = new TeqFw_Di_Container_Wrapper_Executor();
+        const executor = new TeqFw_Di_Container_Executor();
         const depId = createDepId({wrappers: ['w1', 'w2']});
         const namespace = {
             w1: (value) => `${String(value)}A`,
@@ -47,7 +47,7 @@ describe('TeqFw_Di_Container_Wrapper_Executor', () => {
     });
 
     it('Promise rejection', () => {
-        const executor = new TeqFw_Di_Container_Wrapper_Executor();
+        const executor = new TeqFw_Di_Container_Executor();
         const depId = createDepId({wrappers: ['asyncWrap']});
         const namespace = {
             asyncWrap: () => Promise.resolve('bad'),
@@ -57,7 +57,7 @@ describe('TeqFw_Di_Container_Wrapper_Executor', () => {
     });
 
     it('wrapper result may be proxy that throws on `.then` access', () => {
-        const executor = new TeqFw_Di_Container_Wrapper_Executor();
+        const executor = new TeqFw_Di_Container_Executor();
         const depId = createDepId({wrappers: ['protect']});
         const proxy = new Proxy({ok: true}, {
             get(target, prop, receiver) {
@@ -75,7 +75,7 @@ describe('TeqFw_Di_Container_Wrapper_Executor', () => {
     });
 
     it('missing wrapper error', () => {
-        const executor = new TeqFw_Di_Container_Wrapper_Executor();
+        const executor = new TeqFw_Di_Container_Executor();
         const depId = createDepId({wrappers: ['missing']});
         const namespace = {};
 
@@ -83,7 +83,7 @@ describe('TeqFw_Di_Container_Wrapper_Executor', () => {
     });
 
     it('does not pre-validate namespace shape and fails at point of use', () => {
-        const executor = new TeqFw_Di_Container_Wrapper_Executor();
+        const executor = new TeqFw_Di_Container_Executor();
         const depId = createDepId({wrappers: ['w1']});
         assert.throws(() => executor.execute(depId, 'X', null), TypeError);
         assert.throws(() => executor.execute(depId, 'X', 'bad'), TypeError);

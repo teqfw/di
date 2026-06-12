@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container_Instantiate_Instantiator from '../../../src/Container/Instantiate.mjs';
+import TeqFw_Di_Container_Instantiate from '../../../src/Container/Instantiate.mjs';
 import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
 
 /**
@@ -21,8 +21,8 @@ function createDepId(patch = {}) {
     });
 }
 
-describe('TeqFw_Di_Container_Instantiate_Instantiator', () => {
-    const instantiator = new TeqFw_Di_Container_Instantiate_Instantiator();
+describe('TeqFw_Di_Container_Instantiate', () => {
+    const instantiator = new TeqFw_Di_Container_Instantiate();
 
     it('as-is returns namespace', () => {
         const namespace = {default: 1, named: 2};

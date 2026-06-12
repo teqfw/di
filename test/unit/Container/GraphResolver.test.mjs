@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container_Resolve_GraphResolver from '../../../src/Container/GraphResolver.mjs';
+import TeqFw_Di_Container_GraphResolver from '../../../src/Container/GraphResolver.mjs';
 
 /**
  * @param {Partial<TeqFw_Di_DepId$DTO>} [patch]
@@ -91,12 +91,12 @@ function createDoubles() {
     };
 }
 
-describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
+describe('TeqFw_Di_Container_GraphResolver', () => {
     it('No Dependencies: returns map with root only', async () => {
         const root = createDepId({moduleName: 'App_Root'});
         const io = createDoubles();
         io.setNamespace(root, {default: 1});
-        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+        const resolver = new TeqFw_Di_Container_GraphResolver({parser: io.parser, resolver: io.resolver});
 
         const graph = await resolver.resolve(root);
 
@@ -113,7 +113,7 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
         io.setNamespace(root, {__deps__: {svc: 'App_B'}});
         io.setNamespace(depB, {});
         io.setParsed('App_B', depB);
-        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+        const resolver = new TeqFw_Di_Container_GraphResolver({parser: io.parser, resolver: io.resolver});
 
         const graph = await resolver.resolve(root);
 
@@ -132,7 +132,7 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
         io.setNamespace(depC, {});
         io.setParsed('App_B', depB);
         io.setParsed('App_C', depC);
-        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+        const resolver = new TeqFw_Di_Container_GraphResolver({parser: io.parser, resolver: io.resolver});
 
         const graph = await resolver.resolve(depA);
 
@@ -148,7 +148,7 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
         io.setNamespace(depB, {__deps__: {a: 'App_A'}});
         io.setParsed('App_B', depB);
         io.setParsed('App_A', depA);
-        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+        const resolver = new TeqFw_Di_Container_GraphResolver({parser: io.parser, resolver: io.resolver});
 
         await assert.rejects(resolver.resolve(depA), /Cyclic dependency detected/);
     });
@@ -157,7 +157,7 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
         const root = createDepId({moduleName: 'App_Root'});
         const io = createDoubles();
         io.setNamespace(root, {__deps__: 'bad'});
-        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+        const resolver = new TeqFw_Di_Container_GraphResolver({parser: io.parser, resolver: io.resolver});
 
         await assert.rejects(resolver.resolve(root), /__deps__ must be a plain object/);
     });
@@ -166,7 +166,7 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
         const root = createDepId({moduleName: 'App_Root'});
         const io = createDoubles();
         io.setNamespace(root, {__deps__: {default: {svc: {bad: 'App_B'}}}});
-        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+        const resolver = new TeqFw_Di_Container_GraphResolver({parser: io.parser, resolver: io.resolver});
 
         await assert.rejects(resolver.resolve(root), /export entries must map dependency names to CDC strings/);
     });
@@ -178,7 +178,7 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
         io.setNamespace(root, {__deps__: {Factory: {b: 'App_B'}}});
         io.setNamespace(depB, {});
         io.setParsed('App_B', depB);
-        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+        const resolver = new TeqFw_Di_Container_GraphResolver({parser: io.parser, resolver: io.resolver});
 
         const graph = await resolver.resolve(root);
 
@@ -193,7 +193,7 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
         io.setNamespace(root, {__deps__: {Factory: {b: 'App_B'}}});
         io.setNamespace(depB, {});
         io.setParsed('App_B', depB);
-        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+        const resolver = new TeqFw_Di_Container_GraphResolver({parser: io.parser, resolver: io.resolver});
 
         const graph = await resolver.resolve(root);
 
@@ -214,7 +214,7 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
         io.setParsed('App_B', depB);
         io.setParsed('App_C', depC);
         io.setParsed('App_D', depD);
-        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+        const resolver = new TeqFw_Di_Container_GraphResolver({parser: io.parser, resolver: io.resolver});
 
         const graph = await resolver.resolve(depA);
 
@@ -242,7 +242,7 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
         io.setNamespace(depFactory, {Factory: () => ({kind: 'factory'})});
         io.setParsed('App_Module__default$', depDefault);
         io.setParsed('App_Module__Factory$', depFactory);
-        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser: io.parser, resolver: io.resolver});
+        const resolver = new TeqFw_Di_Container_GraphResolver({parser: io.parser, resolver: io.resolver});
 
         const graph = await resolver.resolve(root);
 
@@ -266,7 +266,7 @@ describe('TeqFw_Di_Container_Resolve_GraphResolver', () => {
                 throw rootError;
             },
         });
-        const resolver = new TeqFw_Di_Container_Resolve_GraphResolver({parser, resolver: failingResolver});
+        const resolver = new TeqFw_Di_Container_GraphResolver({parser, resolver: failingResolver});
 
         await assert.rejects(resolver.resolve(depA), (error) => {
             assert.strictEqual(error, rootError);

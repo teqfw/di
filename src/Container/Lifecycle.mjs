@@ -1,7 +1,7 @@
 // @ts-check
 
 /**
- * @namespace TeqFw_Di_Container_Lifecycle_Registry
+ * @namespace TeqFw_Di_Container_Lifecycle
  * @description Lifecycle policy cache for produced values.
  */
 
@@ -17,7 +17,7 @@ import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
  * - transient values are never cached;
  * - as-is composition is returned as produced without lifecycle caching.
  */
-export default class TeqFw_Di_Container_Lifecycle_Registry {
+export default class TeqFw_Di_Container_Lifecycle {
 
     /**
      * Creates lifecycle registry instance.

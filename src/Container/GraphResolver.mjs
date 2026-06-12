@@ -1,7 +1,7 @@
 // @ts-check
 
 /**
- * @namespace TeqFw_Di_Container_Resolve_GraphResolver
+ * @namespace TeqFw_Di_Container_GraphResolver
  * @description Dependency graph resolver for container preloading.
  */
 
@@ -13,23 +13,23 @@
  */
 
 /**
- * @typedef {object} TeqFw_Di_Container_Resolve_GraphResolver_Dependencies
+ * @typedef {object} TeqFw_Di_Container_GraphResolver_Dependencies
  * @property {TeqFw_Di_Parser} parser
  * @property {TeqFw_Di_Resolver} resolver
  * @property {{log(message: string): void}|null} [logger]
  */
 
 /**
- * @typedef {{depId: TeqFw_Di_DepId__DTO, namespace: object}} TeqFw_Di_Container_Resolve_GraphResolver_Node
+ * @typedef {{depId: TeqFw_Di_DepId__DTO, namespace: object}} TeqFw_Di_Container_GraphResolver_Node
  */
 
 import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
 import {readDepsDecl} from '../Internal/DepsDecl.mjs';
 
-export default class TeqFw_Di_Container_Resolve_GraphResolver {
+export default class TeqFw_Di_Container_GraphResolver {
 
     /**
-     * @param {TeqFw_Di_Container_Resolve_GraphResolver_Dependencies} deps
+     * @param {TeqFw_Di_Container_GraphResolver_Dependencies} deps
      */
     constructor({parser, resolver, logger = null}) {
         /** @type {{log(message: string): void}|null} */
@@ -43,7 +43,7 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
 
         /**
          * @param {TeqFw_Di_DepId__DTO} depId
-         * @param {Map<string, TeqFw_Di_Container_Resolve_GraphResolver_Node>} out
+         * @param {Map<string, TeqFw_Di_Container_GraphResolver_Node>} out
          * @param {Set<string>} stack
          * @param {string[]} chain
          * @returns {Promise<void>}
@@ -87,10 +87,10 @@ export default class TeqFw_Di_Container_Resolve_GraphResolver {
          * Resolves full dependency graph for a root depId.
          *
          * @param {TeqFw_Di_DepId__DTO} depId
-         * @returns {Promise<Map<string, TeqFw_Di_Container_Resolve_GraphResolver_Node>>}
+         * @returns {Promise<Map<string, TeqFw_Di_Container_GraphResolver_Node>>}
          */
         this.resolve = async function (depId) {
-            /** @type {Map<string, TeqFw_Di_Container_Resolve_GraphResolver_Node>} */
+            /** @type {Map<string, TeqFw_Di_Container_GraphResolver_Node>} */
             const out = new Map();
             /** @type {Set<string>} */
             const stack = new Set();

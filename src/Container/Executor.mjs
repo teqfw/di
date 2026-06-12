@@ -1,7 +1,7 @@
 // @ts-check
 
 /**
- * @namespace TeqFw_Di_Container_Wrapper_Executor
+ * @namespace TeqFw_Di_Container_Executor
  * @description Applies wrapper pipeline to resolved values.
  */
 
@@ -11,7 +11,7 @@
  * Executes wrapper pipeline declared in `depId.wrappers` using functions
  * exported by the resolved module namespace.
  */
-export default class TeqFw_Di_Container_Wrapper_Executor {
+export default class TeqFw_Di_Container_Executor {
 
     /**
      * Creates wrapper executor instance.

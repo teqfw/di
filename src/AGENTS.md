@@ -14,16 +14,12 @@ This file defines only implementation-level obligations. It does not redefine ar
 
 The following documents are mandatory:
 
-- `ctx/docs/code/structure.md`
-- `ctx/docs/code/container.md`
-- `ctx/docs/code/resolver.md`
-- `ctx/docs/code/parser.md`
-- `ctx/docs/code/depid.md`
-- `ctx/docs/code/testing.md`
-- `ctx/docs/code/jsdoc-spec.md`
-- `ctx/docs/code/convention/es6-modules.md`
-- `ctx/docs/code/convention/teqfw/dto.md`
-- `ctx/docs/code/convention/teqfw/enum.md`
+- `ctx/docs/code/layout/structure.md`
+- `ctx/docs/code/components/container.md`
+- `ctx/docs/code/components/resolver.md`
+- `ctx/docs/code/components/parser.md`
+- `ctx/docs/code/components/depid.md`
+- `ctx/docs/code/layout/testing.md`
 
 Agent MUST read and follow them before generating or modifying code.
 
@@ -33,7 +29,7 @@ Deviation from these documents constitutes non-compliance.
 
 Directory layout, namespace mapping, file naming, dependency direction, and static import rules MUST strictly follow:
 
-`ctx/docs/code/structure.md`
+`ctx/docs/code/layout/structure.md`
 
 In particular:
 
@@ -50,7 +46,7 @@ Structural violations are execution errors.
 
 JSDoc is mandatory and governed by:
 
-`ctx/docs/code/jsdoc-spec.md`
+`ctx/docs/code/layout/structure.md` (Section 8)
 
 All implementation files MUST:
 
@@ -72,8 +68,8 @@ Absence of required JSDoc constitutes non-compliance.
 
 All DTO and Enum implementations MUST strictly follow:
 
-- `ctx/docs/code/convention/teqfw/dto.md`
-- `ctx/docs/code/convention/teqfw/enum.md`
+- `ctx/docs/code/components/depid.md`
+- `ctx/docs/code/layout/structure.md`
 
 In particular:
 
@@ -116,7 +112,7 @@ Redundant validation logic constitutes architectural violation.
 
 Unit and integration tests MUST follow:
 
-`ctx/docs/code/testing.md`
+`ctx/docs/code/layout/testing.md`
 
 For every testable source module, exactly one corresponding unit test MUST exist under `test/unit/`, mirroring directory structure.
 

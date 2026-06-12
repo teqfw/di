@@ -13,10 +13,10 @@ import {makePromiseSafe} from '../Internal/PromiseSafe.mjs';
  * @typedef {object} TeqFw_Di_Container_Pipeline_Context
  * @property {TeqFw_Di_Parser} parser
  * @property {TeqFw_Di_Resolver|undefined} resolver
- * @property {TeqFw_Di_Container_Resolve_GraphResolver|undefined} graphResolver
- * @property {TeqFw_Di_Container_Lifecycle_Registry|undefined} lifecycle
- * @property {TeqFw_Di_Container_Instantiate_Instantiator} instantiator
- * @property {TeqFw_Di_Container_Wrapper_Executor} wrapperExecutor
+ * @property {TeqFw_Di_Container_GraphResolver|undefined} graphResolver
+ * @property {TeqFw_Di_Container_Lifecycle|undefined} lifecycle
+ * @property {TeqFw_Di_Container_Instantiate} instantiator
+ * @property {TeqFw_Di_Container_Executor} wrapperExecutor
  * @property {{log(message: string): void, error(message: string, error?: unknown): void}} logger
  * @property {boolean} testMode
  * @property {Map<string, unknown>} mockRegistry
