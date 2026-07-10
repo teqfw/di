@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.7.0 - 2026-07-10 - As-is injection fix and coverage expansion
+
+* Fixed the bug that prevented injecting classes as-is, including named exports resolved without factory wrapping.
+* Aligned container namespace aliases and published type declarations with the actual filesystem layout.
+* Expanded unit and integration coverage for pipeline execution, dependency key generation, dependency declarations, Promise-safe wrappers, and as-is export resolution.
+* Refreshed development dependencies and lockfile metadata before the release.
+* Updated package version metadata to `2.7.0`.
+
 ## 2.6.2 - 2026-06-08 - Documentation alignment and container simplification
 
 * Removed the legacy `setParser()` extension point and flattened the internal container implementation layout.
