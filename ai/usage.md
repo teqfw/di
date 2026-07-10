@@ -1,6 +1,6 @@
 # usage.md
 
-Version: 20260606
+Version: 20260710
 
 ## Purpose
 
@@ -123,6 +123,13 @@ Resolution examples:
 ```js
 const runtime = await container.get("App_Module$");
 const factory = await container.get("App_Module__Factory$");
+```
+
+Without a lifecycle marker, the export is resolved as-is — the class or function itself, not an instance:
+
+```js
+const FactoryClass = await container.get("App_Module__Factory");
+const factory = new FactoryClass({cast: resolvedCast});
 ```
 
 ## Singleton And Transient

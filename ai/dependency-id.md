@@ -1,6 +1,6 @@
 # dependency-id.md
 
-Version: 20260606
+Version: 20260710
 
 ## Purpose
 
@@ -23,7 +23,7 @@ Component order is fixed.
 
 - `PlatformPrefix` — optional source selector such as `node:` or `npm:`.
 - `ModuleName` — logical module identifier inside a namespace.
-- `__ExportName` — optional named export selector. Omission means the default export for composition, or whole-module namespace for as-is resolution.
+- `__ExportName` — optional named export selector. With a lifecycle marker, selects the export for factory composition. Without a lifecycle marker, selects the named export for as-is resolution. Omission without a lifecycle marker means the whole-module namespace is resolved as-is.
 - `Lifecycle` — optional instantiation marker.
 - `WrapperSuffixes` — optional ordered wrapper export names appended after the lifecycle marker.
 
@@ -69,11 +69,15 @@ Named exports are selected with a double underscore separator.
 Examples:
 
 ```txt
+App_Service_User
 App_Service_User$
+App_Service_User__Factory
 App_Service_User__Factory$
 ```
 
+- `App_Service_User` selects the whole module namespace for as-is resolution (no lifecycle marker, no export name).
 - `App_Service_User$` selects the default export for lifecycle-based composition.
+- `App_Service_User__Factory` selects the named export `Factory` for as-is resolution (no lifecycle marker).
 - `App_Service_User__Factory$` selects the named export `Factory` for lifecycle-based composition.
 
 ## Lifecycle Markers
@@ -130,6 +134,7 @@ Important rules:
 ```txt
 App_Math
 App_Service$
+App_Service__Factory
 App_Service__Factory$
 App_Task$$_wrapLog
 node:fs
@@ -138,8 +143,9 @@ npm:@humanfs/core
 
 These examples cover:
 
-- as-is module or export resolution;
+- as-is module resolution (whole namespace);
 - singleton composition;
-- named export composition;
+- named export as-is resolution;
+- named export singleton composition;
 - transient composition with wrapper exports;
 - platform module access.

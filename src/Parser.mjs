@@ -163,10 +163,10 @@ export default class TeqFw_Di_Parser {
             /** @type {typeof TeqFw_Di_Enum_Composition[keyof typeof TeqFw_Di_Enum_Composition]} */
             let composition = TeqFw_Di_Enum_Composition.AS_IS;
             let exportName = split.exportName;
-            if (exportName !== null) {
-                composition = TeqFw_Di_Enum_Composition.FACTORY;
-            } else if (lifecycle.lifecycleDeclared) {
-                exportName = 'default';
+            if (lifecycle.lifecycleDeclared) {
+                if (exportName === null) {
+                    exportName = 'default';
+                }
                 composition = TeqFw_Di_Enum_Composition.FACTORY;
             }
 
