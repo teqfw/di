@@ -619,14 +619,11 @@ The package ships both a human-facing README and a machine-oriented interface fo
 - Extension points: `ai/extensions.md`
 - Project philosophy and intended application domain: `PHILOSOPHY.md`
 
-## TeqFW Context
+## Development and Ecosystem
 
-`@teqfw/di` is the core dependency-linking building block of the Tequila Framework.
+This product is developed by AI agents under the direction of Alex Gusev, following the Agent-Driven Software Management (ADSM) methodology. It is built for the Tequila Framework (TeqFW) platform and contributes to its ecosystem.
 
-TeqFW is aimed at building modular monolith web applications with a unified JavaScript codebase across browser and server runtimes. The method favors token-based module addressing, late binding, explicit contracts, pure JavaScript, and source artifacts that remain legible to both humans and LLM agents.
-
-The broader TeqFW position is that AI-assisted development changes not only how code is written, but also what kind of structure a solo developer needs in order to supervise a growing application.
-
-When JavaScript applications grow under human-agent development, file-path-based dependency wiring can become too local and too implicit.
-
-`@teqfw/di` is one concrete answer: stable Module Tokens, explicit Dependency Specifiers, and deterministic runtime linking for pure JavaScript.
+- [Tequila Framework](https://teqfw.com/)
+- [Alex Gusev's Personal Website](https://wiredgeese.com/)
+- [Alex Gusev's Telegram Channel](https://t.me/alexgusev_lab_en)
+- [Agent-Driven Software Management: A Practical Guide](http://fly.wiredgeese.com/flancer/leanpub/adsm-en/)
