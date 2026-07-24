@@ -3,7 +3,7 @@
 ![npms.io](https://img.shields.io/npm/dm/@teqfw/di)
 ![jsdelivr](https://img.shields.io/jsdelivr/npm/hm/@teqfw/di)
 
-**Enterprise-scale dependency architecture for pure JavaScript.**
+**Token-based runtime linking for pure JavaScript.**
 
 `@teqfw/di` replaces fragile file-path-based wiring with namespace-based component contracts and deterministic runtime linking, so large JavaScript codebases remain understandable to humans and reconstructible by coding agents.
 
@@ -15,7 +15,7 @@ No reflection.
 No framework-managed injection.
 No transpilation requirement.
 
-The package uses dependency injection techniques, but its main purpose is architectural governance, not constructor convenience.
+The package uses dependency injection techniques, but its main purpose is stable module identity and explicit runtime linking, not constructor convenience.
 
 ## Why JavaScript Dependency Wiring Breaks at Scale
 
@@ -56,7 +56,7 @@ The developer sees a filesystem.
 
 Coding agents change the practical scale of JavaScript development.
 
-One developer working with agents can now create and maintain systems whose size was previously more typical for enterprise teams.
+One developer working with agents can now maintain larger dependency structures, making explicit and reconstructible linking more important.
 
 The bottleneck is no longer only code generation.
 
@@ -77,11 +77,9 @@ Large AI-assisted JavaScript systems need dependency structure that is:
 
 This is the problem `@teqfw/di` addresses.
 
-## The Enterprise Shift: From Files to Components
+## The Shift: From Locations to Module Identity
 
-Enterprise ecosystems such as Java and C# have long used namespaces, dependency inversion, IoC containers, component identifiers, explicit contracts, and runtime composition to keep large systems manageable.
-
-`@teqfw/di` brings that model of thinking to pure JavaScript.
+`@teqfw/di` separates the module an application needs from the location used to load it.
 
 Instead of making a module depend on a file path:
 
@@ -89,7 +87,7 @@ Instead of making a module depend on a file path:
 import Repository from "../repository/UserRepository.js";
 ```
 
-the module declares a dependency on a component:
+the module declares a dependency on a module token:
 
 ```javascript
 export const __deps__ = {
@@ -99,7 +97,7 @@ export const __deps__ = {
 
 This declaration says:
 
-> This module needs the `App_User_Repository` component.
+> This module needs the module identified by `App_User_Repository`.
 
 It does not say where the source file is located.
 
@@ -109,7 +107,7 @@ This is the central shift:
 
 ```text
 from file paths
-to component addresses
+to module tokens
 
 from local imports
 to explicit dependency contracts
@@ -124,15 +122,15 @@ to deterministic runtime composition
 
 It provides:
 
-- namespace-based component addressing;
-- Canonical Dependency Codes;
+- token-based module addressing;
+- Dependency Specifiers;
 - source-attached dependency declarations through `__deps__`;
 - deterministic runtime linking;
 - namespace root mapping for Node.js and browser environments;
 - lifecycle control for singleton and new-instance dependencies;
 - explicit replacement in test mode;
 - wrapper-based extension points;
-- immutable linked objects.
+- immutable resolved values.
 
 The ES module system remains the underlying loading mechanism.
 
@@ -142,11 +140,11 @@ It replaces application-level dependency wiring through static imports.
 
 ## Product Goal
 
-The goal of `@teqfw/di` is to make enterprise-scale dependency architecture practical in pure JavaScript.
+The goal of `@teqfw/di` is to make stable, explicit dependency architecture practical in pure JavaScript.
 
 The package gives JavaScript applications a dependency model that is:
 
-- based on stable namespace-based component addresses;
+- based on stable module tokens;
 - explicit in source artifacts;
 - deterministic under finalized runtime configuration;
 - usable across browser and Node.js environments;
@@ -164,35 +162,36 @@ A runtime should be able to link components through explicit contracts rather th
 
 ## Core Model
 
-The model follows this chain:
+The preferred model follows this chain:
 
 ```text
-Namespace
-  -> Component Address
-  -> CDC
-  -> __deps__
-  -> Namespace Root
-  -> Runtime Linker
-  -> Linked Object
+Module Token -> Module Registry -> ES Module -> Principal Application Value
 ```
 
-A **namespace** defines a stable application-level addressing space.
+A **Module Token** is the stable logical identity of a module. It is independent from paths, URLs, package locations, repository layout, runtime environment, lifecycle, and wrappers.
 
-A **component address** identifies a component inside that namespace.
+A **Module Registry** consists of the configured namespace roots that map token prefixes to runtime roots. It derives a physical **Module Specifier**—the path, URL, package specifier, or other argument passed to `import()`.
 
-A **CDC** — Canonical Dependency Code — encodes the component address and linking semantics.
+The **ES Module** is the loading unit. A TeqFW module preferably provides one **Principal Application Value** through `default export`. Metadata exports such as `__deps__` describe the values required to link it. Named exports remain supported for JavaScript ecosystem compatibility.
 
-A module declares its dependencies through `__deps__`.
+A **Dependency Specifier** combines a Module Token with optional export, lifecycle, and wrapper selectors:
 
-A **namespace root** maps a namespace prefix to a concrete runtime module location.
+```text
+module token
++ optional export selector
++ optional lifecycle selector
++ optional wrapper selectors
+```
 
-The container resolves CDC values under finalized configuration, imports the required ES modules, links declared dependencies, and returns linked objects.
+A module declares requirements through the `__deps__` **Dependency Declaration**, which maps local names to Dependency Specifiers.
+
+The container resolves dependency specifiers under finalized configuration, imports the required ES modules, links declared dependencies, and returns resolved values.
 
 The linking happens at runtime, but it is not heuristic. The container does not infer dependencies from behavior, constructor signatures, decorators, reflection, or naming guesses.
 
-For identical dependency declarations, CDC values, namespace roots, module exports, lifecycle rules, and finalized container configuration, the container must produce the same linked result or the same failure.
+For identical dependency declarations, dependency specifiers, namespace roots, module exports, lifecycle rules, and finalized container configuration, the container must produce the same linked result or the same failure.
 
-## Example: File-Oriented vs Component-Oriented Wiring
+## Example: Location-Oriented vs Token-Oriented Wiring
 
 Traditional JavaScript wiring:
 
@@ -212,9 +211,9 @@ export const __deps__ = {
 };
 ```
 
-This is component-oriented.
+This is token-oriented.
 
-The module depends on a logical component address.
+The module depends on a logical module token.
 
 The difference is not just technical.
 
@@ -318,7 +317,7 @@ Most JavaScript and TypeScript projects express application dependency structure
 
 `@teqfw/di` makes a different tradeoff.
 
-It favors namespace-based component addresses and explicit runtime contracts over hidden or inferred wiring.
+It favors module tokens and explicit runtime contracts over hidden or inferred wiring.
 
 TypeScript has had a major influence on the JavaScript ecosystem, and that influence has been broadly positive. At the same time, TeqFW targets a different design space:
 
@@ -337,14 +336,14 @@ It is a focused alternative for projects that need stronger runtime explicitness
 
 | Concern                    | Common JS/TS Approach                                 | `@teqfw/di`                             |
 | -------------------------- | ----------------------------------------------------- | --------------------------------------- |
-| Dependency expression      | Static imports, decorators, framework wiring          | `__deps__` declarations with CDC values |
-| Addressing model           | File-based, package-based, or framework-defined       | Namespace-based component addressing    |
+| Dependency expression      | Static imports, decorators, framework wiring          | `__deps__` declarations with dependency specifiers |
+| Addressing model           | File-based, package-based, or framework-defined       | Token-based module addressing    |
 | Resolution model           | Static, implicit, framework-driven, or bundler-driven | Deterministic runtime linking           |
 | Structural source of truth | Spread across code, metadata, config, and conventions | Source-attached dependency contracts    |
 | Cross-environment wiring   | Bundlers, adapters, duplicated specifiers             | Namespace roots                         |
 | Best fit                   | Framework-led or TypeScript-first applications        | Pure JavaScript + JSDoc modular systems |
 | Agent readability          | Mixed and often indirect                              | Explicit and reconstructible            |
-| Architectural mindset      | Local module graph                                    | Enterprise-scale component composition  |
+| Architectural mindset      | Local module graph                                    | Token-based runtime composition          |
 
 ## Installation
 
@@ -419,7 +418,7 @@ In this flow the container:
 - imports the module;
 - reads `__deps__` for the selected export;
 - recursively links dependencies;
-- returns a frozen linked object.
+- returns a frozen resolved value.
 
 ## Core Concepts
 
@@ -437,9 +436,9 @@ uses `App_` as a namespace prefix.
 
 The namespace makes the dependency address independent from local file paths and runtime-specific module specifiers.
 
-### Component Address
+### Module Token
 
-A component address identifies an application component inside a namespace.
+A module token identifies an application module inside a namespace.
 
 For example:
 
@@ -447,20 +446,22 @@ For example:
 App_User_Repository
 ```
 
-identifies the `Repository` component inside the `App_` namespace.
+identifies the `Repository` module inside the `App_` namespace.
 
-The component address is logical.
+The module token is logical.
 
-It is not itself a file path or URL.
+It is not a file path, URL, module specifier, lifecycle instruction, or wrapper policy.
 
-### CDC
+### Dependency Specifier
 
-A **Canonical Dependency Code** is the string contract used to request a dependency.
+A **Dependency Specifier** is the string contract used to request a dependency.
+
+It is distinct from the Module Token because it may add export, lifecycle, and wrapper selectors.
 
 General form:
 
 ```text
-[PlatformPrefix]ModuleName[__ExportName][LifecycleAndWrappers]
+[PlatformPrefix]ModuleToken[__ExportName][LifecycleAndWrappers]
 ```
 
 Examples:
@@ -474,10 +475,11 @@ npm:lodash
 
 Where:
 
-- `App_User_Repository` is the namespace-based component address;
+- `App_User_Repository` is the module token;
 - `__Factory` selects a named export;
 - `$` means singleton lifecycle;
 - `$$` means new instance lifecycle;
+- `$$$` means direct factory composition without lifecycle caching;
 - `node:` and `npm:` address platform-specific modules.
 
 ### `__deps__`
@@ -488,14 +490,14 @@ For a single-export module, dependencies can be declared in shorthand form:
 
 ```javascript
 export const __deps__ = {
-  localName: "Dependency_CDC",
+  localName: "Dependency_Module$",
 };
 ```
 
 Rules:
 
 - the canonical form is hierarchical and keyed by export name;
-- each export entry maps constructor argument names to CDC strings;
+- each export entry maps constructor argument names to dependency specifier strings;
 - if `__deps__` is absent, the export has no declared dependencies;
 - a flat `__deps__` object is shorthand for limited single-export cases.
 
@@ -504,10 +506,10 @@ Canonical export-scoped form:
 ```javascript
 export const __deps__ = {
   default: {
-    localName: "Dependency_CDC",
+    localName: "Dependency_Module$",
   },
   Factory: {
-    localName: "Dependency_CDC",
+    localName: "Dependency_Module$",
   },
 };
 ```
@@ -539,11 +541,13 @@ This keeps dependency addressing stable while allowing the same logical naming m
 
 ### Runtime Linking
 
-Runtime linking is the process of resolving CDC values under finalized container configuration, importing the corresponding ES modules, injecting declared dependencies, and returning linked objects.
+Runtime linking is the process of resolving dependency specifiers under finalized container configuration, importing the corresponding ES modules, injecting declared dependencies, and returning resolved values.
 
 The mechanism is dynamic because it runs at runtime.
 
 The mechanism is deterministic because dependencies are declared explicitly and resolved through fixed namespace roots and configuration.
+
+Cycles in the dependency graph managed by `@teqfw/di` are forbidden. The container detects them and fails linking. Circular imports wholly inside third-party ESM packages are handled by the native ESM loader and remain outside the package responsibility boundary.
 
 ## Public API
 
@@ -601,7 +605,7 @@ Those files are intended for system prompts, examples, and agent consumption. Th
 
 - container usage;
 - dependency descriptors;
-- CDC behavior;
+- dependency specifier behavior;
 - integration patterns.
 
 The package ships both a human-facing README and a machine-oriented interface for agents that need to use it as a dependency.
@@ -619,10 +623,10 @@ The package ships both a human-facing README and a machine-oriented interface fo
 
 `@teqfw/di` is the core dependency-linking building block of the Tequila Framework.
 
-TeqFW is aimed at building modular monolith web applications with a unified JavaScript codebase across browser and server runtimes. The method favors namespace-based component addressing, late binding, explicit contracts, pure JavaScript, and source artifacts that remain legible to both humans and LLM agents.
+TeqFW is aimed at building modular monolith web applications with a unified JavaScript codebase across browser and server runtimes. The method favors token-based module addressing, late binding, explicit contracts, pure JavaScript, and source artifacts that remain legible to both humans and LLM agents.
 
 The broader TeqFW position is that AI-assisted development changes not only how code is written, but also what kind of structure a solo developer needs in order to supervise a growing application.
 
-When JavaScript applications reach enterprise scale under human-agent development, file-path-based dependency wiring becomes too local and too implicit.
+When JavaScript applications grow under human-agent development, file-path-based dependency wiring can become too local and too implicit.
 
-`@teqfw/di` is one concrete answer to that change: enterprise-scale dependency architecture for pure JavaScript.
+`@teqfw/di` is one concrete answer: stable Module Tokens, explicit Dependency Specifiers, and deterministic runtime linking for pure JavaScript.

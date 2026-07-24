@@ -1,6 +1,6 @@
 # usage.md
 
-Version: 20260710
+Version: 20260724
 
 ## Purpose
 
@@ -8,7 +8,7 @@ This document shows canonical usage patterns for the container. Examples are int
 
 ## Canonical Module Descriptor
 
-The canonical form of `__deps__` is hierarchical and keyed by export name.
+The preferred module exposes one Principal Application Value through `default export`. The `__deps__` export is declarative metadata listing the values required to link it. The canonical declaration form is hierarchical and keyed by export name.
 
 ```js
 // @ts-check
@@ -50,7 +50,7 @@ export default function App_Helper_Cast() {
 Rules:
 
 - the hierarchical export-scoped form is canonical;
-- each export entry maps constructor dependency names to CDC identifiers;
+- each export entry maps constructor dependency names to dependency specifiers;
 - if `__deps__` is omitted, the module has no declared dependencies;
 - dependencies are resolved recursively before instantiation.
 
@@ -88,7 +88,7 @@ console.log(Object.isFrozen(root));
 
 ## Named Export
 
-Named exports use the `__ExportName` segment in the CDC and the same hierarchical `__deps__` structure.
+Named exports are a JavaScript ecosystem compatibility surface. They use the `__ExportName` segment in the Dependency Specifier and the same hierarchical `__deps__` structure.
 
 ```js
 export const __deps__ = {
@@ -148,7 +148,7 @@ App_Task$$$
 
 ## Wrappers
 
-Wrapper exports are selected by CDC suffixes and are applied after postprocess hooks.
+Wrapper exports are selected by dependency specifier suffixes and are applied after postprocess hooks.
 
 ```txt
 App_Service$$_wrapLog_wrapTrace
@@ -158,7 +158,7 @@ This pattern is useful when runtime behavior should be decorated without changin
 
 ## Platform Modules
 
-CDC may refer to platform modules directly.
+Dependency Specifier may refer to platform modules directly.
 
 ```txt
 node:fs

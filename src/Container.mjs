@@ -172,29 +172,29 @@ export default class TeqFw_Di_Container {
         };
 
         /**
-         * Registers a mock value for a CDC.
+         * Registers a mock value for a Dependency Specifier.
          *
-         * @param {string} cdc
+         * @param {string} specifier
          * @param {any} mock
          * @returns {void}
          */
-        this.register = function (cdc, mock) {
+        this.register = function (specifier, mock) {
             assertBuilderStage();
-            logBuilder(`register('${cdc}').`);
+            logBuilder(`register('${specifier}').`);
             if (testMode !== true) throw new Error('Container test mode is disabled.');
-            const depId = parser.parse(cdc);
+            const depId = parser.parse(specifier);
             mockRegistry.set(getMockKey(depId), mock);
         };
 
         /**
-         * Resolves a CDC into a frozen linked instance.
+         * Resolves a Dependency Specifier into a frozen Resolved Value.
          *
-         * @param {string} cdc
+         * @param {string} specifier
          * @returns {Promise<any>}
          */
-        this.get = async function (cdc) {
+        this.get = async function (specifier) {
             if (state === 'failed') {
-                logger.error(`Container.get: rejected in failed state cdc='${cdc}'.`);
+                logger.error(`Container.get: rejected in failed state specifier='${specifier}'.`);
                 throw new Error('Container is in failed state.');
             }
 
@@ -214,7 +214,7 @@ export default class TeqFw_Di_Container {
                     freeze,
                     applyPreprocess,
                     applyPostprocess,
-                }, cdc);
+                }, specifier);
             } catch (error) {
                 logger.error(`Container.transition: operational -> failed.`, error);
                 state = 'failed';

@@ -123,6 +123,14 @@ Tests MUST use:
 
 Isolation and determinism requirements are mandatory.
 
+## Validation Tooling
+
+This package follows classical JavaScript module conventions and is a foundational TeqFW package.
+
+The `teqfw-esm-validator` skill and CLI MUST NOT be used for this project because their application-module profiles are not applicable to this package.
+
+Source changes MUST be verified with the project-provided tests and applicable classical JavaScript checks, including `node --check`, local lint commands, and local type checks when available.
+
 ## Type Declaration Discipline
 
 The file `types.d.ts` defines exported structural type aliases corresponding to implementation modules.

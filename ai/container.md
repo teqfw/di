@@ -1,10 +1,10 @@
 # container.md
 
-Version: 20260606
+Version: 20260724
 
 ## Role
 
-The container is the runtime composition root of the package. It interprets CDC identifiers, resolves them into modules, produces linked values, and returns frozen results.
+The container is the Runtime Linker and composition root of the package. It parses Dependency Specifiers, extracts Module Tokens, derives Module Specifiers through the configured registry, loads ES modules, and returns Resolved Values.
 
 Application modules do not resolve dependencies themselves. They declare dependency contracts and rely on the container to perform linking.
 
@@ -32,16 +32,18 @@ After the first `get()`, builder-stage methods are no longer supported.
 
 For each `get(cdc)` request the container applies this pipeline:
 
-1. `Parse` — convert the CDC string into a DepId DTO.
+The parameter name `cdc` is retained for API compatibility. Its value is a Dependency Specifier; CDC is not a separate identity concept.
+
+1. `Parse` — convert the Dependency Specifier string into a DepId DTO.
 2. `Preprocess hooks` — transform the DepId DTO through ordered `addPreprocess()` hooks.
 3. `Resolve` — map the identifier to a concrete module location.
 4. `Instantiate` — load the module and either return the selected export as-is or instantiate it according to lifecycle composition rules.
 5. `Postprocess hooks` — apply ordered `addPostprocess()` value transforms.
-6. `Wrapper exports` — apply ordered wrapper exports selected by CDC suffixes.
+6. `Wrapper exports` — apply ordered wrapper exports selected by dependency specifier suffixes.
 7. `Lifecycle` — apply singleton caching or transient behavior.
 8. `Freeze` — freeze the resolved value before returning it.
 
-The pipeline is deterministic for a fixed configuration and input CDC.
+The pipeline is deterministic for a fixed configuration and input Dependency Specifier.
 
 ## State Model
 

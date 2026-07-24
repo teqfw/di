@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+* Replaced the former CDC terminology in source comments, internal variable names, diagnostics, parser errors, and tests with `Dependency Specifier`, without changing identifier syntax or public method behavior.
+* Retained `DepId` and its `origin` field as compatibility-level implementation names.
+
 ## 2.7.0 - 2026-07-10 - As-is injection fix and coverage expansion
 
 * Fixed the bug that prevented injecting classes as-is, including named exports resolved without factory wrapping.

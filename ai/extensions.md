@@ -1,6 +1,6 @@
 # extensions.md
 
-Version: 20260606
+Version: 20260724
 
 ## Purpose
 
@@ -14,7 +14,7 @@ These mechanisms are related but not interchangeable.
 
 ## Preprocess Hooks
 
-Preprocess hooks transform CDC identities before resolution.
+Preprocess hooks transform parsed dependency identities before resolution.
 
 Signature:
 
@@ -31,7 +31,7 @@ Properties:
 
 Typical uses:
 
-- CDC alias rewriting;
+- Dependency Specifier alias rewriting;
 - policy-driven identifier normalization;
 - project-specific prefix adaptation.
 
@@ -50,7 +50,7 @@ Properties:
 - registered with `addPostprocess()`;
 - run for every resolved value;
 - run in declared order;
-- do not alter CDC parsing or module resolution.
+- do not alter dependency specifier parsing or module resolution.
 
 Typical uses:
 
@@ -60,7 +60,7 @@ Typical uses:
 
 ## Wrapper Exports
 
-Wrapper exports are selected directly from CDC suffixes and are resolved from the same module namespace as the dependency being composed.
+Wrapper exports are selected directly from dependency specifier suffixes and are resolved from the same module namespace as the dependency being composed.
 
 Signature:
 
@@ -71,7 +71,7 @@ Signature:
 Properties:
 
 - selected by wrapper suffixes such as `_wrapLog`;
-- applied only when present in the CDC;
+- applied only when present in the Dependency Specifier;
 - executed after postprocess hooks and before freeze;
 - not registered globally in the container.
 

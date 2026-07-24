@@ -27,7 +27,7 @@ describe('TeqFw_Di_Parser', () => {
     describe('accepted forms', () => {
         const cases = [
             {
-                cdc: MODULE,
+                specifier: MODULE,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -38,7 +38,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `${MODULE}__${NAMED_EXPORT}`,
+                specifier: `${MODULE}__${NAMED_EXPORT}`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -49,7 +49,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `${MODULE}__default`,
+                specifier: `${MODULE}__default`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -60,7 +60,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `${MODULE}__default$`,
+                specifier: `${MODULE}__default$`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -71,7 +71,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `${MODULE}$`,
+                specifier: `${MODULE}$`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -82,7 +82,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `${MODULE}__default$$`,
+                specifier: `${MODULE}__default$$`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -93,7 +93,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `${MODULE}$$`,
+                specifier: `${MODULE}$$`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -104,7 +104,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `${MODULE}__default$$$`,
+                specifier: `${MODULE}__default$$$`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -115,7 +115,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `${MODULE}$$$`,
+                specifier: `${MODULE}$$$`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -126,7 +126,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `${MODULE}__default$_${WRAPPER_LOG}`,
+                specifier: `${MODULE}__default$_${WRAPPER_LOG}`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -137,7 +137,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `${MODULE}$_${WRAPPER_LOG}`,
+                specifier: `${MODULE}$_${WRAPPER_LOG}`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -148,18 +148,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `${MODULE}__default$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: TeqFw_Di_Enum_Life.TRANSIENT,
-                    composition: TeqFw_Di_Enum_Composition.FACTORY,
-                    wrappers: [WRAPPER_LOG, WRAPPER_PROXY],
-                },
-            },
-            {
-                cdc: `${MODULE}$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`,
+                specifier: `${MODULE}__default$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -170,7 +159,18 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `${MODULE}__default$$$_${WRAPPER_LOG}`,
+                specifier: `${MODULE}$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`,
+                expected: {
+                    platform: TeqFw_Di_Enum_Platform.TEQ,
+                    moduleName: MODULE,
+                    exportName: 'default',
+                    life: TeqFw_Di_Enum_Life.TRANSIENT,
+                    composition: TeqFw_Di_Enum_Composition.FACTORY,
+                    wrappers: [WRAPPER_LOG, WRAPPER_PROXY],
+                },
+            },
+            {
+                specifier: `${MODULE}__default$$$_${WRAPPER_LOG}`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -181,7 +181,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `${MODULE}$$$_${WRAPPER_LOG}`,
+                specifier: `${MODULE}$$$_${WRAPPER_LOG}`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.TEQ,
                     moduleName: MODULE,
@@ -192,7 +192,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `node:fs`,
+                specifier: `node:fs`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.NODE,
                     moduleName: 'fs',
@@ -203,7 +203,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `node:fs/promises`,
+                specifier: `node:fs/promises`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.NODE,
                     moduleName: 'fs/promises',
@@ -214,7 +214,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `node:child_process`,
+                specifier: `node:child_process`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.NODE,
                     moduleName: 'child_process',
@@ -225,7 +225,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `node:worker_threads`,
+                specifier: `node:worker_threads`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.NODE,
                     moduleName: 'worker_threads',
@@ -236,7 +236,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `node:child_process__execFile`,
+                specifier: `node:child_process__execFile`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.NODE,
                     moduleName: 'child_process',
@@ -247,7 +247,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `npm:@vendor/package`,
+                specifier: `npm:@vendor/package`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.NPM,
                     moduleName: '@vendor/package',
@@ -258,7 +258,7 @@ describe('TeqFw_Di_Parser', () => {
                 },
             },
             {
-                cdc: `npm:@vendor/package__default$$`,
+                specifier: `npm:@vendor/package__default$$`,
                 expected: {
                     platform: TeqFw_Di_Enum_Platform.NPM,
                     moduleName: '@vendor/package',
@@ -271,8 +271,8 @@ describe('TeqFw_Di_Parser', () => {
         ];
 
         for (const one of cases) {
-            it(`parses '${one.cdc}'`, () => {
-                const dto = parser.parse(one.cdc);
+            it(`parses '${one.specifier}'`, () => {
+                const dto = parser.parse(one.specifier);
                 assertDepId(dto, one.expected);
             });
         }
@@ -326,9 +326,9 @@ describe('TeqFw_Di_Parser', () => {
             'Project_Package_Module__named_Export',
         ];
 
-        for (const cdc of invalidCases) {
-            it(`throws on '${cdc}'`, () => {
-                assert.throws(() => parser.parse(cdc), Error);
+        for (const specifier of invalidCases) {
+            it(`throws on '${specifier}'`, () => {
+                assert.throws(() => parser.parse(specifier), Error);
             });
         }
     });

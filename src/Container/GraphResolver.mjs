@@ -71,9 +71,9 @@ export default class TeqFw_Di_Container_GraphResolver {
 
                 /** @type {Record<string, unknown>} */
                 const depsMap = readDepsDecl(namespace, depId);
-                for (const nextCdc of Object.values(depsMap)) {
+                for (const nextSpecifier of Object.values(depsMap)) {
                     /** @type {TeqFw_Di_DepId__DTO} */
-                    const nextDepId = parser.parse(/** @type {string} */ (nextCdc));
+                    const nextDepId = parser.parse(/** @type {string} */ (nextSpecifier));
                     if (log) log.log(`GraphResolver.walk: edge '${key}' -> '${nextDepId.platform}::${nextDepId.moduleName}'.`);
                     await walk(nextDepId, out, stack, chain);
                 }

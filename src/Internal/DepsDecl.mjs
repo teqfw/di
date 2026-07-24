@@ -9,7 +9,7 @@
  * Reads dependency declaration map for the selected export of a module namespace.
  *
  * @param {object} namespace Loaded module namespace.
- * @param {TeqFw_Di_DepId__DTO} depId Canonical dependency identity.
+ * @param {TeqFw_Di_DepId__DTO} depId Parsed dependency identity.
  * @returns {Record<string, unknown>} Dependency declaration map.
  */
 export function readDepsDecl(namespace, depId) {
@@ -24,7 +24,7 @@ export function readDepsDecl(namespace, depId) {
     if ((exportScoped !== undefined) && (exportScoped !== null) && (typeof exportScoped === 'object') && !Array.isArray(exportScoped)) {
         const values = Object.values(/** @type {Record<string, unknown>} */ (exportScoped));
         if (!values.every((value) => typeof value === 'string')) {
-            throw new Error('__deps__ export entries must map dependency names to CDC strings.');
+            throw new Error('__deps__ export entries must map dependency names to Dependency Specifier strings.');
         }
         return /** @type {Record<string, unknown>} */ (exportScoped);
     }

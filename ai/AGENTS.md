@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Version: 20260606
+Version: 20260724
 
 ## Purpose
 
@@ -30,7 +30,7 @@ This level does not define:
 - `AGENTS.md` — entry point for this level; defines scope, navigation, and authority.
 - `concepts.md` — core concepts behind runtime linking and dependency contracts.
 - `container.md` — container lifecycle, state model, and resolution pipeline.
-- `dependency-id.md` — normative CDC grammar and interpretation rules.
+- `dependency-id.md` — normative dependency specifier grammar and interpretation rules.
 - `extensions.md` — preprocess hooks, postprocess hooks, and wrapper exports.
 - `package-api.ts` — machine-readable contract of the supported programmatic surface.
 - `usage.md` — canonical usage patterns and short integration recipes.
@@ -40,7 +40,7 @@ This level does not define:
 Read documents by task:
 
 - for supported imports and public surface, start with `package-api.ts`;
-- for CDC syntax and meaning, read `dependency-id.md`;
+- for dependency specifier syntax and meaning, read `dependency-id.md`;
 - for runtime behavior of the container, read `container.md`;
 - for extension behavior, read `extensions.md`;
 - for practical integration examples, read `usage.md`;

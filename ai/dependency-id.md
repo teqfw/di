@@ -1,15 +1,15 @@
 # dependency-id.md
 
-Version: 20260710
+Version: 20260724
 
 ## Purpose
 
-Dependencies in the container are addressed using **Canonical Dependency Codes (CDC)**. A CDC is a structured identifier interpreted by the container to determine which module must be loaded, which export must be selected, and whether the resolved value is returned as-is or instantiated with lifecycle semantics.
+Dependencies in the container are requested through **Dependency Specifiers**. A Dependency Specifier contains a Module Token plus optional export, lifecycle, and wrapper selectors. The token identifies the module; the selectors describe how its value is linked.
 
 ## Grammar
 
 ```txt
-CDC := [PlatformPrefix]ModuleName[__ExportName][Lifecycle][WrapperSuffixes]
+dependencySpecifier := [PlatformPrefix]ModuleToken[__ExportName][Lifecycle][WrapperSuffixes]
 ```
 
 Component order is fixed.
@@ -22,7 +22,7 @@ Component order is fixed.
 ## Components
 
 - `PlatformPrefix` — optional source selector such as `node:` or `npm:`.
-- `ModuleName` — logical module identifier inside a namespace.
+- `ModuleToken` — stable logical module identifier inside a namespace.
 - `__ExportName` — optional named export selector. With a lifecycle marker, selects the export for factory composition. Without a lifecycle marker, selects the named export for as-is resolution. Omission without a lifecycle marker means the whole-module namespace is resolved as-is.
 - `Lifecycle` — optional instantiation marker.
 - `WrapperSuffixes` — optional ordered wrapper export names appended after the lifecycle marker.
@@ -46,7 +46,7 @@ App_Service_User$
 
 ## Module Identification
 
-`ModuleName` identifies the provider module. Identifier segments separated by underscores correspond to path segments inside the configured namespace root.
+`ModuleToken` identifies the provider module independently from its physical location. Identifier segments separated by underscores correspond to path segments inside the configured namespace root.
 
 Example:
 
@@ -60,7 +60,7 @@ may map to a module-specifier base such as:
 AppRoot/Service/User.mjs
 ```
 
-The base may be filesystem-backed or URL-backed depending on runtime configuration.
+The base may be filesystem-backed or URL-backed depending on runtime configuration. The derived path or URL is a Module Specifier, not the Module Token.
 
 ## Export Selection
 
@@ -86,7 +86,7 @@ Supported lifecycle markers:
 
 - `$` — singleton lifecycle; create once and reuse the same instance.
 - `$$` — transient lifecycle; create a new instance each time.
-- `$$$` — transient alias; behaves the same as `$$` in the current implementation.
+- `$$$` — direct lifecycle for factory composition; do not cache the produced value.
 
 If the lifecycle marker is omitted, the selected module export is resolved **as-is** and is not instantiated by lifecycle rules.
 
@@ -114,7 +114,7 @@ Wrapper exports are described in `extensions.md`.
 
 ## Interpretation Rules
 
-When the container receives a CDC it interprets it in this order:
+When the container receives a Dependency Specifier it interprets it in this order:
 
 1. determine the platform prefix and module namespace;
 2. resolve the module identifier into a module location;

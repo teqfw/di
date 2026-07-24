@@ -26,13 +26,13 @@ import {makePromiseSafe} from '../Internal/PromiseSafe.mjs';
  */
 
 /**
- * Executes full container get pipeline for a CDC.
+ * Executes the full container pipeline for a Dependency Specifier.
  *
  * @param {TeqFw_Di_Container_Pipeline_Context} ctx
- * @param {string} cdc
+ * @param {string} specifier
  * @returns {Promise<any>}
  */
-export async function executeContainerPipeline(ctx, cdc) {
+export async function executeContainerPipeline(ctx, specifier) {
     const {
         parser,
         resolver,
@@ -58,10 +58,10 @@ export async function executeContainerPipeline(ctx, cdc) {
     /** @type {string} */
     let stage = 'start';
     try {
-        logger.log(`Container.get: cdc='${cdc}'.`);
+        logger.log(`Container.get: specifier='${specifier}'.`);
         stage = 'parse';
         logger.log('Container.pipeline: parse:entry.');
-        const parsed = parser.parse(cdc);
+        const parsed = parser.parse(specifier);
         logger.log(`Container.pipeline: parse:exit '${parsed.platform}::${parsed.moduleName}'.`);
         stage = 'preprocess';
         logger.log('Container.pipeline: preprocess:entry.');
@@ -104,8 +104,8 @@ export async function executeContainerPipeline(ctx, cdc) {
                 const deps = {};
                 /** @type {Record<string, unknown>} */
                 const depsDecl = readDepsDecl(node.namespace, node.depId);
-                for (const [name, cdcValue] of Object.entries(depsDecl)) {
-                    const childDepId = parser.parse(/** @type {string} */ (cdcValue));
+                for (const [name, dependencySpecifier] of Object.entries(depsDecl)) {
+                    const childDepId = parser.parse(/** @type {string} */ (dependencySpecifier));
                     deps[name] = build(getKey(childDepId));
                 }
                 const instantiated = instantiator.instantiate(node.depId, node.namespace, deps);

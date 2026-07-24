@@ -42,7 +42,7 @@ function makeDepKey(depId) {
  * @returns {{
  *   parser: TeqFw_Di_Parser,
  *   resolver: TeqFw_Di_Resolver,
- *   setParsed(cdc: string, depId: TeqFw_Di_DepId$DTO): void,
+ *   setParsed(specifier: string, depId: TeqFw_Di_DepId$DTO): void,
  *   setNamespace(depId: TeqFw_Di_DepId$DTO, namespace: object): void,
  *   parseCalls: string[],
  *   resolveCalls: string[]
@@ -60,10 +60,10 @@ function createDoubles() {
 
     /** @type {TeqFw_Di_Parser} */
     const parser = /** @type {TeqFw_Di_Parser} */ ({
-        parse(cdc) {
-            parseCalls.push(cdc);
-            if (!parsed.has(cdc)) throw new Error(`Unexpected CDC: ${cdc}`);
-            return parsed.get(cdc);
+        parse(specifier) {
+            parseCalls.push(specifier);
+            if (!parsed.has(specifier)) throw new Error(`Unexpected Dependency Specifier: ${specifier}`);
+            return parsed.get(specifier);
         },
     });
 
@@ -80,8 +80,8 @@ function createDoubles() {
     return {
         parser,
         resolver,
-        setParsed(cdc, depId) {
-            parsed.set(cdc, depId);
+        setParsed(specifier, depId) {
+            parsed.set(specifier, depId);
         },
         setNamespace(depId, namespace) {
             namespaces.set(`${depId.platform}::${depId.moduleName}`, namespace);
@@ -168,7 +168,7 @@ describe('TeqFw_Di_Container_GraphResolver', () => {
         io.setNamespace(root, {__deps__: {default: {svc: {bad: 'App_B'}}}});
         const resolver = new TeqFw_Di_Container_GraphResolver({parser: io.parser, resolver: io.resolver});
 
-        await assert.rejects(resolver.resolve(root), /export entries must map dependency names to CDC strings/);
+        await assert.rejects(resolver.resolve(root), /export entries must map dependency names to Dependency Specifier strings/);
     });
 
     it('treats named-only __deps__ as empty for default export', async () => {
