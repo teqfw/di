@@ -5,6 +5,7 @@ import path from 'node:path';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Config_NamespaceRegistry from '../../src/Config/NamespaceRegistry.mjs';
+import TeqFw_Di_Config_PackageRegistry from '../../src/Config/PackageRegistry.mjs';
 import TeqFw_Di_Container from '../../src/Container.mjs';
 
 /**
@@ -79,6 +80,11 @@ export const fileAbs = fileURLToPath(import.meta.url);
             },
         });
         await writeText(path.join(depSideRoot, 'src/Util.mjs'), 'export const marker = "side";\n');
+
+        const publicPackageRegistry = await import("@teqfw/di/src/Config/PackageRegistry.mjs");
+        assert.equal(publicPackageRegistry.default, TeqFw_Di_Config_PackageRegistry);
+        const graph = await new TeqFw_Di_Config_PackageRegistry({fs, path, appRoot}).build();
+        assert.deepStrictEqual(graph.map((item) => item.name), ['app-root', 'dep-long', 'dep-side']);
 
         const registryBuilder = new TeqFw_Di_Config_NamespaceRegistry({fs, path, appRoot});
         const registry = await registryBuilder.build();

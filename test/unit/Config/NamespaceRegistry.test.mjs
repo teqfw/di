@@ -67,6 +67,7 @@ describe('TeqFw_Di_Config_NamespaceRegistry', () => {
         const fs = createMockFs({
             files: {
                 '/app/package.json': toJson({
+                    name: "package",
                     dependencies: {'dep-a': '1.0.0', 'dep-b': '1.0.0'},
                     teqfw: {
                         namespaces: [
@@ -76,14 +77,17 @@ describe('TeqFw_Di_Config_NamespaceRegistry', () => {
                     },
                 }),
                 '/app/node_modules/dep-a/package.json': toJson({
+                    name: "package",
                     dependencies: {'dep-c': '1.0.0'},
                     teqfw: {namespaces: [{prefix: 'DepA_', path: './src', ext: '.mjs'}]},
                 }),
                 '/app/node_modules/dep-b/package.json': toJson({
+                    name: "package",
                     dependencies: {},
                     teqfw: {namespaces: [{prefix: 'Dep_', path: './lib'}]},
                 }),
                 '/app/node_modules/dep-c/package.json': toJson({
+                    name: "package",
                     dependencies: {},
                     teqfw: {namespaces: [{prefix: 'DepC_', path: './pkg', ext: 'js'}]},
                 }),
@@ -114,10 +118,12 @@ describe('TeqFw_Di_Config_NamespaceRegistry', () => {
         const fs = createMockFs({
             files: {
                 '/app/package.json': toJson({
+                    name: "package",
                     dependencies: {'dep-a': '1.0.0'},
                     teqfw: {namespaces: [{prefix: 'App_', path: './src'}]},
                 }),
                 '/app/node_modules/dep-a/package.json': toJson({
+                    name: "package",
                     dependencies: {},
                     teqfw: {namespaces: [{prefix: 'App_', path: './lib'}]},
                 }),
@@ -134,6 +140,7 @@ describe('TeqFw_Di_Config_NamespaceRegistry', () => {
         const fs = createMockFs({
             files: {
                 '/app/package.json': toJson({
+                    name: "package",
                     dependencies: {},
                     teqfw: {namespaces: [{prefix: 'App', path: './src'}]},
                 }),
@@ -150,6 +157,7 @@ describe('TeqFw_Di_Config_NamespaceRegistry', () => {
         const fs = createMockFs({
             files: {
                 '/app/package.json': toJson({
+                    name: "package",
                     dependencies: {},
                     teqfw: {namespaces: [{prefix: 'App_', path: '../outside'}]},
                 }),
@@ -166,6 +174,7 @@ describe('TeqFw_Di_Config_NamespaceRegistry', () => {
         const fs = createMockFs({
             files: {
                 '/app/package.json': toJson({
+                    name: "package",
                     dependencies: {},
                     teqfw: {namespaces: [{prefix: 'App_', path: './missing'}]},
                 }),
@@ -181,6 +190,7 @@ describe('TeqFw_Di_Config_NamespaceRegistry', () => {
         const fs = createMockFs({
             files: {
                 '/app/package.json': toJson({
+                    name: "package",
                     dependencies: {},
                     teqfw: {namespaces: [{prefix: 'App_', path: './src'}]},
                 }),

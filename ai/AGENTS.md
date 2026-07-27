@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Version: 20260724
+Version: 20260727
 
 ## Purpose
 

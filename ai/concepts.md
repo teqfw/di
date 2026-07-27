@@ -1,6 +1,6 @@
 # concepts.md
 
-Version: 20260724
+Version: 20260727
 
 ## Core Model
 
@@ -35,3 +35,7 @@ Values returned by the container are frozen after linking. Consumers should trea
 ## Cycle Boundary
 
 Cycles in the dependency graph managed by the container are forbidden and fail linking. Circular imports internal to third-party ESM packages remain outside the package boundary and are handled by the native loader.
+
+## Runtime Package Graph
+
+PackageRegistry is a Node.js composition-stage helper. It returns immutable static metadata records for the application root and installed transitive runtime dependencies in deterministic breadth-first order. NamespaceRegistry consumes this graph to build namespace roots. Applications may separately interpret provider metadata, but DI does not provide a plugin registry or load modules during discovery.

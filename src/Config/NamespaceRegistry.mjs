@@ -1,13 +1,15 @@
 // @ts-check
 
+import TeqFw_Di_Config_PackageRegistry from './PackageRegistry.mjs';
+
 /**
  * @namespace TeqFw_Di_Config_NamespaceRegistry
- * @description Deterministic loader for package namespace rules.
+ * @description Deterministic namespace registry derived from the runtime package graph.
  */
 
 /**
  * @typedef {object} TeqFw_Di_Config_NamespaceRegistry_Dependencies
- * @property {{readFile(path: string, encoding: string): Promise<string>, readdir(path: string): Promise<string[]>, realpath(path: string): Promise<string>, stat(path: string): Promise<{isDirectory(): boolean}>}} fs
+ * @property {{readFile(path: string, encoding: string): Promise<string>, realpath(path: string): Promise<string>, stat(path: string): Promise<{isDirectory(): boolean}>}} fs
  * @property {{join(...paths: string[]): string, dirname(path: string): string, relative(from: string, to: string): string, resolve(...paths: string[]): string, isAbsolute(path: string): boolean}} path
  * @property {string} appRoot
  */
@@ -20,37 +22,13 @@
  */
 
 /**
- * Builds deterministic immutable namespace registry from root package and installed dependencies.
+ * Builds a deterministic immutable namespace registry from runtime package records.
  */
 export default class TeqFw_Di_Config_NamespaceRegistry {
     /**
      * @param {TeqFw_Di_Config_NamespaceRegistry_Dependencies} deps
      */
     constructor({fs, path, appRoot}) {
-        const appRootAbs = path.resolve(appRoot);
-
-        /**
-         * @param {string} fileAbs
-         * @returns {Promise<Record<string, unknown>>}
-         */
-        const readJson = async function (fileAbs) {
-            const content = await fs.readFile(fileAbs, 'utf8');
-            return /** @type {Record<string, unknown>} */ (JSON.parse(content));
-        };
-
-        /**
-         * @param {string} absPath
-         * @returns {Promise<boolean>}
-         */
-        const isDirectory = async function (absPath) {
-            try {
-                const stat = await fs.stat(absPath);
-                return stat.isDirectory();
-            } catch {
-                return false;
-            }
-        };
-
         /**
          * @param {string} rootAbs
          * @param {string} candidateAbs
@@ -62,6 +40,18 @@ export default class TeqFw_Di_Config_NamespaceRegistry {
         };
 
         /**
+         * @param {string} absPath
+         * @returns {Promise<boolean>}
+         */
+        const isDirectory = async function (absPath) {
+            try {
+                return (await fs.stat(absPath)).isDirectory();
+            } catch {
+                return false;
+            }
+        };
+
+        /**
          * @param {string} packageRootAbs
          * @param {string} dirAbs
          * @returns {Promise<void>}
@@ -70,7 +60,7 @@ export default class TeqFw_Di_Config_NamespaceRegistry {
             const packageRootReal = await fs.realpath(packageRootAbs);
             const dirReal = await fs.realpath(dirAbs);
             if (!isInside(packageRootReal, dirReal)) {
-                throw new Error(`Namespace path resolves outside package root: '${dirAbs}'.`);
+                throw new Error('Namespace path resolves outside package root: ' + dirAbs + '.');
             }
         };
 
@@ -83,9 +73,9 @@ export default class TeqFw_Di_Config_NamespaceRegistry {
             if ((typeof ext !== 'string') || (ext.length === 0)) {
                 throw new Error('Namespace extension must be a non-empty string.');
             }
-            const normalized = ext.startsWith('.') ? ext : `.${ext}`;
+            const normalized = ext.startsWith('.') ? ext : '.' + ext;
             if ((normalized !== '.mjs') && (normalized !== '.js')) {
-                throw new Error(`Namespace extension is not ESM-compatible: '${normalized}'.`);
+                throw new Error('Namespace extension is not ESM-compatible: ' + normalized + '.');
             }
             return normalized;
         };
@@ -100,112 +90,47 @@ export default class TeqFw_Di_Config_NamespaceRegistry {
                 throw new Error('Namespace entry must be an object.');
             }
             const item = /** @type {Record<string, unknown>} */ (raw);
-
             const prefix = item.prefix;
             if ((typeof prefix !== 'string') || (prefix.length === 0) || !prefix.endsWith('_')) {
-                throw new Error(`Namespace prefix is invalid: '${String(prefix)}'.`);
+                throw new Error('Namespace prefix is invalid: ' + String(prefix) + '.');
             }
 
             const rawPath = item.path;
             if ((typeof rawPath !== 'string') || (rawPath.length === 0) || path.isAbsolute(rawPath)) {
-                throw new Error(`Namespace path must be a non-empty relative path: '${String(rawPath)}'.`);
+                throw new Error('Namespace path must be a non-empty relative path: ' + String(rawPath) + '.');
             }
             const dirAbs = path.resolve(packageRootAbs, rawPath);
             if (!(await isDirectory(dirAbs))) {
-                throw new Error(`Namespace path does not point to existing directory: '${dirAbs}'.`);
+                throw new Error('Namespace path does not point to existing directory: ' + dirAbs + '.');
             }
             await assertInsidePackageRoot(packageRootAbs, dirAbs);
-
-            const ext = normalizeExt(item.ext);
-
-            return {prefix, dirAbs, ext};
+            return {prefix, dirAbs, ext: normalizeExt(item.ext)};
         };
 
         /**
-         * @param {string} packageRootAbs
-         * @returns {Promise<{namespaces: unknown[], dependencies: string[]}>}
-         */
-        const readPackageMetadata = async function (packageRootAbs) {
-            const packageJsonAbs = path.join(packageRootAbs, 'package.json');
-            const packageJson = await readJson(packageJsonAbs);
-            const teqfw = (packageJson.teqfw && typeof packageJson.teqfw === 'object')
-                ? /** @type {Record<string, unknown>} */ (packageJson.teqfw)
-                : {};
-            const namespaces = Array.isArray(teqfw.namespaces) ? teqfw.namespaces : [];
-            const dependencies = (packageJson.dependencies && typeof packageJson.dependencies === 'object')
-                ? Object.keys(/** @type {Record<string, unknown>} */ (packageJson.dependencies)).sort()
-                : [];
-            return {namespaces, dependencies};
-        };
-
-        /**
-         * Checks whether package.json exists inside a dependency directory.
-         *
-         * @param {string} candidateAbs
-         * @returns {Promise<boolean>}
-         */
-        const hasPackageJson = async function (candidateAbs) {
-            try {
-                await fs.stat(path.join(candidateAbs, 'package.json'));
-                return true;
-            } catch {
-                return false;
-            }
-        };
-
-        /**
-         * @param {string} packageName
-         * @param {string} fromPackageRootAbs
-         * @returns {Promise<string>}
-         */
-        const resolveDependencyPackageRoot = async function (packageName, fromPackageRootAbs) {
-            let cursor = fromPackageRootAbs;
-            while (isInside(appRootAbs, cursor)) {
-                const candidate = path.join(cursor, 'node_modules', packageName);
-                if (await isDirectory(candidate) && (await hasPackageJson(candidate))) {
-                    return path.resolve(candidate);
-                }
-                if (cursor === appRootAbs) break;
-                const parent = path.dirname(cursor);
-                if (parent === cursor) break;
-                cursor = parent;
-            }
-            throw new Error(`Installed dependency is not found: '${packageName}' from '${fromPackageRootAbs}'.`);
-        };
-
-        /**
-         * @returns {Promise<Readonly<TeqFw_Di_Config_NamespaceRegistry_Entry[]>>}
+         * @returns {Promise<ReadonlyArray<TeqFw_Di_Config_NamespaceRegistry_Entry>>}
          */
         this.build = async function () {
-            /** @type {{name: string, rootAbs: string}[]} */
-            const queue = [{rootAbs: appRootAbs}];
-            /** @type {Set<string>} */
-            const visitedRoots = new Set();
+            const packages = await new TeqFw_Di_Config_PackageRegistry({fs, path, appRoot}).build();
             /** @type {Set<string>} */
             const uniquePrefixes = new Set();
             /** @type {TeqFw_Di_Config_NamespaceRegistry_Entry[]} */
             const entries = [];
 
-            while (queue.length > 0) {
-                const current = queue.shift();
-                const packageRootAbs = current.rootAbs;
-                const packageRootReal = await fs.realpath(packageRootAbs);
-                if (visitedRoots.has(packageRootReal)) continue;
-                visitedRoots.add(packageRootReal);
+            for (const onePackage of packages) {
+                const packageJson = onePackage.packageJson;
+                const teqfw = (packageJson.teqfw && typeof packageJson.teqfw === 'object')
+                    ? /** @type {Record<string, unknown>} */ (packageJson.teqfw)
+                    : {};
+                const namespaces = Array.isArray(teqfw.namespaces) ? teqfw.namespaces : [];
 
-                const meta = await readPackageMetadata(packageRootAbs);
-                for (const raw of meta.namespaces) {
-                    const normalized = await normalizeEntry(raw, packageRootAbs);
+                for (const raw of namespaces) {
+                    const normalized = await normalizeEntry(raw, onePackage.rootAbs);
                     if (uniquePrefixes.has(normalized.prefix)) {
-                        throw new Error(`Duplicate namespace prefix is not allowed: '${normalized.prefix}'.`);
+                        throw new Error('Duplicate namespace prefix is not allowed: ' + normalized.prefix + '.');
                     }
                     uniquePrefixes.add(normalized.prefix);
                     entries.push(normalized);
-                }
-
-                for (const depName of meta.dependencies) {
-                    const depRootAbs = await resolveDependencyPackageRoot(depName, packageRootAbs);
-                    queue.push({rootAbs: depRootAbs});
                 }
             }
 

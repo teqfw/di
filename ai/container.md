@@ -1,6 +1,6 @@
 # container.md
 
-Version: 20260724
+Version: 20260727
 
 ## Role
 
@@ -83,3 +83,7 @@ Once in `failed` state:
 - the container does not attempt partial recovery.
 
 This fail-fast behavior prevents partially linked systems from continuing execution.
+
+## Package Graph Boundary
+
+PackageRegistry and NamespaceRegistry are composition-stage utilities outside Container builder state. They read static package metadata before namespace roots are added. The container never discovers packages or application providers while resolving dependencies.

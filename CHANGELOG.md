@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Added the public composition-stage PackageRegistry runtime package graph and refactored NamespaceRegistry to consume it. Package metadata interpretation for application providers remains outside DI.
+
 * Replaced the former CDC terminology in source comments, internal variable names, diagnostics, parser errors, and tests with `Dependency Specifier`, without changing identifier syntax or public method behavior.
 * Retained `DepId` and its `origin` field as compatibility-level implementation names.
 

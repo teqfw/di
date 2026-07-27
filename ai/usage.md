@@ -1,6 +1,6 @@
 # usage.md
 
-Version: 20260724
+Version: 20260727
 
 ## Purpose
 
@@ -199,3 +199,7 @@ export default class App_Empty {
   }
 }
 ```
+
+## Package-Backed Composition
+
+In Node.js, a composition root may build PackageRegistry first, use NamespaceRegistry for namespace roots, and independently inspect each immutable package record for application-owned metadata. Package discovery reads only static manifests and transitive dependencies; it does not resolve container values or interpret providers.

@@ -70,6 +70,7 @@ export const PACKAGE_API: PackageApiContract = {
     canonicalEntrypoints: [
         '@teqfw/di',
         '@teqfw/di/src/Config/NamespaceRegistry.mjs',
+        '@teqfw/di/src/Config/PackageRegistry.mjs',
     ],
     publicRuntime: [
         {
@@ -169,6 +170,16 @@ export const PACKAGE_API: PackageApiContract = {
             ],
         },
         {
+            alias: 'TeqFw_Di_Config_PackageRegistry',
+            kind: 'class',
+            role: 'Composition-stage static runtime package graph builder.',
+            imports: [{specifier: '@teqfw/di/src/Config/PackageRegistry.mjs', exportName: 'default', canonical: true}],
+            methods: [
+                {name: 'constructor', signature: 'new PackageRegistry({ fs, path, appRoot })', stage: 'composition', summary: 'Creates a static package graph builder.'},
+                {name: 'build', signature: 'build(): Promise<ReadonlyArray<PackageRecord>>', stage: 'composition', summary: 'Builds immutable breadth-first runtime package records.', constraints: ['Reads only transitive dependencies and static package metadata.', 'Does not load modules or interpret application providers.']},
+            ],
+        },
+        {
             alias: 'TeqFw_Di_Config_NamespaceRegistry',
             kind: 'class',
             role: 'Composition-stage helper that discovers namespace roots from the root package and installed npm dependencies.',
@@ -203,6 +214,7 @@ export const PACKAGE_API: PackageApiContract = {
         },
     ],
     structuralContracts: [
+        {name: 'Runtime Package Record', kind: 'protocol', aliases: ['TeqFw_Di_Config_PackageRegistry_Record'], summary: 'Immutable static package metadata record.', fields: {name: 'Declared package name.', rootAbs: 'Resolved package root.', rootReal: 'Canonical package root.', packageJson: 'Recursively frozen package metadata.'}},
         {
             name: 'DepId DTO',
             kind: 'dto',
@@ -259,6 +271,19 @@ export const PACKAGE_API: PackageApiContract = {
         },
     ],
     typeMapClassification: [
+        {
+            alias: 'TeqFw_Di_Config_PackageRegistry',
+            source: './src/Config/PackageRegistry.mjs',
+            exposure: 'public-runtime',
+            reason: 'Exported through package.json exports as a supported composition subpath.',
+            canonicalUse: 'Composition-stage package graph imported from @teqfw/di/src/Config/PackageRegistry.mjs.',
+        },
+        {
+            alias: 'TeqFw_Di_Config_PackageRegistry_Record',
+            source: './src/Config/PackageRegistry.mjs#record',
+            exposure: 'public-structural',
+            reason: 'Public immutable record contract returned by PackageRegistry.build().',
+        },
         {
             alias: 'TeqFw_Di_Config_NamespaceRegistry',
             source: './src/Config/NamespaceRegistry.mjs',
@@ -399,7 +424,7 @@ export const PACKAGE_API: PackageApiContract = {
         },
     ],
     operationalNotes: [
-        'Only two runtime entrypoints are supported by package.json exports: @teqfw/di and @teqfw/di/src/Config/NamespaceRegistry.mjs.',
+        'Three runtime entrypoints are supported by package.json exports: @teqfw/di, @teqfw/di/src/Config/NamespaceRegistry.mjs, and @teqfw/di/src/Config/PackageRegistry.mjs.',
         'Resolved values are frozen before being returned.',
         'The hierarchical export-scoped descriptor is canonical. The flat shorthand descriptor is supported only for default-export-only modules.',
         'Named wrapper exports are executed after addPostprocess() hooks and before freeze.',

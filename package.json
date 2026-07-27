@@ -42,7 +42,8 @@
       "default": "./src/Container.mjs"
     },
     "./src/Container.mjs": "./src/Container.mjs",
-    "./src/Config/NamespaceRegistry.mjs": "./src/Config/NamespaceRegistry.mjs"
+    "./src/Config/NamespaceRegistry.mjs": "./src/Config/NamespaceRegistry.mjs",
+    "./src/Config/PackageRegistry.mjs": "./src/Config/PackageRegistry.mjs"
   },
   "type": "module",
   "teqfw": {
