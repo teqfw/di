@@ -39,20 +39,21 @@ describe('Namespace registry integration', () => {
             name: 'app-root',
             version: '1.0.0',
             dependencies: {'dep-long': '1.0.0', 'dep-side': '1.0.0'},
-            teqfw: {fw: {di: {namespace: {prefix: 'App_', path: './src-short', ext: '.mjs'}}}},
+            teqfw: {fw: {di: {namespaces: [{prefix: 'App_', path: './src-short', ext: '.mjs'}, {prefix: 'Root_', path: './src-root'}]}}},
         });
 
         await writeText(path.join(appRoot, 'src-short/Long/Service.mjs'), `
 export const provider = 'root-short';
 export const fileAbs = ${JSON.stringify(path.join(appRoot, 'src-short/Long/Service.mjs'))};
 `);
+        await writeText(path.join(appRoot, 'src-root/Service.mjs'), 'export const provider = "root-extra";\n');
 
         const depLongRoot = path.join(appRoot, 'node_modules/dep-long');
         await writeJson(path.join(depLongRoot, 'package.json'), {
             name: 'dep-long',
             version: '1.0.0',
             dependencies: {},
-            teqfw: {fw: {di: {namespace: {prefix: 'App_Long_', path: './modules', ext: 'js'}}}},
+            teqfw: {fw: {di: {namespaces: [{prefix: 'App_Long_', path: './modules', ext: 'js'}]}}},
         });
         await writeText(path.join(depLongRoot, 'modules/Service.js'), `
 import {fileURLToPath} from 'node:url';
@@ -65,7 +66,7 @@ export const fileAbs = fileURLToPath(import.meta.url);
             name: 'dep-side',
             version: '1.0.0',
             dependencies: {},
-            teqfw: {fw: {di: {namespace: {prefix: 'Side_', path: './src'}}}},
+            teqfw: {fw: {di: {namespaces: [{prefix: 'Side_', path: './src'}]}}},
         });
         await writeText(path.join(depSideRoot, 'src/Util.mjs'), 'export const marker = "side";\n');
 
@@ -94,8 +95,8 @@ export const fileAbs = fileURLToPath(import.meta.url);
         const registry = await registryBuilder.build();
 
         assert.equal(Object.isFrozen(registry), true);
-        assert.ok(registry.length >= 3);
-        assert.deepStrictEqual(registry.map((entry) => entry.prefix), ['App_Long_', 'Side_', 'App_']);
+        assert.ok(registry.length >= 4);
+        assert.deepStrictEqual(registry.map((entry) => entry.prefix), ['App_Long_', 'Root_', 'Side_', 'App_']);
         assert.deepStrictEqual(registry.find((entry) => entry.prefix === 'App_Long_'), {
             prefix: 'App_Long_',
             dirAbs: path.join(depLongRoot, 'modules'),
@@ -119,5 +120,6 @@ export const fileAbs = fileURLToPath(import.meta.url);
         const resolved = await container.get('App_Long_Service');
         assert.equal(resolved.provider, 'dep-long');
         assert.equal(path.resolve(resolved.fileAbs), path.join(depLongRoot, 'modules/Service.js'));
+        assert.equal((await container.get('Root_Service')).provider, 'root-extra');
     });
 });

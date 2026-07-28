@@ -357,25 +357,28 @@ const graph = await new PackageRegistry({fs, path, appRoot}).build();
 const namespaces = await new NamespaceRegistry({fs, path, appRoot}).build();
 ```
 
-A package contributes one namespace declaration through its `package.json`:
+A package may contribute several namespace mappings through its `package.json`. Each mapping owns one namespace prefix and an independent module-location root:
 
 ```json
 {
   "teqfw": {
     "fw": {
       "di": {
-        "namespace": {
-          "prefix": "App_",
-          "path": "./src",
-          "ext": ".mjs"
-        }
+        "namespaces": [
+          {"prefix": "App_", "path": "./src", "ext": ".mjs"},
+          {"prefix": "App_Shared_", "path": "./shared", "ext": ".mjs"}
+        ]
       }
     }
   }
 }
 ```
 
-`path` is relative to that publishing package and must resolve to an existing directory inside it. `PackageRegistry` returns production dependencies before their dependants; independent dependency names are processed in ascending lexical order. Build this registry and add its roots before the first `container.get()`.
+`namespaces` is always an array, including for a single mapping. Each `path` is relative to that publishing package and must resolve to an existing directory inside it. `PackageRegistry` returns production dependencies before their dependants; independent dependency names are processed in ascending lexical order. Build this registry and add its roots before the first `container.get()`.
+
+### Metadata migration
+
+`teqfw.fw.di.namespaces` is the canonical declaration. The legacy `teqfw.namespaces` array is accepted only if canonical metadata is absent, is never merged with it, and is planned to remain supported through 2027-01-28. Its eventual removal requires a deliberate breaking release; there is no date-based runtime switch. `teqfw.fw.di.namespace` is unsupported.
 
 ## Installation
 

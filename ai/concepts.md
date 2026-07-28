@@ -28,6 +28,8 @@ The canonical `__deps__` form is hierarchical and keyed by export name.
 
 Logical module identifiers are translated into module-specifier bases through namespace roots. This keeps dependency addressing independent from concrete filesystem paths or URL locations.
 
+A package may publish multiple namespace mappings in the canonical `teqfw.fw.di.namespaces` array. The legacy `teqfw.namespaces` array is a temporary fallback only when canonical metadata is absent; support is planned through 2027-01-28. The singular `teqfw.fw.di.namespace` form is unsupported.
+
 ## Immutable Linked Values
 
 Values returned by the container are frozen after linking. Consumers should treat them as stable resolved values rather than mutable construction targets.

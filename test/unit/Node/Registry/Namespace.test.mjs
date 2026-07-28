@@ -69,27 +69,28 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
                 '/app/package.json': toJson({
                     name: "package",
                     dependencies: {'dep-a': '1.0.0', 'dep-b': '1.0.0'},
-                    teqfw: {fw: {di: {namespace: {prefix: 'App_', path: './root', ext: 'js'}}}, namespaces: [{prefix: 'Legacy_', path: './legacy'}]},
+                    teqfw: {fw: {di: {namespaces: [{prefix: 'App_', path: './root', ext: 'js'}, {prefix: 'App_Shared_', path: './shared'}]}}, namespaces: [{prefix: 'Legacy_', path: './legacy'}]},
                 }),
                 '/app/node_modules/dep-a/package.json': toJson({
                     name: "package",
                     dependencies: {'dep-c': '1.0.0'},
-                    teqfw: {fw: {di: {namespace: {prefix: 'DepA_', path: './src', ext: '.mjs'}}}},
+                    teqfw: {fw: {di: {namespaces: [{prefix: 'DepA_', path: './src', ext: '.mjs'}]}}},
                 }),
                 '/app/node_modules/dep-b/package.json': toJson({
                     name: "package",
                     dependencies: {},
-                    teqfw: {fw: {di: {namespace: {prefix: 'Dep_', path: './lib'}}}},
+                    teqfw: {fw: {di: {namespaces: [{prefix: 'Dep_', path: './lib'}]}}},
                 }),
                 '/app/node_modules/dep-c/package.json': toJson({
                     name: "package",
                     dependencies: {},
-                    teqfw: {fw: {di: {namespace: {prefix: 'DepC_', path: './pkg', ext: 'js'}}}},
+                    teqfw: {fw: {di: {namespaces: [{prefix: 'DepC_', path: './pkg', ext: 'js'}]}}},
                 }),
             },
             extraDirs: [
                 '/app/root',
                 '/app/root/long',
+                '/app/shared',
                 '/app/node_modules/dep-a/src',
                 '/app/node_modules/dep-b/lib',
                 '/app/node_modules/dep-c/pkg',
@@ -100,6 +101,7 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
         const result = await registry.build();
 
         assert.deepStrictEqual(result, [
+            {prefix: 'App_Shared_', dirAbs: '/app/shared', ext: '.mjs'},
             {prefix: 'DepA_', dirAbs: '/app/node_modules/dep-a/src', ext: '.mjs'},
             {prefix: 'DepC_', dirAbs: '/app/node_modules/dep-c/pkg', ext: '.js'},
             {prefix: 'App_', dirAbs: '/app/root', ext: '.js'},
@@ -115,12 +117,12 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
                 '/app/package.json': toJson({
                     name: "package",
                     dependencies: {'dep-a': '1.0.0'},
-                    teqfw: {fw: {di: {namespace: {prefix: 'App_', path: './src'}}}},
+                    teqfw: {fw: {di: {namespaces: [{prefix: 'App_', path: './src'}]}}},
                 }),
                 '/app/node_modules/dep-a/package.json': toJson({
                     name: "@scope/dep-a",
                     dependencies: {},
-                    teqfw: {fw: {di: {namespace: {prefix: 'App_', path: './lib'}}}},
+                    teqfw: {fw: {di: {namespaces: [{prefix: 'App_', path: './lib'}]}}},
                 }),
             },
             extraDirs: ['/app/src', '/app/node_modules/dep-a/lib'],
@@ -137,7 +139,7 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
                 '/app/package.json': toJson({
                     name: "package",
                     dependencies: {},
-                    teqfw: {fw: {di: {namespace: {prefix: 'App', path: './src'}}}},
+                    teqfw: {fw: {di: {namespaces: [{prefix: 'App', path: './src'}]}}},
                 }),
             },
             extraDirs: ['/app/src'],
@@ -149,7 +151,7 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
 
     it('rejects an absolute namespace path with publisher attribution', async () => {
         const fs = createMockFs({
-            files: {'/app/package.json': toJson({name: 'package', dependencies: {}, teqfw: {fw: {di: {namespace: {prefix: 'App_', path: '/outside'}}}}})},
+            files: {'/app/package.json': toJson({name: 'package', dependencies: {}, teqfw: {fw: {di: {namespaces: [{prefix: 'App_', path: '/outside'}]}}}})},
             extraDirs: ['/outside'],
         });
         const registry = new TeqFw_Di_Node_Registry_Namespace({fs, path, appRoot: '/app'});
@@ -164,7 +166,7 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
                 '/app/package.json': toJson({
                     name: "package",
                     dependencies: {},
-                    teqfw: {fw: {di: {namespace: {prefix: 'App_', path: '../outside'}}}},
+                    teqfw: {fw: {di: {namespaces: [{prefix: 'App_', path: '../outside'}]}}},
                 }),
             },
             extraDirs: ['/outside'],
@@ -181,7 +183,7 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
                 '/app/package.json': toJson({
                     name: "package",
                     dependencies: {},
-                    teqfw: {fw: {di: {namespace: {prefix: 'App_', path: './missing'}}}},
+                    teqfw: {fw: {di: {namespaces: [{prefix: 'App_', path: './missing'}]}}},
                 }),
             },
         });
@@ -197,7 +199,7 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
                 '/app/package.json': toJson({
                     name: "package",
                     dependencies: {},
-                    teqfw: {fw: {di: {namespace: {prefix: 'App_', path: './src'}}}},
+                    teqfw: {fw: {di: {namespaces: [{prefix: 'App_', path: './src'}]}}},
                 }),
             },
             extraDirs: ['/app/src'],
@@ -216,5 +218,43 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
             // @ts-ignore
             result[0].ext = '.js';
         });
+    });
+
+    it('uses legacy arrays only when canonical metadata is absent', async () => {
+        const fs = createMockFs({
+            files: {
+                '/app/package.json': toJson({name: 'package', dependencies: {dual: '1.0.0'}, teqfw: {namespaces: [{prefix: 'Legacy_', path: './legacy'}, {prefix: 'Legacy_Shared_', path: './legacy-shared'}]}}),
+                '/app/node_modules/dual/package.json': toJson({name: 'dual', dependencies: {}, teqfw: {fw: {di: {namespaces: []}}, namespaces: [{prefix: 'Ignored_', path: './ignored'}]}}),
+            },
+            extraDirs: ['/app/legacy', '/app/legacy-shared', '/app/node_modules/dual/ignored'],
+        });
+        const result = await new TeqFw_Di_Node_Registry_Namespace({fs, path, appRoot: '/app'}).build();
+        assert.deepStrictEqual(result, [
+            {prefix: 'Legacy_Shared_', dirAbs: '/app/legacy-shared', ext: '.mjs'},
+            {prefix: 'Legacy_', dirAbs: '/app/legacy', ext: '.mjs'},
+        ]);
+    });
+
+    it('rejects malformed selected declaration arrays and identifies invalid entry indexes', async () => {
+        const registry = new TeqFw_Di_Node_Registry_Namespace({fs: createMockFs({
+            files: {'/app/package.json': toJson({name: 'package', dependencies: {}, teqfw: {fw: {di: {namespaces: [{prefix: 'App_', path: './src'}, null]}}, namespaces: [{prefix: 'Legacy_', path: './legacy'}]}})},
+            extraDirs: ['/app/src', '/app/legacy'],
+        }), path, appRoot: '/app'});
+        await assert.rejects(() => registry.build(), /canonical namespace declaration at index 1/);
+        const malformed = new TeqFw_Di_Node_Registry_Namespace({fs: createMockFs({files: {'/app/package.json': toJson({name: 'package', dependencies: {}, teqfw: {fw: {di: {namespaces: {}}}, namespaces: []}})}}), path, appRoot: '/app'});
+        await assert.rejects(() => malformed.build(), /Canonical DI namespaces.*array/);
+        const malformedLegacy = new TeqFw_Di_Node_Registry_Namespace({fs: createMockFs({files: {'/app/package.json': toJson({name: 'package', dependencies: {}, teqfw: {namespaces: {}}})}}), path, appRoot: '/app'});
+        await assert.rejects(() => malformedLegacy.build(), /Legacy DI namespaces.*array/);
+    });
+
+    it('rejects duplicate prefixes within one declaration set', async () => {
+        const fs = createMockFs({files: {'/app/package.json': toJson({name: 'package', dependencies: {}, teqfw: {fw: {di: {namespaces: [{prefix: 'App_', path: './one'}, {prefix: 'App_', path: './two'}]}}}})}, extraDirs: ['/app/one', '/app/two']});
+        await assert.rejects(() => new TeqFw_Di_Node_Registry_Namespace({fs, path, appRoot: '/app'}).build(), /index 1.*index 0/);
+    });
+
+    it('ignores the unsupported singular metadata node', async () => {
+        const fs = createMockFs({files: {'/app/package.json': toJson({name: 'package', dependencies: {}, teqfw: {fw: {di: {namespace: {prefix: 'Ignored_', path: './ignored'}}}}})}, extraDirs: ['/app/ignored']});
+        const result = await new TeqFw_Di_Node_Registry_Namespace({fs, path, appRoot: '/app'}).build();
+        assert.deepStrictEqual(result, []);
     });
 });

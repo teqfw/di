@@ -49,11 +49,13 @@
   "teqfw": {
     "fw": {
       "di": {
-        "namespace": {
-          "prefix": "TeqFw_Di_",
-          "path": "./src",
-          "ext": ".mjs"
-        }
+        "namespaces": [
+          {
+            "prefix": "TeqFw_Di_",
+            "path": "./src",
+            "ext": ".mjs"
+          }
+        ]
       }
     }
   },

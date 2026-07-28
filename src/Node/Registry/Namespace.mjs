@@ -99,11 +99,12 @@ export default class TeqFw_Di_Node_Registry_Namespace {
         /**
          * @param {unknown} raw
          * @param {{name: string, rootAbs: string}} publisher
-         * @returns {Promise<TeqFw_Di_Node_Registry_Namespace_Entry>}
+         * @param {{source: 'canonical'|'legacy', index: number}} origin
+         * @returns {Promise<{entry: TeqFw_Di_Node_Registry_Namespace_Entry, origin: {source: 'canonical'|'legacy', index: number}}>}
          */
-        const normalizeEntry = async function (raw, publisher) {
+        const normalizeEntry = async function (raw, publisher, origin) {
             const packageRootAbs = publisher.rootAbs;
-            const source = publisherLabel(publisher);
+            const source = `${publisherLabel(publisher)} ${origin.source} namespace declaration at index ${origin.index}`;
             if (!isRecord(raw)) {
                 throw new Error(`DI namespace declared by ${source} must be an object.`);
             }
@@ -130,28 +131,44 @@ export default class TeqFw_Di_Node_Registry_Namespace {
                 throw new Error(`DI namespace path declared by ${source} resolves outside its package root: ${dirAbs}.`, {cause: error});
             }
             try {
-                return {prefix, dirAbs, ext: normalizeExt(item.ext)};
+                return {entry: {prefix, dirAbs, ext: normalizeExt(item.ext)}, origin};
             } catch (error) {
                 throw new Error(`DI namespace extension declared by ${source} is invalid: ${String(error)}.`, {cause: error});
             }
         };
 
         /**
+         * Selects one supported declaration set without merging schemas.
+         *
          * @param {Readonly<Record<string, unknown>>} packageJson
          * @param {{name: string, rootAbs: string}} publisher
-         * @returns {unknown|undefined}
+         * @returns {{source: 'canonical'|'legacy', entries: unknown[]}|undefined}
          */
-        const readNamespace = function (packageJson, publisher) {
+        const selectDeclarationSet = function (packageJson, publisher) {
             const teqfw = packageJson.teqfw;
             if (teqfw === undefined) return undefined;
             if (!isRecord(teqfw)) throw new Error(`TeqFW metadata for ${publisherLabel(publisher)} must be an object.`);
             const fw = teqfw.fw;
-            if (fw === undefined) return undefined;
-            if (!isRecord(fw)) throw new Error(`TeqFW framework metadata for ${publisherLabel(publisher)} must be an object.`);
-            const di = fw.di;
-            if (di === undefined) return undefined;
-            if (!isRecord(di)) throw new Error(`TeqFW DI metadata for ${publisherLabel(publisher)} must be an object.`);
-            return di.namespace;
+            if (fw !== undefined) {
+                if (!isRecord(fw)) throw new Error(`TeqFW framework metadata for ${publisherLabel(publisher)} must be an object.`);
+                const di = fw.di;
+                if (di !== undefined) {
+                    if (!isRecord(di)) throw new Error(`TeqFW DI metadata for ${publisherLabel(publisher)} must be an object.`);
+                    if (Object.hasOwn(di, 'namespaces')) {
+                        if (!Array.isArray(di.namespaces)) {
+                            throw new Error(`Canonical DI namespaces declared by ${publisherLabel(publisher)} must be an array.`);
+                        }
+                        return {source: 'canonical', entries: di.namespaces};
+                    }
+                }
+            }
+            if (Object.hasOwn(teqfw, 'namespaces')) {
+                if (!Array.isArray(teqfw.namespaces)) {
+                    throw new Error(`Legacy DI namespaces declared by ${publisherLabel(publisher)} must be an array.`);
+                }
+                return {source: 'legacy', entries: teqfw.namespaces};
+            }
+            return undefined;
         };
 
         /**
@@ -159,7 +176,7 @@ export default class TeqFw_Di_Node_Registry_Namespace {
          */
         this.build = async function () {
             const packages = await new TeqFw_Di_Node_Registry_Package({fs, path, appRoot}).build();
-            /** @type {Map<string, {name: string, rootAbs: string}>} */
+            /** @type {Map<string, {publisher: {name: string, rootAbs: string}, origin: {source: 'canonical'|'legacy', index: number}}>} */
             const publisherByPrefix = new Map();
             /** @type {TeqFw_Di_Node_Registry_Namespace_Entry[]} */
             const entries = [];
@@ -167,15 +184,18 @@ export default class TeqFw_Di_Node_Registry_Namespace {
             for (const onePackage of packages) {
                 const packageJson = onePackage.packageJson;
                 const publisher = {name: onePackage.name, rootAbs: onePackage.rootAbs};
-                const raw = readNamespace(packageJson, publisher);
-                if (raw === undefined) continue;
-                const normalized = await normalizeEntry(raw, publisher);
-                const existingPublisher = publisherByPrefix.get(normalized.prefix);
-                if (existingPublisher) {
-                    throw new Error(`Duplicate DI namespace prefix '${normalized.prefix}' declared by ${publisherLabel(publisher)} conflicts with ${publisherLabel(existingPublisher)}.`);
+                const declarationSet = selectDeclarationSet(packageJson, publisher);
+                if (declarationSet === undefined) continue;
+                for (const [index, raw] of declarationSet.entries.entries()) {
+                    const origin = {source: declarationSet.source, index};
+                    const normalized = await normalizeEntry(raw, publisher, origin);
+                    const existing = publisherByPrefix.get(normalized.entry.prefix);
+                    if (existing) {
+                        throw new Error(`Duplicate DI namespace prefix '${normalized.entry.prefix}' declared by ${publisherLabel(publisher)} ${origin.source} namespace declaration at index ${origin.index} conflicts with ${publisherLabel(existing.publisher)} ${existing.origin.source} namespace declaration at index ${existing.origin.index}.`);
+                    }
+                    publisherByPrefix.set(normalized.entry.prefix, {publisher, origin: normalized.origin});
+                    entries.push(normalized.entry);
                 }
-                publisherByPrefix.set(normalized.prefix, publisher);
-                entries.push(normalized);
             }
 
             entries.sort((a, b) => (b.prefix.length - a.prefix.length) || a.prefix.localeCompare(b.prefix));

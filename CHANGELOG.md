@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-* Migrated package namespace metadata to the singular `teqfw.fw.di.namespace` schema, removed the `src/**` registry compatibility export, and documented deterministic dependency-first package traversal.
+* Introduced the array-only canonical `teqfw.fw.di.namespaces` schema with support for multiple namespace mappings per package. `teqfw.namespaces` remains a temporary fallback through 2027-01-28, while the unused singular `teqfw.fw.di.namespace` schema was removed.
 
 * Added the public composition-stage PackageRegistry runtime package graph and refactored NamespaceRegistry to consume it. Package metadata interpretation for application providers remains outside DI.
 
