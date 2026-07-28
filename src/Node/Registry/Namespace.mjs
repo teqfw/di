@@ -134,7 +134,7 @@ export default class TeqFw_Di_Node_Registry_Namespace {
                 }
             }
 
-            entries.sort((a, b) => b.prefix.length - a.prefix.length);
+            entries.sort((a, b) => (b.prefix.length - a.prefix.length) || a.prefix.localeCompare(b.prefix));
             for (const entry of entries) {
                 Object.freeze(entry);
             }

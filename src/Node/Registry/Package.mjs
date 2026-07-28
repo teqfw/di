@@ -13,7 +13,7 @@
  */
 
 /**
- * Builds a deterministic immutable Node.js graph of root and installed runtime packages.
+ * Builds a deterministic immutable dependency-first list of root and installed runtime packages.
  */
 export default class TeqFw_Di_Node_Registry_Package {
     /**
@@ -153,33 +153,62 @@ export default class TeqFw_Di_Node_Registry_Package {
          * @returns {Promise<ReadonlyArray<TeqFw_Di_Node_Registry_Package_Record>>}
          */
         this.build = async function () {
-            /** @type {{rootAbs: string}[]} */
-            const queue = [{rootAbs: appRootAbs}];
+            /** @type {Map<string, TeqFw_Di_Node_Registry_Package_Record>} */
+            const recordsByRoot = new Map();
             /** @type {Set<string>} */
-            const visitedRoots = new Set();
+            const visitingRoots = new Set();
             /** @type {TeqFw_Di_Node_Registry_Package_Record[]} */
             const records = [];
+            /** @type {string[]} */
+            const pathStack = [];
 
-            while (queue.length > 0) {
-                const current = queue.shift();
-                const rootAbs = current.rootAbs;
+            /**
+             * Visits a package after all of its dependencies.
+             *
+             * @param {string} rootAbs
+             * @returns {Promise<string>}
+             */
+            const visit = async function (rootAbs) {
                 let rootReal;
                 try {
                     rootReal = await fs.realpath(rootAbs);
                 } catch (error) {
                     throw new Error('Unable to resolve package root ' + rootAbs + ': ' + String(error) + '.');
                 }
-                if (visitedRoots.has(rootReal)) continue;
-                visitedRoots.add(rootReal);
+                if (recordsByRoot.has(rootReal)) return rootReal;
+                if (visitingRoots.has(rootReal)) {
+                    const cycleStart = pathStack.indexOf(rootReal);
+                    const cycle = [...pathStack.slice(cycleStart), rootReal].join(' -> ');
+                    throw new Error('Cyclic package dependency detected: ' + cycle + '.');
+                }
+                visitingRoots.add(rootReal);
+                pathStack.push(rootReal);
 
                 const metadata = await readPackageMetadata(rootAbs);
                 const packageJson = /** @type {Readonly<Record<string, unknown>>} */ (freezeDeep(metadata.packageJson));
-                records.push(Object.freeze({name: metadata.name, rootAbs, rootReal, packageJson}));
+                /** @type {string[]} */
+                const dependencies = [];
 
                 for (const dependencyName of metadata.dependencies) {
-                    queue.push({rootAbs: await resolveDependencyPackageRoot(dependencyName, rootAbs)});
+                    const dependencyRootAbs = await resolveDependencyPackageRoot(dependencyName, rootAbs);
+                    dependencies.push(await visit(dependencyRootAbs));
                 }
-            }
+
+                pathStack.pop();
+                visitingRoots.delete(rootReal);
+                const record = Object.freeze({
+                    name: metadata.name,
+                    rootAbs,
+                    rootReal,
+                    packageJson,
+                    dependencies: Object.freeze([...new Set(dependencies)]),
+                });
+                recordsByRoot.set(rootReal, record);
+                records.push(record);
+                return rootReal;
+            };
+
+            await visit(appRootAbs);
             return Object.freeze(records);
         };
     }

@@ -86,7 +86,7 @@ export const fileAbs = fileURLToPath(import.meta.url);
         const publicPackageRegistry = await import("@teqfw/di/node/registry/package");
         assert.equal(publicPackageRegistry.default, TeqFw_Di_Node_Registry_Package);
         const graph = await new TeqFw_Di_Node_Registry_Package({fs, path, appRoot}).build();
-        assert.deepStrictEqual(graph.map((item) => item.name), ['app-root', 'dep-long', 'dep-side']);
+        assert.deepStrictEqual(graph.map((item) => item.name), ['dep-long', 'dep-side', 'app-root']);
 
         const publicNamespaceRegistry = await import("@teqfw/di/node/registry/namespace");
         assert.equal(publicNamespaceRegistry.default, TeqFw_Di_Node_Registry_Namespace);
