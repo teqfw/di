@@ -15,7 +15,7 @@ Apply the following rules in order of priority. If a rule conflicts with an appl
 
 ## 2. Git workflow
 
-Work directly on `main` in both repositories. Do not create working branches.
+Work directly on `main` in both repositories unless the task explicitly specifies another branch. Do not create working branches.
 
 ## 3. Communication
 
@@ -23,3 +23,11 @@ Work directly on `main` in both repositories. Do not create working branches.
 - Write source code, comments, documentation, commit messages, and identifiers in English.
 - Report the changes made, the verification performed, and remaining risks.
 - Create a GitHub issue in `flancer32/ai-memo` when a problem requires the user's attention.
+
+## 4. Validation
+
+- Do not use the `teqfw-esm-validator` skill for this package.
+
+## 5. TeqFW platform rules
+
+- Use the `teqfw-platform` skill only for tasks on the `@teqfw/di` package. Do not apply it to other TeqFW packages without an explicit package-local adaptation.

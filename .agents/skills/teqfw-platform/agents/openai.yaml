@@ -1,0 +1,4 @@
+interface:
+  display_name: "TeqFW Platform"
+  short_description: "Apply current @teqfw/di platform rules"
+  default_prompt: "Use $teqfw-platform to apply the current @teqfw/di platform rules to this change."

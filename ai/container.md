@@ -1,6 +1,6 @@
 # container.md
 
-Version: 20260727
+Version: 20260728
 
 ## Role
 
@@ -30,9 +30,7 @@ After the first `get()`, builder-stage methods are no longer supported.
 
 ## Resolution Pipeline
 
-For each `get(cdc)` request the container applies this pipeline:
-
-The parameter name `cdc` is retained for API compatibility. Its value is a Dependency Specifier; CDC is not a separate identity concept.
+For each `get(specifier)` request the container applies this pipeline:
 
 1. `Parse` — convert the Dependency Specifier string into a DepId DTO.
 2. `Preprocess hooks` — transform the DepId DTO through ordered `addPreprocess()` hooks.

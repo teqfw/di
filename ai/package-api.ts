@@ -66,7 +66,7 @@ export interface PackageApiContract {
  */
 export const PACKAGE_API: PackageApiContract = {
     packageName: '@teqfw/di',
-    packageRole: 'Deterministic runtime DI container for native ES modules with explicit CDC contracts.',
+    packageRole: 'Deterministic runtime DI container for native ES modules with explicit Dependency Specifier contracts.',
     canonicalEntrypoints: [
         '@teqfw/di',
         '@teqfw/di/node/registry/namespace',
@@ -76,7 +76,7 @@ export const PACKAGE_API: PackageApiContract = {
         {
             alias: 'TeqFw_Di_Container',
             kind: 'class',
-            role: 'Primary runtime composition root. Resolves CDC identifiers into frozen linked values.',
+            role: 'Primary runtime composition root. Resolves Dependency Specifiers into frozen linked values.',
             imports: [
                 {
                     specifier: '@teqfw/di',
@@ -95,7 +95,7 @@ export const PACKAGE_API: PackageApiContract = {
                     name: 'addNamespaceRoot',
                     signature: 'addNamespaceRoot(prefix: string, target: string, defaultExt: string): void',
                     stage: 'builder',
-                    summary: 'Registers one namespace root that maps a CDC prefix to a module-specifier base.',
+                    summary: 'Registers one namespace root that maps a Module Token prefix to a module-specifier base.',
                     constraints: [
                         'Allowed only before the first get().',
                         'The target may be filesystem-backed or URL-backed depending on runtime environment.',
@@ -106,7 +106,7 @@ export const PACKAGE_API: PackageApiContract = {
                     name: 'addPreprocess',
                     signature: 'addPreprocess(fn: (depId: TeqFw_Di_DepId$DTO) => TeqFw_Di_DepId$DTO): void',
                     stage: 'builder',
-                    summary: 'Adds an ordered CDC preprocessing hook.',
+                    summary: 'Adds an ordered parsed dependency identity preprocessing hook.',
                     constraints: [
                         'Allowed only before the first get().',
                         'Each hook must return another DepId DTO.',
@@ -142,9 +142,9 @@ export const PACKAGE_API: PackageApiContract = {
                 },
                 {
                     name: 'register',
-                    signature: 'register(cdc: string, mock: unknown): void',
+                    signature: 'register(specifier: string, mock: unknown): void',
                     stage: 'builder',
-                    summary: 'Registers a mock by canonical DepId identity after parsing the provided CDC.',
+                    summary: 'Registers a mock by canonical DepId identity after parsing the provided Dependency Specifier.',
                     constraints: [
                         'Allowed only before the first get().',
                         'Requires enableTestMode() first.',
@@ -152,7 +152,7 @@ export const PACKAGE_API: PackageApiContract = {
                 },
                 {
                     name: 'get',
-                    signature: 'get(cdc: string): Promise<any>',
+                    signature: 'get(specifier: string): Promise<any>',
                     stage: 'runtime',
                     summary: 'Parses, preprocesses, resolves, instantiates, postprocesses, wraps, applies lifecycle, freezes, and returns a linked value.',
                     constraints: [
@@ -227,7 +227,7 @@ export const PACKAGE_API: PackageApiContract = {
                 composition: '"A" | "F" in the current implementation.',
                 life: '"S" | "T" | null in the current implementation.',
                 wrappers: 'Ordered wrapper export names.',
-                origin: 'Original CDC string for diagnostics.',
+                origin: 'Original Dependency Specifier string for diagnostics.',
             },
             notes: [
                 'Identity excludes origin.',
@@ -257,8 +257,8 @@ export const PACKAGE_API: PackageApiContract = {
             kind: 'module-contract',
             summary: 'Shape expected from application modules resolved by the container.',
             fields: {
-                __deps__: 'Optional dependency descriptor. Canonical form is hierarchical Record<exportName, Record<dependencyKey, CDC string>>. Supported shorthand form is a flat Record<dependencyKey, CDC string> for default-export-only modules. Omission means there are no declared dependencies.',
-                moduleNamespace: 'Whole ES module namespace object returned for as-is CDC without selected export.',
+                __deps__: 'Optional dependency descriptor. Canonical form is hierarchical Record<exportName, Record<dependencyKey, Dependency Specifier string>>. Supported shorthand form is a flat Record<dependencyKey, Dependency Specifier string> for default-export-only modules. Omission means there are no declared dependencies.',
+                moduleNamespace: 'Whole ES module namespace object returned for as-is Dependency Specifier without selected export.',
                 defaultExport: 'Used when the parsed DepId selects exportName="default" for factory composition.',
                 namedExports: 'May be selected via __ExportName for factory composition and may also provide wrapper exports.',
                 wrapperExport: 'Named export whose identifier appears in depId.wrappers; it must be synchronous and unary.',
@@ -436,7 +436,7 @@ export const PACKAGE_API: PackageApiContract = {
         'Resolved values are frozen before being returned.',
         'The hierarchical export-scoped descriptor is canonical. The flat shorthand descriptor is supported only for default-export-only modules.',
         'Named wrapper exports are executed after addPostprocess() hooks and before freeze.',
-        'In the current implementation, CDC markers $$ and $$$ both end up as transient/no-cache behavior.',
+        '$$ selects transient lifecycle; $$$ explicitly selects direct lifecycle.',
         'types.d.ts is broader than the runtime import surface. Presence of an alias there does not by itself make the underlying module a supported runtime entrypoint.',
     ],
 } as const;

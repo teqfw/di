@@ -576,12 +576,12 @@ Configure it before the first `get(...)`:
 - `addPostprocess(fn)`
 - `enableLogging()`
 - `enableTestMode()`
-- `register(cdc, mock)`
+- `register(specifier, mock)`
 
 Resolve dependencies:
 
 ```javascript
-await container.get(cdc);
+await container.get(specifier);
 ```
 
 The container is builder-configurable until the first `get(...)`.
