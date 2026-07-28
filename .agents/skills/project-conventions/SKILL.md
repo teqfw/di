@@ -17,6 +17,8 @@ Apply the following rules in order of priority. If a rule conflicts with an appl
 
 Work directly on `main` in both repositories unless the task explicitly specifies another branch. Do not create working branches.
 
+Before starting work, fetch both repositories and ensure the local branches in use match their upstream versions.
+
 ## 3. Communication
 
 - Communicate with the user in Russian unless the user explicitly requests another language.
