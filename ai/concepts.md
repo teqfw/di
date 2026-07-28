@@ -38,4 +38,4 @@ Cycles in the dependency graph managed by the container are forbidden and fail l
 
 ## Runtime Package Graph
 
-PackageRegistry is a Node.js composition-stage helper. It returns immutable static metadata records for the application root and installed transitive runtime dependencies in deterministic breadth-first order. NamespaceRegistry consumes this graph to build namespace roots. Applications may separately interpret provider metadata, but DI does not provide a plugin registry or load modules during discovery.
+PackageRegistry and NamespaceRegistry are Node.js-only composition-stage helpers. They return immutable static metadata records and namespace roots for the application root and installed transitive runtime dependencies in deterministic breadth-first order. Applications may separately interpret provider metadata, but DI does not provide a plugin registry or load modules during discovery. Agent-authored consumers import them only from `@teqfw/di/node/registry/package` and `@teqfw/di/node/registry/namespace`, never from browser runtime code.

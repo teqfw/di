@@ -4,8 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Config_NamespaceRegistry from '../../src/Config/NamespaceRegistry.mjs';
-import TeqFw_Di_Config_PackageRegistry from '../../src/Config/PackageRegistry.mjs';
+import TeqFw_Di_Node_Registry_Namespace from '../../src/Node/Registry/Namespace.mjs';
+import TeqFw_Di_Node_Registry_Package from '../../src/Node/Registry/Package.mjs';
 import TeqFw_Di_Container from '../../src/Container.mjs';
 
 /**
@@ -81,12 +81,34 @@ export const fileAbs = fileURLToPath(import.meta.url);
         });
         await writeText(path.join(depSideRoot, 'src/Util.mjs'), 'export const marker = "side";\n');
 
-        const publicPackageRegistry = await import("@teqfw/di/src/Config/PackageRegistry.mjs");
-        assert.equal(publicPackageRegistry.default, TeqFw_Di_Config_PackageRegistry);
-        const graph = await new TeqFw_Di_Config_PackageRegistry({fs, path, appRoot}).build();
+        const publicContainer = await import("@teqfw/di");
+        assert.equal(publicContainer.default, TeqFw_Di_Container);
+        const publicPackageRegistry = await import("@teqfw/di/node/registry/package");
+        assert.equal(publicPackageRegistry.default, TeqFw_Di_Node_Registry_Package);
+        const graph = await new TeqFw_Di_Node_Registry_Package({fs, path, appRoot}).build();
         assert.deepStrictEqual(graph.map((item) => item.name), ['app-root', 'dep-long', 'dep-side']);
 
-        const registryBuilder = new TeqFw_Di_Config_NamespaceRegistry({fs, path, appRoot});
+        const publicNamespaceRegistry = await import("@teqfw/di/node/registry/namespace");
+        assert.equal(publicNamespaceRegistry.default, TeqFw_Di_Node_Registry_Namespace);
+        const legacyNamespaceRegistry = await import("@teqfw/di/src/Config/NamespaceRegistry.mjs");
+        assert.equal(legacyNamespaceRegistry.default, TeqFw_Di_Node_Registry_Namespace);
+        await assert.rejects(
+            () => import("@teqfw/di/src/Config/PackageRegistry.mjs"),
+            /Package subpath '.\/src\/Config\/PackageRegistry\.mjs' is not defined/,
+        );
+        await assert.rejects(
+            () => import("@teqfw/di/src/Node/Registry/Namespace.mjs"),
+            /Package subpath '.\/src\/Node\/Registry\/Namespace\.mjs' is not defined/,
+        );
+        await assert.rejects(
+            () => import("@teqfw/di/src/Node/Registry/Package.mjs"),
+            /Package subpath '.\/src\/Node\/Registry\/Package\.mjs' is not defined/,
+        );
+        await assert.rejects(
+            () => import("@teqfw/di/src/Container.mjs"),
+            /Package subpath '.\/src\/Container\.mjs' is not defined/,
+        );
+        const registryBuilder = new TeqFw_Di_Node_Registry_Namespace({fs, path, appRoot});
         const registry = await registryBuilder.build();
 
         assert.equal(Object.isFrozen(registry), true);

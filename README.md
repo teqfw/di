@@ -347,11 +347,11 @@ It is a focused alternative for projects that need stronger runtime explicitness
 
 ## Package-Backed Composition
 
-For a Node.js composition root, `PackageRegistry` exposes the deterministic static runtime package graph. `NamespaceRegistry` consumes that graph to build namespace roots; application code may independently interpret its own metadata such as providers. The DI container does not become a plugin registry and no package module is loaded during discovery.
+For a Node.js composition root, `PackageRegistry` exposes the deterministic static runtime package graph. `NamespaceRegistry` consumes that graph to build namespace roots; application code may independently interpret its own metadata such as providers. The DI container does not become a plugin registry and no package module is loaded during discovery. These Node.js-only composition utilities must not be imported into browser runtime modules.
 
 ```js
-import PackageRegistry from "@teqfw/di/src/Config/PackageRegistry.mjs";
-import NamespaceRegistry from "@teqfw/di/src/Config/NamespaceRegistry.mjs";
+import PackageRegistry from "@teqfw/di/node/registry/package";
+import NamespaceRegistry from "@teqfw/di/node/registry/namespace";
 
 const graph = await new PackageRegistry({fs, path, appRoot}).build();
 const namespaces = await new NamespaceRegistry({fs, path, appRoot}).build();

@@ -1,23 +1,23 @@
 // @ts-check
 
 /**
- * @namespace TeqFw_Di_Config_PackageRegistry
- * @description Deterministic composition-stage graph of installed runtime packages.
+ * @namespace TeqFw_Di_Node_Registry_Package
+ * @description Deterministic Node.js composition-stage graph of installed runtime packages.
  */
 
 /**
- * @typedef {object} TeqFw_Di_Config_PackageRegistry_Dependencies
+ * @typedef {object} TeqFw_Di_Node_Registry_Package_Dependencies
  * @property {{readFile(path: string, encoding: string): Promise<string>, realpath(path: string): Promise<string>, stat(path: string): Promise<{isDirectory(): boolean}>}} fs
  * @property {{join(...paths: string[]): string, dirname(path: string): string, relative(from: string, to: string): string, resolve(...paths: string[]): string, isAbsolute(path: string): boolean}} path
  * @property {string} appRoot
  */
 
 /**
- * Builds a deterministic immutable graph of root and installed runtime packages.
+ * Builds a deterministic immutable Node.js graph of root and installed runtime packages.
  */
-export default class TeqFw_Di_Config_PackageRegistry {
+export default class TeqFw_Di_Node_Registry_Package {
     /**
-     * @param {TeqFw_Di_Config_PackageRegistry_Dependencies} deps
+     * @param {TeqFw_Di_Node_Registry_Package_Dependencies} deps
      */
     constructor({fs, path, appRoot}) {
         const appRootAbs = path.resolve(appRoot);
@@ -150,14 +150,14 @@ export default class TeqFw_Di_Config_PackageRegistry {
         };
 
         /**
-         * @returns {Promise<ReadonlyArray<TeqFw_Di_Config_PackageRegistry_Record>>}
+         * @returns {Promise<ReadonlyArray<TeqFw_Di_Node_Registry_Package_Record>>}
          */
         this.build = async function () {
             /** @type {{rootAbs: string}[]} */
             const queue = [{rootAbs: appRootAbs}];
             /** @type {Set<string>} */
             const visitedRoots = new Set();
-            /** @type {TeqFw_Di_Config_PackageRegistry_Record[]} */
+            /** @type {TeqFw_Di_Node_Registry_Package_Record[]} */
             const records = [];
 
             while (queue.length > 0) {

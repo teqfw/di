@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import {describe, it} from 'node:test';
 
-import PackageRegistry from '../../../src/Config/PackageRegistry.mjs';
+import PackageRegistry from '../../../../src/Node/Registry/Package.mjs';
 
 function json(value) {
     return JSON.stringify(value);
@@ -41,7 +41,7 @@ function mockFs(files, realpaths = {}) {
     };
 }
 
-describe('TeqFw_Di_Config_PackageRegistry', () => {
+describe('TeqFw_Di_Node_Registry_Package', () => {
     it('builds immutable breadth-first records for scoped, nested, and hoisted runtime dependencies', async () => {
         const fs = mockFs({
             '/app/package.json': json({name: 'app', dependencies: {'z': '1', '@scope/a': '1', 'b': '1'}, devDependencies: {dev: '1'}}),

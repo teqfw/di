@@ -1,14 +1,17 @@
 {
   "name": "@teqfw/di",
   "version": "2.7.0",
-  "description": "Dependency Injection container for ES6 modules that works in both browser and Node.js apps.",
+  "description": "Deterministic token-based runtime linker for native JavaScript ES modules.",
   "keywords": [
-    "dependency injection",
-    "di",
-    "dynamic import",
-    "es6 modules",
     "teqfw",
-    "tequila framework"
+    "javascript",
+    "esm",
+    "es modules",
+    "runtime linking",
+    "dependency injection",
+    "module tokens",
+    "namespace",
+    "late binding"
   ],
   "homepage": "https://github.com/teqfw/di#readme",
   "bugs": {
@@ -29,8 +32,6 @@
     "README.md",
     "types.d.ts"
   ],
-  "main": "dist/umd.js",
-  "module": "dist/esm.js",
   "types": "types.d.ts",
   "exports": {
     ".": {
@@ -41,9 +42,9 @@
       "import": "./src/Container.mjs",
       "default": "./src/Container.mjs"
     },
-    "./src/Container.mjs": "./src/Container.mjs",
-    "./src/Config/NamespaceRegistry.mjs": "./src/Config/NamespaceRegistry.mjs",
-    "./src/Config/PackageRegistry.mjs": "./src/Config/PackageRegistry.mjs"
+    "./node/registry/namespace": "./src/Node/Registry/Namespace.mjs",
+    "./node/registry/package": "./src/Node/Registry/Package.mjs",
+    "./src/Config/NamespaceRegistry.mjs": "./src/Config/NamespaceRegistry.mjs"
   },
   "type": "module",
   "teqfw": {
