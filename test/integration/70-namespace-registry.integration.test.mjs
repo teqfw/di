@@ -39,11 +39,7 @@ describe('Namespace registry integration', () => {
             name: 'app-root',
             version: '1.0.0',
             dependencies: {'dep-long': '1.0.0', 'dep-side': '1.0.0'},
-            teqfw: {
-                namespaces: [
-                    {prefix: 'App_', path: './src-short', ext: '.mjs'},
-                ],
-            },
+            teqfw: {fw: {di: {namespace: {prefix: 'App_', path: './src-short', ext: '.mjs'}}}},
         });
 
         await writeText(path.join(appRoot, 'src-short/Long/Service.mjs'), `
@@ -56,11 +52,7 @@ export const fileAbs = ${JSON.stringify(path.join(appRoot, 'src-short/Long/Servi
             name: 'dep-long',
             version: '1.0.0',
             dependencies: {},
-            teqfw: {
-                namespaces: [
-                    {prefix: 'App_Long_', path: './modules', ext: 'js'},
-                ],
-            },
+            teqfw: {fw: {di: {namespace: {prefix: 'App_Long_', path: './modules', ext: 'js'}}}},
         });
         await writeText(path.join(depLongRoot, 'modules/Service.js'), `
 import {fileURLToPath} from 'node:url';
@@ -73,11 +65,7 @@ export const fileAbs = fileURLToPath(import.meta.url);
             name: 'dep-side',
             version: '1.0.0',
             dependencies: {},
-            teqfw: {
-                namespaces: [
-                    {prefix: 'Side_', path: './src'},
-                ],
-            },
+            teqfw: {fw: {di: {namespace: {prefix: 'Side_', path: './src'}}}},
         });
         await writeText(path.join(depSideRoot, 'src/Util.mjs'), 'export const marker = "side";\n');
 
@@ -90,12 +78,6 @@ export const fileAbs = fileURLToPath(import.meta.url);
 
         const publicNamespaceRegistry = await import("@teqfw/di/node/registry/namespace");
         assert.equal(publicNamespaceRegistry.default, TeqFw_Di_Node_Registry_Namespace);
-        const legacyNamespaceRegistry = await import("@teqfw/di/src/Config/NamespaceRegistry.mjs");
-        assert.equal(legacyNamespaceRegistry.default, TeqFw_Di_Node_Registry_Namespace);
-        await assert.rejects(
-            () => import("@teqfw/di/src/Config/PackageRegistry.mjs"),
-            /Package subpath '.\/src\/Config\/PackageRegistry\.mjs' is not defined/,
-        );
         await assert.rejects(
             () => import("@teqfw/di/src/Node/Registry/Namespace.mjs"),
             /Package subpath '.\/src\/Node\/Registry\/Namespace\.mjs' is not defined/,

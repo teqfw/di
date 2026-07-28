@@ -109,7 +109,7 @@ export const PACKAGE_API: PackageApiContract = {
                     summary: 'Adds an ordered parsed dependency identity preprocessing hook.',
                     constraints: [
                         'Allowed only before the first get().',
-                        'Each hook must return another DepId DTO.',
+                        'Each hook is invoked synchronously in registration order and must return another DepId DTO.',
                     ],
                 },
                 {
@@ -119,7 +119,7 @@ export const PACKAGE_API: PackageApiContract = {
                     summary: 'Adds an ordered value transform applied to every resolved value after instantiation.',
                     constraints: [
                         'Allowed only before the first get().',
-                        'Runs after instantiation and before wrapper exports.',
+                        'Runs synchronously in registration order after instantiation and before wrapper exports.',
                     ],
                 },
                 {
@@ -170,7 +170,7 @@ export const PACKAGE_API: PackageApiContract = {
             imports: [{specifier: '@teqfw/di/node/registry/package', exportName: 'default', canonical: true}],
             methods: [
                 {name: 'constructor', signature: 'new PackageRegistry({ fs, path, appRoot })', stage: 'composition', summary: 'Creates a static package graph builder.'},
-                {name: 'build', signature: 'build(): Promise<ReadonlyArray<PackageRecord>>', stage: 'composition', summary: 'Builds immutable breadth-first runtime package records.', constraints: ['Reads only transitive dependencies and static package metadata.', 'Does not load modules or interpret application providers.']},
+                {name: 'build', signature: 'build(): Promise<ReadonlyArray<PackageRecord>>', stage: 'composition', summary: 'Builds immutable dependency-first postorder package records; independent dependency names use ascending lexical order as the stable tie-breaker.', constraints: ['Reads only transitive dependencies and static package metadata.', 'Does not load modules or interpret application providers.']},
             ],
         },
         {
@@ -182,12 +182,6 @@ export const PACKAGE_API: PackageApiContract = {
                     specifier: '@teqfw/di/node/registry/namespace',
                     exportName: 'default',
                     canonical: true,
-                },
-                {
-                    specifier: '@teqfw/di/src/Config/NamespaceRegistry.mjs',
-                    exportName: 'default',
-                    canonical: false,
-                    note: 'Deprecated compatibility entry point. Do not use in new integrations.',
                 },
             ],
             methods: [
@@ -207,7 +201,8 @@ export const PACKAGE_API: PackageApiContract = {
                     stage: 'composition',
                     summary: 'Builds an immutable namespace registry sorted by descending prefix length.',
                     constraints: [
-                        'Fails fast on invalid namespace metadata or duplicate canonical prefixes.',
+                        'Reads only package.json#teqfw.fw.di.namespace.',
+                        'Fails fast on invalid namespace metadata or duplicate canonical prefixes with publisher attribution.',
                     ],
                 },
             ],
@@ -292,17 +287,10 @@ export const PACKAGE_API: PackageApiContract = {
             canonicalUse: 'Node.js composition-stage helper imported from @teqfw/di/node/registry/namespace.',
         },
         {
-            alias: 'TeqFw_Di_Config_NamespaceRegistry',
-            source: './src/Config/NamespaceRegistry.mjs',
-            exposure: 'public-runtime',
-            reason: 'Deprecated compatibility wrapper for the Node.js namespace registry.',
-            canonicalUse: 'Do not use in new integrations; import TeqFw_Di_Node_Registry_Namespace instead.',
-        },
-        {
             alias: 'TeqFw_Di_Container',
             source: './src/Container.mjs',
             exposure: 'public-runtime',
-            reason: 'Default export of the package root and of the explicit source subpath.',
+            reason: 'Default export of the package root.',
             canonicalUse: 'Primary container API imported from @teqfw/di.',
         },
         {
@@ -432,7 +420,8 @@ export const PACKAGE_API: PackageApiContract = {
     ],
     operationalNotes: [
         'Canonical Node.js registry entrypoints are @teqfw/di/node/registry/namespace and @teqfw/di/node/registry/package. They must not be imported by browser runtime modules.',
-        '@teqfw/di/src/Config/NamespaceRegistry.mjs is a deprecated compatibility entry point. @teqfw/di/src/Config/PackageRegistry.mjs is not exported.',
+        'All src/** paths are internal and are not supported npm import entrypoints.',
+        'NamespaceRegistry reads only package.json#teqfw.fw.di.namespace.',
         'Resolved values are frozen before being returned.',
         'The hierarchical export-scoped descriptor is canonical. The flat shorthand descriptor is supported only for default-export-only modules.',
         'Named wrapper exports are executed after addPostprocess() hooks and before freeze.',

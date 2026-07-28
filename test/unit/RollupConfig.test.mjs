@@ -15,7 +15,7 @@ describe('browser bundle boundary guard', () => {
         });
     });
 
-    it('rejects Node.js registries and the deprecated compatibility wrapper', () => {
+    it('rejects Node.js registries', () => {
         const guard = createBrowserBundleBoundaryGuard();
         const context = {
             error(message) {
@@ -25,10 +25,6 @@ describe('browser bundle boundary guard', () => {
 
         assert.throws(
             () => guard.moduleParsed.call(context, {id: '/project/src/Node/Registry/Package.mjs'}),
-            /Browser bundle must not include Node\.js-only composition module/,
-        );
-        assert.throws(
-            () => guard.moduleParsed.call(context, {id: '/project/src/Config/NamespaceRegistry.mjs'}),
             /Browser bundle must not include Node\.js-only composition module/,
         );
     });

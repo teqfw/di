@@ -41,7 +41,7 @@ For each `get(specifier)` request the container applies this pipeline:
 7. `Lifecycle` — apply singleton caching or transient behavior.
 8. `Freeze` — freeze the resolved value before returning it.
 
-The pipeline is deterministic for a fixed configuration and input Dependency Specifier.
+The pipeline is deterministic for a fixed configuration and input Dependency Specifier. Preprocess and postprocess callbacks are synchronous and run in registration order; their return values are used immediately.
 
 ## State Model
 
@@ -86,4 +86,4 @@ This fail-fast behavior prevents partially linked systems from continuing execut
 
 PackageRegistry and NamespaceRegistry are Node.js-only composition-stage utilities outside Container builder state. Consumers import them from `@teqfw/di/node/registry/package` and `@teqfw/di/node/registry/namespace`; browser runtime modules must not import them. They read static package metadata before namespace roots are added. The container never discovers packages or application providers while resolving dependencies.
 
-The Rollup browser distribution build rejects any reachable `src/Node/` module or the deprecated NamespaceRegistry compatibility wrapper.
+The Rollup browser distribution build rejects any reachable `src/Node/` module.

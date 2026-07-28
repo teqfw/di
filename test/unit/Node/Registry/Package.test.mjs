@@ -53,7 +53,6 @@ describe('TeqFw_Di_Node_Registry_Package', () => {
         });
         const records = await new PackageRegistry({fs, path, appRoot: '/app'}).build();
 
-        assert.deepStrictEqual(records.map((item) => item.name), ['nested', '@scope/a', 'shared', 'b', 'z', 'app']);
         assert.equal(records.at(-1).rootAbs, '/app');
         assert.equal(records.at(-1).rootReal, '/app');
         assert.deepStrictEqual(records.find((item) => item.name === '@scope/a').dependencies, ['/app/node_modules/@scope/a/node_modules/nested']);
@@ -63,6 +62,14 @@ describe('TeqFw_Di_Node_Registry_Package', () => {
             '/app/node_modules/z',
         ]);
         assert.equal(records.some((item) => item.name === 'dev'), false);
+        for (const record of records) {
+            const recordIndex = records.indexOf(record);
+            for (const dependencyRoot of record.dependencies) {
+                const dependencyIndex = records.findIndex((item) => item.rootReal === dependencyRoot);
+                assert.ok(dependencyIndex >= 0);
+                assert.ok(dependencyIndex < recordIndex);
+            }
+        }
         assert.equal(Object.isFrozen(records), true);
         assert.equal(Object.isFrozen(records[0]), true);
         assert.equal(Object.isFrozen(records[0].packageJson), true);
@@ -70,6 +77,20 @@ describe('TeqFw_Di_Node_Registry_Package', () => {
         assert.throws(() => { records.push({}); });
         assert.throws(() => { records[0].packageJson.name = 'changed'; });
         assert.throws(() => { records[0].dependencies.push('/changed'); });
+    });
+
+    it('uses ascending dependency package names as the stable tie-breaker', async () => {
+        const records = await new PackageRegistry({
+            fs: mockFs({
+                '/app/package.json': json({name: 'app', dependencies: {zulu: '1', alpha: '1'}}),
+                '/app/node_modules/alpha/package.json': json({name: 'alpha', dependencies: {}}),
+                '/app/node_modules/zulu/package.json': json({name: 'zulu', dependencies: {}}),
+            }),
+            path,
+            appRoot: '/app',
+        }).build();
+
+        assert.deepStrictEqual(records.map((item) => item.name), ['alpha', 'zulu', 'app']);
     });
 
     it('deduplicates canonical package roots through symlinks', async () => {
@@ -100,7 +121,6 @@ describe('TeqFw_Di_Node_Registry_Package', () => {
             appRoot: '/app',
         }).build();
 
-        assert.deepStrictEqual(records.map((item) => item.name), ['shared', 'a', 'b', 'app']);
         assert.equal(records.filter((item) => item.name === 'shared').length, 1);
         assert.deepStrictEqual(records.find((item) => item.name === 'a').dependencies, ['/app/node_modules/shared']);
         assert.deepStrictEqual(records.find((item) => item.name === 'b').dependencies, ['/app/node_modules/shared']);

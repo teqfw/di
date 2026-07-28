@@ -357,6 +357,26 @@ const graph = await new PackageRegistry({fs, path, appRoot}).build();
 const namespaces = await new NamespaceRegistry({fs, path, appRoot}).build();
 ```
 
+A package contributes one namespace declaration through its `package.json`:
+
+```json
+{
+  "teqfw": {
+    "fw": {
+      "di": {
+        "namespace": {
+          "prefix": "App_",
+          "path": "./src",
+          "ext": ".mjs"
+        }
+      }
+    }
+  }
+}
+```
+
+`path` is relative to that publishing package and must resolve to an existing directory inside it. `PackageRegistry` returns production dependencies before their dependants; independent dependency names are processed in ascending lexical order. Build this registry and add its roots before the first `container.get()`.
+
 ## Installation
 
 ```bash

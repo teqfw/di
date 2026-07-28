@@ -43,18 +43,19 @@
       "default": "./src/Container.mjs"
     },
     "./node/registry/namespace": "./src/Node/Registry/Namespace.mjs",
-    "./node/registry/package": "./src/Node/Registry/Package.mjs",
-    "./src/Config/NamespaceRegistry.mjs": "./src/Config/NamespaceRegistry.mjs"
+    "./node/registry/package": "./src/Node/Registry/Package.mjs"
   },
   "type": "module",
   "teqfw": {
-    "namespaces": [
-      {
-        "prefix": "TeqFw_Di_",
-        "path": "./src",
-        "ext": ".mjs"
+    "fw": {
+      "di": {
+        "namespace": {
+          "prefix": "TeqFw_Di_",
+          "path": "./src",
+          "ext": ".mjs"
+        }
       }
-    ]
+    }
   },
   "repository": {
     "type": "git",

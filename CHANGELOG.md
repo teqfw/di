@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Migrated package namespace metadata to the singular `teqfw.fw.di.namespace` schema, removed the `src/**` registry compatibility export, and documented deterministic dependency-first package traversal.
+
 * Added the public composition-stage PackageRegistry runtime package graph and refactored NamespaceRegistry to consume it. Package metadata interpretation for application providers remains outside DI.
 
 * Replaced the former CDC terminology in source comments, internal variable names, diagnostics, parser errors, and tests with `Dependency Specifier`, without changing identifier syntax or public method behavior.

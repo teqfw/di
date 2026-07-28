@@ -14,8 +14,7 @@ export function createBrowserBundleBoundaryGuard() {
     const isNodeOnlyModule = function (id) {
         const normalized = id.replaceAll('\\', '/');
         return normalized.includes('/src/Node/')
-            || normalized.startsWith('src/Node/')
-            || normalized.endsWith('/src/Config/NamespaceRegistry.mjs');
+            || normalized.startsWith('src/Node/');
     };
 
     return {
