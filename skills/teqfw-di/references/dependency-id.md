@@ -1,10 +1,21 @@
 # dependency-id.md
 
-Version: 20260724
+Version: 20260729
 
 ## Purpose
 
 Dependencies in the container are requested through **Dependency Specifiers**. A Dependency Specifier contains a Module Token plus optional export, lifecycle, and wrapper selectors. The token identifies the module; the selectors describe how its value is linked.
+
+## Contents
+
+- [Grammar](#grammar)
+- [Platform Prefixes](#platform-prefixes)
+- [Module Identification](#module-identification)
+- [Export Selection](#export-selection)
+- [Lifecycle Markers](#lifecycle-markers)
+- [Wrapper Suffixes](#wrapper-suffixes)
+- [Interpretation Rules](#interpretation-rules)
+- [Canonical Examples](#canonical-examples)
 
 ## Grammar
 

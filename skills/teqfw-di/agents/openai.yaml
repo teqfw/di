@@ -1,0 +1,4 @@
+interface:
+  display_name: "TeqFW DI"
+  short_description: "Integrate @teqfw/di safely"
+  default_prompt: "Use $teqfw-di to integrate @teqfw/di in this project."

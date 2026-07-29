@@ -25,6 +25,7 @@
   },
   "files": [
     "ai/",
+    "skills/",
     "dist/",
     "src/",
     "CHANGELOG.md",
@@ -43,7 +44,8 @@
       "default": "./src/Container.mjs"
     },
     "./node/registry/namespace": "./src/Node/Registry/Namespace.mjs",
-    "./node/registry/package": "./src/Node/Registry/Package.mjs"
+    "./node/registry/package": "./src/Node/Registry/Package.mjs",
+    "./src/Config/NamespaceRegistry.mjs": "./src/Config/NamespaceRegistry.mjs"
   },
   "type": "module",
   "teqfw": {
@@ -55,6 +57,11 @@
             "path": "./src",
             "ext": ".mjs"
           }
+        ]
+      },
+      "ai": {
+        "skills": [
+          "./skills/teqfw-di"
         ]
       }
     }

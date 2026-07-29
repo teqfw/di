@@ -79,6 +79,8 @@ export const fileAbs = fileURLToPath(import.meta.url);
 
         const publicNamespaceRegistry = await import("@teqfw/di/node/registry/namespace");
         assert.equal(publicNamespaceRegistry.default, TeqFw_Di_Node_Registry_Namespace);
+        const legacyNamespaceRegistry = await import("@teqfw/di/src/Config/NamespaceRegistry.mjs");
+        assert.equal(legacyNamespaceRegistry.default, TeqFw_Di_Node_Registry_Namespace);
         await assert.rejects(
             () => import("@teqfw/di/src/Node/Registry/Namespace.mjs"),
             /Package subpath '.\/src\/Node\/Registry\/Namespace\.mjs' is not defined/,

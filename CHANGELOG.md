@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* Restored `/di/src/Config/NamespaceRegistry.mjs` as a deprecated compatibility re-export; new integrations must use `/di/node/registry/namespace`.
+
+* Converted the published AI interface into the versioned `skills/teqfw-di` Agent Skill, added its manifest declaration and structural contract test, and documented host-owned manual mounting without installation-time mutation.
+
 * Introduced the array-only canonical `teqfw.fw.di.namespaces` schema with support for multiple namespace mappings per package. `teqfw.namespaces` remains a temporary fallback through 2027-01-28, while the unused singular `teqfw.fw.di.namespace` schema was removed.
 
 * Added the public composition-stage PackageRegistry runtime package graph and refactored NamespaceRegistry to consume it. Package metadata interpretation for application providers remains outside DI.

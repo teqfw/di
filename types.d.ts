@@ -1,5 +1,6 @@
 declare global {
   type TeqFw_Di_Node_Registry_Namespace = import("./src/Node/Registry/Namespace.mjs").default;
+  type TeqFw_Di_Config_NamespaceRegistry = import("./src/Config/NamespaceRegistry.mjs").default;
   type TeqFw_Di_Node_Registry_Namespace_Entry = Readonly<{prefix: string, dirAbs: string, ext: string}>;
   type TeqFw_Di_Node_Registry_Package = import("./src/Node/Registry/Package.mjs").default;
   type TeqFw_Di_Node_Registry_Package_Record = Readonly<{name: string, rootAbs: string, rootReal: string, packageJson: Readonly<Record<string, unknown>>, dependencies: ReadonlyArray<string>}>;

@@ -1,10 +1,20 @@
 # usage.md
 
-Version: 20260727
+Version: 20260729
 
 ## Purpose
 
 This document shows canonical usage patterns for the container. Examples are intentionally short and prioritize supported, recommended forms over convenience shorthand.
+
+## Contents
+
+- [Canonical Module Descriptor](#canonical-module-descriptor)
+- [Canonical Container Setup](#canonical-container-setup)
+- [Lifecycle Composition](#lifecycle-composition)
+- [Test Mode And Mocks](#test-mode-and-mocks)
+- [Browser Entry Point](#browser-entry-point)
+- [Package-Backed Composition](#package-backed-composition)
+- [Package Namespace Metadata](#package-namespace-metadata)
 
 ## Canonical Module Descriptor
 
@@ -132,7 +142,7 @@ const FactoryClass = await container.get("App_Module__Factory");
 const factory = new FactoryClass({cast: resolvedCast});
 ```
 
-## Singleton And Transient
+## Lifecycle Composition
 
 Common lifecycle-based compositions:
 
@@ -144,7 +154,7 @@ App_Task$$$
 
 - `$` creates and reuses a singleton instance;
 - `$$` creates a new instance for each request;
-- `$$$` is a transient alias in the current implementation.
+- `$$$` uses direct factory composition: it produces a value for the request without lifecycle caching.
 
 ## Wrappers
 
@@ -202,4 +212,51 @@ export default class App_Empty {
 
 ## Package-Backed Composition
 
-In Node.js, a composition root may import `PackageRegistry` from `@teqfw/di/node/registry/package`, import `NamespaceRegistry` from `@teqfw/di/node/registry/namespace`, use the latter for namespace roots, and independently inspect each immutable package record for application-owned metadata. Package discovery reads only static manifests and transitive dependencies; it does not resolve container values or interpret providers. These imports are forbidden in browser runtime modules. All `src/**` package subpaths are unsupported.
+In Node.js, a composition root may import `PackageRegistry` from `@teqfw/di/node/registry/package`, import `NamespaceRegistry` from `@teqfw/di/node/registry/namespace`, use the latter for namespace roots, and independently inspect each immutable package record for application-owned metadata. Package discovery reads only static manifests and transitive dependencies; it does not resolve container values or interpret providers. These imports are forbidden in browser runtime modules. All `src/**` package subpaths are unsupported except the deprecated `@teqfw/di/src/Config/NamespaceRegistry.mjs` compatibility import; new code must use `@teqfw/di/node/registry/namespace` instead.
+
+## Test Mode And Mocks
+
+Enable test mode and register mocks before the first `get()`. A registered mock is selected by canonical Dependency Specifier identity, bypasses resolution and instantiation, and is frozen before it is returned.
+
+```js
+const container = new Container();
+container.enableTestMode();
+container.register("App_Service$", mockService);
+
+const service = await container.get("App_Service$");
+```
+
+Do not use test mode as an application-time substitution mechanism: configuration is locked by the first `get()`.
+
+## Browser Entry Point
+
+The container and URL-backed namespace roots can be used in browser ESM code. Node.js registry utilities are excluded from browser runtime code.
+
+```html
+<script type="module">
+  import Container from "https://cdn.jsdelivr.net/npm/@teqfw/di@2/+esm";
+
+  const container = new Container();
+  container.addNamespaceRoot("App_", "https://cdn.example.com/app", ".mjs");
+</script>
+```
+
+## Package Namespace Metadata
+
+A package declares namespace mappings in `package.json` using `teqfw.fw.di.namespaces`; the declaration is always an array, including one mapping.
+
+```json
+{
+  "teqfw": {
+    "fw": {
+      "di": {
+        "namespaces": [
+          {"prefix": "App_", "path": "./src", "ext": ".mjs"}
+        ]
+      }
+    }
+  }
+}
+```
+
+Each `path` is a non-empty relative path from its publishing package, must resolve to an existing directory inside that package, and must use an ESM-compatible extension. Canonical metadata takes precedence over the legacy `teqfw.namespaces` array; they are never merged. Build registries and add their roots during composition, before the first `container.get()`.

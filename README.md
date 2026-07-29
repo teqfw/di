@@ -634,7 +634,20 @@ This keeps replacement explicit and local to container configuration.
 
 ## Documentation for Agents
 
-This package includes a machine-oriented package interface under `./ai/`.
+### Package Agent Skill
+
+The deprecated `@teqfw/di/src/Config/NamespaceRegistry.mjs` import remains available only for migration; use `@teqfw/di/node/registry/namespace` in new code.
+
+The package includes the versioned `teqfw-di` Agent Skill at `node_modules/@teqfw/di/skills/teqfw-di`. A host project owns whether and how it mounts the skill; installation performs no `postinstall` mutation.
+
+```sh
+mkdir -p .agents/skills
+ln -s ../../node_modules/@teqfw/di/skills/teqfw-di .agents/skills/teqfw-di
+```
+
+The mounted skill describes the installed package version. Keep host-application intent and architecture in the host project's own cognitive context.
+
+This package includes a machine-oriented package interface under `./skills/teqfw-di/`.
 
 Those files are intended for system prompts, examples, and agent consumption. They describe:
 
@@ -647,11 +660,11 @@ The package ships both a human-facing README and a machine-oriented interface fo
 
 ## Further Reading
 
-- Usage guide: `ai/usage.md`
-- Container API notes: `ai/container.md`
-- Dependency descriptor concepts: `ai/concepts.md`
-- Dependency ID format: `ai/dependency-id.md`
-- Extension points: `ai/extensions.md`
+- Usage guide: `skills/teqfw-di/references/usage.md`
+- Container API notes: `skills/teqfw-di/references/container.md`
+- Dependency descriptor concepts: `skills/teqfw-di/references/concepts.md`
+- Dependency ID format: `skills/teqfw-di/references/dependency-id.md`
+- Extension points: `skills/teqfw-di/references/extensions.md`
 - Project philosophy and intended application domain: `PHILOSOPHY.md`
 
 ## Development and Ecosystem

@@ -1,6 +1,6 @@
 # extensions.md
 
-Version: 20260724
+Version: 20260729
 
 ## Purpose
 
@@ -11,6 +11,14 @@ The container supports controlled extension of dependency resolution through thr
 - wrapper exports.
 
 These mechanisms are related but not interchangeable.
+
+## Contents
+
+- [Preprocess Hooks](#preprocess-hooks)
+- [Postprocess Hooks](#postprocess-hooks)
+- [Wrapper Exports](#wrapper-exports)
+- [Execution Order](#execution-order)
+- [Constraints](#constraints)
 
 ## Preprocess Hooks
 

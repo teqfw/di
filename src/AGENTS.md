@@ -38,7 +38,7 @@ In particular:
 - Underscores in file names are prohibited.
 - Namespace hierarchy MUST be reflected in directory hierarchy.
 - Static dependency direction MUST follow the allowed layer graph.
-- `Container.mjs` is the only public entry point.
+- `Container.mjs` is the primary runtime entry point; the package also exposes canonical Node.js registry subpaths and one deprecated migration-only registry compatibility subpath.
 
 Structural violations are execution errors.
 

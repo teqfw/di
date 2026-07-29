@@ -421,7 +421,7 @@ export const PACKAGE_API: PackageApiContract = {
     ],
     operationalNotes: [
         'Canonical Node.js registry entrypoints are @teqfw/di/node/registry/namespace and @teqfw/di/node/registry/package. They must not be imported by browser runtime modules.',
-        'All src/** paths are internal and are not supported npm import entrypoints.',
+        'The legacy compatibility entry point @teqfw/di/src/Config/NamespaceRegistry.mjs is deprecated. Every other src/** path is internal and unsupported; new code must use @teqfw/di/node/registry/namespace.',
         'NamespaceRegistry uses the canonical package.json#teqfw.fw.di.namespaces array and temporarily falls back to package.json#teqfw.namespaces only when canonical metadata is absent.',
         'Resolved values are frozen before being returned.',
         'The hierarchical export-scoped descriptor is canonical. The flat shorthand descriptor is supported only for default-export-only modules.',
