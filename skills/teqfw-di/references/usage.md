@@ -1,6 +1,6 @@
 # usage.md
 
-Version: 20260729
+Version: 20260730
 
 ## Purpose
 
@@ -213,6 +213,27 @@ export default class App_Empty {
 ## Package-Backed Composition
 
 In Node.js, a composition root may import `PackageRegistry` from `@teqfw/di/node/registry/package`, import `NamespaceRegistry` from `@teqfw/di/node/registry/namespace`, use the latter for namespace roots, and independently inspect each immutable package record for application-owned metadata. Package discovery reads only static manifests and transitive dependencies; it does not resolve container values or interpret providers. These imports are forbidden in browser runtime modules. All `src/**` package subpaths are unsupported except the deprecated `@teqfw/di/src/Config/NamespaceRegistry.mjs` compatibility import; new code must use `@teqfw/di/node/registry/namespace` instead.
+
+Build namespace roots and register each one before the first `get()`:
+
+```js
+import fs from "node:fs/promises";
+import path from "node:path";
+import Container from "@teqfw/di";
+import NamespaceRegistry from "@teqfw/di/node/registry/namespace";
+
+const appRoot = "/absolute/path/to/application";
+const container = new Container();
+const namespaces = await new NamespaceRegistry({fs, path, appRoot}).build();
+
+for (const {prefix, dirAbs, ext} of namespaces) {
+  container.addNamespaceRoot(prefix, dirAbs, ext);
+}
+
+const root = await container.get("App_Root$");
+```
+
+`appRoot` is the absolute application root containing its `package.json`. Do not assume that the current working directory is that root unless the host application guarantees it.
 
 ## Test Mode And Mocks
 
