@@ -1,10 +1,10 @@
-# AI Package Interface
+# AI Package Interface (Legacy Pointer)
 
-Version: 20260729
+Version: 20260730
 
 ## Purpose
 
-This file provides repository-level navigation and authoring guidance for agent-facing package material.
+This legacy directory remains temporarily for compatibility. Do not add a second agent interface here; go to the distributable `teqfw-di` Agent Skill at `../skills/teqfw-di/SKILL.md` for current guidance.
 
 ## Structure
 

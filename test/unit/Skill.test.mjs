@@ -64,5 +64,7 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
         assert.ok(packedFiles.has(requiredPath), 'Published package must contain ' + requiredPath + '.');
     }
 
-    assert.match(fs.readFileSync(legacyAiPath, 'utf8'), /\.\.\/skills\/teqfw-di\//);
+    const legacyAi = fs.readFileSync(legacyAiPath, 'utf8');
+    assert.match(legacyAi, /legacy/i);
+    assert.match(legacyAi, /\.\.\/skills\/teqfw-di\/SKILL\.md/);
 });
