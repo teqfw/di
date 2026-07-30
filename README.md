@@ -80,8 +80,7 @@ Mount it into the host project:
 
 ```sh
 mkdir -p .agents/skills
-ln -s ../../node_modules/@teqfw/di/skills/teqfw-di \
-  .agents/skills/teqfw-di
+ln -s node_modules/@teqfw/di/skills/teqfw-di .agents/skills/teqfw-di
 ```
 
 Project instructions and application architecture remain authoritative. The package skill supplies product knowledge; the host supplies intent and policy.
@@ -99,6 +98,22 @@ Do not import `@teqfw/di/src/**`.
 Use `@teqfw/di` for modular, long-lived, plugin-oriented ESM applications where implementations, environments, and integrations will evolve.
 
 Use direct imports for small applications where runtime composition adds no practical value.
+
+## Add to a project
+
+Install the runtime package as a project dependency:
+
+```sh
+npm install @teqfw/di
+```
+
+For agent-assisted development, provide the coding agent with the skills relevant to its task:
+
+- `teqfw-di` — version-matched guidance for the `@teqfw/di` API, dependency tokens, module contracts, lifecycle, testing, and composition rules;
+- `teqfw-platform` — the architecture, philosophy, conventions, plugin model, and integration rules of the Tequila Framework;
+- `teqfw-esm-validator` — validation rules for native ESM modules and TeqFW-compatible JavaScript structure.
+
+The package includes `teqfw-di`. The other skills are installed or mounted separately by the host project. Project instructions and cognitive context remain authoritative over all package-level guidance.
 
 ## Boundaries
 
