@@ -60,18 +60,13 @@ export default class TeqFw_Di_Container {
         const getKey = buildDependencyKey;
         const getMockKey = buildDependencyKey;
 
-        const freeze = function (value) {
+        let freeze = function (value) {
             if ((value === null) || (value === undefined)) return value;
             const type = typeof value;
             if ((type !== 'object') && (type !== 'function')) return value;
             if (Object.prototype.toString.call(value) === '[object Module]') return value;
             if (Object.isFrozen(value)) return value;
-            try {
-                Object.freeze(value);
-            } catch (error) {
-                logger.log(`Container.freeze: skipped (${String(error)}).`);
-            }
-            return value;
+            return Object.freeze(value);
         };
 
         const applyPreprocess = function (depId) {
@@ -146,6 +141,19 @@ export default class TeqFw_Di_Container {
             assertBuilderStage();
             logBuilder('addPostprocess().');
             postprocess.push(fn);
+        };
+
+
+        /**
+         * Sets the host hardening policy for every resolved value and mock.
+         *
+         * @param {(value: unknown) => unknown} fn
+         * @returns {void}
+         */
+        this.setHardener = function (fn) {
+            assertBuilderStage();
+            logBuilder('setHardener().');
+            freeze = fn;
         };
 
         /**
