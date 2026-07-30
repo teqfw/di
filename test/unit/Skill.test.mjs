@@ -47,9 +47,6 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
     assert.match(usage, /node:fs\/promises/);
     assert.match(usage, /absolute application root/);
 
-    const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
-    assert.ok(manifest.teqfw.fw.ai.skills.includes('./skills/teqfw-di'));
-
     const packed = JSON.parse(execFileSync('npm', ['pack', '--dry-run', '--json'], {
         cwd: rootDir,
         encoding: 'utf8',

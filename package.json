@@ -58,11 +58,6 @@
             "ext": ".mjs"
           }
         ]
-      },
-      "ai": {
-        "skills": [
-          "./skills/teqfw-di"
-        ]
       }
     }
   },
