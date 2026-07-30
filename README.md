@@ -1,28 +1,45 @@
 # @teqfw/di
 
-**Deterministic token-based runtime linking for native JavaScript ES modules.**
+**JavaScript applications do not need a compiler to gain late binding, explicit contracts, controlled composition, and agent-readable architecture.**
 
-`@teqfw/di` lets an application declare dependencies by stable module tokens instead of coupling them to local import paths. A container resolves those declarations through configured namespace roots at runtime. This makes isomorphic JavaScript decomposable while it is written and linkable when it runs - explicit enough for agents to analyze and evolve. It brings enterprise practices such as SOLID to JavaScript without TypeScript or transpilation.
+`@teqfw/di` brings these capabilities to native ESM without TypeScript, decorators, reflection, generated code, or transpilation. Business modules depend on stable logical tokens instead of concrete file paths; the host application decides which implementation to load, how to create it, how long to keep it, and which cross-cutting policies to apply.
 
-Use it for long-lived pure JavaScript + JSDoc applications where explicit, reviewable dependency structure matters. It is not a decorator, reflection, or framework-managed DI system, and it is usually unnecessary for a small application with clear direct imports.
+This is the runtime-linking foundation of Tequila Framework and a practical choice for long-lived applications maintained by developers together with coding agents.
 
-## Install
+## Why use it
 
-```sh
-npm install @teqfw/di
+Static imports bind a consumer to a concrete module:
+
+```text
+consumer → file path → implementation
 ```
 
-The normative runtime model is native ESM on Node.js or in a browser-compatible environment.
+`@teqfw/di` separates the contract from the implementation:
 
-## Quick Start
+```text
+consumer → dependency token → host policy → implementation
+```
 
-A module exports its principal value, then declares dependencies with `__deps__` at the end of the file:
+That enables:
+
+- late binding and replaceable implementations;
+- isomorphic modules for Node.js and browser environments;
+- explicit dependency graphs that agents can analyze;
+- lifecycle control for transient and singleton values;
+- preprocessing, postprocessing, wrappers, diagnostics, and test substitution at the composition boundary;
+- shallow hardening of resolved values against ordinary runtime patching.
+
+The package uses native ESM, dynamic `import()`, JSDoc, and standard JavaScript runtime features. No compilation layer is required.
+
+<details>
+
+<summary><strong>Quick Start</strong></summary>
 
 ```js
-export default function Service({repository}) {
+export default function Service({ repository }) {
   return {
     async getProfile(id) {
-      return {id, name: await repository.findNameById(id)};
+      return { id, name: await repository.findNameById(id) };
     },
   };
 }
@@ -33,47 +50,59 @@ export const __deps__ = {
   },
 };
 ```
-Configure the container before its first request:
 
 ```js
 import path from "node:path";
-import {fileURLToPath} from "node:url";
+import { fileURLToPath } from "node:url";
 import Container from "@teqfw/di";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
+
 const container = new Container();
 container.addNamespaceRoot("App_", path.join(rootDir, "src/App"), ".mjs");
 
 const service = await container.get("App_User_Service$");
-console.log(await service.getProfile(42));
 ```
 
-Namespace roots map token prefixes to module locations; browser-compatible code may use URL targets. Configure roots, hooks, diagnostics, and test mocks before the first `get()`. Resolved values are immutable. For tests, call `enableTestMode()` and `register(specifier, mock)` before the first request.
+</details>
 
-## Public API
+## Agent-ready package
 
-- `@teqfw/di` — default `Container`.
-- `@teqfw/di/node/registry/namespace` — Node.js composition-stage namespace discovery.
-- `@teqfw/di/node/registry/package` — Node.js composition-stage package graph discovery.
+The package ships with three aligned interfaces:
 
-Keep registries in a Node.js composition root; browser and DI-managed runtime modules must not import them. New code must not import `@teqfw/di/src/**`.
+- runtime code in `src`;
+- type information through JSDoc and `types.d.ts`;
+- a version-matched Agent Skill in `skills/teqfw-di`.
 
-## Guidance for Coding Agents
+The skill explains the token model, module contracts, lifecycle, configuration, testing, environment boundaries, and approved integration patterns. An agent does not need to reconstruct the package architecture from source code alone.
 
-The version-matched `teqfw-di` Agent Skill is published at `node_modules/@teqfw/di/skills/teqfw-di`. It gives an agent detailed guidance for integrating this package. A host project decides whether and how to mount it; installation does not modify the host project.
+Mount it into the host project:
 
 ```sh
 mkdir -p .agents/skills
-ln -s ../../node_modules/@teqfw/di/skills/teqfw-di .agents/skills/teqfw-di
+ln -s ../../node_modules/@teqfw/di/skills/teqfw-di \
+  .agents/skills/teqfw-di
 ```
 
-Use the equivalent skills directory when a host project uses another agent layout. Alternatively, install it for the current user:
+Project instructions and application architecture remain authoritative. The package skill supplies product knowledge; the host supplies intent and policy.
 
-```sh
-npx skills add teqfw/di --skill teqfw-di
-```
+## Public API
 
-The `teqfw-platform` skill helps agents build TeqFW applications. The `adsm-ctx` skill supports the author's Agent-Driven Software Management (ADSM) methodology. The host project's own instructions and cognitive context remain authoritative for application intent and architecture.
+- `@teqfw/di` — `Container`;
+- `@teqfw/di/node/registry/namespace` — namespace discovery;
+- `@teqfw/di/node/registry/package` — package graph discovery.
+
+Do not import `@teqfw/di/src/**`.
+
+## Best fit
+
+Use `@teqfw/di` for modular, long-lived, plugin-oriented ESM applications where implementations, environments, and integrations will evolve.
+
+Use direct imports for small applications where runtime composition adds no practical value.
+
+## Boundaries
+
+The package provides interface-like contracts, composition interception, and shallow value hardening. It does not claim language-level interfaces, full general-purpose AOP, or deep immutability of arbitrary object graphs.
 
 ## Development and Ecosystem
 
