@@ -7,6 +7,7 @@ import {fileURLToPath} from 'node:url';
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const skillDir = path.join(rootDir, 'skills', 'teqfw-di');
 const skillPath = path.join(skillDir, 'SKILL.md');
+const legacyAiPath = path.join(rootDir, 'ai', 'AGENTS.md');
 
 test('publishes the teqfw-di Agent Skill contract', () => {
     assert.equal(path.basename(skillDir), 'teqfw-di');
@@ -26,4 +27,7 @@ test('publishes the teqfw-di Agent Skill contract', () => {
     const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
     assert.ok(manifest.teqfw.fw.ai.skills.includes('./skills/teqfw-di'));
     assert.ok(fs.statSync(skillDir).isDirectory(), 'Declared skill directory must exist.');
+    assert.ok(manifest.files.includes('ai/'), 'Legacy ai/ directory must remain published during migration.');
+    assert.ok(fs.existsSync(legacyAiPath), 'Legacy ai/ navigation entry must exist during migration.');
+    assert.match(fs.readFileSync(legacyAiPath, 'utf8'), /\.\.\/skills\/teqfw-di\//, 'Legacy ai/ navigation must point to the canonical skill.');
 });

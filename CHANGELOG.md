@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Added an architecture-level catalog for temporary public compatibility commitments, including the review date and removal condition for the deprecated Namespace Registry import.
+
 * Restored `/di/src/Config/NamespaceRegistry.mjs` as a deprecated compatibility re-export; new integrations must use `/di/node/registry/namespace`.
 
 * Converted the published AI interface into the versioned `skills/teqfw-di` Agent Skill, added its manifest declaration and structural contract test, and documented host-owned manual mounting without installation-time mutation.

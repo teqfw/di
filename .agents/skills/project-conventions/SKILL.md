@@ -33,3 +33,10 @@ Before starting work, fetch both repositories and ensure the local branches in u
 ## 5. TeqFW platform rules
 
 - Use the `teqfw-platform` skill only for tasks on the `@teqfw/di` package. Do not apply it to other TeqFW packages without an explicit package-local adaptation.
+
+## 6. File editing fallback
+
+- Use `apply_patch` for local edits by default.
+- If `apply_patch` fails because the sandbox cannot initialize `bwrap` or a network namespace, use `git apply` with a scoped unified diff.
+- Do not use shell redirection, `cat`, or broad rewrite commands as an editing fallback.
+- After applying a fallback patch, run `git diff --check` in each repository affected by the change.
