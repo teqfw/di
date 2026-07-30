@@ -20,7 +20,7 @@ import {makePromiseSafe} from '../Internal/PromiseSafe.mjs';
  * @property {Map<string, unknown>} mockRegistry
  * @property {(value: unknown) => unknown} freeze
  * @property {(specifier: string) => TeqFw_Di_DepId__DTO} canonicalize
- * @property {(value: unknown) => unknown} applyPostprocess
+ * @property {(value: unknown, depId: TeqFw_Di_DepId__DTO) => unknown} applyPostprocess
  */
 
 /**
@@ -110,7 +110,7 @@ export async function executeContainerPipeline(ctx, specifier) {
                 logger.log(`Container.pipeline: instantiate:exit '${node.depId.platform}::${node.depId.moduleName}'.`);
                 stage = 'postprocess';
                 logger.log(`Container.pipeline: postprocess:entry '${node.depId.platform}::${node.depId.moduleName}'.`);
-                const postprocessed = applyPostprocess(instantiated);
+                const postprocessed = applyPostprocess(instantiated, node.depId);
                 logger.log(`Container.pipeline: postprocess:exit '${node.depId.platform}::${node.depId.moduleName}'.`);
                 const wrapped = wrapperExecutor.execute(node.depId, postprocessed, node.namespace);
                 stage = 'freeze';

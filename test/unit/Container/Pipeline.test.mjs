@@ -138,16 +138,19 @@ describe('TeqFw_Di_Container_Pipeline', () => {
         assert.ok(preprocessCalled);
     });
 
-    it('calls postprocess on instantiated value', async () => {
+    it('calls postprocess on instantiated value with canonical depId', async () => {
         /** @type {unknown} */
         let received;
+        /** @type {TeqFw_Di_DepId__DTO|undefined} */
+        let receivedDepId;
         const ctx = makeContext({
-            applyPostprocess(value) { received = value; return value; },
+            applyPostprocess(value, depId) { received = value; receivedDepId = depId; return value; },
         });
         await executeContainerPipeline(ctx, 'App_Mod$');
         assert.deepStrictEqual(received, {value: 42});
-    });
+        assert.equal(receivedDepId?.moduleName, 'App_Mod');
 
+    });
     it('calls wrapper executor after postprocess', async () => {
         /** @type {unknown} */
         let received;

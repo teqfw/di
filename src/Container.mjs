@@ -32,7 +32,7 @@ export default class TeqFw_Di_Container {
         let state = 'notConfigured';
         /** @type {((depId: TeqFw_Di_DepId__DTO) => TeqFw_Di_DepId__DTO)[]} */
         const preprocess = [];
-        /** @type {((value: unknown) => unknown)[]} */
+        /** @type {((value: unknown, context: TeqFw_Di_Container_Postprocess_Context) => unknown)[]} */
         const postprocess = [];
         /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace__DTO[]} */
         const namespaceRoots = [];
@@ -90,10 +90,17 @@ export default class TeqFw_Di_Container {
             return {found: testMode === true && mockRegistry.has(key), value: mockRegistry.get(key)};
         };
 
-        const applyPostprocess = function (value) {
+        const applyPostprocess = function (value, depId) {
             /** @type {unknown} */
             let current = value;
-            for (const fn of postprocess) current = fn(current);
+            /** @type {TeqFw_Di_Container_Postprocess_Context} */
+            const context = Object.freeze({depId});
+            for (const fn of postprocess) {
+                current = fn(current, context);
+                if (current instanceof Promise) {
+                    throw new Error('Postprocess callback must return synchronously (non-Promise).');
+                }
+            }
             return current;
         };
 
@@ -132,7 +139,7 @@ export default class TeqFw_Di_Container {
         /**
          * Adds a postprocessing hook.
          *
-         * @param {(value: unknown) => unknown} fn
+         * @param {(value: unknown, context: TeqFw_Di_Container_Postprocess_Context) => unknown} fn
          * @returns {void}
          */
         this.addPostprocess = function (fn) {

@@ -70,13 +70,22 @@ describe('TeqFw_Di_Container', () => {
         const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
         container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
         container.addPreprocess((depId) => createDepId({...depId, moduleName: 'TestSample_NamedOnly'}));
-        container.addPostprocess(() => ({order: [1]}));
+        /** @type {TeqFw_Di_Container_Postprocess_Context|undefined} */
+        let context;
+        container.addPostprocess((_value, receivedContext) => {
+            context = receivedContext;
+            return {order: [1]};
+        });
         container.addPostprocess((value) => ({order: [...value.order, 2]}));
 
         const value = await container.get('TestSample_Empty$');
 
         assert.deepStrictEqual(value.order, [1, 2]);
         assert.ok(Object.isFrozen(value));
+        assert.equal(context?.depId.moduleName, 'TestSample_NamedOnly');
+        assert.equal(context?.depId.origin, 'TestSample_Empty$');
+        assert.ok(Object.isFrozen(context));
+        assert.ok(Object.isFrozen(context?.depId));
     });
 
     it('configuration is locked after first get', async () => {

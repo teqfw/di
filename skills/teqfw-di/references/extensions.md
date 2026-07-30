@@ -1,6 +1,6 @@
 # extensions.md
 
-Version: 20260729
+Version: 20260730
 
 ## Purpose
 
@@ -45,6 +45,7 @@ Typical uses:
 - policy-driven identifier normalization;
 - project-specific prefix adaptation.
 
+
 ## Postprocess Hooks
 
 Postprocess hooks transform resolved values after instantiation and before wrapper exports.
@@ -52,7 +53,7 @@ Postprocess hooks transform resolved values after instantiation and before wrapp
 Signature:
 
 ```js
-(value) => value
+(value, context) => value
 ```
 
 Properties:
