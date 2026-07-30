@@ -36,16 +36,14 @@ function makeContext(overrides = {}) {
     const logger = {log() {}, error() {}};
 
     return {
-        parser: {
-            parse() { return rootDepId; },
-        },
+        canonicalize() { return rootDepId; },
         resolver: {
             resolve() { return Promise.resolve({}); },
         },
         graphResolver: {
             resolve() {
                 const map = new Map();
-                map.set('teq::App_Mod::default::F::S::', {depId: rootDepId, namespace: {}});
+                map.set('teq::App_Mod::default::F::S::', {depId: rootDepId, namespace: {}, dependencies: new Map(), mock: {found: false, value: undefined}});
                 return Promise.resolve(map);
             },
         },
@@ -88,7 +86,7 @@ describe('TeqFw_Di_Container_Pipeline', () => {
         const mockRegistry = new Map();
         mockRegistry.set('teq::App_Mod::default::F::S::', mockValue);
         const ctx = makeContext({
-            parser: {parse() { return depId; }},
+            canonicalize() { return depId; },
             testMode: true,
             mockRegistry,
         });
@@ -123,12 +121,11 @@ describe('TeqFw_Di_Container_Pipeline', () => {
         });
         let preprocessCalled = false;
         const ctx = makeContext({
-            parser: {parse() { return original; }},
-            applyPreprocess(depId) {
+            canonicalize() {
                 preprocessCalled = true;
-                assert.strictEqual(depId.exportName, 'default');
                 return modified;
             },
+
             graphResolver: {
                 resolve() {
                     const map = new Map();
@@ -168,9 +165,7 @@ describe('TeqFw_Di_Container_Pipeline', () => {
 
     it('throws on parser failure', async () => {
         const ctx = makeContext({
-            parser: {
-                parse() { throw new Error('parse error'); },
-            },
+            canonicalize() { throw new Error('parse error'); },
         });
         await assert.rejects(
             () => executeContainerPipeline(ctx, 'bad'),

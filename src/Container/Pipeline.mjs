@@ -6,12 +6,10 @@
  */
 
 import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
-import {readDepsDecl} from '../Internal/DepsDecl.mjs';
 import {makePromiseSafe} from '../Internal/PromiseSafe.mjs';
 
 /**
  * @typedef {object} TeqFw_Di_Container_Pipeline_Context
- * @property {TeqFw_Di_Parser} parser
  * @property {TeqFw_Di_Resolver|undefined} resolver
  * @property {TeqFw_Di_Container_GraphResolver|undefined} graphResolver
  * @property {TeqFw_Di_Container_Lifecycle|undefined} lifecycle
@@ -21,7 +19,7 @@ import {makePromiseSafe} from '../Internal/PromiseSafe.mjs';
  * @property {boolean} testMode
  * @property {Map<string, unknown>} mockRegistry
  * @property {(value: unknown) => unknown} freeze
- * @property {(depId: TeqFw_Di_DepId__DTO) => TeqFw_Di_DepId__DTO} applyPreprocess
+ * @property {(specifier: string) => TeqFw_Di_DepId__DTO} canonicalize
  * @property {(value: unknown) => unknown} applyPostprocess
  */
 
@@ -34,7 +32,6 @@ import {makePromiseSafe} from '../Internal/PromiseSafe.mjs';
  */
 export async function executeContainerPipeline(ctx, specifier) {
     const {
-        parser,
         resolver,
         graphResolver,
         lifecycle,
@@ -44,7 +41,7 @@ export async function executeContainerPipeline(ctx, specifier) {
         testMode,
         mockRegistry,
         freeze,
-        applyPreprocess,
+        canonicalize,
         applyPostprocess,
     } = ctx;
 
@@ -61,11 +58,11 @@ export async function executeContainerPipeline(ctx, specifier) {
         logger.log(`Container.get: specifier='${specifier}'.`);
         stage = 'parse';
         logger.log('Container.pipeline: parse:entry.');
-        const parsed = parser.parse(specifier);
+        const root = canonicalize(specifier);
+        const parsed = root;
         logger.log(`Container.pipeline: parse:exit '${parsed.platform}::${parsed.moduleName}'.`);
         stage = 'preprocess';
         logger.log('Container.pipeline: preprocess:entry.');
-        const root = applyPreprocess(parsed);
         logger.log(`Container.pipeline: preprocess:exit '${root.platform}::${root.moduleName}'.`);
         if (testMode === true) {
             stage = 'mock';
@@ -95,6 +92,10 @@ export async function executeContainerPipeline(ctx, specifier) {
             if (built.has(key)) return built.get(key);
             if (!graph.has(key)) throw new Error(`Resolved graph node is missing for '${key}'.`);
             const node = graph.get(key);
+            if (node.mock?.found) {
+                stage = 'freeze';
+                return freeze(node.mock.value);
+            }
             stage = 'lifecycle';
             logger.log(`Container.pipeline: lifecycle:entry '${node.depId.platform}::${node.depId.moduleName}'.`);
             const value = lifecycle.apply(node.depId, function () {
@@ -102,11 +103,8 @@ export async function executeContainerPipeline(ctx, specifier) {
                 logger.log(`Container.pipeline: instantiate:entry '${node.depId.platform}::${node.depId.moduleName}'.`);
                 /** @type {Record<string, unknown>} */
                 const deps = {};
-                /** @type {Record<string, unknown>} */
-                const depsDecl = readDepsDecl(node.namespace, node.depId);
-                for (const [name, dependencySpecifier] of Object.entries(depsDecl)) {
-                    const childDepId = parser.parse(/** @type {string} */ (dependencySpecifier));
-                    deps[name] = build(getKey(childDepId));
+                for (const [name, childKey] of (node.dependencies ?? [])) {
+                    deps[name] = build(childKey);
                 }
                 const instantiated = instantiator.instantiate(node.depId, node.namespace, deps);
                 logger.log(`Container.pipeline: instantiate:exit '${node.depId.platform}::${node.depId.moduleName}'.`);

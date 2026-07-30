@@ -14,13 +14,14 @@
 
 /**
  * @typedef {object} TeqFw_Di_Container_GraphResolver_Dependencies
- * @property {TeqFw_Di_Parser} parser
+ * @property {(specifier: string) => TeqFw_Di_DepId__DTO} canonicalize
+ * @property {(depId: TeqFw_Di_DepId__DTO) => {found: boolean, value: unknown}} findMock
  * @property {TeqFw_Di_Resolver} resolver
  * @property {{log(message: string): void}|null} [logger]
  */
 
 /**
- * @typedef {{depId: TeqFw_Di_DepId__DTO, namespace: object}} TeqFw_Di_Container_GraphResolver_Node
+ * @typedef {{depId: TeqFw_Di_DepId__DTO, namespace: object|null, dependencies: Map<string, string>, mock: {found: boolean, value: unknown}}} TeqFw_Di_Container_GraphResolver_Node
  */
 
 import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
@@ -31,7 +32,8 @@ export default class TeqFw_Di_Container_GraphResolver {
     /**
      * @param {TeqFw_Di_Container_GraphResolver_Dependencies} deps
      */
-    constructor({parser, resolver, logger = null}) {
+    constructor({canonicalize, parser, findMock = () => ({found: false, value: undefined}), resolver, logger = null}) {
+        canonicalize ??= parser.parse.bind(parser);
         /** @type {{log(message: string): void}|null} */
         const log = logger;
 
@@ -61,19 +63,28 @@ export default class TeqFw_Di_Container_GraphResolver {
             const key = makeNodeKey(depId);
             if (out.has(key)) return;
 
+            const mock = findMock(depId);
+            if (mock.found) {
+                out.set(key, {depId, namespace: null, dependencies: new Map(), mock});
+                return;
+            }
+
             stack.add(identity);
             chain.push(identity);
             try {
                 /** @type {object} */
                 const namespace = await resolver.resolve(depId);
                 if (log) log.log(`GraphResolver.walk: resolved '${key}'.`);
-                out.set(key, {depId, namespace});
+                /** @type {Map<string, string>} */
+                const dependencies = new Map();
+                out.set(key, {depId, namespace, dependencies, mock});
 
                 /** @type {Record<string, unknown>} */
                 const depsMap = readDepsDecl(namespace, depId);
-                for (const nextSpecifier of Object.values(depsMap)) {
+                for (const [name, nextSpecifier] of Object.entries(depsMap)) {
                     /** @type {TeqFw_Di_DepId__DTO} */
-                    const nextDepId = parser.parse(/** @type {string} */ (nextSpecifier));
+                    const nextDepId = canonicalize(/** @type {string} */ (nextSpecifier));
+                    dependencies.set(name, makeNodeKey(nextDepId));
                     if (log) log.log(`GraphResolver.walk: edge '${key}' -> '${nextDepId.platform}::${nextDepId.moduleName}'.`);
                     await walk(nextDepId, out, stack, chain);
                 }

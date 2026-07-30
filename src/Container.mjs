@@ -81,6 +81,15 @@ export default class TeqFw_Di_Container {
             return current;
         };
 
+        const canonicalize = function (specifier) {
+            return applyPreprocess(parser.parse(specifier));
+        };
+
+        const findMock = function (depId) {
+            const key = getMockKey(depId);
+            return {found: testMode === true && mockRegistry.has(key), value: mockRegistry.get(key)};
+        };
+
         const applyPostprocess = function (value) {
             /** @type {unknown} */
             let current = value;
@@ -104,7 +113,7 @@ export default class TeqFw_Di_Container {
             const resolverConfig = configFactory.create({namespaces: namespaceRoots});
             if (typeof parser.setLogger === 'function') parser.setLogger(logger);
             resolver = new TeqFw_Di_Resolver({config: resolverConfig, logger});
-            graphResolver = new TeqFw_Di_Container_GraphResolver({parser, resolver, logger});
+            graphResolver = new TeqFw_Di_Container_GraphResolver({canonicalize, findMock, resolver, logger});
             lifecycle = new TeqFw_Di_Container_Lifecycle(logger);
         };
 
@@ -182,7 +191,7 @@ export default class TeqFw_Di_Container {
             assertBuilderStage();
             logBuilder(`register('${specifier}').`);
             if (testMode !== true) throw new Error('Container test mode is disabled.');
-            const depId = parser.parse(specifier);
+            const depId = canonicalize(specifier);
             mockRegistry.set(getMockKey(depId), mock);
         };
 
@@ -202,7 +211,6 @@ export default class TeqFw_Di_Container {
                 initializeInfrastructure();
                 logger.log(`Container.state: '${state}'.`);
                 return await executeContainerPipeline({
-                    parser,
                     resolver,
                     graphResolver,
                     lifecycle,
@@ -212,7 +220,7 @@ export default class TeqFw_Di_Container {
                     testMode,
                     mockRegistry,
                     freeze,
-                    applyPreprocess,
+                    canonicalize,
                     applyPostprocess,
                 }, specifier);
             } catch (error) {
@@ -223,3 +231,12 @@ export default class TeqFw_Di_Container {
         };
     }
 }
+
+        const canonicalize = function (specifier) {
+            return applyPreprocess(parser.parse(specifier));
+        };
+
+        const findMock = function (depId) {
+            const key = getMockKey(depId);
+            return {found: testMode === true && mockRegistry.has(key), value: mockRegistry.get(key)};
+        };

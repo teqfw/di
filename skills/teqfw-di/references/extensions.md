@@ -24,6 +24,8 @@ These mechanisms are related but not interchangeable.
 
 Preprocess hooks transform parsed dependency identities before resolution.
 
+They apply to the root request and every dependency declaration discovered transitively in the requested graph, exactly once per occurrence.
+
 Signature:
 
 ```js

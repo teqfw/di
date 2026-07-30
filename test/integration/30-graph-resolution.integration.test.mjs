@@ -28,4 +28,17 @@ describe('Integration 30: graph resolution', () => {
 
         await assert.rejects(() => container.get('Fx_CycleA$$'), /Cyclic dependency detected/);
     });
+
+    it('injects a canonical mock for a transitive dependency', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        container.enableTestMode();
+        const mock = {value: 'mocked-leaf'};
+        container.register('Fx_Leaf', mock);
+
+        const value = await container.get('Fx_GraphRoot$$');
+
+        assert.strictEqual(value.child.leaf, mock);
+        assert.equal(Object.isFrozen(mock), true);
+    });
 });
