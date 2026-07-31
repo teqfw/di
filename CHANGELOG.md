@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.8.0 - 2026-07-31 - Registry and Agent Skill publication
 
 * Added an architecture-level catalog for temporary public compatibility commitments, including the review date and removal condition for the deprecated Namespace Registry import.
 
@@ -14,6 +14,7 @@
 
 * Replaced the former CDC terminology in source comments, internal variable names, diagnostics, parser errors, and tests with `Dependency Specifier`, without changing identifier syntax or public method behavior.
 * Retained `DepId` and its `origin` field as compatibility-level implementation names.
+* Updated package version metadata to `2.8.0`.
 
 ## 2.7.0 - 2026-07-10 - As-is injection fix and coverage expansion
 
