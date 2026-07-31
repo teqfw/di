@@ -80,7 +80,8 @@ Mount it into the host project:
 
 ```sh
 mkdir -p .agents/skills
-ln -s node_modules/@teqfw/di/skills/teqfw-di .agents/skills/teqfw-di
+cd .agents/skills
+ln -s ../../node_modules/@teqfw/di/skills/teqfw-di
 ```
 
 Project instructions and application architecture remain authoritative. The package skill supplies product knowledge; the host supplies intent and policy.
