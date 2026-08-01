@@ -31,6 +31,8 @@ That enables:
 
 The package uses native ESM, dynamic `import()`, JSDoc, and standard JavaScript runtime features. No compilation layer is required.
 
+---
+
 <details>
 
 <summary><strong>Quick Start</strong></summary>
@@ -65,6 +67,8 @@ const service = await container.get("App_User_Service$");
 ```
 
 </details>
+
+---
 
 ## Agent-ready package
 
