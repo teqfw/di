@@ -1,4 +1,0 @@
-interface:
-  display_name: "Project Conventions"
-  short_description: "Apply repository-wide working conventions"
-  default_prompt: "Use $project-conventions to follow this project’s working rules."
