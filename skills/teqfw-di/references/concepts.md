@@ -40,4 +40,4 @@ Cycles in the dependency graph managed by the container are forbidden and fail l
 
 ## Runtime Package Graph
 
-PackageRegistry and NamespaceRegistry are Node.js-only composition-stage helpers. They return immutable static metadata records and namespace roots for the application root and installed transitive runtime dependencies in deterministic dependency-first postorder; ascending dependency package name is the stable tie-breaker. Applications may separately interpret provider metadata, but DI does not provide a plugin registry or load modules during discovery. Agent-authored consumers import them only from `@teqfw/di/node/registry/package` and `@teqfw/di/node/registry/namespace`, never from browser runtime code.
+PackageRegistry is a Node.js-only static package-discovery helper. It may be used by a Node.js-only runtime component after Container startup when that component only reads immutable static metadata. NamespaceRegistry remains a composition-stage helper that derives namespace roots before the first Container.get(). Neither registry may be imported by browser-reachable code; PackageRegistry neither configures Container nor loads or interprets providers.

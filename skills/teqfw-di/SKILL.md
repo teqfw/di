@@ -19,7 +19,7 @@ Use this skill for consumer code that composes or depends on the installed `@teq
 1. Use only public imports: `@teqfw/di`, `@teqfw/di/node/registry/namespace`, and `@teqfw/di/node/registry/package`.
 2. Never import `@teqfw/di/src/**`. Preserve `@teqfw/di/src/Config/NamespaceRegistry.mjs` only in existing migration code; new code uses `@teqfw/di/node/registry/namespace`.
 3. Configure the container before its first `get()`; retain the canonical export-scoped `__deps__` form for new or changed modules.
-4. Keep Node.js registries in a Node.js composition root. Do not import them from browser or DI-managed runtime modules.
+4. Keep NamespaceRegistry and all container configuration in a Node.js composition root before its first get(). PackageRegistry may run in a Node.js-only runtime component solely to read static package metadata; neither registry may be imported by browser-reachable code.
 5. Read the references selected below before editing, then validate with the host project tests.
 
 ## Select References

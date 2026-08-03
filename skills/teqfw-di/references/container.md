@@ -84,6 +84,6 @@ This fail-fast behavior prevents partially linked systems from continuing execut
 
 ## Package Graph Boundary
 
-PackageRegistry and NamespaceRegistry are Node.js-only composition-stage utilities outside Container builder state. Consumers import them from `@teqfw/di/node/registry/package` and `@teqfw/di/node/registry/namespace`; browser runtime modules must not import them. They read static package metadata before namespace roots are added. The container never discovers packages or application providers while resolving dependencies.
+PackageRegistry and NamespaceRegistry are Node.js-only utilities outside Container builder state. NamespaceRegistry prepares namespace roots in the composition root before the first Container.get(). PackageRegistry may be used after Container startup by a Node.js-only runtime component that only reads static package metadata; it neither configures Container nor resolves, loads, or interprets providers. Browser-reachable runtime modules must not import either registry.
 
 The Rollup browser distribution build rejects any reachable `src/Node/` module.
