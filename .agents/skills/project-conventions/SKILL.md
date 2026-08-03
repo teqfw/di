@@ -26,6 +26,7 @@ description: Project-specific conventions. Use for every task in this repository
 
 - `flancer32/ai-memo` is the shared cross-project issue tracker and memory.
 - May create issues: source `teqfw/di`; name the project or projects expected to resolve them.
+- In GitHub issue descriptions and comments, use actual line breaks; literal `\n` is displayed as text.
 - Notes: `project/teqfw/di/`.
 
 ## Validation
