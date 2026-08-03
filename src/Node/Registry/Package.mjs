@@ -7,8 +7,8 @@
 
 /**
  * @typedef {object} TeqFw_Di_Node_Registry_Package_Dependencies
- * @property {{readFile(path: string, encoding: string): Promise<string>, realpath(path: string): Promise<string>, stat(path: string): Promise<{isDirectory(): boolean}>}} fs
- * @property {{join(...paths: string[]): string, dirname(path: string): string, relative(from: string, to: string): string, resolve(...paths: string[]): string, isAbsolute(path: string): boolean}} path
+ * @property {typeof import('node:fs/promises')} fs
+ * @property {typeof import('node:path')} path
  * @property {string} appRoot
  */
 
