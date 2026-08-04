@@ -14,8 +14,10 @@ description: Project-specific conventions. Use for every task in this repository
 
 ## Workflow
 
-- Work on `main` in both repositories unless the task specifies another branch; do not create branches.
-- Before work, fetch both repositories and ensure the current branches match their upstreams.
+- Work in the repository's `main` branch. This project rule overrides any GitHub-skill instruction to use a separate branch.
+- At the start of work, check upstream in the root and `ctx/`; keep each local `main` synchronized by fast-forwarding when safe.
+- Before changes, inspect every affected working tree.
+- Do not commit or push unless the user requests it.
 
 ## Communication
 
@@ -27,6 +29,7 @@ description: Project-specific conventions. Use for every task in this repository
 - `flancer32/ai-memo` is the shared cross-project issue tracker and memory.
 - May create issues: source `teqfw/di`; name the project or projects expected to resolve them.
 - In GitHub issue descriptions and comments, use actual line breaks; literal `\n` is displayed as text.
+- When referring to a commit in another repository, use its full GitHub URL: `https://github.com/vendor/name/commit/<sha>`.
 - Notes: `project/teqfw/di/`.
 
 ## Validation
