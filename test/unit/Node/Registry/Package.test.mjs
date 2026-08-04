@@ -8,6 +8,13 @@ function json(value) {
     return JSON.stringify(value);
 }
 
+/**
+ * Builds an in-memory fake for the `node:fs/promises` subset used by the registry.
+ *
+ * @param {Record<string, string>} files
+ * @param {Record<string, string>} [realpaths]
+ * @returns {typeof import('node:fs/promises')}
+ */
 function mockFs(files, realpaths = {}) {
     const content = new Map(Object.entries(files).map(([file, value]) => [path.resolve(file), value]));
     const dirs = new Set();
@@ -20,11 +27,11 @@ function mockFs(files, realpaths = {}) {
             cursor = parent;
         }
     }
-    return {
+    return /** @type {typeof import('node:fs/promises')} */ (/** @type {unknown} */ ({
         async readFile(file) {
             const key = path.resolve(file);
             if (!content.has(key)) throw new Error('ENOENT ' + key);
-            return content.get(key);
+            return /** @type {string} */ (content.get(key));
         },
         async stat(target) {
             const key = path.resolve(target);
@@ -38,7 +45,7 @@ function mockFs(files, realpaths = {}) {
             if (dirs.has(key) || content.has(key)) return key;
             throw new Error('ENOENT ' + key);
         },
-    };
+    }));
 }
 
 describe('TeqFw_Di_Node_Registry_Package', () => {
@@ -74,9 +81,18 @@ describe('TeqFw_Di_Node_Registry_Package', () => {
         assert.equal(Object.isFrozen(records[0]), true);
         assert.equal(Object.isFrozen(records[0].packageJson), true);
         assert.equal(Object.isFrozen(records[0].dependencies), true);
-        assert.throws(() => { records.push({}); });
-        assert.throws(() => { records[0].packageJson.name = 'changed'; });
-        assert.throws(() => { records[0].dependencies.push('/changed'); });
+        assert.throws(() => {
+            // @ts-ignore intentional mutation of frozen array
+            records.push({});
+        });
+        assert.throws(() => {
+            // @ts-ignore intentional mutation of frozen record
+            records[0].packageJson.name = 'changed';
+        });
+        assert.throws(() => {
+            // @ts-ignore intentional mutation of frozen array
+            records[0].dependencies.push('/changed');
+        });
     });
 
     it('uses ascending dependency package names as the stable tie-breaker', async () => {

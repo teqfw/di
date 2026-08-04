@@ -14,8 +14,9 @@
 
 /**
  * @typedef {object} TeqFw_Di_Container_GraphResolver_Dependencies
- * @property {(specifier: string) => TeqFw_Di_DepId__DTO} canonicalize
- * @property {(depId: TeqFw_Di_DepId__DTO) => {found: boolean, value: unknown}} findMock
+ * @property {(specifier: string) => TeqFw_Di_DepId__DTO} [canonicalize]
+ * @property {TeqFw_Di_Parser} parser
+ * @property {(depId: TeqFw_Di_DepId__DTO) => {found: boolean, value: unknown}} [findMock]
  * @property {TeqFw_Di_Resolver} resolver
  * @property {{log(message: string): void}|null} [logger]
  */

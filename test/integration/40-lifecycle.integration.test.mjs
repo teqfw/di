@@ -58,8 +58,16 @@ describe('Integration 40: lifecycle', () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
         container.addPreprocess((depId) => ({...depId, moduleName: depId.moduleName.replace('Singleton', 'Transient')}));
-        container.addPostprocess((value) => ({...value, steps: [...(value.steps ?? []), 'post1']}));
-        container.addPostprocess((value) => ({...value, steps: [...value.steps, 'post2']}));
+        container.addPostprocess((value) => {
+            /** @type {{steps?: string[]}} */
+            const post1 = /** @type {{steps?: string[]}} */ (value);
+            return {...post1, steps: [...(post1.steps ?? []), 'post1']};
+        });
+        container.addPostprocess((value) => {
+            /** @type {{steps: string[]}} */
+            const post2 = /** @type {{steps: string[]}} */ (value);
+            return {...post2, steps: [...post2.steps, 'post2']};
+        });
 
         const value = await container.get('Fx_Singleton$');
 

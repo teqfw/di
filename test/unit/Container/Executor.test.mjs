@@ -4,11 +4,11 @@ import {describe, it} from 'node:test';
 import TeqFw_Di_Container_Executor from '../../../src/Container/Executor.mjs';
 
 /**
- * @param {Partial<TeqFw_Di_DepId$DTO>} [patch]
- * @returns {TeqFw_Di_DepId$DTO}
+ * @param {Partial<TeqFw_Di_DepId__DTO>} [patch]
+ * @returns {TeqFw_Di_DepId__DTO}
  */
 function createDepId(patch = {}) {
-    return /** @type {TeqFw_Di_DepId$DTO} */ ({
+    return /** @type {TeqFw_Di_DepId__DTO} */ ({
         moduleName: 'App_Module',
         platform: 'teq',
         exportName: 'default',

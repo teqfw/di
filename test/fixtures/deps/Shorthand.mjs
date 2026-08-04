@@ -9,7 +9,7 @@
 export default class TestSample_Shorthand {
   /**
    * @param {object} deps
-   * @param {TestSample_Helper_Clock} deps.clock
+   * @param {import('./Helper/Clock.mjs').default} deps.clock
    */
   constructor({clock}) {
     let startedAt = null;

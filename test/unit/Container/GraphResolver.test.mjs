@@ -4,11 +4,11 @@ import {describe, it} from 'node:test';
 import TeqFw_Di_Container_GraphResolver from '../../../src/Container/GraphResolver.mjs';
 
 /**
- * @param {Partial<TeqFw_Di_DepId$DTO>} [patch]
- * @returns {TeqFw_Di_DepId$DTO}
+ * @param {Partial<TeqFw_Di_DepId__DTO>} [patch]
+ * @returns {TeqFw_Di_DepId__DTO}
  */
 function createDepId(patch = {}) {
-    return /** @type {TeqFw_Di_DepId$DTO} */ ({
+    return /** @type {TeqFw_Di_DepId__DTO} */ ({
         moduleName: 'App_Root',
         platform: 'teq',
         exportName: null,
@@ -21,7 +21,7 @@ function createDepId(patch = {}) {
 }
 
 /**
- * @param {TeqFw_Di_DepId$DTO} depId
+ * @param {TeqFw_Di_DepId__DTO} depId
  * @returns {string}
  */
 function makeDepKey(depId) {
@@ -42,14 +42,14 @@ function makeDepKey(depId) {
  * @returns {{
  *   parser: TeqFw_Di_Parser,
  *   resolver: TeqFw_Di_Resolver,
- *   setParsed(specifier: string, depId: TeqFw_Di_DepId$DTO): void,
- *   setNamespace(depId: TeqFw_Di_DepId$DTO, namespace: object): void,
+ *   setParsed(specifier: string, depId: TeqFw_Di_DepId__DTO): void,
+ *   setNamespace(depId: TeqFw_Di_DepId__DTO, namespace: object): void,
  *   parseCalls: string[],
  *   resolveCalls: string[]
  * }}
  */
 function createDoubles() {
-    /** @type {Map<string, TeqFw_Di_DepId$DTO>} */
+    /** @type {Map<string, TeqFw_Di_DepId__DTO>} */
     const parsed = new Map();
     /** @type {Map<string, object>} */
     const namespaces = new Map();
@@ -258,6 +258,7 @@ describe('TeqFw_Di_Container_GraphResolver', () => {
             parse() {
                 throw new Error('not used');
             },
+            setLogger() {},
         });
         const rootError = new Error('resolver failed');
         /** @type {TeqFw_Di_Resolver} */

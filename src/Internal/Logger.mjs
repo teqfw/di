@@ -49,11 +49,14 @@ export default class TeqFw_Di_Internal_Logger {
  */
 export const TeqFw_Di_Internal_Logger_Noop = Object.freeze({
     /**
+     * @param {string} message
      * @returns {void}
      */
-    log() {},
+    log(message) {},
     /**
+     * @param {string} message
+     * @param {unknown} [error]
      * @returns {void}
      */
-    error() {},
+    error(message, error) {},
 });

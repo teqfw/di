@@ -76,7 +76,7 @@ describe('TeqFw_Di_Dto_Resolver_Config', () => {
             dto.nodeModulesRoot = '/changed';
         }, TypeError);
         assert.throws(() => {
-            dto.namespaces.push('x');
+            (/** @type {unknown[]} */ (dto.namespaces)).push('x');
         }, TypeError);
     });
 

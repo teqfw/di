@@ -104,7 +104,7 @@ export const PACKAGE_API: PackageApiContract = {
                 },
                 {
                     name: 'addPreprocess',
-                    signature: 'addPreprocess(fn: (depId: TeqFw_Di_DepId$DTO) => TeqFw_Di_DepId$DTO): void',
+                    signature: 'addPreprocess(fn: (depId: TeqFw_Di_DepId__DTO) => TeqFw_Di_DepId__DTO): void',
                     stage: 'builder',
                     summary: 'Adds an ordered parsed dependency identity preprocessing hook.',
                     constraints: [
@@ -214,7 +214,7 @@ export const PACKAGE_API: PackageApiContract = {
         {
             name: 'DepId DTO',
             kind: 'dto',
-            aliases: ['TeqFw_Di_DepId$DTO', 'TeqFw_Di_Dto_DepId$DTO'],
+            aliases: ['TeqFw_Di_DepId__DTO', 'TeqFw_Di_Dto_DepId__DTO'],
             summary: 'Canonical structural dependency identity passed to preprocess hooks and expected from custom parsers.',
             fields: {
                 moduleName: 'Logical module identifier without platform prefix.',
@@ -328,30 +328,30 @@ export const PACKAGE_API: PackageApiContract = {
             alias: 'TeqFw_Di_DepId',
             source: './src/Dto/DepId.mjs',
             exposure: 'internal',
-            reason: 'Factory class behind the DepId DTO module. Not needed for the supported package runtime API.',
+            reason: 'Bare alias of the default DepId DTO export; the structural DTO type is canonical.',
             sameAs: ['TeqFw_Di_Dto_DepId'],
         },
         {
-            alias: 'TeqFw_Di_DepId$DTO',
+            alias: 'TeqFw_Di_DepId__DTO',
             source: './src/Dto/DepId.mjs#DTO',
             exposure: 'public-structural',
             reason: 'Public structural protocol used by preprocess hooks and parser replacement.',
             canonicalUse: 'Primary type alias for canonical dependency identity.',
-            sameAs: ['TeqFw_Di_Dto_DepId$DTO'],
+            sameAs: ['TeqFw_Di_Dto_DepId__DTO'],
         },
         {
             alias: 'TeqFw_Di_Dto_DepId',
             source: './src/Dto/DepId.mjs',
             exposure: 'internal',
-            reason: 'Legacy-namespaced alias of the DepId factory class; not part of the supported runtime import surface.',
+            reason: 'Namespace-mapped alias of the default DepId DTO export; not part of the supported runtime import surface.',
             sameAs: ['TeqFw_Di_DepId'],
         },
         {
-            alias: 'TeqFw_Di_Dto_DepId$DTO',
+            alias: 'TeqFw_Di_Dto_DepId__DTO',
             source: './src/Dto/DepId.mjs#DTO',
             exposure: 'public-structural',
-            reason: 'Synonym of TeqFw_Di_DepId$DTO kept in the type map.',
-            sameAs: ['TeqFw_Di_DepId$DTO'],
+            reason: 'Synonym of TeqFw_Di_DepId__DTO kept in the type map.',
+            sameAs: ['TeqFw_Di_DepId__DTO'],
         },
         {
             alias: 'TeqFw_Di_Dto_Resolver_Config',
@@ -360,7 +360,7 @@ export const PACKAGE_API: PackageApiContract = {
             reason: 'Internal DTO factory used inside Container when bootstrapping Resolver.',
         },
         {
-            alias: 'TeqFw_Di_Dto_Resolver_Config$DTO',
+            alias: 'TeqFw_Di_Dto_Resolver_Config__DTO',
             source: './src/Dto/Resolver/Config.mjs#DTO',
             exposure: 'internal',
             reason: 'Internal resolver configuration DTO. External code configures the container through addNamespaceRoot() instead.',
@@ -372,18 +372,10 @@ export const PACKAGE_API: PackageApiContract = {
             reason: 'Internal DTO factory for resolver namespace rules.',
         },
         {
-            alias: 'TeqFw_Di_Dto_Resolver_Config_Namespace$DTO',
+            alias: 'TeqFw_Di_Dto_Resolver_Config_Namespace__DTO',
             source: './src/Dto/Resolver/Config/Namespace.mjs#DTO',
             exposure: 'internal',
             reason: 'Internal resolver namespace DTO alias retained for type-map completeness.',
-            sameAs: ['TeqFw_Di_Dto_Resolver_Config_Namespace$DTO$'],
-        },
-        {
-            alias: 'TeqFw_Di_Dto_Resolver_Config_Namespace$DTO$',
-            source: './src/Dto/Resolver/Config/Namespace.mjs#DTO',
-            exposure: 'internal',
-            reason: 'Duplicate DTO alias retained for compatibility inside implementation typings.',
-            sameAs: ['TeqFw_Di_Dto_Resolver_Config_Namespace$DTO'],
         },
         {
             alias: 'TeqFw_Di_Enum_Composition',

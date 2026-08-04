@@ -13,8 +13,10 @@ function toJson(value) {
 }
 
 /**
+ * Builds an in-memory fake for the `node:fs/promises` subset used by the registry.
+ *
  * @param {{files: Record<string, string>, extraDirs?: string[]}} input
- * @returns {{readFile(path: string): Promise<string>, stat(path: string): Promise<{isDirectory(): boolean}>, realpath(path: string): Promise<string>}}
+ * @returns {typeof import('node:fs/promises')}
  */
 function createMockFs(input) {
     const files = new Map(Object.entries(input.files).map(([name, content]) => [path.resolve(name), content]));
@@ -41,11 +43,11 @@ function createMockFs(input) {
         return error;
     };
 
-    return {
+    return /** @type {typeof import('node:fs/promises')} */ (/** @type {unknown} */ ({
         async readFile(fileAbs) {
             const key = path.resolve(fileAbs);
             if (!files.has(key)) throw createNotFound(key);
-            return files.get(key);
+            return /** @type {string} */ (files.get(key));
         },
         async stat(absPath) {
             const key = path.resolve(absPath);
@@ -58,7 +60,7 @@ function createMockFs(input) {
             if (dirs.has(key) || files.has(key)) return key;
             throw createNotFound(key);
         },
-    };
+    }));
 }
 
 describe('TeqFw_Di_Node_Registry_Namespace', () => {

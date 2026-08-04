@@ -11,7 +11,7 @@
 export default class TestSample_Canonical {
   /**
    * @param {object} deps
-   * @param {TestSample_Helper_Clock} deps.clock
+   * @param {import('./Helper/Clock.mjs').default} deps.clock
    */
   constructor({clock}) {
     let startedAt = null;
@@ -33,8 +33,8 @@ export default class TestSample_Canonical {
 export class Factory {
   /**
    * @param {object} deps
-   * @param {TestSample_Helper_Logger} deps.logger
-   * @param {TestSample_Helper_Clock} deps.clock
+   * @param {import('./Helper/Logger.mjs').default} deps.logger
+   * @param {import('./Helper/Clock.mjs').default} deps.clock
    */
   constructor({logger, clock}) {
     this.create = function (name = 'canonical') {

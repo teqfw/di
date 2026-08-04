@@ -81,16 +81,21 @@ export const fileAbs = fileURLToPath(import.meta.url);
         assert.equal(publicNamespaceRegistry.default, TeqFw_Di_Node_Registry_Namespace);
         const legacyNamespaceRegistry = await import("@teqfw/di/src/Config/NamespaceRegistry.mjs");
         assert.equal(legacyNamespaceRegistry.default, publicNamespaceRegistry.default);
+        // These subpaths must NOT be exported by the package; the dynamic specifiers
+        // are kept non-literal because only the runtime resolution is being asserted.
+        const namespaceSubpath = "@teqfw/di/src/Node/Registry/Namespace.mjs";
+        const packageSubpath = "@teqfw/di/src/Node/Registry/Package.mjs";
+        const containerSubpath = "@teqfw/di/src/Container.mjs";
         await assert.rejects(
-            () => import("@teqfw/di/src/Node/Registry/Namespace.mjs"),
+            () => import(namespaceSubpath),
             /Package subpath '.\/src\/Node\/Registry\/Namespace\.mjs' is not defined/,
         );
         await assert.rejects(
-            () => import("@teqfw/di/src/Node/Registry/Package.mjs"),
+            () => import(packageSubpath),
             /Package subpath '.\/src\/Node\/Registry\/Package\.mjs' is not defined/,
         );
         await assert.rejects(
-            () => import("@teqfw/di/src/Container.mjs"),
+            () => import(containerSubpath),
             /Package subpath '.\/src\/Container\.mjs' is not defined/,
         );
         const registryBuilder = new TeqFw_Di_Node_Registry_Namespace({fs, path, appRoot});

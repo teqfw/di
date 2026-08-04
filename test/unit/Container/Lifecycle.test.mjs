@@ -6,11 +6,11 @@ import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
 
 /**
- * @param {Partial<TeqFw_Di_DepId$DTO>} [patch]
- * @returns {TeqFw_Di_DepId$DTO}
+ * @param {Partial<TeqFw_Di_DepId__DTO>} [patch]
+ * @returns {TeqFw_Di_DepId__DTO}
  */
 function createDepId(patch = {}) {
-    return /** @type {TeqFw_Di_DepId$DTO} */ ({
+    return /** @type {TeqFw_Di_DepId__DTO} */ ({
         moduleName: 'App_Module',
         platform: 'teq',
         exportName: 'default',

@@ -41,7 +41,7 @@ describe('TeqFw_Di_Internal_PromiseSafe', () => {
                 return obj[prop];
             },
         });
-        const safe = makePromiseSafe(proxy);
+        const safe = /** @type {{value: number, then: undefined}} */ (makePromiseSafe(proxy));
         assert.notStrictEqual(safe, proxy);
         assert.strictEqual(safe.value, 42);
         assert.strictEqual(safe.then, undefined);
@@ -75,7 +75,7 @@ describe('TeqFw_Di_Internal_PromiseSafe', () => {
                 return obj[prop];
             },
         });
-        const safe = makePromiseSafe(proxy);
+        const safe = /** @type {{a: number, b: number, then: undefined}} */ (makePromiseSafe(proxy));
         assert.strictEqual(safe.a, 1);
         assert.strictEqual(safe.b, 2);
         assert.strictEqual(safe.then, undefined);

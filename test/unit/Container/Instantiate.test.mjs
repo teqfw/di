@@ -5,11 +5,11 @@ import TeqFw_Di_Container_Instantiate from '../../../src/Container/Instantiate.m
 import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
 
 /**
- * @param {Partial<TeqFw_Di_DepId$DTO>} [patch]
- * @returns {TeqFw_Di_DepId$DTO}
+ * @param {Partial<TeqFw_Di_DepId__DTO>} [patch]
+ * @returns {TeqFw_Di_DepId__DTO}
  */
 function createDepId(patch = {}) {
-    return /** @type {TeqFw_Di_DepId$DTO} */ ({
+    return /** @type {TeqFw_Di_DepId__DTO} */ ({
         moduleName: 'Ns_App_Module',
         platform: 'teq',
         exportName: null,
@@ -169,7 +169,7 @@ describe('TeqFw_Di_Container_Instantiate', () => {
     it('invalid composition state throws', () => {
         const depId = createDepId({
             exportName: 'named',
-            composition: /** @type {TeqFw_Di_DepId$DTO['composition']} */ ('unsupported'),
+            composition: /** @type {TeqFw_Di_DepId__DTO['composition']} */ ('unsupported'),
         });
         assert.throws(() => instantiator.instantiate(depId, {named: 1}, {}), Error);
     });

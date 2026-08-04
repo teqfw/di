@@ -25,7 +25,7 @@ export default class TestSample_NamedOnly {
 export class Factory {
   /**
    * @param {object} deps
-   * @param {TestSample_Helper_Clock} deps.clock
+   * @param {import('./Helper/Clock.mjs').default} deps.clock
    */
   constructor({clock}) {
     this.startAt = function () {

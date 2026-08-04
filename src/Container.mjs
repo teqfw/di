@@ -115,7 +115,7 @@ export default class TeqFw_Di_Container {
             const resolverConfig = configFactory.create({namespaces: namespaceRoots});
             if (typeof parser.setLogger === 'function') parser.setLogger(logger);
             resolver = new TeqFw_Di_Resolver({config: resolverConfig, logger});
-            graphResolver = new TeqFw_Di_Container_GraphResolver({canonicalize, findMock, resolver, logger});
+            graphResolver = new TeqFw_Di_Container_GraphResolver({canonicalize, parser, findMock, resolver, logger});
             lifecycle = new TeqFw_Di_Container_Lifecycle(logger);
         };
 
@@ -246,12 +246,3 @@ export default class TeqFw_Di_Container {
         };
     }
 }
-
-        const canonicalize = function (specifier) {
-            return applyPreprocess(parser.parse(specifier));
-        };
-
-        const findMock = function (depId) {
-            const key = getMockKey(depId);
-            return {found: testMode === true && mockRegistry.has(key), value: mockRegistry.get(key)};
-        };

@@ -20,7 +20,7 @@ const factory = new TeqFw_Di_Dto_DepId_Factory();
  * Creates a minimal pipeline context with required stubs.
  *
  * @param {object} [overrides]
- * @returns {TeqFw_Di_Container_Pipeline_Context}
+ * @returns {Parameters<typeof executeContainerPipeline>[0]}
  */
 function makeContext(overrides = {}) {
     /** @type {TeqFw_Di_Dto_DepId__DTO} */
@@ -38,7 +38,7 @@ function makeContext(overrides = {}) {
     return {
         canonicalize() { return rootDepId; },
         resolver: {
-            resolve() { return Promise.resolve({}); },
+            resolve() { return Promise.resolve(/** @type {object} */ ({})); },
         },
         graphResolver: {
             resolve() {
@@ -60,7 +60,6 @@ function makeContext(overrides = {}) {
         testMode: false,
         mockRegistry: new Map(),
         freeze(value) { return value; },
-        applyPreprocess(depId) { return depId; },
         applyPostprocess(value) { return value; },
         ...overrides,
     };

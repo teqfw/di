@@ -5,8 +5,20 @@
  */
 export default class TestSample_Helper_Logger {
   constructor() {
-    this.info = function () {};
-    this.log = function () {};
-    this.error = function () {};
+    /**
+     * @param {string} message
+     * @returns {void}
+     */
+    this.info = function (message) {};
+    /**
+     * @param {string} message
+     * @returns {void}
+     */
+    this.log = function (message) {};
+    /**
+     * @param {string} message
+     * @returns {void}
+     */
+    this.error = function (message) {};
   }
 }
