@@ -129,7 +129,16 @@ This package follows classical JavaScript module conventions and is a foundation
 
 The `teqfw-esm-validator` skill and CLI MUST NOT be used for this project because their application-module profiles are not applicable to this package.
 
-Source changes MUST be verified with the project-provided tests and applicable classical JavaScript checks, including `node --check`, local lint commands, and local type checks when available.
+After modifying JavaScript source, JSDoc annotations, `.d.ts` declarations, DI contracts, or package metadata involved in namespace discovery, the agent MUST run the established checks from the repository root:
+
+```bash
+npm run typecheck
+npm test
+```
+
+`npm run typecheck` (a `tsc -p jsconfig.json` run) is the reproducible, agent-independent JSDoc and type validation for JavaScript source, tests, and declaration files; it produces no compiled output and returns a non-zero exit code on type errors. LSP provides immediate development feedback but does not validate dynamic identifier substitution or actual container wiring. `npm test` remains authoritative for runtime DI behaviour.
+
+Source changes MUST be verified with the project-provided tests and applicable classical JavaScript checks, including `node --check` and local type checks.
 
 ## Type Declaration Discipline
 

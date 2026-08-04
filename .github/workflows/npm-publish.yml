@@ -23,6 +23,9 @@ jobs:
       # Install dependencies using package-lock.json
       - run: npm ci
 
+      # Run the reproducible type check
+      - run: npm run typecheck
+
       # Run the complete test suite
       - run: npm test
 

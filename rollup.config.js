@@ -1,5 +1,14 @@
-import resolve from '@rollup/plugin-node-resolve';
+import {nodeResolve} from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
+
+/**
+ * The @rollup/plugin-terser declaration is interpreted as CommonJS by the
+ * nodenext module-resolution mode, so its default export is typed as the module
+ * namespace rather than the plugin factory; bridge it to the callable form.
+ *
+ * @type {() => import('rollup').Plugin}
+ */
+const terserPlugin = /** @type {() => import('rollup').Plugin} */ (/** @type {unknown} */ (terser));
 
 /**
  * Fails the browser distribution build if its import graph reaches Node.js-only composition code.
@@ -19,6 +28,11 @@ export function createBrowserBundleBoundaryGuard() {
 
     return {
         name: 'browser-bundle-boundary',
+        /**
+         * @this {import('rollup').PluginContext}
+         * @param {{id: string}} moduleInfo
+         * @returns {void}
+         */
         moduleParsed(moduleInfo) {
             if (isNodeOnlyModule(moduleInfo.id)) {
                 this.error('Browser bundle must not include Node.js-only composition module: ' + moduleInfo.id + '.');
@@ -42,7 +56,7 @@ export default {
     ],
     plugins: [
         createBrowserBundleBoundaryGuard(),
-        resolve(),
-        terser()
+        nodeResolve(),
+        terserPlugin()
     ]
 };
