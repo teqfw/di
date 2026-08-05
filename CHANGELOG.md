@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.9.0 - 2026-08-05 - Strict type model and LSP-aligned developer tooling
+
+* Unified the JSDoc type model on canonical `TeqFw_Di_Dto_*` aliases, removed the legacy `$`-suffixed aliases, and aligned `types.d.ts` with the actual filesystem layout and structural class types.
+* Enabled strict TypeScript checking via `jsconfig.json`, added the reproducible `npm run typecheck` script, and wired it into the npm publication workflow.
+* Added the `npm run lint:md` script and the markdownlint-cli2-based Markdown validation.
+* Added the version-matched `references/types.md` skill reference and aligned the published agent skill guidance with the unified type model and the relaxed Node.js package-graph boundary.
+* Refreshed the README promotion with package badges, an agent-driven development positioning, and clarified Node.js quick-start guidance.
+* Restored `jsconfig.json` to the published package metadata.
+* Updated package version metadata to `2.9.0`.
+
 ## 2.8.0 - 2026-07-31 - Registry and Agent Skill publication
 
 * Added an architecture-level catalog for temporary public compatibility commitments, including the review date and removal condition for the deprecated Namespace Registry import.
