@@ -70,12 +70,14 @@
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "find test/unit -name '*.test.mjs' -print0 | xargs -0 node --test",
     "test:integration": "find test/integration -name '*.test.mjs' -print0 | xargs -0 node --test",
-    "typecheck": "tsc -p jsconfig.json"
+    "typecheck": "tsc -p jsconfig.json",
+    "lint:md": "markdownlint-cli2 \"skills/**/*.md\" \"*.md\""
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^1.0.0",
     "@types/node": "^20.19.43",
+    "markdownlint-cli2": "^0.23.2",
     "rollup": "^4.59.0",
     "typescript": "^5.9.3",
     "typescript-language-server": "^5.3.0"

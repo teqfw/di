@@ -45,7 +45,6 @@ Typical uses:
 - policy-driven identifier normalization;
 - project-specific prefix adaptation.
 
-
 ## Postprocess Hooks
 
 Postprocess hooks transform resolved values after instantiation and before wrapper exports.
