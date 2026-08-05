@@ -1,12 +1,12 @@
 # @teqfw/di
 
-**JavaScript applications do not need a compiler to gain late binding, explicit contracts, controlled composition, and agent-readable architecture.**
+> **Human-governed. Agent-built. Agent-ready.**
 
-`@teqfw/di` brings these capabilities to native ESM without TypeScript, decorators, reflection, generated code, or transpilation. Business modules depend on stable logical tokens instead of concrete file paths; the host application decides which implementation to load, how to create it, how long to keep it, and which cross-cutting policies to apply.
-
-This is the runtime-linking foundation of Tequila Framework and a practical choice for long-lived applications maintained by developers together with coding agents.
+`@teqfw/di` links native ESM modules through explicit dependency tokens, letting host applications choose implementations, lifecycles, and composition policies at runtime. It is a foundational package of the Tequila Framework (TeqFW): created and evolved by coding agents under the architectural direction and final responsibility of Alex Gusev, and shipped with a version-matched Agent Skill so other agents can understand, integrate, and use it correctly.
 
 ## Why use it
+
+> **JavaScript applications do not need a compiler to gain late binding, explicit contracts, controlled composition, and agent-readable architecture.**
 
 Static imports bind a consumer to a concrete module:
 
@@ -35,7 +35,9 @@ The package uses native ESM, dynamic `import()`, JSDoc, and standard JavaScript 
 
 <details>
 
-<summary><strong>Quick Start</strong></summary>
+<summary><strong>Quick Start: Node.js host</strong></summary>
+
+This Node.js example maps `App_` module tokens to modules below `src/App`. A namespace root is host-owned location mapping, not a dependency contract.
 
 ```js
 export default function Service({ repository }) {
@@ -80,14 +82,6 @@ The package ships with three aligned interfaces:
 
 The skill explains the token model, module contracts, lifecycle, configuration, testing, environment boundaries, and approved integration patterns. An agent does not need to reconstruct the package architecture from source code alone.
 
-Mount it into the host project:
-
-```sh
-mkdir -p .agents/skills
-cd .agents/skills
-ln -s ../../node_modules/@teqfw/di/skills/teqfw-di
-```
-
 Project instructions and application architecture remain authoritative. The package skill supplies product knowledge; the host supplies intent and policy.
 
 ## Public API
@@ -124,11 +118,22 @@ The package includes `teqfw-di`. The other skills are installed or mounted separ
 
 The package provides interface-like contracts, composition interception, and shallow value hardening. It does not claim language-level interfaces, full general-purpose AOP, or deep immutability of arbitrary object graphs.
 
-## Development and Ecosystem
+## Agent-Driven Development
 
-This product is developed by AI agents under the direction of Alex Gusev, following the Agent-Driven Software Management (ADSM) methodology. It is built for the Tequila Framework (TeqFW) platform and contributes to its ecosystem.
+TeqFW is built through the same development model that it is designed to enable: one human defines the intent, architecture, constraints, and acceptance criteria; coding agents implement and maintain the products; other agents use those products in different combinations to create applications.
 
-- [Tequila Framework](https://teqfw.com/?teqfw-di)
-- [Alex Gusev's Personal Website](https://wiredgeese.com/?teqfw-di)
-- [Alex Gusev's Telegram Channel](https://t.me/alexgusev_lab_en)
-- [Agent-Driven Software Management: A Practical Guide](http://fly.wiredgeese.com/flancer/leanpub/adsm-en/?teqfw-di)
+`@teqfw/di` is a foundational package of TeqFW. The package includes a version-matched Agent Skill in `skills/teqfw-di`. The README provides a human-facing product overview; the skill provides agents with the package concepts, contracts, integration rules, examples, and boundaries.
+
+Mount the skill into a host project:
+
+```sh
+mkdir -p .agents/skills
+ln -s ../../node_modules/@teqfw/di/skills/teqfw-di \
+  .agents/skills/teqfw-di
+```
+
+Each TeqFW package is both a practical software component and a working demonstration of human-governed, agent-driven development. This work follows the Agent-Driven Software Management (ADSM) approach: human intent, architectural authority, acceptance, and responsibility remain authoritative; agents act as implementation and reasoning partners.
+
+- [Tequila Framework](https://teqfw.com/?from=github-teqfw-di)
+- [Agent-Driven Software Management: A Practical Guide](http://fly.wiredgeese.com/flancer/leanpub/adsm-en/?from=github-teqfw-di)
+- [Alex Gusev](https://github.com/flancer64)
