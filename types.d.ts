@@ -33,4 +33,7 @@ declare global {
   type TeqFw_Di_Resolver = import("./src/Container/Resolver.mjs").default;
 }
 
+declare const Container: TeqFw_Di_Container__Class;
+export default Container;
+
 export {};

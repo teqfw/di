@@ -36,6 +36,7 @@
   "types": "types.d.ts",
   "exports": {
     ".": {
+      "types": "./types.d.ts",
       "browser": {
         "import": "./dist/esm.js",
         "require": "./dist/umd.js"
