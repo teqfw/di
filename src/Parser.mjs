@@ -142,7 +142,7 @@ export default class TeqFw_Di_Parser {
          * Parses one Dependency Specifier and returns a normalized frozen dependency DTO.
          *
          * @param {string} specifier Dependency Specifier string.
-         * @returns {TeqFw_Di_DepId__DTO}
+         * @returns {TeqFw_Di_Dto_DepId}
          */
         this.parse = function (specifier) {
             if (logger) logger.log(`Parser.parse: input='${specifier}'.`);

@@ -21,6 +21,8 @@ export default class TeqFw_Di_Container_Lifecycle {
 
     /**
      * Creates lifecycle registry instance.
+     *
+     * @param {TeqFw_Di_Internal_Logger_Contract|null} logger Optional diagnostics logger.
      */
     constructor(logger = null) {
         /** @type {Map<string, unknown>} */
@@ -31,7 +33,7 @@ export default class TeqFw_Di_Container_Lifecycle {
         /**
          * Builds deterministic cache key from structural DepId fields.
          *
-         * @param {TeqFw_Di_DepId__DTO} depId
+         * @param {TeqFw_Di_Dto_DepId} depId
          * @returns {string}
          */
         const buildKey = buildDependencyKey;
@@ -39,7 +41,7 @@ export default class TeqFw_Di_Container_Lifecycle {
         /**
          * Returns value according to lifecycle policy.
          *
-         * @param {TeqFw_Di_DepId__DTO} depId
+         * @param {TeqFw_Di_Dto_DepId} depId
          * @param {() => unknown} producer
          * @returns {unknown}
          */

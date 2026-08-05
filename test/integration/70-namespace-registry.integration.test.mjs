@@ -111,6 +111,7 @@ export const fileAbs = fileURLToPath(import.meta.url);
         });
 
         const container = new TeqFw_Di_Container();
+        /** @type {{prefix: string, dirAbs: string, ext: string}[]} */
         const applied = [];
         const addNamespaceRoot = container.addNamespaceRoot;
         container.addNamespaceRoot = function (prefix, target, defaultExt) {

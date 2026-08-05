@@ -6,6 +6,7 @@
  */
 export default class TestSample_NamedOnly {
   constructor() {
+    /** @type {number|null} */
     let startedAt = null;
 
     this.start = function () {

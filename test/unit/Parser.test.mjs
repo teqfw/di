@@ -12,6 +12,10 @@ const NAMED_EXPORT = 'namedExport';
 const WRAPPER_LOG = 'log';
 const WRAPPER_PROXY = 'proxy';
 
+/**
+ * @param {TeqFw_Di_Dto_DepId} dto
+ * @param {{platform: string, moduleName: string, exportName: string|null, life: string|null, composition: string, wrappers: string[]}} expected
+ */
 function assertDepId(dto, expected) {
     assert.strictEqual(dto.platform, expected.platform);
     assert.strictEqual(dto.moduleName, expected.moduleName);

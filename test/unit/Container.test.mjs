@@ -12,8 +12,8 @@ import TeqFw_Di_Enum_Platform from '../../src/Enum/Platform.mjs';
 const depIdFactory = new TeqFw_Di_Dto_DepId_Factory();
 
 /**
- * @param {Partial<TeqFw_Di_DepId__DTO>} [patch]
- * @returns {TeqFw_Di_DepId__DTO}
+ * @param {Partial<TeqFw_Di_Dto_DepId>} [patch]
+ * @returns {TeqFw_Di_Dto_DepId}
  */
 function createDepId(patch = {}) {
     return depIdFactory.create({

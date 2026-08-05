@@ -51,7 +51,7 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
         cwd: rootDir,
         encoding: 'utf8',
     }));
-    const packedFiles = new Set(packed[0].files.map((entry) => entry.path));
+    const packedFiles = new Set(packed[0].files.map((/** @type {{path: string}} */ entry) => entry.path));
     for (const requiredPath of [
         'skills/teqfw-di/SKILL.md',
         'skills/teqfw-di/references/compatibility.md',

@@ -14,6 +14,7 @@ export default class TestSample_Canonical {
    * @param {import('./Helper/Clock.mjs').default} deps.clock
    */
   constructor({clock}) {
+    /** @type {Date|null} */
     let startedAt = null;
 
     this.start = function () {

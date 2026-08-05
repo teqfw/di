@@ -11,7 +11,7 @@
  * The key excludes `origin` and preserves field order used by cache and graph
  * lookups across runtime components.
  *
- * @param {TeqFw_Di_DepId__DTO} depId Dependency identity DTO.
+ * @param {TeqFw_Di_Dto_DepId} depId Dependency identity DTO.
  * @returns {string} Canonical structural key.
  */
 export function buildDependencyKey(depId) {

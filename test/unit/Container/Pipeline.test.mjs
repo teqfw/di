@@ -23,7 +23,7 @@ const factory = new TeqFw_Di_Dto_DepId_Factory();
  * @returns {Parameters<typeof executeContainerPipeline>[0]}
  */
 function makeContext(overrides = {}) {
-    /** @type {TeqFw_Di_Dto_DepId__DTO} */
+    /** @type {TeqFw_Di_Dto_DepId} */
     const rootDepId = factory.create({
         moduleName: 'App_Mod',
         platform: TeqFw_Di_Enum_Platform.TEQ,
@@ -73,7 +73,7 @@ describe('TeqFw_Di_Container_Pipeline', () => {
     });
 
     it('returns frozen mock when test mode is enabled and mock is registered', async () => {
-        /** @type {TeqFw_Di_Dto_DepId__DTO} */
+        /** @type {TeqFw_Di_Dto_DepId} */
         const depId = factory.create({
             moduleName: 'App_Mod',
             platform: TeqFw_Di_Enum_Platform.TEQ,
@@ -102,7 +102,7 @@ describe('TeqFw_Di_Container_Pipeline', () => {
     });
 
     it('calls preprocess on parsed depId', async () => {
-        /** @type {TeqFw_Di_Dto_DepId__DTO} */
+        /** @type {TeqFw_Di_Dto_DepId} */
         const original = factory.create({
             moduleName: 'App_Mod',
             platform: TeqFw_Di_Enum_Platform.TEQ,
@@ -110,7 +110,7 @@ describe('TeqFw_Di_Container_Pipeline', () => {
             composition: TeqFw_Di_Enum_Composition.FACTORY,
             life: TeqFw_Di_Enum_Life.SINGLETON,
         });
-        /** @type {TeqFw_Di_Dto_DepId__DTO} */
+        /** @type {TeqFw_Di_Dto_DepId} */
         const modified = factory.create({
             moduleName: 'App_Mod',
             platform: TeqFw_Di_Enum_Platform.TEQ,
@@ -140,10 +140,10 @@ describe('TeqFw_Di_Container_Pipeline', () => {
     it('calls postprocess on instantiated value with canonical depId', async () => {
         /** @type {unknown} */
         let received;
-        /** @type {TeqFw_Di_DepId__DTO|undefined} */
+        /** @type {TeqFw_Di_Dto_DepId|undefined} */
         let receivedDepId;
         const ctx = makeContext({
-            applyPostprocess(value, depId) { received = value; receivedDepId = depId; return value; },
+            applyPostprocess(/** @type {unknown} */ value, /** @type {TeqFw_Di_Dto_DepId} */ depId) { received = value; receivedDepId = depId; return value; },
         });
         await executeContainerPipeline(ctx, 'App_Mod$');
         assert.deepStrictEqual(received, {value: 42});
@@ -155,7 +155,7 @@ describe('TeqFw_Di_Container_Pipeline', () => {
         let received;
         const ctx = makeContext({
             wrapperExecutor: {
-                execute(_depId, value, _ns) {
+                execute(/** @type {TeqFw_Di_Dto_DepId} */ _depId, /** @type {unknown} */ value, /** @type {object} */ _ns) {
                     received = value;
                     return value;
                 },

@@ -15,6 +15,7 @@ This file defines only implementation-level obligations. It does not redefine ar
 The following documents are mandatory:
 
 - `ctx/docs/code/layout/structure.md`
+- `ctx/docs/code/layout/types.md`
 - `ctx/docs/code/components/container.md`
 - `ctx/docs/code/components/resolver.md`
 - `ctx/docs/code/components/parser.md`
@@ -143,6 +144,8 @@ Source changes MUST be verified with the project-provided tests and applicable c
 ## Type Declaration Discipline
 
 The file `types.d.ts` defines exported structural type aliases corresponding to implementation modules.
+
+The alias scheme MUST follow `ctx/docs/code/layout/types.md`: a bare alias is the consumer-side type, a `__Class` alias denotes the constructable that produces instances, and `__ExportName` selects a named export.
 
 When adding or renaming an exported implementation module under `src/`, agent MUST:
 

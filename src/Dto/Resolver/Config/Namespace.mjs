@@ -30,14 +30,14 @@ export class Factory {
     /**
      * Creates normalized frozen resolver namespace DTO.
      *
-     * @param {Partial<TeqFw_Di_Dto_Resolver_Config_Namespace__DTO>|Record<string, unknown>} [input] Source values.
-     * @returns {TeqFw_Di_Dto_Resolver_Config_Namespace__DTO}
+     * @param {Partial<TeqFw_Di_Dto_Resolver_Config_Namespace>|Record<string, unknown>} [input] Source values.
+     * @returns {TeqFw_Di_Dto_Resolver_Config_Namespace}
      */
     create(input) {
-        /** @type {Partial<TeqFw_Di_Dto_Resolver_Config_Namespace__DTO>|Record<string, unknown>} */
+        /** @type {Partial<TeqFw_Di_Dto_Resolver_Config_Namespace>|Record<string, unknown>} */
         const source = (input && (typeof input === 'object')) ? input : {};
 
-        /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace__DTO} */
+        /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace} */
         const dto = new DTO();
         dto.prefix = (typeof source.prefix === 'string') ? source.prefix : undefined;
         dto.target = (typeof source.target === 'string') ? source.target : undefined;

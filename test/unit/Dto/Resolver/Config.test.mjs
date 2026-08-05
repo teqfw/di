@@ -44,9 +44,13 @@ describe('TeqFw_Di_Dto_Resolver_Config', () => {
     it('invokes nested namespace factory', () => {
         let called = 0;
         const origin = NamespaceFactory.prototype.create;
+        /**
+         * @param {...unknown} args
+         * @returns {TeqFw_Di_Dto_Resolver_Config_Namespace}
+         */
         NamespaceFactory.prototype.create = function (...args) {
             called += 1;
-            return origin.apply(this, args);
+            return origin.apply(this, /** @type {Parameters<typeof origin>} */ (args));
         };
         try {
             factory.create({

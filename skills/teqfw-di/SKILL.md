@@ -31,6 +31,7 @@ Use this skill for consumer code that composes or depends on the installed `@teq
 | Configure a container, diagnose lock/failure behavior, or register mocks | [Container](references/container.md), [Package API](references/package-api.ts) |
 | Add preprocess, postprocess, or wrappers | [Extensions](references/extensions.md), [Dependency Specifiers](references/dependency-id.md) |
 | Build Node.js package-backed composition | [Usage](references/usage.md), [Concepts](references/concepts.md), [Package API](references/package-api.ts) |
+| Annotate resolved values or design substitutable tokens | [Types](references/types.md), [Package API](references/package-api.ts) |
 | Mount or discover the installed skill | [Distribution](references/distribution.md) |
 
 The container links stable Module Tokens through finalized namespace roots. Prefer one principal application value in `default export` and explicit source-attached `__deps__` declarations. This skill defines correct package use, not host application architecture or policy.

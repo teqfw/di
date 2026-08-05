@@ -12,6 +12,7 @@ export default class TestSample_Shorthand {
    * @param {import('./Helper/Clock.mjs').default} deps.clock
    */
   constructor({clock}) {
+    /** @type {Date|null} */
     let startedAt = null;
 
     this.start = function () {

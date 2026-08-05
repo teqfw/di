@@ -38,7 +38,7 @@ describe('TeqFw_Di_Internal_PromiseSafe', () => {
         const proxy = new Proxy(target, {
             get(obj, prop) {
                 if (prop === 'then') throw new Error('blocked');
-                return obj[prop];
+                return (/** @type {Record<string|symbol, unknown>} */ (obj))[prop];
             },
         });
         const safe = /** @type {{value: number, then: undefined}} */ (makePromiseSafe(proxy));
@@ -52,7 +52,7 @@ describe('TeqFw_Di_Internal_PromiseSafe', () => {
         const proxy = new Proxy(target, {
             get(obj, prop) {
                 if (prop === 'then') throw new Error('blocked');
-                return obj[prop];
+                return (/** @type {Record<string|symbol, unknown>} */ (obj))[prop];
             },
         });
         const safe1 = makePromiseSafe(proxy);
@@ -72,7 +72,7 @@ describe('TeqFw_Di_Internal_PromiseSafe', () => {
         const proxy = new Proxy(target, {
             get(obj, prop) {
                 if (prop === 'then') throw new Error('blocked');
-                return obj[prop];
+                return (/** @type {Record<string|symbol, unknown>} */ (obj))[prop];
             },
         });
         const safe = /** @type {{a: number, b: number, then: undefined}} */ (makePromiseSafe(proxy));

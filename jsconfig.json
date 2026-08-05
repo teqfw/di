@@ -6,6 +6,7 @@
     "moduleResolution": "nodenext",
     "noEmit": true,
     "skipLibCheck": true,
+    "strict": true,
     "target": "ESNext"
   },
   "include": ["src", "test", "types.d.ts"]

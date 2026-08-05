@@ -35,13 +35,13 @@ export default class TeqFw_Di_Container_Instantiate {
         /**
          * Selects the value used by composition.
          *
-         * @param {TeqFw_Di_DepId__DTO} depId
+         * @param {TeqFw_Di_Dto_DepId} depId
          * @param {object} moduleNamespace
          * @returns {Factory}
          */
         const selectExport = function (depId, moduleNamespace) {
             if (depId.exportName === null) {
-                return moduleNamespace;
+                return /** @type {Factory} */ (moduleNamespace);
             }
 
             if (!(depId.exportName in moduleNamespace)) {
@@ -50,7 +50,7 @@ export default class TeqFw_Di_Container_Instantiate {
                 );
             }
 
-            return moduleNamespace[depId.exportName];
+            return /** @type {Factory} */ (/** @type {Record<string, unknown>} */ (moduleNamespace)[depId.exportName]);
         };
 
         /**
@@ -71,7 +71,7 @@ export default class TeqFw_Di_Container_Instantiate {
         /**
          * Produces a value from a resolved module namespace and dependency map.
          *
-         * @param {TeqFw_Di_DepId__DTO} depId
+         * @param {TeqFw_Di_Dto_DepId} depId
          * @param {object} moduleNamespace
          * @param {Record<string, unknown>} resolvedDeps
          * @returns {unknown}

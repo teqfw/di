@@ -4,11 +4,11 @@ import {describe, it} from 'node:test';
 import TeqFw_Di_Container_Executor from '../../../src/Container/Executor.mjs';
 
 /**
- * @param {Partial<TeqFw_Di_DepId__DTO>} [patch]
- * @returns {TeqFw_Di_DepId__DTO}
+ * @param {Partial<TeqFw_Di_Dto_DepId>} [patch]
+ * @returns {TeqFw_Di_Dto_DepId}
  */
 function createDepId(patch = {}) {
-    return /** @type {TeqFw_Di_DepId__DTO} */ ({
+    return /** @type {TeqFw_Di_Dto_DepId} */ ({
         moduleName: 'App_Module',
         platform: 'teq',
         exportName: 'default',
@@ -25,7 +25,7 @@ describe('TeqFw_Di_Container_Executor', () => {
         const executor = new TeqFw_Di_Container_Executor();
         const depId = createDepId({wrappers: ['log']});
         const namespace = {
-            log: (value) => `${String(value)}!`,
+            log: (/** @type {unknown} */ value) => `${String(value)}!`,
         };
 
         const result = executor.execute(depId, 'ok', namespace);
@@ -37,8 +37,8 @@ describe('TeqFw_Di_Container_Executor', () => {
         const executor = new TeqFw_Di_Container_Executor();
         const depId = createDepId({wrappers: ['w1', 'w2']});
         const namespace = {
-            w1: (value) => `${String(value)}A`,
-            w2: (value) => `${String(value)}B`,
+            w1: (/** @type {unknown} */ value) => `${String(value)}A`,
+            w2: (/** @type {unknown} */ value) => `${String(value)}B`,
         };
 
         const result = executor.execute(depId, 'X', namespace);
@@ -85,7 +85,7 @@ describe('TeqFw_Di_Container_Executor', () => {
     it('does not pre-validate namespace shape and fails at point of use', () => {
         const executor = new TeqFw_Di_Container_Executor();
         const depId = createDepId({wrappers: ['w1']});
-        assert.throws(() => executor.execute(depId, 'X', null), TypeError);
-        assert.throws(() => executor.execute(depId, 'X', 'bad'), TypeError);
+        assert.throws(() => executor.execute(depId, 'X', /** @type {object} */ (/** @type {unknown} */ (null))), TypeError);
+        assert.throws(() => executor.execute(depId, 'X', /** @type {object} */ (/** @type {unknown} */ ('bad'))), TypeError);
     });
 });

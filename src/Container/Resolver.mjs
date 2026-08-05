@@ -7,9 +7,9 @@
 
 /**
  * @typedef {object} TeqFw_Di_Resolver_Dependencies
- * @property {TeqFw_Di_Dto_Resolver_Config__DTO} config Resolver configuration DTO.
+ * @property {TeqFw_Di_Dto_Resolver_Config} config Resolver configuration DTO.
  * @property {(specifier: string) => Promise<object>} [importFn] Import function override.
- * @property {{log(message: string): void, error(message: string, error?: unknown): void}|null} [logger]
+ * @property {TeqFw_Di_Internal_Logger_Contract|null} [logger]
  */
 
 /**
@@ -29,31 +29,32 @@ export default class TeqFw_Di_Resolver {
     constructor({config, importFn = (specifier) => import(specifier), logger = null}) {
         /** @type {Map<string, Promise<object>>} Cache keyed by `(platform,moduleName)`. */
         const cache = new Map();
-        /** @type {TeqFw_Di_Dto_Resolver_Config__DTO} Original config reference captured from dependencies. */
+        /** @type {TeqFw_Di_Dto_Resolver_Config} Original config reference captured from dependencies. */
         const configInput = config;
-        /** @type {{nodeModulesRoot: (string|undefined), namespaces: TeqFw_Di_Resolver_NamespaceRule[]}|undefined} */
-        let configSnapshot;
         /** @type {(specifier: string) => Promise<object>} Import function used for namespace loading. */
         const importModule = importFn;
-        /** @type {{log(message: string): void, error(message: string, error?: unknown): void}|null} */
+        /** @type {TeqFw_Di_Internal_Logger_Contract|null} */
         const log = logger;
 
         /**
          * Creates immutable-in-effect structural snapshot used for all post-start resolutions.
          *
-         * @param {TeqFw_Di_Dto_Resolver_Config__DTO} input Resolver config DTO.
+         * @param {TeqFw_Di_Dto_Resolver_Config} input Resolver config DTO.
          * @returns {{nodeModulesRoot: (string|undefined), namespaces: TeqFw_Di_Resolver_NamespaceRule[]}}
          */
         const makeConfigSnapshot = function (input) {
             return {
                 nodeModulesRoot: input.nodeModulesRoot,
                 namespaces: input.namespaces.map((one) => ({
-                    prefix: one.prefix,
-                    target: one.target,
-                    defaultExt: one.defaultExt,
+                    prefix: /** @type {string} */ (one.prefix),
+                    target: /** @type {string} */ (one.target),
+                    defaultExt: /** @type {string} */ (one.defaultExt),
                 })),
             };
         };
+
+        /** @type {{nodeModulesRoot: (string|undefined), namespaces: TeqFw_Di_Resolver_NamespaceRule[]}} */
+        const configSnapshot = makeConfigSnapshot(configInput);
 
         /**
          * Selects namespace rule with deterministic longest-prefix match.
@@ -139,15 +140,11 @@ export default class TeqFw_Di_Resolver {
         /**
          * Resolves module namespace object by depId platform and moduleName.
          *
-         * @param {TeqFw_Di_DepId__DTO} depId Validated dependency identity DTO.
+         * @param {TeqFw_Di_Dto_DepId} depId Validated dependency identity DTO.
          * @returns {Promise<object>} Promise resolved with ES module namespace object.
          */
         this.resolve = async function (depId) {
             await Promise.resolve();
-
-            if (!configSnapshot) {
-                configSnapshot = makeConfigSnapshot(configInput);
-            }
 
             const platform = depId.platform;
             const moduleName = depId.moduleName;
@@ -155,7 +152,7 @@ export default class TeqFw_Di_Resolver {
 
             if (cache.has(key)) {
                 if (log) log.log(`Resolver.cache: hit key='${key}'.`);
-                return cache.get(key);
+                return /** @type {Promise<object>} */ (cache.get(key));
             }
             if (log) log.log(`Resolver.cache: miss key='${key}'.`);
 

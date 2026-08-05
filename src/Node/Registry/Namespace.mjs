@@ -15,13 +15,6 @@ import TeqFw_Di_Node_Registry_Package from './Package.mjs';
  */
 
 /**
- * @typedef {object} TeqFw_Di_Node_Registry_Namespace_Entry
- * @property {string} prefix
- * @property {string} dirAbs
- * @property {string} ext
- */
-
-/**
  * Builds a deterministic immutable Node.js namespace registry from runtime package records.
  */
 export default class TeqFw_Di_Node_Registry_Namespace {

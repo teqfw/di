@@ -4,6 +4,10 @@ import {describe, it} from 'node:test';
 
 import PackageRegistry from '../../../../src/Node/Registry/Package.mjs';
 
+/**
+ * @param {unknown} value
+ * @returns {string}
+ */
 function json(value) {
     return JSON.stringify(value);
 }
@@ -28,18 +32,18 @@ function mockFs(files, realpaths = {}) {
         }
     }
     return /** @type {typeof import('node:fs/promises')} */ (/** @type {unknown} */ ({
-        async readFile(file) {
+        async readFile(/** @type {string} */ file) {
             const key = path.resolve(file);
             if (!content.has(key)) throw new Error('ENOENT ' + key);
             return /** @type {string} */ (content.get(key));
         },
-        async stat(target) {
+        async stat(/** @type {string} */ target) {
             const key = path.resolve(target);
             if (dirs.has(key)) return {isDirectory: () => true};
             if (content.has(key)) return {isDirectory: () => false};
             throw new Error('ENOENT ' + key);
         },
-        async realpath(target) {
+        async realpath(/** @type {string} */ target) {
             const key = path.resolve(target);
             if (realpaths[key]) return path.resolve(realpaths[key]);
             if (dirs.has(key) || content.has(key)) return key;
@@ -60,10 +64,16 @@ describe('TeqFw_Di_Node_Registry_Package', () => {
         });
         const records = await new PackageRegistry({fs, path, appRoot: '/app'}).build();
 
-        assert.equal(records.at(-1).rootAbs, '/app');
-        assert.equal(records.at(-1).rootReal, '/app');
-        assert.deepStrictEqual(records.find((item) => item.name === '@scope/a').dependencies, ['/app/node_modules/@scope/a/node_modules/nested']);
-        assert.deepStrictEqual(records.find((item) => item.name === 'app').dependencies, [
+        const last = records.at(-1);
+        assert.ok(last);
+        assert.equal(last.rootAbs, '/app');
+        assert.equal(last.rootReal, '/app');
+        const scopeA = records.find((item) => item.name === '@scope/a');
+        assert.ok(scopeA);
+        assert.deepStrictEqual(scopeA.dependencies, ['/app/node_modules/@scope/a/node_modules/nested']);
+        const app = records.find((item) => item.name === 'app');
+        assert.ok(app);
+        assert.deepStrictEqual(app.dependencies, [
             '/app/node_modules/@scope/a',
             '/app/node_modules/b',
             '/app/node_modules/z',
@@ -138,8 +148,12 @@ describe('TeqFw_Di_Node_Registry_Package', () => {
         }).build();
 
         assert.equal(records.filter((item) => item.name === 'shared').length, 1);
-        assert.deepStrictEqual(records.find((item) => item.name === 'a').dependencies, ['/app/node_modules/shared']);
-        assert.deepStrictEqual(records.find((item) => item.name === 'b').dependencies, ['/app/node_modules/shared']);
+        const a = records.find((item) => item.name === 'a');
+        assert.ok(a);
+        assert.deepStrictEqual(a.dependencies, ['/app/node_modules/shared']);
+        const b = records.find((item) => item.name === 'b');
+        assert.ok(b);
+        assert.deepStrictEqual(b.dependencies, ['/app/node_modules/shared']);
 
         for (const record of records) {
             const recordIndex = records.indexOf(record);

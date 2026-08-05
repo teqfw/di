@@ -44,18 +44,18 @@ function createMockFs(input) {
     };
 
     return /** @type {typeof import('node:fs/promises')} */ (/** @type {unknown} */ ({
-        async readFile(fileAbs) {
+        async readFile(/** @type {string} */ fileAbs) {
             const key = path.resolve(fileAbs);
             if (!files.has(key)) throw createNotFound(key);
             return /** @type {string} */ (files.get(key));
         },
-        async stat(absPath) {
+        async stat(/** @type {string} */ absPath) {
             const key = path.resolve(absPath);
             if (dirs.has(key)) return {isDirectory: () => true};
             if (files.has(key)) return {isDirectory: () => false};
             throw createNotFound(key);
         },
-        async realpath(absPath) {
+        async realpath(/** @type {string} */ absPath) {
             const key = path.resolve(absPath);
             if (dirs.has(key) || files.has(key)) return key;
             throw createNotFound(key);

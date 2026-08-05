@@ -34,10 +34,11 @@ function createConfig(overrides = {}) {
 }
 
 function createImportDouble() {
+    /** @type {string[]} */
     const calls = [];
     const moduleBySpecifier = new Map();
     const errorBySpecifier = new Map();
-    const importer = (specifier) => {
+    const importer = (/** @type {string} */ specifier) => {
         calls.push(specifier);
         if (errorBySpecifier.has(specifier)) throw errorBySpecifier.get(specifier);
         if (moduleBySpecifier.has(specifier)) return moduleBySpecifier.get(specifier);
@@ -46,16 +47,16 @@ function createImportDouble() {
     return {
         calls,
         importer,
-        setModule(specifier, namespace) {
+        setModule(/** @type {string} */ specifier, /** @type {object} */ namespace) {
             moduleBySpecifier.set(specifier, namespace);
         },
-        setError(specifier, error) {
+        setError(/** @type {string} */ specifier, /** @type {Error} */ error) {
             errorBySpecifier.set(specifier, error);
         },
     };
 }
 
-function createResolver(config, importer) {
+function createResolver(/** @type {TeqFw_Di_Dto_Resolver_Config} */ config, /** @type {(specifier: string) => Promise<object>} */ importer) {
     const resolver = new TeqFw_Di_Resolver({config, importFn: importer});
     assert.equal(typeof resolver.resolve, 'function');
     return resolver;
@@ -276,8 +277,8 @@ describe('TeqFw_Di_Resolver', () => {
             const depRepo = createDepId({moduleName: 'Ns_Group_Web_App_Repo'});
             const [a1, a2] = await Promise.all([resolverA.resolve(depService), resolverA.resolve(depRepo)]);
             const [b2, b1] = await Promise.all([resolverB.resolve(depRepo), resolverB.resolve(depService)]);
-            assert.equal(a1.v, b1.v);
-            assert.equal(a2.v, b2.v);
+            assert.equal((/** @type {{v: unknown}} */ (a1)).v, (/** @type {{v: unknown}} */ (b1)).v);
+            assert.equal((/** @type {{v: unknown}} */ (a2)).v, (/** @type {{v: unknown}} */ (b2)).v);
             assert.deepStrictEqual(ioA.calls.sort(), ['/lib/group-web/App/Repo.mjs', '/lib/group-web/App/Service.mjs']);
             assert.deepStrictEqual(ioB.calls.sort(), ['/lib/group-web/App/Repo.mjs', '/lib/group-web/App/Service.mjs']);
         });

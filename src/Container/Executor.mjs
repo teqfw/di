@@ -30,7 +30,7 @@ export default class TeqFw_Di_Container_Executor {
         /**
          * Applies wrappers in declaration order.
          *
-         * @param {TeqFw_Di_DepId__DTO} depId
+         * @param {TeqFw_Di_Dto_DepId} depId
          * @param {unknown} value
          * @param {object} moduleNamespace
          * @returns {unknown}
@@ -45,7 +45,7 @@ export default class TeqFw_Di_Container_Executor {
                     throw new Error(`Wrapper '${name}' is not found in module namespace.`);
                 }
                 /** @type {unknown} */
-                const candidate = moduleNamespace[name];
+                const candidate = /** @type {Record<string, unknown>} */ (moduleNamespace)[name];
                 if (!isWrapper(candidate)) {
                     throw new Error(`Wrapper '${name}' must be callable.`);
                 }

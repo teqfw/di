@@ -8,6 +8,7 @@
  */
 export default class TestSample_Empty {
   constructor() {
+    /** @type {number|null} */
     let startedAt = null;
 
     this.start = function () {

@@ -9,7 +9,7 @@
  * Reads dependency declaration map for the selected export of a module namespace.
  *
  * @param {object} namespace Loaded module namespace.
- * @param {TeqFw_Di_DepId__DTO} depId Parsed dependency identity.
+ * @param {TeqFw_Di_Dto_DepId} depId Parsed dependency identity.
  * @returns {Record<string, unknown>} Dependency declaration map.
  */
 export function readDepsDecl(namespace, depId) {

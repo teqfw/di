@@ -13,6 +13,7 @@ test('TeqFw_Di_Internal_Logger', async (t) => {
     async function withCapturedConsole(action) {
         const originalDebug = console.debug;
         const originalError = console.error;
+        /** @type {{debug: string[], error: unknown[]}} */
         const captured = {debug: [], error: []};
         console.debug = (message) => captured.debug.push(message);
         console.error = (message) => captured.error.push(message);

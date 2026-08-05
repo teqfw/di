@@ -30,25 +30,25 @@ const LIFE_VALUES = new Set(Object.values(TeqFw_Di_Enum_Life));
  */
 export default class DTO {
     /** @type {string} Resolved module namespace. */
-    moduleName;
+    moduleName = '';
 
     /** @type {TeqFw_Di_Enum_Platform[keyof TeqFw_Di_Enum_Platform]} Module platform. */
-    platform;
+    platform = TeqFw_Di_Enum_Platform.TEQ;
 
     /** @type {string|null} Requested export name. */
-    exportName;
+    exportName = null;
 
     /** @type {TeqFw_Di_Enum_Composition[keyof TeqFw_Di_Enum_Composition]} Composition mode. */
-    composition;
+    composition = TeqFw_Di_Enum_Composition.AS_IS;
 
     /** @type {TeqFw_Di_Enum_Life[keyof TeqFw_Di_Enum_Life] | null} Lifecycle mode. */
-    life;
+    life = null;
 
     /** @type {string[]} Wrapper pipeline names. */
-    wrappers;
+    wrappers = [];
 
     /** @type {string} Original Dependency Specifier string. */
-    origin;
+    origin = '';
 }
 
 /**
@@ -59,7 +59,7 @@ export class Factory {
      * Creates normalized frozen dependency identity DTO.
      *
      * @param {unknown} [input]
-     * @returns {TeqFw_Di_DepId__DTO}
+     * @returns {TeqFw_Di_Dto_DepId}
      */
     create(input) {
         /** @type {Record<string, unknown>} */

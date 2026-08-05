@@ -8,7 +8,7 @@ describe('browser bundle boundary guard', () => {
         const guard = createBrowserBundleBoundaryGuard();
         assert.doesNotThrow(() => {
             guard.moduleParsed.call({
-                error(message) {
+                error(/** @type {string} */ message) {
                     throw new Error(message);
                 },
             }, {id: '/project/src/Container.mjs'});
@@ -18,7 +18,7 @@ describe('browser bundle boundary guard', () => {
     it('rejects Node.js registries', () => {
         const guard = createBrowserBundleBoundaryGuard();
         const context = {
-            error(message) {
+            error(/** @type {string} */ message) {
                 throw new Error(message);
             },
         };

@@ -14,15 +14,15 @@
 
 /**
  * @typedef {object} TeqFw_Di_Container_GraphResolver_Dependencies
- * @property {(specifier: string) => TeqFw_Di_DepId__DTO} [canonicalize]
+ * @property {(specifier: string) => TeqFw_Di_Dto_DepId} [canonicalize]
  * @property {TeqFw_Di_Parser} parser
- * @property {(depId: TeqFw_Di_DepId__DTO) => {found: boolean, value: unknown}} [findMock]
+ * @property {(depId: TeqFw_Di_Dto_DepId) => {found: boolean, value: unknown}} [findMock]
  * @property {TeqFw_Di_Resolver} resolver
  * @property {{log(message: string): void}|null} [logger]
  */
 
 /**
- * @typedef {{depId: TeqFw_Di_DepId__DTO, namespace: object|null, dependencies: Map<string, string>, mock: {found: boolean, value: unknown}}} TeqFw_Di_Container_GraphResolver_Node
+ * @typedef {{depId: TeqFw_Di_Dto_DepId, namespace: object|null, dependencies: Map<string, string>, mock: {found: boolean, value: unknown}}} TeqFw_Di_Container_GraphResolver_Node
  */
 
 import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
@@ -34,18 +34,19 @@ export default class TeqFw_Di_Container_GraphResolver {
      * @param {TeqFw_Di_Container_GraphResolver_Dependencies} deps
      */
     constructor({canonicalize, parser, findMock = () => ({found: false, value: undefined}), resolver, logger = null}) {
-        canonicalize ??= parser.parse.bind(parser);
+        /** @type {(specifier: string) => TeqFw_Di_Dto_DepId} */
+        const canonicalizeFn = canonicalize ?? parser.parse.bind(parser);
         /** @type {{log(message: string): void}|null} */
         const log = logger;
 
         /**
-         * @param {TeqFw_Di_DepId__DTO} depId
+         * @param {TeqFw_Di_Dto_DepId} depId
          * @returns {string}
          */
         const makeNodeKey = buildDependencyKey;
 
         /**
-         * @param {TeqFw_Di_DepId__DTO} depId
+         * @param {TeqFw_Di_Dto_DepId} depId
          * @param {Map<string, TeqFw_Di_Container_GraphResolver_Node>} out
          * @param {Set<string>} stack
          * @param {string[]} chain
@@ -83,8 +84,8 @@ export default class TeqFw_Di_Container_GraphResolver {
                 /** @type {Record<string, unknown>} */
                 const depsMap = readDepsDecl(namespace, depId);
                 for (const [name, nextSpecifier] of Object.entries(depsMap)) {
-                    /** @type {TeqFw_Di_DepId__DTO} */
-                    const nextDepId = canonicalize(/** @type {string} */ (nextSpecifier));
+                    /** @type {TeqFw_Di_Dto_DepId} */
+                    const nextDepId = canonicalizeFn(/** @type {string} */ (nextSpecifier));
                     dependencies.set(name, makeNodeKey(nextDepId));
                     if (log) log.log(`GraphResolver.walk: edge '${key}' -> '${nextDepId.platform}::${nextDepId.moduleName}'.`);
                     await walk(nextDepId, out, stack, chain);
@@ -98,7 +99,7 @@ export default class TeqFw_Di_Container_GraphResolver {
         /**
          * Resolves full dependency graph for a root depId.
          *
-         * @param {TeqFw_Di_DepId__DTO} depId
+         * @param {TeqFw_Di_Dto_DepId} depId
          * @returns {Promise<Map<string, TeqFw_Di_Container_GraphResolver_Node>>}
          */
         this.resolve = async function (depId) {

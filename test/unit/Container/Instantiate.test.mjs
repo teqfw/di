@@ -5,11 +5,11 @@ import TeqFw_Di_Container_Instantiate from '../../../src/Container/Instantiate.m
 import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
 
 /**
- * @param {Partial<TeqFw_Di_DepId__DTO>} [patch]
- * @returns {TeqFw_Di_DepId__DTO}
+ * @param {Partial<TeqFw_Di_Dto_DepId>} [patch]
+ * @returns {TeqFw_Di_Dto_DepId}
  */
 function createDepId(patch = {}) {
-    return /** @type {TeqFw_Di_DepId__DTO} */ ({
+    return /** @type {TeqFw_Di_Dto_DepId} */ ({
         moduleName: 'Ns_App_Module',
         platform: 'teq',
         exportName: null,
@@ -52,7 +52,7 @@ describe('TeqFw_Di_Container_Instantiate', () => {
     it('factory invokes function', () => {
         const resolvedDeps = {a: 1};
         const namespace = {
-            make: (deps) => ({deps}),
+            make: (/** @type {object} */ deps) => ({deps}),
         };
         const depId = createDepId({
             exportName: 'make',
@@ -169,7 +169,7 @@ describe('TeqFw_Di_Container_Instantiate', () => {
     it('invalid composition state throws', () => {
         const depId = createDepId({
             exportName: 'named',
-            composition: /** @type {TeqFw_Di_DepId__DTO['composition']} */ ('unsupported'),
+            composition: /** @type {TeqFw_Di_Dto_DepId['composition']} */ ('unsupported'),
         });
         assert.throws(() => instantiator.instantiate(depId, {named: 1}, {}), Error);
     });
@@ -179,7 +179,7 @@ describe('TeqFw_Di_Container_Instantiate', () => {
             exportName: 'named',
             composition: TeqFw_Di_Enum_Composition.AS_IS
         });
-        assert.throws(() => instantiator.instantiate(depId, null, {}), TypeError);
-        assert.throws(() => instantiator.instantiate(depId, 'bad', {}), TypeError);
+        assert.throws(() => instantiator.instantiate(depId, /** @type {object} */ (/** @type {unknown} */ (null)), {}), TypeError);
+        assert.throws(() => instantiator.instantiate(depId, /** @type {object} */ (/** @type {unknown} */ ('bad')), {}), TypeError);
     });
 });
