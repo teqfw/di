@@ -24,11 +24,14 @@ description: Project-specific conventions. Use for every task in this repository
 - User: Russian unless requested otherwise; code, comments, docs, commits, identifiers: English.
 - Report changes, verification, and remaining risks.
 
+## GitHub
+
+- In all multiline text sent to GitHub, including issues and comments, use actual line breaks; never send literal `\n`, which GitHub displays as text.
+
 ## Shared memory
 
 - `flancer32/ai-memo` is the shared cross-project issue tracker and memory.
 - May create issues: source `teqfw/di`; name the project or projects expected to resolve them.
-- In GitHub issue descriptions and comments, use actual line breaks; literal `\n` is displayed as text.
 - When referring to a commit in another repository, use its full GitHub URL: `https://github.com/vendor/name/commit/<sha>`.
 - Notes: `project/teqfw/di/`.
 
