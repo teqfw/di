@@ -5,7 +5,7 @@
 
 > **Human-governed. Agent-built. Agent-ready.**
 
-`@teqfw/di` links native ESM modules through explicit dependency tokens, letting host applications choose implementations, lifecycles, and composition policies at runtime. It is a foundational package of the Tequila Framework (TeqFW): created and evolved by coding agents under the architectural direction and final responsibility of [Alex Gusev](https://github.com/flancer64), and shipped with a version-matched Agent Skill so other agents can understand, integrate, and use it correctly.
+`@teqfw/di` links native ESM modules through explicit dependency tokens, letting host applications choose implementations, lifecycles, and composition policies at runtime. It is a foundational package of the Tequila Framework ([TeqFW](https://teqfw.com/)): created and evolved by coding agents under the architectural direction and final responsibility of [Alex Gusev](https://github.com/flancer64), and shipped with a version-matched Agent Skill so other agents can understand, integrate, and use it correctly.
 
 ## Why use it
 
