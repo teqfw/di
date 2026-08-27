@@ -1,6 +1,6 @@
 # extensions.md
 
-Version: 20260730
+Version: 20260827
 
 ## Purpose
 
@@ -29,7 +29,7 @@ They apply to the root request and every dependency declaration discovered trans
 Signature:
 
 ```js
-(depId) => depId
+(depId, context) => depId
 ```
 
 Properties:
@@ -37,6 +37,9 @@ Properties:
 - registered with `addPreprocess()`;
 - run in declared order;
 - receive and return DepId DTO values;
+- receive immutable `context` with `depId`, `root`, `parent`, and `stack`;
+- receive `stack` in root-to-current order, with its last value equal to the `depId` passed to the hook;
+- receive `parent: null` for the root request;
 - affect identifier interpretation before module resolution.
 
 Typical uses:
@@ -58,9 +61,12 @@ Signature:
 Properties:
 
 - registered with `addPostprocess()`;
-- run for every resolved value;
+- run when the container actually produces a resolved value, not on a lifecycle-cache hit;
 - run in declared order;
+- receive the same immutable provenance fields (`depId`, `root`, `parent`, `stack`) for the final preprocessed dependency identity;
 - do not alter dependency specifier parsing or module resolution.
+
+The stack identifies a request path only. It never changes dependency identity, graph node sharing, mock lookup, or singleton cache keys. If a shared dependency is reached through several branches, preprocess runs for each edge; postprocess runs once when the shared value is first produced, using its deterministic first-discovery path.
 
 Typical uses:
 

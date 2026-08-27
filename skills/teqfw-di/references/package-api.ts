@@ -104,22 +104,24 @@ export const PACKAGE_API: PackageApiContract = {
                 },
                 {
                     name: 'addPreprocess',
-                    signature: 'addPreprocess(fn: (depId: TeqFw_Di_Dto_DepId) => TeqFw_Di_Dto_DepId): void',
+                    signature: 'addPreprocess(fn: (depId: TeqFw_Di_Dto_DepId, context: TeqFw_Di_Container_ResolutionContext) => TeqFw_Di_Dto_DepId): void',
                     stage: 'builder',
                     summary: 'Adds an ordered parsed dependency identity preprocessing hook.',
                     constraints: [
                         'Allowed only before the first get().',
                         'Each hook is invoked synchronously in registration order and must return another DepId DTO.',
+                        'Context exposes frozen depId, root, parent, and root-to-current stack provenance without changing identity or cache keys.',
                     ],
                 },
                 {
                     name: 'addPostprocess',
-                    signature: 'addPostprocess(fn: (value: unknown) => unknown): void',
+                    signature: 'addPostprocess(fn: (value: unknown, context: TeqFw_Di_Container_ResolutionContext) => unknown): void',
                     stage: 'builder',
                     summary: 'Adds an ordered value transform applied to every resolved value after instantiation.',
                     constraints: [
                         'Allowed only before the first get().',
                         'Runs synchronously in registration order after instantiation and before wrapper exports.',
+                        'Runs only when a value is produced; lifecycle cache hits return the previously postprocessed value.',
                     ],
                 },
                 {
@@ -249,6 +251,22 @@ export const PACKAGE_API: PackageApiContract = {
             ],
         },
         {
+            name: 'Resolution Context',
+            kind: 'protocol',
+            aliases: ['TeqFw_Di_Container_ResolutionContext'],
+            summary: 'Immutable request-local provenance passed to preprocess and postprocess hooks.',
+            fields: {
+                depId: 'Current dependency identity.',
+                root: 'Root dependency identity for the current request.',
+                parent: 'Immediate parent dependency identity, or null for root.',
+                stack: 'Immutable root-to-current dependency identity sequence.',
+            },
+            notes: [
+                'Context is excluded from identity comparison, graph sharing, mocks, and lifecycle caches.',
+                'Postprocess receives the first deterministic discovery path when one graph node is shared by multiple branches.',
+            ],
+        },
+        {
             name: 'Module Contract',
             kind: 'module-contract',
             summary: 'Shape expected from application modules resolved by the container.',
@@ -311,6 +329,13 @@ export const PACKAGE_API: PackageApiContract = {
             source: './src/Container.mjs',
             exposure: 'public-structural',
             reason: 'Constructor type of the public container for cross-package JSDoc references.',
+        },
+        {
+            alias: 'TeqFw_Di_Container_ResolutionContext',
+            source: './src/Container/ResolutionContext.mjs#context',
+            exposure: 'public-structural',
+            reason: 'Immutable callback context exposed by the public preprocess and postprocess registration APIs.',
+            canonicalUse: 'Hook provenance with depId, root, parent, and root-to-current stack.',
         },
         {
             alias: 'TeqFw_Di_Container_Instantiate',

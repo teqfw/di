@@ -13,6 +13,7 @@ import TeqFw_Di_Container_Instantiate from './Container/Instantiate.mjs';
 import TeqFw_Di_Container_Lifecycle from './Container/Lifecycle.mjs';
 import TeqFw_Di_Container_Executor from './Container/Executor.mjs';
 import {executeContainerPipeline} from './Container/Pipeline.mjs';
+import {createResolutionContext} from './Container/ResolutionContext.mjs';
 import TeqFw_Di_Internal_Logger, {TeqFw_Di_Internal_Logger_Noop} from './Internal/Logger.mjs';
 import {buildDependencyKey} from './Internal/DependencyKey.mjs';
 
@@ -30,9 +31,9 @@ export default class TeqFw_Di_Container {
     constructor() {
         /** @type {TeqFw_Di_Container_State} */
         let state = 'notConfigured';
-        /** @type {((depId: TeqFw_Di_Dto_DepId) => TeqFw_Di_Dto_DepId)[]} */
+        /** @type {((depId: TeqFw_Di_Dto_DepId, context: TeqFw_Di_Container_ResolutionContext) => TeqFw_Di_Dto_DepId)[]} */
         const preprocess = [];
-        /** @type {((value: unknown, context: TeqFw_Di_Container_Postprocess_Context) => unknown)[]} */
+        /** @type {((value: unknown, context: TeqFw_Di_Container_ResolutionContext) => unknown)[]} */
         const postprocess = [];
         /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace[]} */
         const namespaceRoots = [];
@@ -79,12 +80,15 @@ export default class TeqFw_Di_Container {
          * Applies registered preprocessing hooks in registration order.
          *
          * @param {TeqFw_Di_Dto_DepId} depId
+         * @param {readonly TeqFw_Di_Dto_DepId[]} ancestors
          * @returns {TeqFw_Di_Dto_DepId}
          */
-        const applyPreprocess = function (depId) {
+        const applyPreprocess = function (depId, ancestors) {
             /** @type {TeqFw_Di_Dto_DepId} */
             let current = depId;
-            for (const fn of preprocess) current = fn(current);
+            for (const fn of preprocess) {
+                current = fn(current, createResolutionContext(current, ancestors));
+            }
             return current;
         };
 
@@ -92,10 +96,11 @@ export default class TeqFw_Di_Container {
          * Parses and normalizes one Dependency Specifier through the preprocessing pipeline.
          *
          * @param {string} specifier
+         * @param {readonly TeqFw_Di_Dto_DepId[]} [ancestors]
          * @returns {TeqFw_Di_Dto_DepId}
          */
-        const canonicalize = function (specifier) {
-            return applyPreprocess(parser.parse(specifier));
+        const canonicalize = function (specifier, ancestors = []) {
+            return applyPreprocess(parser.parse(specifier), ancestors);
         };
 
         /**
@@ -113,14 +118,12 @@ export default class TeqFw_Di_Container {
          * Applies registered postprocessing hooks in registration order.
          *
          * @param {unknown} value
-         * @param {TeqFw_Di_Dto_DepId} depId
+         * @param {TeqFw_Di_Container_ResolutionContext} context
          * @returns {unknown}
          */
-        const applyPostprocess = function (value, depId) {
+        const applyPostprocess = function (value, context) {
             /** @type {unknown} */
             let current = value;
-            /** @type {TeqFw_Di_Container_Postprocess_Context} */
-            const context = Object.freeze({depId});
             for (const fn of postprocess) {
                 current = fn(current, context);
                 if (current instanceof Promise) {
@@ -163,7 +166,7 @@ export default class TeqFw_Di_Container {
         /**
          * Adds a preprocessing hook.
          *
-         * @param {(depId: TeqFw_Di_Dto_DepId) => TeqFw_Di_Dto_DepId} fn
+         * @param {(depId: TeqFw_Di_Dto_DepId, context: TeqFw_Di_Container_ResolutionContext) => TeqFw_Di_Dto_DepId} fn
          * @returns {void}
          */
         this.addPreprocess = function (fn) {
@@ -175,7 +178,7 @@ export default class TeqFw_Di_Container {
         /**
          * Adds a postprocessing hook.
          *
-         * @param {(value: unknown, context: TeqFw_Di_Container_Postprocess_Context) => unknown} fn
+         * @param {(value: unknown, context: TeqFw_Di_Container_ResolutionContext) => unknown} fn
          * @returns {void}
          */
         this.addPostprocess = function (fn) {

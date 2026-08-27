@@ -19,8 +19,8 @@ import {makePromiseSafe} from '../Internal/PromiseSafe.mjs';
  * @property {boolean} testMode
  * @property {Map<string, unknown>} mockRegistry
  * @property {(value: unknown) => unknown} freeze
- * @property {(specifier: string) => TeqFw_Di_Dto_DepId} canonicalize
- * @property {(value: unknown, depId: TeqFw_Di_Dto_DepId) => unknown} applyPostprocess
+ * @property {(specifier: string, ancestors?: readonly TeqFw_Di_Dto_DepId[]) => TeqFw_Di_Dto_DepId} canonicalize
+ * @property {(value: unknown, context: TeqFw_Di_Container_ResolutionContext) => unknown} applyPostprocess
  */
 
 /**
@@ -116,7 +116,7 @@ export async function executeContainerPipeline(ctx, specifier) {
                 logger.log(`Container.pipeline: instantiate:exit '${node.depId.platform}::${node.depId.moduleName}'.`);
                 stage = 'postprocess';
                 logger.log(`Container.pipeline: postprocess:entry '${node.depId.platform}::${node.depId.moduleName}'.`);
-                const postprocessed = applyPostprocess(instantiated, node.depId);
+                const postprocessed = applyPostprocess(instantiated, node.context);
                 logger.log(`Container.pipeline: postprocess:exit '${node.depId.platform}::${node.depId.moduleName}'.`);
                 const wrapped = wrapperExecutor.execute(node.depId, postprocessed, /** @type {object} */ (node.namespace));
                 stage = 'freeze';

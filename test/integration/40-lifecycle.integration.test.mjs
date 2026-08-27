@@ -57,13 +57,13 @@ describe('Integration 40: lifecycle', () => {
     it('applies preprocess and postprocess in registration order', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-        container.addPreprocess((depId) => ({...depId, moduleName: depId.moduleName.replace('Singleton', 'Transient')}));
-        container.addPostprocess((value) => {
+        container.addPreprocess((depId, _context) => ({...depId, moduleName: depId.moduleName.replace('Singleton', 'Transient')}));
+        container.addPostprocess((value, _context) => {
             /** @type {{steps?: string[]}} */
             const post1 = /** @type {{steps?: string[]}} */ (value);
             return {...post1, steps: [...(post1.steps ?? []), 'post1']};
         });
-        container.addPostprocess((value) => {
+        container.addPostprocess((value, _context) => {
             /** @type {{steps: string[]}} */
             const post2 = /** @type {{steps: string[]}} */ (value);
             return {...post2, steps: [...post2.steps, 'post2']};

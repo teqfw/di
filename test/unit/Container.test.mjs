@@ -69,14 +69,14 @@ describe('TeqFw_Di_Container', () => {
         const container = new TeqFw_Di_Container();
         const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
         container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
-        container.addPreprocess((depId) => createDepId({...depId, moduleName: 'TestSample_NamedOnly'}));
-        /** @type {TeqFw_Di_Container_Postprocess_Context|undefined} */
+        container.addPreprocess((depId, _context) => createDepId({...depId, moduleName: 'TestSample_NamedOnly'}));
+        /** @type {TeqFw_Di_Container_ResolutionContext|undefined} */
         let context;
         container.addPostprocess((_value, receivedContext) => {
             context = receivedContext;
             return {order: [1]};
         });
-        container.addPostprocess((value) => ({
+        container.addPostprocess((value, _context) => ({
             order: [...(/** @type {{order: number[]}} */ (value)).order, 2],
         }));
 
@@ -155,7 +155,7 @@ describe('TeqFw_Di_Container', () => {
         container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
         container.enableTestMode();
         container.register('TestSample_Empty$', {mocked: true});
-        container.addPreprocess((depId) => createDepId({
+        container.addPreprocess((depId, _context) => createDepId({
             ...depId,
             moduleName: 'TestSample_NamedOnly',
         }));

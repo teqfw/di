@@ -1,6 +1,6 @@
 # container.md
 
-Version: 20260728
+Version: 20260827
 
 ## Role
 
@@ -42,6 +42,8 @@ For each `get(specifier)` request the container applies this pipeline:
 8. `Freeze` — freeze the resolved value before returning it.
 
 The pipeline is deterministic for a fixed configuration and input Dependency Specifier. Preprocess and postprocess callbacks are synchronous and run in registration order; their return values are used immediately.
+
+Both hook kinds receive a frozen resolution context. It contains `depId`, the root `DepId`, the immediate `parent` (`null` for root), and `stack`, an immutable root-to-current sequence. Preprocess sees the identity currently entering that callback; postprocess sees the final preprocessed identity. This provenance is request-local and is never part of a graph key or lifecycle cache key. A postprocess hook runs only when a value is produced, so a cached singleton retains the adaptation from its first deterministic discovery path.
 
 ## State Model
 

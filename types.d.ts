@@ -6,7 +6,12 @@ declare global {
   type TeqFw_Di_Container_Instantiate = import("./src/Container/Instantiate.mjs").default;
   type TeqFw_Di_Container_Lifecycle = import("./src/Container/Lifecycle.mjs").default;
   type TeqFw_Di_Container_Pipeline = typeof import("./src/Container/Pipeline.mjs").executeContainerPipeline;
-  type TeqFw_Di_Container_Postprocess_Context = Readonly<{depId: TeqFw_Di_Dto_DepId}>;
+  type TeqFw_Di_Container_ResolutionContext = Readonly<{
+    depId: TeqFw_Di_Dto_DepId,
+    root: TeqFw_Di_Dto_DepId,
+    parent: TeqFw_Di_Dto_DepId | null,
+    stack: readonly TeqFw_Di_Dto_DepId[],
+  }>;
   type TeqFw_Di_Container__Class = typeof import("./src/Container.mjs").default;
   type TeqFw_Di_Dto_DepId = import("./src/Dto/DepId.mjs").default;
   type TeqFw_Di_Dto_DepId__Factory = import("./src/Dto/DepId.mjs").Factory;

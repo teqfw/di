@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import {executeContainerPipeline} from '../../../src/Container/Pipeline.mjs';
+import {createResolutionContext} from '../../../src/Container/ResolutionContext.mjs';
 import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../../../src/Dto/DepId.mjs';
 import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
@@ -43,7 +44,13 @@ function makeContext(overrides = {}) {
         graphResolver: {
             resolve() {
                 const map = new Map();
-                map.set('teq::App_Mod::default::F::S::', {depId: rootDepId, namespace: {}, dependencies: new Map(), mock: {found: false, value: undefined}});
+                map.set('teq::App_Mod::default::F::S::', {
+                    depId: rootDepId,
+                    context: createResolutionContext(rootDepId, []),
+                    namespace: {},
+                    dependencies: new Map(),
+                    mock: {found: false, value: undefined},
+                });
                 return Promise.resolve(map);
             },
         },
@@ -128,7 +135,13 @@ describe('TeqFw_Di_Container_Pipeline', () => {
             graphResolver: {
                 resolve() {
                     const map = new Map();
-                    map.set('teq::App_Mod::Factory::F::S::', {depId: modified, namespace: {}});
+                    map.set('teq::App_Mod::Factory::F::S::', {
+                        depId: modified,
+                        context: createResolutionContext(modified, []),
+                        namespace: {},
+                        dependencies: new Map(),
+                        mock: {found: false, value: undefined},
+                    });
                     return Promise.resolve(map);
                 },
             },
@@ -137,17 +150,19 @@ describe('TeqFw_Di_Container_Pipeline', () => {
         assert.ok(preprocessCalled);
     });
 
-    it('calls postprocess on instantiated value with canonical depId', async () => {
+    it('calls postprocess on instantiated value with canonical resolution context', async () => {
         /** @type {unknown} */
         let received;
-        /** @type {TeqFw_Di_Dto_DepId|undefined} */
-        let receivedDepId;
+        /** @type {TeqFw_Di_Container_ResolutionContext|undefined} */
+        let receivedContext;
         const ctx = makeContext({
-            applyPostprocess(/** @type {unknown} */ value, /** @type {TeqFw_Di_Dto_DepId} */ depId) { received = value; receivedDepId = depId; return value; },
+            applyPostprocess(/** @type {unknown} */ value, /** @type {TeqFw_Di_Container_ResolutionContext} */ context) { received = value; receivedContext = context; return value; },
         });
         await executeContainerPipeline(ctx, 'App_Mod$');
         assert.deepStrictEqual(received, {value: 42});
-        assert.equal(receivedDepId?.moduleName, 'App_Mod');
+        assert.equal(receivedContext?.depId.moduleName, 'App_Mod');
+        assert.equal(receivedContext?.parent, null);
+        assert.deepStrictEqual(receivedContext?.stack, [receivedContext?.depId]);
 
     });
     it('calls wrapper executor after postprocess', async () => {
