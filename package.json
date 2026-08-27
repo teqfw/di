@@ -1,6 +1,6 @@
 {
   "name": "@teqfw/di",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "description": "Deterministic token-based runtime linker for native JavaScript ES modules.",
   "keywords": [
     "teqfw",

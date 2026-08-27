@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.10.0 - 2026-08-27 - Dependency-resolution context
+
+* Added the immutable `TeqFw_Di_Container_ResolutionContext` to preprocess and postprocess hooks. It provides the current dependency identity, root, parent, and root-to-current stack without changing graph identity or lifecycle cache keys.
+* Added root, direct-child, nested, and shared-dependency provenance coverage for preprocess hooks.
+* Updated the published DI skill and structural type map for the two-argument hook contract.
+
 ## 2.9.0 - 2026-08-05 - Strict type model and LSP-aligned developer tooling
 
 * Unified the JSDoc type model on canonical `TeqFw_Di_Dto_*` aliases, removed the legacy `$`-suffixed aliases, and aligned `types.d.ts` with the actual filesystem layout and structural class types.
