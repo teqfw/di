@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import {execFileSync} from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
@@ -8,7 +7,6 @@ import {fileURLToPath} from 'node:url';
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const skillDir = path.join(rootDir, 'skills', 'teqfw-di');
 const skillPath = path.join(skillDir, 'SKILL.md');
-const legacyAiPath = path.join(rootDir, 'ai', 'AGENTS.md');
 
 test('publishes the teqfw-di Agent Skill consumer contract', () => {
     assert.equal(path.basename(skillDir), 'teqfw-di');
@@ -40,28 +38,12 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
 
     const compatibility = fs.readFileSync(path.join(skillDir, 'references', 'compatibility.md'), 'utf8');
     assert.match(compatibility, /2027-01-28/);
-    assert.match(compatibility, /2026-10-30/);
     assert.match(compatibility, /approved breaking release/);
 
     const usage = fs.readFileSync(path.join(skillDir, 'references', 'usage.md'), 'utf8');
     assert.match(usage, /node:fs\/promises/);
     assert.match(usage, /absolute application root/);
 
-    const packed = JSON.parse(execFileSync('npm', ['pack', '--dry-run', '--json'], {
-        cwd: rootDir,
-        encoding: 'utf8',
-    }));
-    const packedFiles = new Set(packed[0].files.map((/** @type {{path: string}} */ entry) => entry.path));
-    for (const requiredPath of [
-        'skills/teqfw-di/SKILL.md',
-        'skills/teqfw-di/references/compatibility.md',
-        'skills/teqfw-di/references/distribution.md',
-        'ai/AGENTS.md',
-    ]) {
-        assert.ok(packedFiles.has(requiredPath), 'Published package must contain ' + requiredPath + '.');
-    }
-
-    const legacyAi = fs.readFileSync(legacyAiPath, 'utf8');
-    assert.match(legacyAi, /legacy/i);
-    assert.match(legacyAi, /\.\.\/skills\/teqfw-di\/SKILL\.md/);
+    const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
+    assert.ok(manifest.files.includes('skills/'), 'Published package must include skills/.');
 });

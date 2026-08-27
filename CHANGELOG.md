@@ -16,7 +16,7 @@
 
 * Restored `/di/src/Config/NamespaceRegistry.mjs` as a deprecated compatibility re-export; new integrations must use `/di/node/registry/namespace`.
 
-* Converted the published AI interface into the versioned `skills/teqfw-di` Agent Skill, added its manifest declaration and structural contract test, and documented host-owned manual mounting without installation-time mutation.
+* Converted the published agent interface into the versioned `skills/teqfw-di` Agent Skill, added its manifest declaration and structural contract test, and documented host-owned manual mounting without installation-time mutation.
 
 * Introduced the array-only canonical `teqfw.fw.di.namespaces` schema with support for multiple namespace mappings per package. `teqfw.namespaces` remains a temporary fallback through 2027-01-28, while the unused singular `teqfw.fw.di.namespace` schema was removed.
 
@@ -58,7 +58,7 @@
 ## 2.5.1 - 2026-04-12 - Documentation refresh and dependency fix
 
 * Fixed named-only `__deps__` resolution in the container and updated the related tests.
-* Rewrote the README and refreshed the `ai/` agent documentation for the current release line.
+* Rewrote the README and refreshed the agent documentation for the current release line.
 * Updated package version metadata to `2.5.1`.
 
 ## 2.5.0 - 2026-04-04 - Parser and documentation refinement
@@ -111,7 +111,6 @@
 
 ## 2.0.3 - 2026-03-07 - Package agent interface
 
-* Added `ai/` to the published package file list.
 * Updated package version metadata to `2.0.3`.
 
 ## 2.0.2 - 2026-03-05

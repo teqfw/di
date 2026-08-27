@@ -1,11 +1,8 @@
 /.codex
-/.idea/
-/.nyc_output/
 /.vscode/
 /**/output*.md
 /**/output*.zip
+/**/tmp/
 /ctx/
 /dist/
-/jsdoc/
 /node_modules/
-/tmp/

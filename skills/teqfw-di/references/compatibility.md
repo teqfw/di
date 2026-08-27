@@ -24,12 +24,3 @@ The deprecated entry re-exports the canonical registry. It does not provide diff
 - Removal: only through a deliberate breaking release; no date-based runtime switch exists.
 
 Use the canonical array immediately. Legacy metadata is selected only when canonical metadata is absent; selected schemas are never merged.
-
-## Legacy AI Directory
-
-- Deprecated package directory: `ai/` and `ai/AGENTS.md`.
-- Canonical consumer interface: `skills/teqfw-di/SKILL.md`.
-- Review date: 2026-10-30.
-- Removal: only through an explicitly approved breaking release after review.
-
-The legacy directory is a navigation pointer, not a second installed skill interface.
