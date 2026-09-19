@@ -8,9 +8,8 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import {executeContainerPipeline} from '../../../src/Container/Pipeline.mjs';
-import {createResolutionContext} from '../../../src/Container/ResolutionContext.mjs';
+import TeqFw_Di_Container_Lifecycle from '../../../src/Container/Lifecycle.mjs';
 import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../../../src/Dto/DepId.mjs';
-import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
 import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
 
@@ -18,45 +17,45 @@ import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
 const factory = new TeqFw_Di_Dto_DepId_Factory();
 
 /**
- * Creates a minimal pipeline context with required stubs.
+ * @param {Partial<TeqFw_Di_Dto_DepId>} [patch]
+ * @returns {TeqFw_Di_Dto_DepId}
+ */
+function createDepId(patch = {}) {
+    return factory.create({
+        moduleName: 'App_Mod',
+        platform: TeqFw_Di_Enum_Platform.TEQ,
+        exportName: 'default',
+        life: TeqFw_Di_Enum_Life.SINGLETON,
+        origin: 'App_Mod$',
+        ...patch,
+    });
+}
+
+/**
+ * Creates a minimal pipeline context with controllable collaborators.
  *
  * @param {object} [overrides]
  * @returns {Parameters<typeof executeContainerPipeline>[0]}
  */
 function makeContext(overrides = {}) {
-    /** @type {TeqFw_Di_Dto_DepId} */
-    const rootDepId = factory.create({
-        moduleName: 'App_Mod',
-        platform: TeqFw_Di_Enum_Platform.TEQ,
-        exportName: 'default',
-        composition: TeqFw_Di_Enum_Composition.FACTORY,
-        life: TeqFw_Di_Enum_Life.SINGLETON,
-    });
-
+    const depId = createDepId();
     /** @type {{log(message: string): void, error(message: string, error?: unknown): void}} */
     const logger = {log() {}, error() {}};
+    /** @type {object} */
+    const namespace = {default: () => ({value: 42})};
+    const resolver = /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
+        async resolveWithDetails() {
+            return {namespace, specifier: '/App/Mod.mjs', cache: 'miss'};
+        },
+        async resolve() {
+            return namespace;
+        },
+    }));
 
     return {
-        canonicalize() { return rootDepId; },
-        resolver: {
-            resolve() { return Promise.resolve(/** @type {object} */ ({})); },
-        },
-        graphResolver: {
-            resolve() {
-                const map = new Map();
-                map.set('teq::App_Mod::default::F::S::', {
-                    depId: rootDepId,
-                    context: createResolutionContext(rootDepId, []),
-                    namespace: {},
-                    dependencies: new Map(),
-                    mock: {found: false, value: undefined},
-                });
-                return Promise.resolve(map);
-            },
-        },
-        lifecycle: {
-            apply(_depId, producer) { return producer(); },
-        },
+        canonicalize() { return {requested: depId, effective: depId}; },
+        resolver,
+        lifecycle: new TeqFw_Di_Container_Lifecycle(),
         instantiator: {
             instantiate() { return {value: 42}; },
         },
@@ -64,169 +63,131 @@ function makeContext(overrides = {}) {
             execute(_depId, value) { return value; },
         },
         logger,
-        testMode: false,
-        mockRegistry: new Map(),
         freeze(value) { return value; },
+        findMock() { return {found: false, value: undefined}; },
         applyPostprocess(value) { return value; },
         ...overrides,
     };
 }
 
 describe('TeqFw_Di_Container_Pipeline', () => {
-    it('resolves simple dependency through full pipeline', async () => {
+    it('resolves a producer through the full common output corridor', async () => {
         const ctx = makeContext();
+
         const result = await executeContainerPipeline(ctx, 'App_Mod$');
+
         assert.deepStrictEqual(result, {value: 42});
     });
 
-    it('returns frozen mock when test mode is enabled and mock is registered', async () => {
-        /** @type {TeqFw_Di_Dto_DepId} */
-        const depId = factory.create({
-            moduleName: 'App_Mod',
-            platform: TeqFw_Di_Enum_Platform.TEQ,
-            exportName: 'default',
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
-            life: TeqFw_Di_Enum_Life.SINGLETON,
-        });
-        const mockValue = {mocked: true};
-        const mockRegistry = new Map();
-        mockRegistry.set('teq::App_Mod::default::F::S::', mockValue);
+    it('applies postprocessing and hardening to a test substitution', async () => {
+        const mock = {source: 'mock'};
+        let postprocessCalls = 0;
+        let hardeningCalls = 0;
         const ctx = makeContext({
-            canonicalize() { return depId; },
-            testMode: true,
-            mockRegistry,
-        });
-        const result = await executeContainerPipeline(ctx, 'App_Mod$');
-        assert.strictEqual(result, mockValue);
-    });
-
-    it('bypasses mock when testMode is false even if registry has entry', async () => {
-        const mockRegistry = new Map();
-        mockRegistry.set('teq::App_Mod::default::F::S::', {mocked: true});
-        const ctx = makeContext({testMode: false, mockRegistry});
-        const result = await executeContainerPipeline(ctx, 'App_Mod$');
-        assert.deepStrictEqual(result, {value: 42});
-    });
-
-    it('calls preprocess on parsed depId', async () => {
-        /** @type {TeqFw_Di_Dto_DepId} */
-        const original = factory.create({
-            moduleName: 'App_Mod',
-            platform: TeqFw_Di_Enum_Platform.TEQ,
-            exportName: 'default',
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
-            life: TeqFw_Di_Enum_Life.SINGLETON,
-        });
-        /** @type {TeqFw_Di_Dto_DepId} */
-        const modified = factory.create({
-            moduleName: 'App_Mod',
-            platform: TeqFw_Di_Enum_Platform.TEQ,
-            exportName: 'Factory',
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
-            life: TeqFw_Di_Enum_Life.SINGLETON,
-        });
-        let preprocessCalled = false;
-        const ctx = makeContext({
-            canonicalize() {
-                preprocessCalled = true;
-                return modified;
+            findMock() { return {found: true, value: mock}; },
+            applyPostprocess(/** @type {unknown} */ value) {
+                postprocessCalls += 1;
+                return {.../** @type {object} */ (value), postprocessed: true};
             },
+            freeze(/** @type {unknown} */ value) {
+                hardeningCalls += 1;
+                return Object.freeze(/** @type {object} */ (value));
+            },
+        });
 
-            graphResolver: {
-                resolve() {
-                    const map = new Map();
-                    map.set('teq::App_Mod::Factory::F::S::', {
-                        depId: modified,
-                        context: createResolutionContext(modified, []),
-                        namespace: {},
-                        dependencies: new Map(),
-                        mock: {found: false, value: undefined},
-                    });
-                    return Promise.resolve(map);
+        const result = await executeContainerPipeline(ctx, 'App_Mod$');
+
+        assert.deepStrictEqual(result, {source: 'mock', postprocessed: true});
+        assert.ok(Object.isFrozen(result));
+        assert.equal(postprocessCalls, 1);
+        assert.equal(hardeningCalls, 1);
+    });
+
+    it('returns a singleton hit before resolver and output processing repeat', async () => {
+        let resolverCalls = 0;
+        let instantiateCalls = 0;
+        let postprocessCalls = 0;
+        let wrapperCalls = 0;
+        let hardeningCalls = 0;
+        const ctx = makeContext({
+            resolver: /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
+                async resolveWithDetails() {
+                    resolverCalls += 1;
+                    return {namespace: {default: () => ({})}, specifier: '/App/Mod.mjs', cache: 'miss'};
+                },
+                async resolve() { return {default: () => ({})}; },
+            })),
+            instantiator: {
+                instantiate() {
+                    instantiateCalls += 1;
+                    return {value: instantiateCalls};
                 },
             },
-        });
-        await executeContainerPipeline(ctx, 'App_Mod$');
-        assert.ok(preprocessCalled);
-    });
-
-    it('calls postprocess on instantiated value with canonical resolution context', async () => {
-        /** @type {unknown} */
-        let received;
-        /** @type {TeqFw_Di_Container_ResolutionContext|undefined} */
-        let receivedContext;
-        const ctx = makeContext({
-            applyPostprocess(/** @type {unknown} */ value, /** @type {TeqFw_Di_Container_ResolutionContext} */ context) { received = value; receivedContext = context; return value; },
-        });
-        await executeContainerPipeline(ctx, 'App_Mod$');
-        assert.deepStrictEqual(received, {value: 42});
-        assert.equal(receivedContext?.depId.moduleName, 'App_Mod');
-        assert.equal(receivedContext?.parent, null);
-        assert.deepStrictEqual(receivedContext?.stack, [receivedContext?.depId]);
-
-    });
-    it('calls wrapper executor after postprocess', async () => {
-        /** @type {unknown} */
-        let received;
-        const ctx = makeContext({
+            applyPostprocess(/** @type {unknown} */ value) {
+                postprocessCalls += 1;
+                return value;
+            },
             wrapperExecutor: {
-                execute(/** @type {TeqFw_Di_Dto_DepId} */ _depId, /** @type {unknown} */ value, /** @type {object} */ _ns) {
-                    received = value;
+                execute(/** @type {TeqFw_Di_Dto_DepId} */ _depId, /** @type {unknown} */ value) {
+                    wrapperCalls += 1;
                     return value;
                 },
             },
-        });
-        await executeContainerPipeline(ctx, 'App_Mod$');
-        assert.deepStrictEqual(received, {value: 42});
-    });
-
-    it('throws on parser failure', async () => {
-        const ctx = makeContext({
-            canonicalize() { throw new Error('parse error'); },
-        });
-        await assert.rejects(
-            () => executeContainerPipeline(ctx, 'bad'),
-            /parse error/,
-        );
-    });
-
-    it('throws on graph resolver failure', async () => {
-        const ctx = makeContext({
-            graphResolver: {
-                resolve() { return Promise.reject(new Error('resolve error')); },
+            freeze(/** @type {unknown} */ value) {
+                hardeningCalls += 1;
+                return Object.freeze(/** @type {object} */ (value));
             },
         });
-        await assert.rejects(
-            () => executeContainerPipeline(ctx, 'App_Mod$'),
-            /resolve error/,
-        );
+
+        const first = await executeContainerPipeline(ctx, 'App_Mod$');
+        const second = await executeContainerPipeline(ctx, 'App_Mod$');
+
+        assert.strictEqual(first, second);
+        assert.equal(resolverCalls, 1);
+        assert.equal(instantiateCalls, 1);
+        assert.equal(postprocessCalls, 1);
+        assert.equal(wrapperCalls, 1);
+        assert.equal(hardeningCalls, 1);
     });
 
-    it('throws when graph node is missing for resolved key', async () => {
+    it('passes requested and effective identifiers to the observation collector', async () => {
+        const requested = createDepId({moduleName: 'App_Request', origin: 'App_Request$'});
+        const effective = createDepId({moduleName: 'App_Effective', origin: 'App_Request$'});
+        /** @type {{kind: string, data: Record<string, unknown>}[]} */
+        const records = [];
         const ctx = makeContext({
-            graphResolver: {
-                resolve() {
-                    const map = new Map();
-                    // node is missing
-                    return Promise.resolve(map);
-                },
-            },
+            canonicalize() { return {requested, effective}; },
+            observer: {record(/** @type {string} */ kind, /** @type {Record<string, unknown>} */ data) { records.push({kind, data}); }},
         });
+
+        await executeContainerPipeline(ctx, 'App_Request$');
+
+        const identifier = records.find((record) => record.kind === 'identifier');
+        assert.equal((/** @type {{requested: {address: string}, effective: {address: string}}} */ (identifier?.data)).requested.address, 'App_Request');
+        assert.equal((/** @type {{requested: {address: string}, effective: {address: string}}} */ (identifier?.data)).effective.address, 'App_Effective');
+    });
+
+    it('propagates canonicalization and module-loading failures', async () => {
         await assert.rejects(
-            () => executeContainerPipeline(ctx, 'App_Mod$'),
-            /graph node is missing/,
+            () => executeContainerPipeline(makeContext({canonicalize() { throw new Error('parse error'); }}), 'bad'),
+            /parse error/
+        );
+        await assert.rejects(
+            () => executeContainerPipeline(makeContext({
+                resolver: /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
+                    async resolveWithDetails() { throw new Error('resolve error'); },
+                    async resolve() { throw new Error('resolve error'); },
+                })),
+            }), 'App_Mod$'),
+            /resolve error/
         );
     });
 
     it('throws when infrastructure is not initialized', async () => {
-        const ctx = makeContext({
-            resolver: undefined,
-            graphResolver: undefined,
-            lifecycle: undefined,
-        });
+        const ctx = makeContext({resolver: undefined, lifecycle: undefined});
         await assert.rejects(
             () => executeContainerPipeline(ctx, 'App_Mod$'),
-            /infrastructure is not initialized/,
+            /infrastructure is not initialized/
         );
     });
 });

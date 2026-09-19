@@ -5,7 +5,6 @@
  * @description Lifecycle policy cache for produced values.
  */
 
-import TeqFw_Di_Enum_Composition from '../Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../Enum/Life.mjs';
 import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
 
@@ -27,6 +26,8 @@ export default class TeqFw_Di_Container_Lifecycle {
     constructor(logger = null) {
         /** @type {Map<string, unknown>} */
         const singletonCache = new Map();
+        /** @type {Map<string, Promise<unknown>>} */
+        const pendingSingletons = new Map();
         /** @type {{log(message: string): void}|null} */
         const log = logger;
 
@@ -39,40 +40,54 @@ export default class TeqFw_Di_Container_Lifecycle {
         const buildKey = buildDependencyKey;
 
         /**
+         * Reports the current cache branch without changing cache state.
+         *
+         * @param {TeqFw_Di_Dto_DepId} depId
+         * @returns {'bypass'|'hit'|'pending'|'miss'}
+         */
+        this.lookup = function (depId) {
+            if (depId.life !== TeqFw_Di_Enum_Life.SINGLETON) return 'bypass';
+            const key = buildKey(depId);
+            if (singletonCache.has(key)) return 'hit';
+            if (pendingSingletons.has(key)) return 'pending';
+            return 'miss';
+        };
+
+        /**
          * Returns value according to lifecycle policy.
          *
          * @param {TeqFw_Di_Dto_DepId} depId
-         * @param {() => unknown} producer
-         * @returns {unknown}
+         * @param {() => unknown|Promise<unknown>} producer
+         * @returns {Promise<unknown>}
          */
-        this.apply = function (depId, producer) {
-            if (depId.composition !== TeqFw_Di_Enum_Composition.FACTORY) {
-                if (log) log.log(`Lifecycle.apply: composition='${depId.composition}' cache=skip.`);
+        this.apply = async function (depId, producer) {
+            if (depId.life !== TeqFw_Di_Enum_Life.SINGLETON) {
+                if (log) log.log(`Lifecycle.apply: life='${String(depId.life)}' cache=skip.`);
                 return producer();
             }
 
-            if (depId.life === TeqFw_Di_Enum_Life.TRANSIENT) {
-                if (log) log.log('Lifecycle.apply: transient cache=skip.');
-                return producer();
+            /** @type {string} */
+            const key = buildKey(depId);
+            if (singletonCache.has(key)) {
+                if (log) log.log(`Lifecycle.cache: hit key='${key}'.`);
+                return singletonCache.get(key);
+            }
+            if (pendingSingletons.has(key)) {
+                if (log) log.log(`Lifecycle.cache: pending key='${key}'.`);
+                return /** @type {Promise<unknown>} */ (pendingSingletons.get(key));
             }
 
-            if (depId.life === TeqFw_Di_Enum_Life.SINGLETON) {
-                /** @type {string} */
-                const key = buildKey(depId);
-                if (singletonCache.has(key)) {
-                    if (log) log.log(`Lifecycle.cache: hit key='${key}'.`);
-                    return singletonCache.get(key);
-                }
-                if (log) log.log(`Lifecycle.cache: miss key='${key}', create.`);
-                /** @type {unknown} */
-                const created = producer();
+            if (log) log.log(`Lifecycle.cache: miss key='${key}', create.`);
+            const pending = Promise.resolve().then(producer);
+            pendingSingletons.set(key, pending);
+            try {
+                const created = await pending;
                 singletonCache.set(key, created);
                 if (log) log.log(`Lifecycle.cache: stored key='${key}'.`);
                 return created;
+            } finally {
+                pendingSingletons.delete(key);
             }
-
-            if (log) log.log('Lifecycle.apply: no lifecycle marker cache=skip.');
-            return producer();
         };
     }
 }

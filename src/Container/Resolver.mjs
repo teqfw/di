@@ -27,7 +27,7 @@ export default class TeqFw_Di_Resolver {
      * @param {TeqFw_Di_Resolver_Dependencies} deps Resolver dependencies descriptor.
      */
     constructor({config, importFn = (specifier) => import(specifier), logger = null}) {
-        /** @type {Map<string, Promise<object>>} Cache keyed by `(platform,moduleName)`. */
+        /** @type {Map<string, {specifier: string, promise: Promise<object>}>} Cache keyed by `(platform,moduleName)`. */
         const cache = new Map();
         /** @type {TeqFw_Di_Dto_Resolver_Config} Original config reference captured from dependencies. */
         const configInput = config;
@@ -138,12 +138,12 @@ export default class TeqFw_Di_Resolver {
         };
 
         /**
-         * Resolves module namespace object by depId platform and moduleName.
+         * Resolves module namespace details by depId platform and moduleName.
          *
          * @param {TeqFw_Di_Dto_DepId} depId Validated dependency identity DTO.
-         * @returns {Promise<object>} Promise resolved with ES module namespace object.
+         * @returns {Promise<{namespace: object, specifier: string, cache: 'hit'|'miss'}>}
          */
-        this.resolve = async function (depId) {
+        const resolveWithDetails = async function (depId) {
             await Promise.resolve();
 
             const platform = depId.platform;
@@ -152,26 +152,46 @@ export default class TeqFw_Di_Resolver {
 
             if (cache.has(key)) {
                 if (log) log.log(`Resolver.cache: hit key='${key}'.`);
-                return /** @type {Promise<object>} */ (cache.get(key));
+                const cached = /** @type {{specifier: string, promise: Promise<object>}} */ (cache.get(key));
+                return {namespace: await cached.promise, specifier: cached.specifier, cache: 'hit'};
             }
             if (log) log.log(`Resolver.cache: miss key='${key}'.`);
 
+            const specifier = deriveSpecifier(platform, moduleName);
+
             /** @type {Promise<object>} */
             const promise = (async () => {
-                const specifier = deriveSpecifier(platform, moduleName);
                 if (log) log.log(`Resolver.import: '${specifier}'.`);
                 return importModule(specifier);
             })();
 
-            cache.set(key, promise);
+            cache.set(key, {specifier, promise});
 
             try {
-                return await promise;
+                return {namespace: await promise, specifier, cache: 'miss'};
             } catch (error) {
                 cache.delete(key);
                 if (log) log.error(`Resolver.cache: evict key='${key}' after failure.`, error);
                 throw error;
             }
         };
+
+        /**
+         * Resolves module namespace object by depId platform and moduleName.
+         *
+         * @param {TeqFw_Di_Dto_DepId} depId Validated dependency identity DTO.
+         * @returns {Promise<object>} Promise resolved with ES module namespace object.
+         */
+        this.resolve = async function (depId) {
+            return (await resolveWithDetails(depId)).namespace;
+        };
+
+        /**
+         * Resolves a namespace together with the selected Module Specifier.
+         *
+         * @param {TeqFw_Di_Dto_DepId} depId Validated dependency identity DTO.
+         * @returns {Promise<{namespace: object, specifier: string, cache: 'hit'|'miss'}>}
+         */
+        this.resolveWithDetails = resolveWithDetails;
     }
 }

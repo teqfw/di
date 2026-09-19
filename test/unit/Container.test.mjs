@@ -36,6 +36,8 @@ describe('TeqFw_Di_Container', () => {
         assert.equal(typeof container.addPostprocess, 'function');
         assert.equal(typeof container.addNamespaceRoot, 'function');
         assert.equal(typeof container.enableLogging, 'function');
+        assert.equal(typeof container.enableIntrospection, 'function');
+        assert.equal(typeof container.getIntrospection, 'function');
         assert.equal(typeof container.enableTestMode, 'function');
         assert.equal(typeof container.register, 'function');
     });
@@ -100,6 +102,7 @@ describe('TeqFw_Di_Container', () => {
         assert.throws(() => container.addPreprocess((depId) => depId), Error);
         assert.throws(() => container.addPostprocess((value) => value), Error);
         assert.throws(() => container.enableLogging(), Error);
+        assert.throws(() => container.enableIntrospection(), Error);
         assert.throws(() => container.enableTestMode(), Error);
         assert.throws(() => container.addNamespaceRoot('Ns_', '/x', '.mjs'), Error);
     });
@@ -126,7 +129,7 @@ describe('TeqFw_Di_Container', () => {
         assert.throws(() => container.register('node:path', {mock: true}), /test mode is disabled/);
     });
 
-    it('registered mock bypasses resolver, instantiation and lifecycle but keeps freeze', async () => {
+    it('registered mock replaces acquisition while preserving the output boundary', async () => {
         const container = new TeqFw_Di_Container();
         const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
         container.addNamespaceRoot('TestSample_', dataDir, '.mjs');

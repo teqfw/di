@@ -36,6 +36,25 @@ describe('TeqFw_Di_Dto_DepId', () => {
         assert.deepStrictEqual(dto.wrappers, ['w1', 'w2']);
     });
 
+    it('derives composition from lifecycle and normalizes incoherent input pairs', () => {
+        const direct = factory.create({
+            composition: TeqFw_Di_Enum_Composition.FACTORY,
+            life: null,
+        });
+        const singleton = factory.create({
+            composition: TeqFw_Di_Enum_Composition.AS_IS,
+            life: TeqFw_Di_Enum_Life.SINGLETON,
+        });
+        const transient = factory.create({
+            composition: TeqFw_Di_Enum_Composition.AS_IS,
+            life: TeqFw_Di_Enum_Life.TRANSIENT,
+        });
+
+        assert.strictEqual(direct.composition, TeqFw_Di_Enum_Composition.AS_IS);
+        assert.strictEqual(singleton.composition, TeqFw_Di_Enum_Composition.FACTORY);
+        assert.strictEqual(transient.composition, TeqFw_Di_Enum_Composition.FACTORY);
+    });
+
     it('rejects invalid literal values structurally without throwing', () => {
         const dto = factory.create({
             platform: 'bad-platform',

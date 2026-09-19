@@ -28,7 +28,7 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             origin: 'App_Mod$_log_proxy',
         });
         const key = buildDependencyKey(depId);
-        assert.strictEqual(key, 'teq::App_Mod::default::F::S::log|proxy');
+        assert.strictEqual(key, 'teq::App_Mod::default::S::log|proxy');
     });
 
     it('builds key with null exportName and null life', () => {
@@ -41,7 +41,7 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             wrappers: [],
         });
         const key = buildDependencyKey(depId);
-        assert.strictEqual(key, 'teq::App_Mod::::A::::');
+        assert.strictEqual(key, 'teq::App_Mod::::::');
     });
 
     it('builds key for node platform', () => {
@@ -53,7 +53,7 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             life: null,
         });
         const key = buildDependencyKey(depId);
-        assert.strictEqual(key, 'node::fs::::A::::');
+        assert.strictEqual(key, 'node::fs::::::');
     });
 
     it('builds key for npm platform with scoped package', () => {
@@ -65,7 +65,7 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             life: TeqFw_Di_Enum_Life.SINGLETON,
         });
         const key = buildDependencyKey(depId);
-        assert.strictEqual(key, 'npm::@vendor/package::default::F::S::');
+        assert.strictEqual(key, 'npm::@vendor/package::default::S::');
     });
 
     it('excludes origin from key', () => {
@@ -86,6 +86,47 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             origin: 'App_Mod__default$',
         });
         assert.strictEqual(buildDependencyKey(depId1), buildDependencyKey(depId2));
+    });
+
+    it('does not create an identity dimension from derived composition', () => {
+        const directA = factory.create({
+            moduleName: 'App_Mod',
+            life: null,
+            composition: TeqFw_Di_Enum_Composition.AS_IS,
+        });
+        const directF = factory.create({
+            moduleName: 'App_Mod',
+            life: null,
+            composition: TeqFw_Di_Enum_Composition.FACTORY,
+        });
+        const singletonA = factory.create({
+            moduleName: 'App_Mod',
+            life: TeqFw_Di_Enum_Life.SINGLETON,
+            composition: TeqFw_Di_Enum_Composition.AS_IS,
+        });
+        const singletonF = factory.create({
+            moduleName: 'App_Mod',
+            life: TeqFw_Di_Enum_Life.SINGLETON,
+            composition: TeqFw_Di_Enum_Composition.FACTORY,
+        });
+
+        assert.strictEqual(buildDependencyKey(directA), buildDependencyKey(directF));
+        assert.strictEqual(buildDependencyKey(singletonA), buildDependencyKey(singletonF));
+    });
+
+    it('distinguishes ordered wrapper sequences', () => {
+        const firstThenSecond = factory.create({
+            moduleName: 'App_Mod',
+            life: TeqFw_Di_Enum_Life.SINGLETON,
+            wrappers: ['first', 'second'],
+        });
+        const secondThenFirst = factory.create({
+            moduleName: 'App_Mod',
+            life: TeqFw_Di_Enum_Life.SINGLETON,
+            wrappers: ['second', 'first'],
+        });
+
+        assert.notStrictEqual(buildDependencyKey(firstThenSecond), buildDependencyKey(secondThenFirst));
     });
 
     it('distinguishes different export names from same module', () => {

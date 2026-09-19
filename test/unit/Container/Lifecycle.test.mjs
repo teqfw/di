@@ -23,87 +23,74 @@ function createDepId(patch = {}) {
 }
 
 describe('TeqFw_Di_Container_Lifecycle', () => {
-    it('singleton reuse: returns same value and calls producer once', () => {
+    it('caches one final async singleton result and calls its miss corridor once', async () => {
         const registry = new TeqFw_Di_Container_Lifecycle();
-        const depId = createDepId({
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
-            life: TeqFw_Di_Enum_Life.SINGLETON,
-        });
+        const depId = createDepId();
         let calls = 0;
-        const producer = () => ({id: ++calls});
+        const producer = async () => ({id: ++calls, adapted: true, hardened: true});
 
-        const first = registry.apply(depId, producer);
-        const second = registry.apply(depId, producer);
+        const first = await registry.apply(depId, producer);
+        const second = await registry.apply(depId, producer);
+
+        assert.equal(calls, 1);
+        assert.strictEqual(first, second);
+        assert.deepStrictEqual(first, {id: 1, adapted: true, hardened: true});
+        assert.equal(registry.lookup(depId), 'hit');
+    });
+
+    it('shares an in-flight singleton miss corridor', async () => {
+        const registry = new TeqFw_Di_Container_Lifecycle();
+        const depId = createDepId();
+        let calls = 0;
+        const producer = async () => ({id: ++calls});
+
+        const [first, second] = await Promise.all([
+            registry.apply(depId, producer),
+            registry.apply(depId, producer),
+        ]);
 
         assert.equal(calls, 1);
         assert.strictEqual(first, second);
     });
 
-    it('transient passthrough: produces new value for each call', () => {
+    it('bypasses cache for Direct and Transient lifestyles', async () => {
         const registry = new TeqFw_Di_Container_Lifecycle();
-        const depId = createDepId({
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
-            life: TeqFw_Di_Enum_Life.TRANSIENT,
-        });
-        let calls = 0;
-        const producer = () => ({id: ++calls});
-
-        const first = registry.apply(depId, producer);
-        const second = registry.apply(depId, producer);
-
-        assert.equal(calls, 2);
-        assert.notStrictEqual(first, second);
-    });
-
-    it('independent keys: different depIds have independent singleton cache entries', () => {
-        const registry = new TeqFw_Di_Container_Lifecycle();
-        const depA = createDepId({moduleName: 'App_A'});
-        const depB = createDepId({moduleName: 'App_B'});
-        let calls = 0;
-        const producer = () => ({id: ++calls});
-
-        const a1 = registry.apply(depA, producer);
-        const b1 = registry.apply(depB, producer);
-        const a2 = registry.apply(depA, producer);
-        const b2 = registry.apply(depB, producer);
-
-        assert.equal(calls, 2);
-        assert.strictEqual(a1, a2);
-        assert.strictEqual(b1, b2);
-        assert.notStrictEqual(a1, b1);
-    });
-
-    it('independent keys: default and named exports in same module do not collide', () => {
-        const registry = new TeqFw_Di_Container_Lifecycle();
-        const depDefault = createDepId({moduleName: 'App_Module', exportName: 'default'});
-        const depFactory = createDepId({moduleName: 'App_Module', exportName: 'Factory'});
-        let calls = 0;
-        const producer = () => ({id: ++calls});
-
-        const d1 = registry.apply(depDefault, producer);
-        const f1 = registry.apply(depFactory, producer);
-        const d2 = registry.apply(depDefault, producer);
-        const f2 = registry.apply(depFactory, producer);
-
-        assert.equal(calls, 2);
-        assert.strictEqual(d1, d2);
-        assert.strictEqual(f1, f2);
-        assert.notStrictEqual(d1, f1);
-    });
-
-    it('no effect on AS_IS composition: does not cache even with singleton life marker', () => {
-        const registry = new TeqFw_Di_Container_Lifecycle();
-        const depId = createDepId({
+        const direct = createDepId({
             composition: TeqFw_Di_Enum_Composition.AS_IS,
-            life: TeqFw_Di_Enum_Life.SINGLETON,
+            life: null,
         });
+        const transient = createDepId({life: TeqFw_Di_Enum_Life.TRANSIENT});
         let calls = 0;
         const producer = () => ({id: ++calls});
 
-        const first = registry.apply(depId, producer);
-        const second = registry.apply(depId, producer);
+        const directFirst = await registry.apply(direct, producer);
+        const directSecond = await registry.apply(direct, producer);
+        const transientFirst = await registry.apply(transient, producer);
+        const transientSecond = await registry.apply(transient, producer);
 
-        assert.equal(calls, 2);
-        assert.notStrictEqual(first, second);
+        assert.equal(calls, 4);
+        assert.notStrictEqual(directFirst, directSecond);
+        assert.notStrictEqual(transientFirst, transientSecond);
+        assert.equal(registry.lookup(direct), 'bypass');
+        assert.equal(registry.lookup(transient), 'bypass');
+    });
+
+    it('uses export and ordered wrapper selection as independent singleton keys', async () => {
+        const registry = new TeqFw_Di_Container_Lifecycle();
+        const defaultExport = createDepId({wrappers: ['first', 'second']});
+        const namedExport = createDepId({exportName: 'Factory', wrappers: ['first', 'second']});
+        const reversedWrappers = createDepId({wrappers: ['second', 'first']});
+        let calls = 0;
+        const producer = () => ({id: ++calls});
+
+        const a = await registry.apply(defaultExport, producer);
+        const b = await registry.apply(namedExport, producer);
+        const c = await registry.apply(reversedWrappers, producer);
+        const repeated = await registry.apply(defaultExport, producer);
+
+        assert.equal(calls, 3);
+        assert.strictEqual(a, repeated);
+        assert.notStrictEqual(a, b);
+        assert.notStrictEqual(a, c);
     });
 });

@@ -4,6 +4,12 @@ import {fileURLToPath} from 'node:url';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Container from '../../src/Container.mjs';
+import {
+    Callable,
+    DirectClass,
+    getCallableCalls,
+    getClassCalls,
+} from './fixture/DirectProducer.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -66,5 +72,32 @@ describe('Integration 37: as-is export resolution', () => {
         assert.equal(typeof namespace, 'object');
         assert.equal(typeof namespace.default, 'function');
         assert.equal(typeof namespace.__deps__, 'object');
+    });
+
+    it('does not invoke callable or class Direct exports or inspect their producer declarations', async () => {
+        const container = new TeqFw_Di_Container();
+        const directFixtureDir = path.resolve(__dirname, './fixture');
+        container.addNamespaceRoot('Fx_', directFixtureDir, '.mjs');
+
+        const callable = await container.get('Fx_DirectProducer__Callable');
+        const directClass = await container.get('Fx_DirectProducer__DirectClass');
+
+        assert.strictEqual(callable, Callable);
+        assert.strictEqual(directClass, DirectClass);
+        assert.equal(getCallableCalls(), 0);
+        assert.equal(getClassCalls(), 0);
+    });
+
+    it('keeps explicit $$$ Direct as-is before applicable wrapper adaptation', async () => {
+        const container = new TeqFw_Di_Container();
+        const directFixtureDir = path.resolve(__dirname, './fixture');
+        container.addNamespaceRoot('Fx_', directFixtureDir, '.mjs');
+
+        const value = await container.get('Fx_DirectProducer__Callable$$$_wrapIdentity');
+
+        assert.strictEqual(value.value, Callable);
+        assert.equal(value.wrapped, true);
+        assert.ok(Object.isFrozen(value));
+        assert.equal(getCallableCalls(), 0);
     });
 });

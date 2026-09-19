@@ -5,7 +5,6 @@
  * @description Dependency Specifier parser that builds dependency identity DTOs.
  */
 
-import TeqFw_Di_Enum_Composition from './Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from './Enum/Life.mjs';
 import TeqFw_Di_Enum_Platform from './Enum/Platform.mjs';
 import {Factory as TeqFw_Di_Dto_DepId_Factory} from './Dto/DepId.mjs';
@@ -160,21 +159,17 @@ export default class TeqFw_Di_Parser {
             const split = parseModuleExport(lifecycle.core);
             assertModuleName(split.moduleName, platform);
 
-            /** @type {typeof TeqFw_Di_Enum_Composition[keyof typeof TeqFw_Di_Enum_Composition]} */
-            let composition = TeqFw_Di_Enum_Composition.AS_IS;
             let exportName = split.exportName;
             if (lifecycle.lifecycleDeclared) {
                 if (exportName === null) {
                     exportName = 'default';
                 }
-                composition = TeqFw_Di_Enum_Composition.FACTORY;
             }
 
             const depId = depIdFactory.create({
                 moduleName: split.moduleName,
                 platform,
                 exportName,
-                composition,
                 life: lifecycle.life,
                 wrappers: lifecycle.wrappers,
                 origin,

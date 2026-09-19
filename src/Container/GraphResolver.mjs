@@ -85,6 +85,8 @@ export default class TeqFw_Di_Container_GraphResolver {
                 const dependencies = new Map();
                 out.set(key, {depId, context, namespace, dependencies, mock});
 
+                if (depId.life === null) return;
+
                 /** @type {Record<string, unknown>} */
                 const depsMap = readDepsDecl(namespace, depId);
                 for (const [name, nextSpecifier] of Object.entries(depsMap)) {

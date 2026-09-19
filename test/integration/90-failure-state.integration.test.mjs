@@ -24,4 +24,32 @@ describe('Integration 90: failed state', () => {
         assert.throws(() => container.addPostprocess((value) => value));
         assert.throws(() => container.register('Fx_Root$', {mock: true}));
     });
+
+    it('makes parsing, preprocessing, and mapping failures terminal', async () => {
+        const cases = [
+            {
+                configure(/** @type {TeqFw_Di_Container} */ _container) {},
+                specifier: 'teq:Fx_Root$',
+            },
+            {
+                configure(/** @type {TeqFw_Di_Container} */ container) {
+                    container.addPreprocess(() => { throw new Error('preprocess failed'); });
+                },
+                specifier: 'Fx_Root$',
+            },
+            {
+                configure(/** @type {TeqFw_Di_Container} */ _container) {},
+                specifier: 'NoMapping_Root$',
+            },
+        ];
+
+        for (const one of cases) {
+            const container = new TeqFw_Di_Container();
+            container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+            one.configure(container);
+
+            await assert.rejects(() => container.get(one.specifier));
+            await assert.rejects(() => container.get('Fx_Root$'), /failed state/i);
+        }
+    });
 });

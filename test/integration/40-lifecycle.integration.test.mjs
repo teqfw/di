@@ -4,6 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Container from '../../src/Container.mjs';
+import {getProducerCalls} from './fixture/ObservedSingleton.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -72,5 +73,50 @@ describe('Integration 40: lifecycle', () => {
         const value = await container.get('Fx_Singleton$');
 
         assert.deepStrictEqual(value.steps, ['post1', 'post2']);
+    });
+
+    it('caches the final singleton value after postprocessing, wrapping, and hardening', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const producerBefore = getProducerCalls();
+        let postprocessCalls = 0;
+        let hardeningCalls = 0;
+        container.addPostprocess((value) => {
+            postprocessCalls += 1;
+            const observed = /** @type {{producerCalls: number, steps: string[]}} */ (value);
+            return {...observed, steps: [...observed.steps, 'postprocessor']};
+        });
+        container.setHardener((value) => {
+            hardeningCalls += 1;
+            return Object.freeze(/** @type {object} */ (value));
+        });
+
+        const first = await container.get('Fx_ObservedSingleton$_wrapTag');
+        const second = await container.get('Fx_ObservedSingleton$_wrapTag');
+
+        assert.strictEqual(first, second);
+        assert.equal(getProducerCalls(), producerBefore + 1);
+        assert.deepStrictEqual(first.steps, ['producer', 'postprocessor', 'wrapper']);
+        assert.equal(postprocessCalls, 1);
+        assert.equal(hardeningCalls, 1);
+        assert.ok(Object.isFrozen(first));
+    });
+
+    it('uses effective substituted identity before Singleton lookup', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const producerBefore = getProducerCalls();
+        container.addPreprocess((depId) => ({
+            ...depId,
+            moduleName: depId.moduleName.startsWith('Fx_Alias')
+                ? 'Fx_ObservedSingleton'
+                : depId.moduleName,
+        }));
+
+        const first = await container.get('Fx_AliasOne$_wrapTag');
+        const second = await container.get('Fx_AliasTwo$_wrapTag');
+
+        assert.strictEqual(first, second);
+        assert.equal(getProducerCalls(), producerBefore + 1);
     });
 });

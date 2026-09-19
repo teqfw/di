@@ -12,8 +12,8 @@ function createDepId(patch = {}) {
         moduleName: 'App_Root',
         platform: 'teq',
         exportName: null,
-        composition: 'A',
-        life: null,
+        composition: 'F',
+        life: 'S',
         wrappers: [],
         origin: 'unit-test',
         ...patch,
@@ -32,7 +32,6 @@ function makeDepKey(depId) {
         depId.platform,
         depId.moduleName,
         exportName,
-        depId.composition,
         life,
         wrappers,
     ].join('::');
@@ -68,14 +67,14 @@ function createDoubles() {
     });
 
     /** @type {TeqFw_Di_Resolver} */
-    const resolver = /** @type {TeqFw_Di_Resolver} */ ({
-        async resolve(depId) {
+    const resolver = /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
+        async resolve(/** @type {TeqFw_Di_Dto_DepId} */ depId) {
             const key = `${depId.platform}::${depId.moduleName}`;
             resolveCalls.push(key);
             if (!namespaces.has(key)) throw new Error(`Unexpected depId: ${key}`);
             return namespaces.get(key);
         },
-    });
+    }));
 
     return {
         parser,
@@ -186,6 +185,22 @@ describe('TeqFw_Di_Container_GraphResolver', () => {
         assert.deepStrictEqual(io.parseCalls, []);
     });
 
+    it('does not inspect Direct export declarations', async () => {
+        const direct = createDepId({
+            moduleName: 'App_Direct',
+            composition: 'A',
+            life: null,
+        });
+        const io = createDoubles();
+        io.setNamespace(direct, {__deps__: 'must-not-be-read'});
+        const resolver = new TeqFw_Di_Container_GraphResolver({parser: io.parser, resolver: io.resolver});
+
+        const graph = await resolver.resolve(direct);
+
+        assert.equal(graph.size, 1);
+        assert.deepStrictEqual(io.parseCalls, []);
+    });
+
     it('resolves named-only __deps__ for the matching export', async () => {
         const root = createDepId({moduleName: 'App_Root', exportName: 'Factory', composition: 'F'});
         const depB = createDepId({moduleName: 'App_B'});
@@ -262,11 +277,11 @@ describe('TeqFw_Di_Container_GraphResolver', () => {
         });
         const rootError = new Error('resolver failed');
         /** @type {TeqFw_Di_Resolver} */
-        const failingResolver = /** @type {TeqFw_Di_Resolver} */ ({
+        const failingResolver = /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
             async resolve() {
                 throw rootError;
             },
-        });
+        }));
         const resolver = new TeqFw_Di_Container_GraphResolver({parser, resolver: failingResolver});
 
         await assert.rejects(resolver.resolve(depA), (error) => {

@@ -22,7 +22,6 @@ export function buildDependencyKey(depId) {
         depId.platform,
         depId.moduleName,
         exportName,
-        depId.composition,
         life,
         wrappers,
     ].join('::');

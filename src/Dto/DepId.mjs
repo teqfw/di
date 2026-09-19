@@ -15,13 +15,8 @@ import TeqFw_Di_Enum_Platform from '../Enum/Platform.mjs';
 
 /** @type {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} */
 const DFLT_PLATFORM = TeqFw_Di_Enum_Platform.TEQ;
-/** @type {typeof TeqFw_Di_Enum_Composition[keyof typeof TeqFw_Di_Enum_Composition]} */
-const DFLT_COMPOSITION = TeqFw_Di_Enum_Composition.AS_IS;
-
 /** @type {Set<string>} */
 const PLATFORM_VALUES = new Set(Object.values(TeqFw_Di_Enum_Platform));
-/** @type {Set<string>} */
-const COMPOSITION_VALUES = new Set(Object.values(TeqFw_Di_Enum_Composition));
 /** @type {Set<string>} */
 const LIFE_VALUES = new Set(Object.values(TeqFw_Di_Enum_Life));
 
@@ -95,16 +90,6 @@ export class Factory {
 
         dto.exportName = exportName;
 
-        const composition =
-            typeof source.composition === 'string'
-                ? source.composition
-                : undefined;
-
-        dto.composition =
-            composition && COMPOSITION_VALUES.has(composition)
-                ? composition
-                : DFLT_COMPOSITION;
-
         const life =
             typeof source.life === 'string'
                 ? source.life
@@ -114,6 +99,10 @@ export class Factory {
             life && LIFE_VALUES.has(life)
                 ? life
                 : null;
+
+        dto.composition = dto.life === null
+            ? TeqFw_Di_Enum_Composition.AS_IS
+            : TeqFw_Di_Enum_Composition.FACTORY;
 
         dto.wrappers =
             Array.isArray(source.wrappers)

@@ -28,4 +28,18 @@ describe('Integration 50: wrappers', () => {
             /must return synchronously \(non-Promise\)/
         );
     });
+
+    it('keeps ordered Wrapper Selection in Singleton identity', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+
+        const first = await container.get('Fx_Wrapped$_wrapFirst_wrapSecond');
+        const reversed = await container.get('Fx_Wrapped$_wrapSecond_wrapFirst');
+        const repeated = await container.get('Fx_Wrapped$_wrapFirst_wrapSecond');
+
+        assert.deepEqual(first.steps, ['core', 'wrapFirst', 'wrapSecond']);
+        assert.deepEqual(reversed.steps, ['core', 'wrapSecond', 'wrapFirst']);
+        assert.strictEqual(first, repeated);
+        assert.notStrictEqual(first, reversed);
+    });
 });
