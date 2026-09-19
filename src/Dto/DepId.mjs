@@ -42,7 +42,7 @@ export default class DTO {
     /** @type {string[]} Wrapper pipeline names. */
     wrappers = [];
 
-    /** @type {string} Original Dependency Specifier string. */
+    /** @type {string} Original Dependency Identifier string. */
     origin = '';
 }
 

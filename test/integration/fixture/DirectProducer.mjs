@@ -17,6 +17,8 @@ export class DirectClass {
     }
 }
 
+export default DirectClass;
+
 /**
  * @returns {number}
  */

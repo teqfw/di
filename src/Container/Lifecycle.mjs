@@ -2,19 +2,19 @@
 
 /**
  * @namespace TeqFw_Di_Container_Lifecycle
- * @description Lifecycle policy cache for produced values.
+ * @description Singleton cache policy for final managed values.
  */
 
 import TeqFw_Di_Enum_Life from '../Enum/Life.mjs';
 import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
 
 /**
- * Lifecycle-stage registry for produced dependency values.
+ * Lifecycle-stage registry for final managed dependency values.
  *
- * Applies lifecycle caching policy to already instantiated values:
- * - singleton factory values are cached by structural DepId identity;
- * - transient values are never cached;
- * - as-is composition is returned as produced without lifecycle caching.
+ * Applies Singleton cache policy around a complete cache-miss corridor:
+ * - Singleton final values are cached by structural DepId identity;
+ * - Direct and Transient bypass the cache;
+ * - the cache-miss callback supplies the final managed value.
  */
 export default class TeqFw_Di_Container_Lifecycle {
 
@@ -54,16 +54,16 @@ export default class TeqFw_Di_Container_Lifecycle {
         };
 
         /**
-         * Returns value according to lifecycle policy.
+         * Returns a cached Singleton value or runs the cache-miss callback.
          *
          * @param {TeqFw_Di_Dto_DepId} depId
-         * @param {() => unknown|Promise<unknown>} producer
+         * @param {() => unknown|Promise<unknown>} onMiss
          * @returns {Promise<unknown>}
          */
-        this.apply = async function (depId, producer) {
+        this.apply = async function (depId, onMiss) {
             if (depId.life !== TeqFw_Di_Enum_Life.SINGLETON) {
                 if (log) log.log(`Lifecycle.apply: life='${String(depId.life)}' cache=skip.`);
-                return producer();
+                return onMiss();
             }
 
             /** @type {string} */
@@ -78,7 +78,7 @@ export default class TeqFw_Di_Container_Lifecycle {
             }
 
             if (log) log.log(`Lifecycle.cache: miss key='${key}', create.`);
-            const pending = Promise.resolve().then(producer);
+            const pending = Promise.resolve().then(onMiss);
             pendingSingletons.set(key, pending);
             try {
                 const created = await pending;

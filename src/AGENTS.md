@@ -137,7 +137,7 @@ npm run typecheck
 npm test
 ```
 
-`npm run typecheck` (a `tsc -p jsconfig.json` run) is the reproducible, agent-independent JSDoc and type validation for JavaScript source, tests, and declaration files; it produces no compiled output and returns a non-zero exit code on type errors. LSP provides immediate development feedback but does not validate dynamic identifier substitution or actual container wiring. `npm test` remains authoritative for runtime DI behaviour.
+`npm run typecheck` (a `tsc -p jsconfig.json` run) is the reproducible, agent-independent JSDoc and type validation for JavaScript source, tests, and declaration files; it produces no compiled output and returns a non-zero exit code on type errors. LSP provides immediate development feedback but does not validate dynamic identifier substitution or actual container wiring. The declarations in `ctx/docs/` are authoritative; verification specifications define observation meaning, and `npm test` is an executable acquisition mechanism for those checks.
 
 Source changes MUST be verified with the project-provided tests and applicable classical JavaScript checks, including `node --check` and local type checks.
 
@@ -145,7 +145,7 @@ Source changes MUST be verified with the project-provided tests and applicable c
 
 The file `types.d.ts` defines exported structural type aliases corresponding to implementation modules.
 
-The alias scheme MUST follow `ctx/docs/code/layout/types.md`: a bare alias is the consumer-side type, a `__Class` alias denotes the constructable that produces instances, and `__ExportName` selects a named export.
+The alias scheme MUST follow `ctx/docs/code/layout/types.md`: `__Class` denotes an importable constructable value where meaningful, and `__ExportName` selects a named export. The consumer-facing meaning of a bare alias remains unresolved because Direct exposes raw exports while Singleton and Transient expose produced values; do not choose a universal bare-alias rule in source work.
 
 When adding or renaming an exported implementation module under `src/`, agent MUST:
 

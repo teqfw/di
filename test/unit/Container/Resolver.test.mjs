@@ -132,6 +132,26 @@ describe('TeqFw_Di_Resolver', () => {
             assert.deepStrictEqual(io.calls, [specifier]);
             assert.strictEqual(result, namespace);
         });
+
+        it('exposes selected namespace mapping only for the Teq route', async () => {
+            const io = createImportDouble();
+            io.setModule('/lib/group-web/App/Service.mjs', {kind: 'teq'});
+            io.setModule('node:fs', {kind: 'node'});
+            io.setModule('@scope/pkg', {kind: 'npm'});
+            const resolver = createResolver(createConfig(), io.importer);
+
+            const teq = await resolver.resolveWithDetails(createDepId({moduleName: 'Ns_Group_Web_App_Service'}));
+            const node = await resolver.resolveWithDetails(createDepId({platform: TeqFw_Di_Enum_Platform.NODE, moduleName: 'fs'}));
+            const npm = await resolver.resolveWithDetails(createDepId({platform: TeqFw_Di_Enum_Platform.NPM, moduleName: '@scope/pkg'}));
+
+            assert.deepStrictEqual(teq.mapping, {
+                prefix: 'Ns_Group_Web_',
+                target: '/lib/group-web',
+                defaultExt: '.mjs',
+            });
+            assert.equal(Object.hasOwn(node, 'mapping'), false);
+            assert.equal(Object.hasOwn(npm, 'mapping'), false);
+        });
     });
 
     describe('longest prefix match', () => {

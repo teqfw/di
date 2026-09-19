@@ -17,6 +17,10 @@
  */
 
 /**
+ * @typedef {{specifier: string, mapping?: TeqFw_Di_Resolver_NamespaceRule}} TeqFw_Di_Resolver_Route
+ */
+
+/**
  * Infrastructure resolver that derives module specifiers, loads module namespace objects,
  * and caches them by `(platform, moduleName)`.
  */
@@ -27,7 +31,7 @@ export default class TeqFw_Di_Resolver {
      * @param {TeqFw_Di_Resolver_Dependencies} deps Resolver dependencies descriptor.
      */
     constructor({config, importFn = (specifier) => import(specifier), logger = null}) {
-        /** @type {Map<string, {specifier: string, promise: Promise<object>}>} Cache keyed by `(platform,moduleName)`. */
+        /** @type {Map<string, {route: TeqFw_Di_Resolver_Route, promise: Promise<object>}>} Cache keyed by `(platform,moduleName)`. */
         const cache = new Map();
         /** @type {TeqFw_Di_Dto_Resolver_Config} Original config reference captured from dependencies. */
         const configInput = config;
@@ -108,22 +112,22 @@ export default class TeqFw_Di_Resolver {
         };
 
         /**
-         * Derives module specifier from depId structural fields.
+         * Derives the Address-Kind route from dependency identity fields.
          *
          * @param {TeqFw_Di_Enum_Platform[keyof TeqFw_Di_Enum_Platform]} platform DepId platform.
          * @param {string} moduleName DepId module namespace.
-         * @returns {string}
+         * @returns {TeqFw_Di_Resolver_Route}
          */
-        const deriveSpecifier = function (platform, moduleName) {
+        const deriveRoute = function (platform, moduleName) {
             if (platform === 'node') {
                 const specifier = `node:${moduleName}`;
                 if (log) log.log(`Resolver.specifier: module='${moduleName}' -> '${specifier}'.`);
-                return specifier;
+                return Object.freeze({specifier});
             }
             if (platform === 'npm') {
                 const specifier = moduleName;
                 if (log) log.log(`Resolver.specifier: module='${moduleName}' -> '${specifier}'.`);
-                return specifier;
+                return Object.freeze({specifier});
             }
             if (platform !== 'teq') throw new Error(`Unsupported platform: ${platform}`);
 
@@ -134,14 +138,17 @@ export default class TeqFw_Di_Resolver {
             const filePath = appendExt(relativePath, rule.defaultExt);
             const specifier = join(rule.target, filePath);
             if (log) log.log(`Resolver.specifier: module='${moduleName}' -> '${specifier}'.`);
-            return specifier;
+            return Object.freeze({
+                specifier,
+                mapping: Object.freeze({...rule}),
+            });
         };
 
         /**
          * Resolves module namespace details by depId platform and moduleName.
          *
          * @param {TeqFw_Di_Dto_DepId} depId Validated dependency identity DTO.
-         * @returns {Promise<{namespace: object, specifier: string, cache: 'hit'|'miss'}>}
+         * @returns {Promise<{namespace: object, specifier: string, cache: 'hit'|'miss', mapping?: TeqFw_Di_Resolver_NamespaceRule}>}
          */
         const resolveWithDetails = async function (depId) {
             await Promise.resolve();
@@ -152,12 +159,18 @@ export default class TeqFw_Di_Resolver {
 
             if (cache.has(key)) {
                 if (log) log.log(`Resolver.cache: hit key='${key}'.`);
-                const cached = /** @type {{specifier: string, promise: Promise<object>}} */ (cache.get(key));
-                return {namespace: await cached.promise, specifier: cached.specifier, cache: 'hit'};
+                const cached = /** @type {{route: TeqFw_Di_Resolver_Route, promise: Promise<object>}} */ (cache.get(key));
+                return {
+                    namespace: await cached.promise,
+                    specifier: cached.route.specifier,
+                    cache: 'hit',
+                    ...(cached.route.mapping ? {mapping: cached.route.mapping} : {}),
+                };
             }
             if (log) log.log(`Resolver.cache: miss key='${key}'.`);
 
-            const specifier = deriveSpecifier(platform, moduleName);
+            const route = deriveRoute(platform, moduleName);
+            const specifier = route.specifier;
 
             /** @type {Promise<object>} */
             const promise = (async () => {
@@ -165,10 +178,15 @@ export default class TeqFw_Di_Resolver {
                 return importModule(specifier);
             })();
 
-            cache.set(key, {specifier, promise});
+            cache.set(key, {route, promise});
 
             try {
-                return {namespace: await promise, specifier, cache: 'miss'};
+                return {
+                    namespace: await promise,
+                    specifier,
+                    cache: 'miss',
+                    ...(route.mapping ? {mapping: route.mapping} : {}),
+                };
             } catch (error) {
                 cache.delete(key);
                 if (log) log.error(`Resolver.cache: evict key='${key}' after failure.`, error);
@@ -190,7 +208,7 @@ export default class TeqFw_Di_Resolver {
          * Resolves a namespace together with the selected Module Specifier.
          *
          * @param {TeqFw_Di_Dto_DepId} depId Validated dependency identity DTO.
-         * @returns {Promise<{namespace: object, specifier: string, cache: 'hit'|'miss'}>}
+         * @returns {Promise<{namespace: object, specifier: string, cache: 'hit'|'miss', mapping?: TeqFw_Di_Resolver_NamespaceRule}>}
          */
         this.resolveWithDetails = resolveWithDetails;
     }

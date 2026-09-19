@@ -24,7 +24,7 @@ export function readDepsDecl(namespace, depId) {
     if ((exportScoped !== undefined) && (exportScoped !== null) && (typeof exportScoped === 'object') && !Array.isArray(exportScoped)) {
         const values = Object.values(/** @type {Record<string, unknown>} */ (exportScoped));
         if (!values.every((value) => typeof value === 'string')) {
-            throw new Error('__deps__ export entries must map dependency names to Dependency Specifier strings.');
+            throw new Error('__deps__ export entries must map dependency names to Dependency Identifier strings.');
         }
         return /** @type {Record<string, unknown>} */ (exportScoped);
     }

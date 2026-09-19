@@ -10,6 +10,7 @@ import {
     getCallableCalls,
     getClassCalls,
 } from './fixture/DirectProducer.mjs';
+import {value as alreadyFrozen} from './fixture/AlreadyFrozen.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -78,12 +79,19 @@ describe('Integration 37: as-is export resolution', () => {
         const container = new TeqFw_Di_Container();
         const directFixtureDir = path.resolve(__dirname, './fixture');
         container.addNamespaceRoot('Fx_', directFixtureDir, '.mjs');
+        container.enableIntrospection();
 
         const callable = await container.get('Fx_DirectProducer__Callable');
+        const callableObservation = /** @type {any} */ (container.getIntrospection());
         const directClass = await container.get('Fx_DirectProducer__DirectClass');
+        const classObservation = /** @type {any} */ (container.getIntrospection());
 
         assert.strictEqual(callable, Callable);
         assert.strictEqual(directClass, DirectClass);
+        assert.equal(Object.isFrozen(callable), true);
+        assert.equal(Object.isFrozen(directClass), true);
+        assert.equal(callableObservation.explanation.resolutions[0].hardening.mode, 'frozen');
+        assert.equal(classObservation.explanation.resolutions[0].hardening.mode, 'frozen');
         assert.equal(getCallableCalls(), 0);
         assert.equal(getClassCalls(), 0);
     });
@@ -93,11 +101,43 @@ describe('Integration 37: as-is export resolution', () => {
         const directFixtureDir = path.resolve(__dirname, './fixture');
         container.addNamespaceRoot('Fx_', directFixtureDir, '.mjs');
 
+        const explicitDirect = await container.get('Fx_DirectProducer$$$');
         const value = await container.get('Fx_DirectProducer__Callable$$$_wrapIdentity');
 
+        assert.strictEqual(explicitDirect, DirectClass);
         assert.strictEqual(value.value, Callable);
         assert.equal(value.wrapped, true);
         assert.ok(Object.isFrozen(value));
         assert.equal(getCallableCalls(), 0);
+        assert.equal(getClassCalls(), 0);
+    });
+
+    it('preserves an already frozen Direct value', async () => {
+        const container = new TeqFw_Di_Container();
+        const directFixtureDir = path.resolve(__dirname, './fixture');
+        container.addNamespaceRoot('Fx_', directFixtureDir, '.mjs');
+        container.enableIntrospection();
+
+        const value = await container.get('Fx_AlreadyFrozen__value');
+        const observation = /** @type {any} */ (container.getIntrospection());
+
+        assert.strictEqual(value, alreadyFrozen);
+        assert.equal(Object.isFrozen(value), true);
+        assert.equal(observation.explanation.resolutions[0].hardening.mode, 'already-frozen');
+    });
+
+    it('exposes a native ES Module Namespace through Direct without freezing it', async () => {
+        const expected = await import('node:fs');
+        const container = new TeqFw_Di_Container();
+        container.enableIntrospection();
+
+        const value = await container.get('node:fs');
+        const observation = /** @type {any} */ (container.getIntrospection());
+
+        assert.strictEqual(value, expected);
+        assert.equal(Object.prototype.toString.call(value), '[object Module]');
+        assert.equal(Object.isFrozen(value), false);
+        assert.equal(observation.explanation.resolutions[0].hardening.mode, 'runtime-owned');
+        assert.equal(observation.trace.find((/** @type {any} */ event) => event.kind === 'hardening').mode, 'runtime-owned');
     });
 });

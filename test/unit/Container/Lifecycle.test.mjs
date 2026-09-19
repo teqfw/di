@@ -27,10 +27,10 @@ describe('TeqFw_Di_Container_Lifecycle', () => {
         const registry = new TeqFw_Di_Container_Lifecycle();
         const depId = createDepId();
         let calls = 0;
-        const producer = async () => ({id: ++calls, adapted: true, hardened: true});
+        const onMiss = async () => ({id: ++calls, adapted: true, hardened: true});
 
-        const first = await registry.apply(depId, producer);
-        const second = await registry.apply(depId, producer);
+        const first = await registry.apply(depId, onMiss);
+        const second = await registry.apply(depId, onMiss);
 
         assert.equal(calls, 1);
         assert.strictEqual(first, second);
@@ -42,11 +42,11 @@ describe('TeqFw_Di_Container_Lifecycle', () => {
         const registry = new TeqFw_Di_Container_Lifecycle();
         const depId = createDepId();
         let calls = 0;
-        const producer = async () => ({id: ++calls});
+        const onMiss = async () => ({id: ++calls});
 
         const [first, second] = await Promise.all([
-            registry.apply(depId, producer),
-            registry.apply(depId, producer),
+            registry.apply(depId, onMiss),
+            registry.apply(depId, onMiss),
         ]);
 
         assert.equal(calls, 1);
@@ -61,12 +61,12 @@ describe('TeqFw_Di_Container_Lifecycle', () => {
         });
         const transient = createDepId({life: TeqFw_Di_Enum_Life.TRANSIENT});
         let calls = 0;
-        const producer = () => ({id: ++calls});
+        const onMiss = () => ({id: ++calls});
 
-        const directFirst = await registry.apply(direct, producer);
-        const directSecond = await registry.apply(direct, producer);
-        const transientFirst = await registry.apply(transient, producer);
-        const transientSecond = await registry.apply(transient, producer);
+        const directFirst = await registry.apply(direct, onMiss);
+        const directSecond = await registry.apply(direct, onMiss);
+        const transientFirst = await registry.apply(transient, onMiss);
+        const transientSecond = await registry.apply(transient, onMiss);
 
         assert.equal(calls, 4);
         assert.notStrictEqual(directFirst, directSecond);
@@ -81,12 +81,12 @@ describe('TeqFw_Di_Container_Lifecycle', () => {
         const namedExport = createDepId({exportName: 'Factory', wrappers: ['first', 'second']});
         const reversedWrappers = createDepId({wrappers: ['second', 'first']});
         let calls = 0;
-        const producer = () => ({id: ++calls});
+        const onMiss = () => ({id: ++calls});
 
-        const a = await registry.apply(defaultExport, producer);
-        const b = await registry.apply(namedExport, producer);
-        const c = await registry.apply(reversedWrappers, producer);
-        const repeated = await registry.apply(defaultExport, producer);
+        const a = await registry.apply(defaultExport, onMiss);
+        const b = await registry.apply(namedExport, onMiss);
+        const c = await registry.apply(reversedWrappers, onMiss);
+        const repeated = await registry.apply(defaultExport, onMiss);
 
         assert.equal(calls, 3);
         assert.strictEqual(a, repeated);

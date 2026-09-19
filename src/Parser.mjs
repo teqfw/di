@@ -2,7 +2,7 @@
 
 /**
  * @namespace TeqFw_Di_Parser
- * @description Dependency Specifier parser that builds dependency identity DTOs.
+ * @description Dependency Identifier parser that builds dependency identity DTOs.
  */
 
 import TeqFw_Di_Enum_Life from './Enum/Life.mjs';
@@ -10,7 +10,7 @@ import TeqFw_Di_Enum_Platform from './Enum/Platform.mjs';
 import {Factory as TeqFw_Di_Dto_DepId_Factory} from './Dto/DepId.mjs';
 
 /**
- * Parser for Dependency Specifiers into frozen dependency identity DTOs.
+ * Parser for Dependency Identifiers into frozen dependency identity DTOs.
 */
 export default class TeqFw_Di_Parser {
     /**
@@ -25,7 +25,7 @@ export default class TeqFw_Di_Parser {
         /**
          * Detects platform prefix and strips it from the source string.
          *
-         * @param {string} source Dependency Specifier source without validation.
+         * @param {string} source Dependency Identifier source without validation.
          * @returns {{platform: typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform], source: string}}
          */
         const detectPlatform = function (source) {
@@ -48,7 +48,7 @@ export default class TeqFw_Di_Parser {
         /**
          * Parses lifecycle and wrapper suffix from the source string.
          *
-         * @param {string} source Dependency Specifier source without platform prefix.
+         * @param {string} source Dependency Identifier source without platform prefix.
          * @param {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} platform
          * @returns {{core: string, life: typeof TeqFw_Di_Enum_Life[keyof typeof TeqFw_Di_Enum_Life] | null, lifecycleDeclared: boolean, wrappers: string[]}}
          */
@@ -88,7 +88,7 @@ export default class TeqFw_Di_Parser {
         /**
          * Splits module and export names from canonical core string.
          *
-         * @param {string} core Dependency Specifier core without lifecycle suffix.
+         * @param {string} core Dependency Identifier core without lifecycle suffix.
          * @returns {{moduleName: string, exportName: string|null}}
          */
         const parseModuleExport = function (core) {
@@ -138,16 +138,16 @@ export default class TeqFw_Di_Parser {
         };
 
         /**
-         * Parses one Dependency Specifier and returns a normalized frozen dependency DTO.
+         * Parses one Dependency Identifier and returns a normalized frozen dependency DTO.
          *
-         * @param {string} specifier Dependency Specifier string.
+         * @param {string} specifier Dependency Identifier string.
          * @returns {TeqFw_Di_Dto_DepId}
          */
         this.parse = function (specifier) {
             if (logger) logger.log(`Parser.parse: input='${specifier}'.`);
-            if (typeof specifier !== 'string') throw new Error('Dependency Specifier must be a string.');
-            if (specifier.length === 0) throw new Error('Dependency Specifier must be non-empty.');
-            if (!/^[\x00-\x7F]+$/.test(specifier)) throw new Error('Dependency Specifier must be ASCII.');
+            if (typeof specifier !== 'string') throw new Error('Dependency Identifier must be a string.');
+            if (specifier.length === 0) throw new Error('Dependency Identifier must be non-empty.');
+            if (!/^[\x00-\x7F]+$/.test(specifier)) throw new Error('Dependency Identifier must be ASCII.');
 
             /** @type {string} */
             const origin = specifier;

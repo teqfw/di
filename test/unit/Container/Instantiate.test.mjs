@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Container_Instantiate from '../../../src/Container/Instantiate.mjs';
-import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
 
 /**
  * @param {Partial<TeqFw_Di_Dto_DepId>} [patch]
@@ -13,7 +12,7 @@ function createDepId(patch = {}) {
         moduleName: 'Ns_App_Module',
         platform: 'teq',
         exportName: null,
-        composition: TeqFw_Di_Enum_Composition.AS_IS,
+        composition: 'A',
         life: 'direct',
         wrappers: [],
         origin: 'unit-test',
@@ -24,27 +23,21 @@ function createDepId(patch = {}) {
 describe('TeqFw_Di_Container_Instantiate', () => {
     const instantiator = new TeqFw_Di_Container_Instantiate();
 
-    it('as-is returns namespace', () => {
+    it('selects the whole namespace when no export is requested', () => {
         const namespace = {default: 1, named: 2};
-        const depId = createDepId({
-            exportName: null,
-            composition: TeqFw_Di_Enum_Composition.AS_IS
-        });
+        const depId = createDepId({exportName: null});
 
-        const result = instantiator.instantiate(depId, namespace, {});
+        const result = instantiator.select(depId, namespace);
 
         assert.strictEqual(result, namespace);
     });
 
-    it('as-is returns named export', () => {
+    it('selects a named export without invoking it', () => {
         const expected = {ok: true};
         const namespace = {named: expected};
-        const depId = createDepId({
-            exportName: 'named',
-            composition: TeqFw_Di_Enum_Composition.AS_IS
-        });
+        const depId = createDepId({exportName: 'named'});
 
-        const result = instantiator.instantiate(depId, namespace, {});
+        const result = instantiator.select(depId, namespace);
 
         assert.strictEqual(result, expected);
     });
@@ -54,12 +47,9 @@ describe('TeqFw_Di_Container_Instantiate', () => {
         const namespace = {
             make: (/** @type {object} */ deps) => ({deps}),
         };
-        const depId = createDepId({
-            exportName: 'make',
-            composition: TeqFw_Di_Enum_Composition.FACTORY
-        });
+        const depId = createDepId({exportName: 'make'});
 
-        const result = instantiator.instantiate(depId, namespace, resolvedDeps);
+        const result = instantiator.produce(instantiator.select(depId, namespace), resolvedDeps);
 
         assert.deepStrictEqual(result, {deps: resolvedDeps});
     });
@@ -75,49 +65,31 @@ describe('TeqFw_Di_Container_Instantiate', () => {
         }
         const resolvedDeps = {b: 2};
         const namespace = {Service};
-        const depId = createDepId({
-            exportName: 'Service',
-            composition: TeqFw_Di_Enum_Composition.FACTORY
-        });
+        const depId = createDepId({exportName: 'Service'});
 
-        const result = instantiator.instantiate(depId, namespace, resolvedDeps);
+        const result = instantiator.produce(instantiator.select(depId, namespace), resolvedDeps);
 
         assert.ok(result instanceof Service);
         assert.strictEqual(result.deps, resolvedDeps);
     });
 
     it('missing export throws', () => {
-        const depId = createDepId({
-            exportName: 'missing',
-            composition: TeqFw_Di_Enum_Composition.AS_IS
-        });
-        assert.throws(() => instantiator.instantiate(depId, {present: 1}, {}), Error);
+        const depId = createDepId({exportName: 'missing'});
+        assert.throws(() => instantiator.select(depId, {present: 1}), Error);
     });
 
     it('non-callable factory throws', () => {
-        const depId = createDepId({
-            exportName: 'bad',
-            composition: TeqFw_Di_Enum_Composition.FACTORY
-        });
-        assert.throws(() => instantiator.instantiate(depId, {bad: 123}, {}), Error);
+        assert.throws(() => instantiator.produce(123, {}), Error);
     });
 
     it('async factory returns Promise and throws', () => {
-        const depId = createDepId({
-            exportName: 'asyncFactory',
-            composition: TeqFw_Di_Enum_Composition.FACTORY
-        });
         const namespace = {
             asyncFactory: () => Promise.resolve(1),
         };
-        assert.throws(() => instantiator.instantiate(depId, namespace, {}), Error);
+        assert.throws(() => instantiator.produce(namespace.asyncFactory, {}), Error);
     });
 
     it('factory result may be proxy that throws on `.then` access', () => {
-        const depId = createDepId({
-            exportName: 'make',
-            composition: TeqFw_Di_Enum_Composition.FACTORY
-        });
         const proxy = new Proxy({ok: true}, {
             get(target, prop, receiver) {
                 if (prop === 'then') throw new Error('then access denied');
@@ -128,7 +100,7 @@ describe('TeqFw_Di_Container_Instantiate', () => {
             make: () => proxy,
         };
 
-        const result = instantiator.instantiate(depId, namespace, {});
+        const result = instantiator.produce(namespace.make, {});
 
         assert.strictEqual(result, proxy);
     });
@@ -139,26 +111,19 @@ describe('TeqFw_Di_Container_Instantiate', () => {
                 throw new Error('boom');
             }
         }
-        const depId = createDepId({
-            exportName: 'Broken',
-            composition: TeqFw_Di_Enum_Composition.FACTORY
-        });
         const namespace = {Broken};
 
-        assert.throws(() => instantiator.instantiate(depId, namespace, {}), /boom/);
+        assert.throws(() => instantiator.produce(namespace.Broken, {}), /boom/);
     });
 
     it('deterministic across repeated calls', () => {
         const expected = {same: true};
-        const depId = createDepId({
-            exportName: 'value',
-            composition: TeqFw_Di_Enum_Composition.AS_IS
-        });
+        const depId = createDepId({exportName: 'value'});
         const namespace = {value: expected};
         const resolvedDeps = {x: 1};
 
-        const first = instantiator.instantiate(depId, namespace, resolvedDeps);
-        const second = instantiator.instantiate(depId, namespace, resolvedDeps);
+        const first = instantiator.select(depId, namespace);
+        const second = instantiator.select(depId, namespace);
 
         assert.strictEqual(first, expected);
         assert.strictEqual(second, expected);
@@ -166,20 +131,9 @@ describe('TeqFw_Di_Container_Instantiate', () => {
         assert.deepStrictEqual(resolvedDeps, {x: 1});
     });
 
-    it('invalid composition state throws', () => {
-        const depId = createDepId({
-            exportName: 'named',
-            composition: /** @type {TeqFw_Di_Dto_DepId['composition']} */ ('unsupported'),
-        });
-        assert.throws(() => instantiator.instantiate(depId, {named: 1}, {}), Error);
-    });
-
     it('does not pre-validate namespace shape and fails at point of use', () => {
-        const depId = createDepId({
-            exportName: 'named',
-            composition: TeqFw_Di_Enum_Composition.AS_IS
-        });
-        assert.throws(() => instantiator.instantiate(depId, /** @type {object} */ (/** @type {unknown} */ (null)), {}), TypeError);
-        assert.throws(() => instantiator.instantiate(depId, /** @type {object} */ (/** @type {unknown} */ ('bad')), {}), TypeError);
+        const depId = createDepId({exportName: 'named'});
+        assert.throws(() => instantiator.select(depId, /** @type {object} */ (/** @type {unknown} */ (null))), TypeError);
+        assert.throws(() => instantiator.select(depId, /** @type {object} */ (/** @type {unknown} */ ('bad'))), TypeError);
     });
 });

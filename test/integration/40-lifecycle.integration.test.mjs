@@ -34,9 +34,32 @@ describe('Integration 40: lifecycle', () => {
     it('fails linking when default shallow hardening fails', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        container.enableIntrospection();
 
-        await assert.rejects(container.get('Fx_ProtectedProxy$'));
+        await assert.rejects(container.get('Fx_ProtectedProxy$'), /defineProperty is forbidden/);
+        const observation = /** @type {any} */ (container.getIntrospection());
+
+        assert.equal(observation.explanation.failure.stage, 'hardening');
+        assert.equal(observation.explanation.containerState, 'failed');
         await assert.rejects(container.get('Fx_ProtectedProxy$'), /failed state/);
+    });
+
+    it('uses a configured hardener as the full host policy', async () => {
+        const container = new TeqFw_Di_Container();
+        container.enableIntrospection();
+        /** @type {unknown} */
+        let received;
+        container.setHardener((value) => {
+            received = value;
+            return value;
+        });
+
+        const namespace = await container.get('node:fs');
+        const observation = /** @type {any} */ (container.getIntrospection());
+
+        assert.strictEqual(received, namespace);
+        assert.equal(Object.prototype.toString.call(namespace), '[object Module]');
+        assert.equal(observation.explanation.resolutions[0].hardening.mode, 'configured');
     });
 
     it('keeps singleton identities separate for default and named exports from same module', async () => {
@@ -115,6 +138,20 @@ describe('Integration 40: lifecycle', () => {
 
         const first = await container.get('Fx_AliasOne$_wrapTag');
         const second = await container.get('Fx_AliasTwo$_wrapTag');
+
+        assert.strictEqual(first, second);
+        assert.equal(getProducerCalls(), producerBefore + 1);
+    });
+
+    it('converges independent concurrent Singleton requests on one pending value', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const producerBefore = getProducerCalls();
+
+        const [first, second] = await Promise.all([
+            container.get('Fx_ObservedSingleton$'),
+            container.get('Fx_ObservedSingleton$'),
+        ]);
 
         assert.strictEqual(first, second);
         assert.equal(getProducerCalls(), producerBefore + 1);
