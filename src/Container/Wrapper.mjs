@@ -1,34 +1,18 @@
 // @ts-check
 
 /**
- * @namespace TeqFw_Di_Container_Executor
- * @description Applies wrapper pipeline to resolved values.
+ * @namespace TeqFw_Di_Container_Wrapper
+ * @description Executes identifier-selected synchronous Wrappers.
  */
 
 /**
- * Wrapper-stage executor.
- *
- * Executes wrapper pipeline declared in `depId.wrappers` using functions
- * exported by the resolved module namespace.
+ * Owns Wrapper Selection lookup and ordered wrapper execution. It does not
+ * resolve identifiers or own any Container policy.
  */
-export default class TeqFw_Di_Container_Executor {
-
-    /**
-     * Creates wrapper executor instance.
-     */
+export default class TeqFw_Di_Container_Wrapper {
     constructor() {
         /**
-         * Narrows unknown export to unary wrapper callable.
-         *
-         * @param {unknown} value
-         * @returns {value is (value: unknown) => unknown}
-         */
-        const isWrapper = function (value) {
-            return (typeof value === 'function');
-        };
-
-        /**
-         * Applies wrappers in declaration order.
+         * Applies selected wrappers in declaration order.
          *
          * @param {TeqFw_Di_Dto_DepId} depId
          * @param {unknown} value
@@ -38,15 +22,12 @@ export default class TeqFw_Di_Container_Executor {
         this.execute = function (depId, value, moduleNamespace) {
             /** @type {unknown} */
             let current = value;
-            const wrappers = depId.wrappers;
-
-            for (const name of wrappers) {
+            for (const name of depId.wrappers) {
                 if (!(name in moduleNamespace)) {
                     throw new Error(`Wrapper '${name}' is not found in module namespace.`);
                 }
-                /** @type {unknown} */
                 const candidate = /** @type {Record<string, unknown>} */ (moduleNamespace)[name];
-                if (!isWrapper(candidate)) {
+                if (typeof candidate !== 'function') {
                     throw new Error(`Wrapper '${name}' must be callable.`);
                 }
                 current = candidate(current);
@@ -54,7 +35,6 @@ export default class TeqFw_Di_Container_Executor {
                     throw new Error(`Wrapper '${name}' must return synchronously (non-Promise).`);
                 }
             }
-
             return current;
         };
     }

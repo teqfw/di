@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Enum_ObservationEvent from '../../../src/Enum/ObservationEvent.mjs';
-import {createObserver, publishObservation} from '../../../src/Container/Observer.mjs';
+import {createObserver, protectObserver} from '../../../src/Container/Observer.mjs';
 
 describe('TeqFw_Di_Container_Observer', () => {
     it('records graph, trace, and explanation facts in one immutable snapshot', () => {
@@ -55,10 +55,10 @@ describe('TeqFw_Di_Container_Observer', () => {
             },
         };
 
-        publishObservation(observer, (collector) => collector.addNode({}));
-        publishObservation(observer, () => {
-            afterFailure = true;
-        });
+        const protectedObserver = protectObserver(observer);
+        protectedObserver.addNode({});
+        protectedObserver.record('failure', {});
+        afterFailure = true;
 
         assert.equal(afterFailure, true);
     });

@@ -2,14 +2,12 @@
 
 /**
  * @namespace TeqFw_Di_Container_Observer
- * @description Structured observation session for one Container resolution.
+ * @description Structured observation session with non-interfering operations.
  */
 
 import TeqFw_Di_Enum_ObservationEvent from '../Enum/ObservationEvent.mjs';
 
-/**
- * @typedef {{index: number, kind: string, [key: string]: unknown}} TeqFw_Di_Container_Observer_TraceEvent
- */
+/** @typedef {{index: number, kind: string, [key: string]: unknown}} TeqFw_Di_Container_Observer_TraceEvent */
 
 /**
  * @typedef {object} TeqFw_Di_Container_Observer_Contract
@@ -21,28 +19,66 @@ import TeqFw_Di_Enum_ObservationEvent from '../Enum/ObservationEvent.mjs';
  */
 
 /**
- * Publishes one observation operation through the single non-interference
- * boundary. Observation failures are diagnostic only and never escape into
- * the resolution corridor.
+ * Executes one observer operation without allowing diagnostic failure to cross
+ * into resolution. This is the only observation non-interference boundary.
  *
- * @param {TeqFw_Di_Container_Observer_Contract|null} observer
- * @param {(observer: TeqFw_Di_Container_Observer_Contract) => void} operation
+ * @param {() => void} operation
  * @returns {void}
  */
-export function publishObservation(observer, operation) {
-    if (!observer) return;
+const safely = function (operation) {
     try {
-        operation(observer);
+        operation();
     } catch {
-        // Observation is diagnostic and must not alter resolution semantics.
+        // Observation is diagnostic and cannot change resolution semantics.
     }
+};
+
+/**
+ * Wraps any observer implementation with the non-interference contract.
+ *
+ * @param {TeqFw_Di_Container_Observer_Contract} observer
+ * @returns {TeqFw_Di_Container_Observer_Contract}
+ */
+export function protectObserver(observer) {
+    return {
+        addNode(data) {
+            safely(() => observer.addNode(data));
+        },
+        addEdge(data) {
+            safely(() => observer.addEdge(data));
+        },
+        record(kind, data) {
+            safely(() => observer.record(kind, data));
+        },
+        complete(outcome, state) {
+            safely(() => observer.complete(outcome, state));
+        },
+        getSnapshot() {
+            return observer.getSnapshot();
+        },
+    };
 }
 
 /**
- * Creates an observation session for one resolution request.
+ * Creates a no-op observer for disabled introspection. It has the same contract
+ * as a real session, so the resolution corridor contains no publication guards.
  *
- * The session receives already-derived facts. It does not resolve
- * dependencies, load modules, apply policy, or mutate Container state.
+ * @returns {TeqFw_Di_Container_Observer_Contract}
+ */
+export function createNoopObserver() {
+    return {
+        addNode() {},
+        addEdge() {},
+        record() {},
+        complete() {},
+        getSnapshot() {
+            return null;
+        },
+    };
+}
+
+/**
+ * Creates one graph, trace, and explanation session for a root request.
  *
  * @param {string} specifier
  * @returns {TeqFw_Di_Container_Observer_Contract}
@@ -64,7 +100,7 @@ export function createObserver(specifier) {
     let snapshot = null;
 
     /**
-     * Copies observation facts into an immutable machine-readable value.
+     * Makes a recursively immutable observation copy.
      *
      * @param {unknown} value
      * @returns {unknown}
@@ -82,12 +118,7 @@ export function createObserver(specifier) {
         return value;
     };
 
-    /**
-     * Adds a graph node and its explanation carrier.
-     *
-     * @param {Record<string, unknown>} data
-     * @returns {void}
-     */
+    /** @param {Record<string, unknown>} data @returns {void} */
     const addNode = function (data) {
         const payload = /** @type {Record<string, unknown>} */ (copyObservation(data));
         nodes.push(payload);
@@ -104,12 +135,7 @@ export function createObserver(specifier) {
         });
     };
 
-    /**
-     * Adds a graph edge and correlates it with its parent explanation.
-     *
-     * @param {Record<string, unknown>} data
-     * @returns {void}
-     */
+    /** @param {Record<string, unknown>} data @returns {void} */
     const addEdge = function (data) {
         const payload = /** @type {Record<string, unknown>} */ (copyObservation(data));
         edges.push(payload);
@@ -127,7 +153,7 @@ export function createObserver(specifier) {
     };
 
     /**
-     * Records one ordered trace fact and updates its explanation projection.
+     * Records one event and updates its explanation projection.
      *
      * @param {string} kind
      * @param {Record<string, unknown>} data
@@ -186,7 +212,7 @@ export function createObserver(specifier) {
     };
 
     /**
-     * Completes the session and freezes the public observation snapshot.
+     * Completes and freezes the public projections.
      *
      * @param {'success'|'failure'} outcome
      * @param {TeqFw_Di_Container_State} state
@@ -210,20 +236,10 @@ export function createObserver(specifier) {
         });
     };
 
-    /**
-     * Returns the immutable snapshot after completion, or null before it.
-     *
-     * @returns {object|null}
-     */
+    /** @returns {object|null} */
     const getSnapshot = function () {
         return snapshot;
     };
 
-    return {
-        addNode,
-        addEdge,
-        record,
-        complete,
-        getSnapshot,
-    };
+    return protectObserver({addNode, addEdge, record, complete, getSnapshot});
 }

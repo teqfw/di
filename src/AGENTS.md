@@ -16,10 +16,19 @@ The following documents are mandatory:
 
 - `ctx/docs/code/layout/structure.md`
 - `ctx/docs/code/layout/types.md`
+- `ctx/docs/code/components/canonicalizer.md`
 - `ctx/docs/code/components/container.md`
-- `ctx/docs/code/components/resolver.md`
+- `ctx/docs/code/components/hardener.md`
+- `ctx/docs/code/components/lifecycle.md`
+- `ctx/docs/code/components/module-loader.md`
+- `ctx/docs/code/components/module-router.md`
+- `ctx/docs/code/components/observer.md`
+- `ctx/docs/code/components/postprocessor.md`
+- `ctx/docs/code/components/producer.md`
+- `ctx/docs/code/components/resolution.md`
 - `ctx/docs/code/components/parser.md`
 - `ctx/docs/code/components/depid.md`
+- `ctx/docs/code/components/wrapper.md`
 - `ctx/docs/code/layout/testing.md`
 
 Agent MUST read and follow them before generating or modifying code.
