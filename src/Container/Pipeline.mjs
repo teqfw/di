@@ -8,6 +8,8 @@
 import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
 import {readDepsDecl} from '../Internal/DepsDecl.mjs';
 import {makePromiseSafe} from '../Internal/PromiseSafe.mjs';
+import TeqFw_Di_Enum_ObservationEvent from '../Enum/ObservationEvent.mjs';
+import {publishObservation} from './Observer.mjs';
 import {createResolutionContext} from './ResolutionContext.mjs';
 
 /**
@@ -22,21 +24,12 @@ import {createResolutionContext} from './ResolutionContext.mjs';
  * @property {TeqFw_Di_Container_Executor} wrapperExecutor
  * @property {TeqFw_Di_Internal_Logger_Contract} logger
  * @property {(value: unknown) => {value: unknown, mode: string}} harden
- * @property {(namespace: object) => void} registerRuntimeOwnedNamespace
+ * @property {(namespace: object) => void} registerRuntimeOwned
  * @property {(specifier: string, ancestors?: readonly TeqFw_Di_Dto_DepId[], onPreprocess?: () => void) => {requested: TeqFw_Di_Dto_DepId, effective: TeqFw_Di_Dto_DepId, preprocessing: TeqFw_Di_Container_Pipeline_PreprocessEffect[]}} canonicalize
  * @property {(depId: TeqFw_Di_Dto_DepId) => {found: boolean, value: unknown}} findMock
  * @property {(value: unknown, context: TeqFw_Di_Container_ResolutionContext) => unknown} applyPostprocess
  * @property {number} postprocessCount
- * @property {TeqFw_Di_Container_Pipeline_Observer|null} [observer]
- */
-
-/**
- * Optional resolution observation collector.
- *
- * @typedef {object} TeqFw_Di_Container_Pipeline_Observer
- * @property {(data: Record<string, unknown>) => void} addNode
- * @property {(data: Record<string, unknown>) => void} addEdge
- * @property {(kind: string, data: Record<string, unknown>) => void} record
+ * @property {TeqFw_Di_Container_Observer_Contract|null} [observer]
  */
 
 /**
@@ -71,7 +64,7 @@ export async function executeContainerPipeline(ctx, specifier) {
         wrapperExecutor,
         logger,
         harden,
-        registerRuntimeOwnedNamespace,
+        registerRuntimeOwned,
         canonicalize,
         findMock,
         applyPostprocess,
@@ -88,21 +81,6 @@ export async function executeContainerPipeline(ctx, specifier) {
     /** @type {string[]} */
     const chain = [];
     let nextNodeId = 0;
-
-    /**
-     * Records one best-effort trace fact without changing resolution.
-     *
-     * @param {(observer: TeqFw_Di_Container_Pipeline_Observer) => void} operation
-     * @returns {void}
-     */
-    const observe = function (operation) {
-        if (!observer) return;
-        try {
-            operation(observer);
-        } catch {
-            // Observation is diagnostic and must not alter resolution semantics.
-        }
-    };
 
     /**
      * Resolves one requested identifier through its effective identity.
@@ -129,7 +107,7 @@ export async function executeContainerPipeline(ctx, specifier) {
             key = buildDependencyKey(depId);
             const mock = findMock(depId);
 
-            observe(function (collector) {
+            publishObservation(observer, function (collector) {
                 collector.addNode({
                     nodeId,
                     key,
@@ -139,9 +117,9 @@ export async function executeContainerPipeline(ctx, specifier) {
                     effective: describeDepId(depId),
                 });
             });
-            observe((collector) => collector.record('requested', {nodeId, key, requested: describeDepId(requested)}));
+            publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.REQUESTED, {nodeId, key, requested: describeDepId(requested)}));
             for (const effect of identifiers.preprocessing) {
-                observe((collector) => collector.record('preprocess', {
+                publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.PREPROCESS, {
                     nodeId,
                     key,
                     index: effect.index,
@@ -150,9 +128,9 @@ export async function executeContainerPipeline(ctx, specifier) {
                     changed: effect.changed,
                 }));
             }
-            observe((collector) => collector.record('effective', {nodeId, key, effective: describeDepId(depId)}));
+            publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.EFFECTIVE, {nodeId, key, effective: describeDepId(depId)}));
             if (parentNodeId !== null) {
-                observe(function (collector) {
+                publishObservation(observer, function (collector) {
                     collector.addEdge({
                         parentNodeId,
                         childNodeId: nodeId,
@@ -173,46 +151,8 @@ export async function executeContainerPipeline(ctx, specifier) {
 
             stage = 'Singleton cache lookup';
             const cache = lifecycle.lookup(depId);
-            observe((collector) => collector.record('cache', {nodeId, key, outcome: cache}));
+            publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.CACHE, {nodeId, key, outcome: cache}));
             logger.log(`Container.pipeline: cache:${cache} '${depId.platform}::${depId.moduleName}'.`);
-
-            /**
-             * Loads one module and reports its derived route before native loading.
-             *
-             * @returns {Promise<{namespace: object, specifier: string, cache: 'hit'|'miss', mapping?: {prefix: string, target: string, defaultExt: string}}>} Loaded module details.
-             */
-            const loadModule = async function () {
-                let routeObserved = false;
-                /**
-                 * @param {{specifier: string, cache: 'hit'|'miss', mapping?: {prefix: string, target: string, defaultExt: string}}} route
-                 * @returns {void}
-                 */
-                const reportRoute = function (route) {
-                    routeObserved = true;
-                    stage = 'module loading';
-                    observe((collector) => collector.record('route', {
-                        nodeId,
-                        key,
-                        addressKind: depId.platform,
-                        moduleSpecifier: route.specifier,
-                        moduleCache: route.cache,
-                        ...(route.mapping ? {mapping: route.mapping} : {}),
-                    }));
-                };
-                const resolved = await resolver.resolveWithDetails(depId, reportRoute);
-                if (!routeObserved) {
-                    stage = 'module loading';
-                    observe((collector) => collector.record('route', {
-                        nodeId,
-                        key,
-                        addressKind: depId.platform,
-                        moduleSpecifier: resolved.specifier,
-                        moduleCache: resolved.cache,
-                        ...(resolved.mapping ? {mapping: resolved.mapping} : {}),
-                    }));
-                }
-                return resolved;
-            };
 
             return await lifecycle.apply(depId, async function () {
                 /** @type {object} */
@@ -222,34 +162,52 @@ export async function executeContainerPipeline(ctx, specifier) {
 
                 if (mock.found) {
                     stage = 'test substitution';
-                    observe((collector) => collector.record('acquisition', {nodeId, key, mode: 'test-substitution'}));
+                    publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.ACQUISITION, {nodeId, key, mode: 'test-substitution'}));
                     logger.log(`Container.pipeline: mock-lookup:hit '${key}'.`);
                     if (depId.wrappers.length > 0) {
                         stage = 'route selection';
-                        const resolved = await loadModule();
-                        namespace = resolved.namespace;
-                        registerRuntimeOwnedNamespace(namespace);
+                        const route = resolver.deriveRoute(depId);
+                        publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.ROUTE, {
+                            nodeId,
+                            key,
+                            addressKind: depId.platform,
+                            moduleSpecifier: route.specifier,
+                            moduleCache: route.cache,
+                            ...(route.mapping ? {mapping: route.mapping} : {}),
+                        }));
+                        stage = 'module loading';
+                        namespace = await resolver.load(depId, route);
+                        registerRuntimeOwned(namespace);
                     }
                     acquired = mock.value;
                 } else {
                     stage = 'route selection';
                     logger.log(`Container.pipeline: resolve:entry '${depId.platform}::${depId.moduleName}'.`);
-                    const resolved = await loadModule();
-                    namespace = resolved.namespace;
-                    registerRuntimeOwnedNamespace(namespace);
+                    const route = resolver.deriveRoute(depId);
+                    publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.ROUTE, {
+                        nodeId,
+                        key,
+                        addressKind: depId.platform,
+                        moduleSpecifier: route.specifier,
+                        moduleCache: route.cache,
+                        ...(route.mapping ? {mapping: route.mapping} : {}),
+                    }));
+                    stage = 'module loading';
+                    namespace = await resolver.load(depId, route);
+                    registerRuntimeOwned(namespace);
 
                     stage = 'Export Selection';
                     const selected = instantiator.select(depId, namespace);
-                    observe((collector) => collector.record('export', {nodeId, key, exportName: depId.exportName}));
+                    publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.EXPORT, {nodeId, key, exportName: depId.exportName}));
                     /** @type {Record<string, unknown>} */
                     const dependencies = {};
                     if (depId.life !== null) {
                         stage = 'producer acquisition';
-                        observe((collector) => collector.record('acquisition', {nodeId, key, mode: 'producer'}));
+                        publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.ACQUISITION, {nodeId, key, mode: 'producer'}));
                         const declared = readDepsDecl(namespace, depId);
                         for (const [name, childSpecifier] of Object.entries(declared)) {
                             stage = 'child dependency resolution';
-                            observe((collector) => collector.record('child', {nodeId, key, dependencyName: name, requestedSpecifier: childSpecifier}));
+                            publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.CHILD, {nodeId, key, dependencyName: name, requestedSpecifier: childSpecifier}));
                             dependencies[name] = await resolveOne(
                                 /** @type {string} */ (childSpecifier),
                                 context.stack,
@@ -258,11 +216,11 @@ export async function executeContainerPipeline(ctx, specifier) {
                             );
                         }
                         stage = 'producer invocation';
-                        observe((collector) => collector.record('producer invocation', {nodeId, key}));
+                        publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.PRODUCER_INVOCATION, {nodeId, key}));
                         acquired = instantiator.produce(selected, dependencies);
                     } else {
                         stage = 'Direct acquisition';
-                        observe((collector) => collector.record('acquisition', {nodeId, key, mode: 'direct'}));
+                        publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.ACQUISITION, {nodeId, key, mode: 'direct'}));
                         acquired = selected;
                     }
                 }
@@ -271,24 +229,24 @@ export async function executeContainerPipeline(ctx, specifier) {
                 logger.log(`Container.pipeline: postprocess:entry '${depId.platform}::${depId.moduleName}'.`);
                 const postprocessed = applyPostprocess(acquired, context);
                 if (postprocessCount > 0) {
-                    observe((collector) => collector.record('postprocess', {nodeId, key, count: postprocessCount}));
+                    publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.POSTPROCESS, {nodeId, key, count: postprocessCount}));
                 }
 
                 stage = 'Wrapper execution';
                 const wrapped = wrapperExecutor.execute(depId, postprocessed, namespace);
                 if (depId.wrappers.length > 0) {
-                    observe((collector) => collector.record('wrappers', {nodeId, key, wrappers: [...depId.wrappers]}));
+                    publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.WRAPPERS, {nodeId, key, wrappers: [...depId.wrappers]}));
                 }
 
                 stage = 'hardening';
                 const hardening = harden(wrapped);
                 const hardened = makePromiseSafe(hardening.value);
-                observe((collector) => collector.record('hardening', {nodeId, key, mode: hardening.mode}));
+                publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.HARDENING, {nodeId, key, mode: hardening.mode}));
                 logger.log(`Container.pipeline: return:node '${depId.platform}::${depId.moduleName}'.`);
                 return hardened;
             });
         } catch (error) {
-            observe((collector) => collector.record('failure', {
+            publishObservation(observer, (collector) => collector.record(TeqFw_Di_Enum_ObservationEvent.FAILURE, {
                 nodeId,
                 key: key || null,
                 stage,

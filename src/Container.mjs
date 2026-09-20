@@ -12,21 +12,16 @@ import TeqFw_Di_Resolver from './Container/Resolver.mjs';
 import TeqFw_Di_Container_Instantiate from './Container/Instantiate.mjs';
 import TeqFw_Di_Container_Lifecycle from './Container/Lifecycle.mjs';
 import TeqFw_Di_Container_Executor from './Container/Executor.mjs';
+import TeqFw_Di_Container_Hardener from './Container/Hardener.mjs';
+import {createObserver, publishObservation} from './Container/Observer.mjs';
 import {executeContainerPipeline} from './Container/Pipeline.mjs';
 import {createResolutionContext} from './Container/ResolutionContext.mjs';
+import TeqFw_Di_Enum_ObservationEvent from './Enum/ObservationEvent.mjs';
 import TeqFw_Di_Internal_Logger, {TeqFw_Di_Internal_Logger_Noop} from './Internal/Logger.mjs';
 import {buildDependencyKey} from './Internal/DependencyKey.mjs';
 
 /**
  * @typedef {'notConfigured'|'operational'|'failed'} TeqFw_Di_Container_State
- */
-
-/**
- * @typedef {'primitive'|'already-frozen'|'runtime-owned'|'frozen'|'configured'} TeqFw_Di_Container_Hardening_Mode
- */
-
-/**
- * @typedef {{value: unknown, mode: TeqFw_Di_Container_Hardening_Mode}} TeqFw_Di_Container_Hardening_Result
  */
 
 /**
@@ -50,8 +45,8 @@ export default class TeqFw_Di_Container {
         let testMode = false;
         let loggingEnabled = false;
         let introspectionEnabled = false;
-        /** @type {object|null} */
-        let lastIntrospection = null;
+        /** @type {ReturnType<typeof createObserver>|null} */
+        let lastObserver = null;
         /** @type {TeqFw_Di_Parser} */
         const parser = new TeqFw_Di_Parser();
         /** @type {TeqFw_Di_Dto_DepId__Factory} */
@@ -68,57 +63,11 @@ export default class TeqFw_Di_Container {
         const instantiator = new TeqFw_Di_Container_Instantiate();
         /** @type {TeqFw_Di_Container_Executor} */
         const wrapperExecutor = new TeqFw_Di_Container_Executor();
-        /** @type {WeakSet<object>} */
-        const runtimeOwnedNamespaces = new WeakSet();
+        /** @type {TeqFw_Di_Container_Hardener} */
+        const hardener = new TeqFw_Di_Container_Hardener();
 
         const getKey = buildDependencyKey;
         const getMockKey = buildDependencyKey;
-
-        /**
-         * Records one native ES Module Namespace Object returned by the runtime.
-         *
-         * @param {object} namespace
-         * @returns {void}
-         */
-        const registerRuntimeOwnedNamespace = function (namespace) {
-            runtimeOwnedNamespaces.add(namespace);
-        };
-
-        /**
-         * Applies default shallow hardening at the Container boundary.
-         *
-         * Primitives, already hardened values, and Resolver-proven native ES
-         * Module Namespace Objects pass through. Ordinary object and function
-         * values must freeze successfully or propagate a Dependency Resolution
-         * failure.
-         *
-         * @param {unknown} value
-         * @returns {TeqFw_Di_Container_Hardening_Result}
-         */
-        const applyDefaultHardening = function (value) {
-            if ((value === null) || (value === undefined)) return {value, mode: 'primitive'};
-            const type = typeof value;
-            if ((type !== 'object') && (type !== 'function')) return {value, mode: 'primitive'};
-            if (Object.isFrozen(value)) return {value, mode: 'already-frozen'};
-            if (runtimeOwnedNamespaces.has(/** @type {object} */ (value))) return {value, mode: 'runtime-owned'};
-            return {value: Object.freeze(value), mode: 'frozen'};
-        };
-
-        /** @type {((value: unknown) => unknown)|null} */
-        let configuredHardener = null;
-
-        /**
-         * Applies the selected hardening policy and returns its actual mode.
-         *
-         * @param {unknown} value
-         * @returns {TeqFw_Di_Container_Hardening_Result}
-         */
-        const applyHardening = function (value) {
-            if (configuredHardener !== null) {
-                return {value: configuredHardener(value), mode: 'configured'};
-            }
-            return applyDefaultHardening(value);
-        };
 
         /**
          * Applies registered preprocessing hooks in registration order.
@@ -221,167 +170,6 @@ export default class TeqFw_Di_Container {
         };
 
         /**
-         * Copies observation data into an immutable, machine-readable snapshot value.
-         *
-         * @param {unknown} value
-         * @returns {unknown}
-         */
-        const copyObservation = function (value) {
-            if (Array.isArray(value)) return Object.freeze(value.map(copyObservation));
-            if ((value !== null) && (typeof value === 'object')) {
-                /** @type {Record<string, unknown>} */
-                const copy = {};
-                for (const [key, item] of Object.entries(/** @type {Record<string, unknown>} */ (value))) {
-                    copy[key] = copyObservation(item);
-                }
-                return Object.freeze(copy);
-            }
-            return value;
-        };
-
-        /**
-         * Creates one inert-on-failure collector for a resolution attempt.
-         *
-         * @param {string} specifier
-         * @returns {{addNode(data: Record<string, unknown>): void, addEdge(data: Record<string, unknown>): void, record(kind: string, data: Record<string, unknown>): void, complete(outcome: 'success'|'failure', state: TeqFw_Di_Container_State): void}}
-         */
-        const createObserver = function (specifier) {
-            /** @type {object[]} */
-            const nodes = [];
-            /** @type {object[]} */
-            const edges = [];
-            /** @type {object[]} */
-            const trace = [];
-            /** @type {Map<string, Record<string, unknown>>} */
-            const resolutions = new Map();
-            /** @type {object[]} */
-            const stateTransitions = [];
-            /** @type {object|null} */
-            let failure = null;
-
-            /**
-             * @param {() => void} action
-             * @returns {void}
-             */
-            const safely = function (action) {
-                try {
-                    action();
-                } catch {
-                    // Observation must not alter the resolution it describes.
-                }
-            };
-
-            return {
-                addNode(data) {
-                    safely(function () {
-                        const payload = /** @type {Record<string, unknown>} */ (copyObservation(data));
-                        nodes.push(payload);
-                        const nodeId = /** @type {string} */ (payload.nodeId);
-                        resolutions.set(nodeId, {
-                            nodeId,
-                            key: payload.key,
-                            parentNodeId: payload.parentNodeId,
-                            dependencyName: payload.dependencyName,
-                            requested: payload.requested,
-                            effective: payload.effective,
-                            preprocessing: [],
-                            children: [],
-                        });
-                    });
-                },
-                addEdge(data) {
-                    safely(function () {
-                        const payload = /** @type {Record<string, unknown>} */ (copyObservation(data));
-                        edges.push(payload);
-                        const parent = resolutions.get(/** @type {string} */ (payload.parentNodeId));
-                        if (parent) {
-                            /** @type {object[]} */
-                            const children = /** @type {object[]} */ (parent.children);
-                            children.push(Object.freeze({
-                                nodeId: payload.childNodeId,
-                                dependencyName: payload.dependencyName,
-                                requested: payload.requested,
-                                effective: payload.effective,
-                            }));
-                        }
-                    });
-                },
-                record(kind, data) {
-                    safely(function () {
-                        const payload = /** @type {Record<string, unknown>} */ (copyObservation(data));
-                        trace.push(Object.freeze({index: trace.length, kind, ...payload}));
-                        if (kind === 'state') {
-                            stateTransitions.push(Object.freeze({...payload}));
-                            return;
-                        }
-                        const nodeId = payload.nodeId;
-                        const resolution = typeof nodeId === 'string' ? resolutions.get(nodeId) : undefined;
-                        if (kind === 'failure') {
-                            const entry = Object.freeze({
-                                nodeId: payload.nodeId ?? null,
-                                key: payload.key ?? null,
-                                stage: payload.stage ?? null,
-                                cause: payload.cause ?? payload.message ?? null,
-                            });
-                            if (resolution) resolution.failure = entry;
-                            if (failure === null) failure = entry;
-                            return;
-                        }
-                        if (!resolution) return;
-                        if (kind === 'preprocess') {
-                            /** @type {object[]} */
-                            const preprocessing = /** @type {object[]} */ (resolution.preprocessing);
-                            preprocessing.push(Object.freeze({
-                                index: payload.index,
-                                before: payload.before,
-                                after: payload.after,
-                                changed: payload.changed,
-                            }));
-                        } else if (kind === 'cache') {
-                            resolution.cache = payload.outcome;
-                        } else if (kind === 'route') {
-                            resolution.route = Object.freeze({
-                                addressKind: payload.addressKind,
-                                moduleSpecifier: payload.moduleSpecifier,
-                                moduleCache: payload.moduleCache,
-                                ...(payload.mapping ? {mapping: payload.mapping} : {}),
-                            });
-                        } else if (kind === 'export') {
-                            resolution.exportName = payload.exportName;
-                        } else if (kind === 'acquisition') {
-                            resolution.acquisition = payload.mode;
-                        } else if (kind === 'postprocess') {
-                            resolution.postprocessors = payload.count;
-                        } else if (kind === 'wrappers') {
-                            resolution.wrappers = payload.wrappers;
-                        } else if (kind === 'hardening') {
-                            resolution.hardening = Object.freeze({mode: payload.mode});
-                        }
-                    });
-                },
-                complete(outcome, nextState) {
-                    safely(function () {
-                        lastIntrospection = Object.freeze({
-                            graph: Object.freeze({
-                                nodes: Object.freeze([...nodes]),
-                                edges: Object.freeze([...edges]),
-                            }),
-                            trace: Object.freeze([...trace]),
-                            explanation: Object.freeze({
-                                requestedSpecifier: specifier,
-                                outcome,
-                                containerState: nextState,
-                                stateTransitions: Object.freeze([...stateTransitions]),
-                                resolutions: Object.freeze([...resolutions.values()].map(copyObservation)),
-                                ...(failure ? {failure} : {}),
-                            }),
-                        });
-                    });
-                },
-            };
-        };
-
-        /**
          * Adds a preprocessing hook.
          *
          * @param {(depId: TeqFw_Di_Dto_DepId, context: TeqFw_Di_Container_ResolutionContext) => TeqFw_Di_Dto_DepId} fn
@@ -415,7 +203,7 @@ export default class TeqFw_Di_Container {
         this.setHardener = function (fn) {
             assertBuilderStage();
             logBuilder('setHardener().');
-            configuredHardener = fn;
+            hardener.setConfigured(fn);
         };
 
         /**
@@ -474,7 +262,7 @@ export default class TeqFw_Di_Container {
          * @returns {object|null}
          */
         this.getIntrospection = function () {
-            return lastIntrospection;
+            return lastObserver ? lastObserver.getSnapshot() : null;
         };
 
         /**
@@ -500,21 +288,25 @@ export default class TeqFw_Di_Container {
          */
         this.get = async function (specifier) {
             const observer = introspectionEnabled ? createObserver(specifier) : null;
+            if (observer) lastObserver = observer;
             if (state === 'failed') {
                 logger.error(`Container.get: rejected in failed state specifier='${specifier}'.`);
-                if (observer) {
-                    observer.record('failure', {
+                publishObservation(observer, (collector) => {
+                    collector.record(TeqFw_Di_Enum_ObservationEvent.FAILURE, {
                         stage: 'Container state',
                         cause: 'Container is in failed state.',
                     });
-                    observer.complete('failure', state);
-                }
+                });
+                publishObservation(observer, (collector) => collector.complete('failure', state));
                 throw new Error('Container is in failed state.');
             }
 
             try {
                 initializeInfrastructure(function () {
-                    if (observer) observer.record('state', {from: 'notConfigured', to: 'operational'});
+                    publishObservation(observer, (collector) => collector.record(
+                        TeqFw_Di_Enum_ObservationEvent.STATE,
+                        {from: 'notConfigured', to: 'operational'}
+                    ));
                 });
                 logger.log(`Container.state: '${state}'.`);
                 const value = await executeContainerPipeline({
@@ -523,15 +315,15 @@ export default class TeqFw_Di_Container {
                     instantiator,
                     wrapperExecutor,
                     logger,
-                    harden: applyHardening,
-                    registerRuntimeOwnedNamespace,
+                    harden: hardener.harden,
+                    registerRuntimeOwned: hardener.registerRuntimeOwned,
                     canonicalize,
                     findMock,
                     applyPostprocess,
                     postprocessCount: postprocess.length,
                     observer,
                 }, specifier);
-                if (observer) observer.complete('success', state);
+                publishObservation(observer, (collector) => collector.complete('success', state));
                 return value;
             } catch (error) {
                 const transitioned = state === 'operational';
@@ -539,10 +331,13 @@ export default class TeqFw_Di_Container {
                     logger.error(`Container.transition: operational -> failed.`, error);
                     state = 'failed';
                 }
-                if (observer) {
-                    if (transitioned) observer.record('state', {from: 'operational', to: state});
-                    observer.complete('failure', state);
+                if (transitioned) {
+                    publishObservation(observer, (collector) => collector.record(
+                        TeqFw_Di_Enum_ObservationEvent.STATE,
+                        {from: 'operational', to: state}
+                    ));
                 }
+                publishObservation(observer, (collector) => collector.complete('failure', state));
                 throw error;
             }
         };

@@ -2,9 +2,12 @@ declare global {
   type TeqFw_Di_Config_NamespaceRegistry = import("./src/Config/NamespaceRegistry.mjs").default;
   type TeqFw_Di_Container = import("./src/Container.mjs").default;
   type TeqFw_Di_Container_Executor = import("./src/Container/Executor.mjs").default;
+  type TeqFw_Di_Container_Hardener = import("./src/Container/Hardener.mjs").default;
   type TeqFw_Di_Container_Instantiate = import("./src/Container/Instantiate.mjs").default;
   type TeqFw_Di_Container_Lifecycle = import("./src/Container/Lifecycle.mjs").default;
+  type TeqFw_Di_Container_Observer_Contract = ReturnType<typeof import("./src/Container/Observer.mjs").createObserver>;
   type TeqFw_Di_Container_Pipeline = typeof import("./src/Container/Pipeline.mjs").executeContainerPipeline;
+  type TeqFw_Di_Container_State = 'notConfigured'|'operational'|'failed';
   type TeqFw_Di_Container_ResolutionContext = Readonly<{
     depId: TeqFw_Di_Dto_DepId,
     root: TeqFw_Di_Dto_DepId,
@@ -20,6 +23,7 @@ declare global {
   type TeqFw_Di_Dto_Resolver_Config__Factory = import("./src/Dto/Resolver/Config.mjs").Factory;
   type TeqFw_Di_Enum_Composition = typeof import("./src/Enum/Composition.mjs").default;
   type TeqFw_Di_Enum_Life = typeof import("./src/Enum/Life.mjs").default;
+  type TeqFw_Di_Enum_ObservationEvent = typeof import("./src/Enum/ObservationEvent.mjs").default;
   type TeqFw_Di_Enum_Platform = typeof import("./src/Enum/Platform.mjs").default;
   type TeqFw_Di_Internal_DependencyKey = typeof import("./src/Internal/DependencyKey.mjs").buildDependencyKey;
   type TeqFw_Di_Internal_DepsDecl = typeof import("./src/Internal/DepsDecl.mjs").readDepsDecl;

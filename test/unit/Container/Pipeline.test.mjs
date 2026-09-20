@@ -45,8 +45,11 @@ function makeContext(overrides = {}) {
     /** @type {object} */
     const namespace = {default: () => ({value: 42})};
     const resolver = /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
-        async resolveWithDetails() {
-            return {namespace, specifier: '/App/Mod.mjs', cache: 'miss'};
+        deriveRoute() {
+            return {specifier: '/App/Mod.mjs', cache: 'miss'};
+        },
+        async load() {
+            return namespace;
         },
         async resolve() {
             return namespace;
@@ -68,7 +71,7 @@ function makeContext(overrides = {}) {
         },
         logger,
         harden(value) { return {value, mode: 'frozen'}; },
-        registerRuntimeOwnedNamespace() {},
+        registerRuntimeOwned() {},
         findMock() { return {found: false, value: undefined}; },
         applyPostprocess(value) { return value; },
         postprocessCount: 0,
@@ -125,11 +128,11 @@ describe('TeqFw_Di_Container_Pipeline', () => {
         let hardeningCalls = 0;
         const ctx = makeContext({
             resolver: /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
-                async resolveWithDetails() {
+                deriveRoute() {
                     resolverCalls += 1;
-                    return {namespace: {default: () => ({})}, specifier: '/App/Mod.mjs', cache: 'miss'};
+                    return {specifier: '/App/Mod.mjs', cache: 'miss'};
                 },
-                async resolve() { return {default: () => ({})}; },
+                async load() { return {default: () => ({})}; },
             })),
             instantiator: {
                 select(/** @type {TeqFw_Di_Dto_DepId} */ _depId, /** @type {object} */ namespace) {
@@ -222,17 +225,20 @@ describe('TeqFw_Di_Container_Pipeline', () => {
                         return {requested: depId, effective: depId, preprocessing: []};
                     },
                     resolver: /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
+                        deriveRoute() {
+                            return {specifier: '/App/Mod.mjs', cache: 'miss'};
+                        },
                         /**
                          * @param {TeqFw_Di_Dto_DepId} depId
                          */
-                        async resolveWithDetails(depId) {
+                        async load(depId) {
                             const namespace = depId.moduleName === 'App_Child'
                                 ? {default: () => ({value: 'child'})}
                                 : {
                                     default: () => ({value: 42}),
                                     __deps__: {child: 'App_Child$'},
                                 };
-                            return {namespace, specifier: '/App/Mod.mjs', cache: 'miss'};
+                            return namespace;
                         },
                     })),
                     observer,
@@ -250,7 +256,10 @@ describe('TeqFw_Di_Container_Pipeline', () => {
         const failure = new Error('real resolution failure');
         const ctx = makeContext({
             resolver: /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
-                async resolveWithDetails() {
+                deriveRoute() {
+                    return {specifier: '/App/Mod.mjs', cache: 'miss'};
+                },
+                async load() {
                     throw failure;
                 },
             })),
@@ -283,8 +292,9 @@ describe('TeqFw_Di_Container_Pipeline', () => {
         );
         await assert.rejects(
             () => executeContainerPipeline(makeContext({
-                resolver: /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
-                    async resolveWithDetails() { throw new Error('resolve error'); },
+            resolver: /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
+                    deriveRoute() { return {specifier: '/App/Mod.mjs', cache: 'miss'}; },
+                    async load() { throw new Error('resolve error'); },
                     async resolve() { throw new Error('resolve error'); },
                 })),
             }), 'App_Mod$'),
@@ -298,16 +308,15 @@ describe('TeqFw_Di_Container_Pipeline', () => {
         const records = [];
         const ctx = makeContext({
             resolver: /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
-                async resolveWithDetails() {
+                deriveRoute() {
+                    return {specifier: '/App/Mod.mjs', cache: 'miss'};
+                },
+                async load() {
                     return {
-                        namespace: {
-                            get __deps__() {
-                                declarationReads += 1;
-                                return {child: 'App_Child$'};
-                            },
+                        get __deps__() {
+                            declarationReads += 1;
+                            return {child: 'App_Child$'};
                         },
-                        specifier: '/App/Mod.mjs',
-                        cache: 'miss',
                     };
                 },
             })),

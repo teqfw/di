@@ -184,4 +184,25 @@ describe('Integration 40: lifecycle', () => {
         assert.strictEqual(first, second);
         assert.equal(getProducerCalls(), producerBefore + 1);
     });
+
+    it('diagnoses a cross-request Singleton cycle as indefinitely pending', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        let firstSettled = false;
+        let secondSettled = false;
+
+        container.get('Fx_SingletonCycleA$').then(
+            () => { firstSettled = true; },
+            () => { firstSettled = true; }
+        );
+        container.get('Fx_SingletonCycleB$').then(
+            () => { secondSettled = true; },
+            () => { secondSettled = true; }
+        );
+
+        await new Promise((resolve) => setImmediate(resolve));
+
+        assert.equal(firstSettled, false);
+        assert.equal(secondSettled, false);
+    });
 });

@@ -101,6 +101,29 @@ describe('TeqFw_Di_Resolver', () => {
     });
 
     describe('platform handling', () => {
+        it('derives a route before loading begins', async () => {
+            const io = createImportDouble();
+            const namespace = {kind: 'staged'};
+            const specifier = '/lib/group-web/App/Service.mjs';
+            io.setModule(specifier, namespace);
+            const resolver = createResolver(createConfig(), io.importer);
+
+            const route = resolver.deriveRoute(createDepId());
+
+            assert.deepStrictEqual(route, {
+                specifier,
+                cache: 'miss',
+                mapping: {
+                    prefix: 'Ns_Group_Web_',
+                    target: '/lib/group-web',
+                    defaultExt: '.mjs',
+                },
+            });
+            assert.deepStrictEqual(io.calls, []);
+            assert.strictEqual(await resolver.load(createDepId(), route), namespace);
+            assert.deepStrictEqual(io.calls, [specifier]);
+        });
+
         it('derives node specifier with node scheme', async () => {
             const io = createImportDouble();
             const namespace = {};

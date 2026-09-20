@@ -149,64 +149,85 @@ export default class TeqFw_Di_Resolver {
         };
 
         /**
-         * Resolves module namespace details by depId platform and moduleName.
+         * Derives a stable route description without starting native loading.
+         *
+         * The returned cache marker describes the Resolver-owned namespace
+         * promise, not Container Singleton state.
          *
          * @param {TeqFw_Di_Dto_DepId} depId Validated dependency identity DTO.
-         * @param {((route: TeqFw_Di_Resolver_RouteDetails) => void)|null} [onRoute]
-         * @returns {Promise<{namespace: object, specifier: string, cache: 'hit'|'miss', mapping?: TeqFw_Di_Resolver_NamespaceRule}>}
+         * @returns {TeqFw_Di_Resolver_RouteDetails}
          */
-        const resolveWithDetails = async function (depId, onRoute = null) {
-            await Promise.resolve();
-
+        const deriveRouteDetails = function (depId) {
             const platform = depId.platform;
             const moduleName = depId.moduleName;
             const key = `${platform}::${moduleName}`;
-
             if (cache.has(key)) {
                 if (log) log.log(`Resolver.cache: hit key='${key}'.`);
                 const cached = /** @type {{route: TeqFw_Di_Resolver_Route, promise: Promise<object>}} */ (cache.get(key));
-                if (onRoute) onRoute({
-                    specifier: cached.route.specifier,
-                    cache: 'hit',
-                    ...(cached.route.mapping ? {mapping: cached.route.mapping} : {}),
-                });
                 return {
-                    namespace: await cached.promise,
                     specifier: cached.route.specifier,
                     cache: 'hit',
                     ...(cached.route.mapping ? {mapping: cached.route.mapping} : {}),
                 };
             }
             if (log) log.log(`Resolver.cache: miss key='${key}'.`);
-
             const route = deriveRoute(platform, moduleName);
-            const specifier = route.specifier;
-            if (onRoute) onRoute({
-                specifier,
+            return {
+                specifier: route.specifier,
                 cache: 'miss',
                 ...(route.mapping ? {mapping: route.mapping} : {}),
-            });
+            };
+        };
 
+        /**
+         * Loads the namespace for a previously derived route.
+         *
+         * Cache creation occurs before the first asynchronous boundary so
+         * concurrent identical route loads converge on one import promise.
+         *
+         * @param {TeqFw_Di_Dto_DepId} depId Validated dependency identity DTO.
+         * @param {TeqFw_Di_Resolver_RouteDetails} routeDetails Derived route.
+         * @returns {Promise<object>}
+         */
+        const loadModule = async function (depId, routeDetails) {
+            const key = `${depId.platform}::${depId.moduleName}`;
+            if (cache.has(key)) {
+                const cached = /** @type {{route: TeqFw_Di_Resolver_Route, promise: Promise<object>}} */ (cache.get(key));
+                return cached.promise;
+            }
+
+            const route = Object.freeze({
+                specifier: routeDetails.specifier,
+                ...(routeDetails.mapping ? {mapping: routeDetails.mapping} : {}),
+            });
             /** @type {Promise<object>} */
             const promise = (async () => {
-                if (log) log.log(`Resolver.import: '${specifier}'.`);
-                return importModule(specifier);
+                if (log) log.log(`Resolver.import: '${route.specifier}'.`);
+                return importModule(route.specifier);
             })();
-
             cache.set(key, {route, promise});
 
             try {
-                return {
-                    namespace: await promise,
-                    specifier,
-                    cache: 'miss',
-                    ...(route.mapping ? {mapping: route.mapping} : {}),
-                };
+                return await promise;
             } catch (error) {
-                cache.delete(key);
+                if (cache.get(key)?.promise === promise) cache.delete(key);
                 if (log) log.error(`Resolver.cache: evict key='${key}' after failure.`, error);
                 throw error;
             }
+        };
+
+        /**
+         * Resolves module namespace details through the explicit route/load
+         * boundary. This compatibility method remains for internal consumers
+         * that need both the loaded namespace and route metadata.
+         *
+         * @param {TeqFw_Di_Dto_DepId} depId Validated dependency identity DTO.
+         * @returns {Promise<{namespace: object, specifier: string, cache: 'hit'|'miss', mapping?: TeqFw_Di_Resolver_NamespaceRule}>}
+         */
+        const resolveWithDetails = async function (depId) {
+            const route = deriveRouteDetails(depId);
+            const namespace = await loadModule(depId, route);
+            return {namespace, ...route};
         };
 
         /**
@@ -218,6 +239,23 @@ export default class TeqFw_Di_Resolver {
         this.resolve = async function (depId) {
             return (await resolveWithDetails(depId)).namespace;
         };
+
+        /**
+         * Derives a route before native module loading begins.
+         *
+         * @param {TeqFw_Di_Dto_DepId} depId Validated dependency identity DTO.
+         * @returns {TeqFw_Di_Resolver_RouteDetails}
+         */
+        this.deriveRoute = deriveRouteDetails;
+
+        /**
+         * Loads a namespace for a previously derived route.
+         *
+         * @param {TeqFw_Di_Dto_DepId} depId Validated dependency identity DTO.
+         * @param {TeqFw_Di_Resolver_RouteDetails} routeDetails Derived route.
+         * @returns {Promise<object>}
+         */
+        this.load = loadModule;
 
         /**
          * Resolves a namespace together with the selected Module Specifier.

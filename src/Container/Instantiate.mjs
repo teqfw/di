@@ -13,15 +13,15 @@
  */
 
 /**
- * @typedef {(deps: object) => unknown} CallableFactory
+ * @typedef {(deps: object) => unknown} CallableProducer
  */
 
 /**
- * @typedef {new (deps: object) => unknown} ConstructableFactory
+ * @typedef {new (deps: object) => unknown} ConstructableProducer
  */
 
 /**
- * @typedef {CallableFactory | ConstructableFactory} Factory
+ * @typedef {CallableProducer | ConstructableProducer} Producer
  */
 export default class TeqFw_Di_Container_Instantiate {
 
@@ -55,7 +55,7 @@ export default class TeqFw_Di_Container_Instantiate {
          * Determines whether a callable supports construction with `new`.
          *
          * @param {Function} value
-         * @returns {value is ConstructableFactory}
+         * @returns {value is ConstructableProducer}
          */
         const isConstructible = function (value) {
             try {
@@ -87,29 +87,29 @@ export default class TeqFw_Di_Container_Instantiate {
         this.produce = function (selected, resolvedDeps) {
             if (typeof selected !== 'function') {
                 throw new Error(
-                    'Factory composition requires a callable export.'
+                    'Producer composition requires a callable export.'
                 );
             }
 
-            /** @type {Factory} */
-            const factory = /** @type {Factory} */ (selected);
+            /** @type {Producer} */
+            const producer = /** @type {Producer} */ (selected);
 
             /** @type {unknown} */
             let result;
 
-            if (isConstructible(factory)) {
-                /** @type {ConstructableFactory} */
-                const Ctor = factory;
+            if (isConstructible(producer)) {
+                /** @type {ConstructableProducer} */
+                const Ctor = producer;
                 result = new Ctor(resolvedDeps);
             } else {
-                /** @type {CallableFactory} */
-                const Fn = factory;
+                /** @type {CallableProducer} */
+                const Fn = producer;
                 result = Fn(resolvedDeps);
             }
 
             if (result instanceof Promise) {
                 throw new Error(
-                    'Factory composition must return synchronously (non-Promise).'
+                    'Producer composition must return synchronously (non-Promise).'
                 );
             }
 
