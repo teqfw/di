@@ -150,10 +150,12 @@ export default class TeqFw_Di_Container {
          *
          * @param {string} specifier
          * @param {readonly TeqFw_Di_Dto_DepId[]} [ancestors]
+         * @param {(() => void)|null} [onPreprocess]
          * @returns {{requested: TeqFw_Di_Dto_DepId, effective: TeqFw_Di_Dto_DepId, preprocessing: {index: number, before: TeqFw_Di_Dto_DepId, after: TeqFw_Di_Dto_DepId, changed: boolean}[]}}
          */
-        const canonicalize = function (specifier, ancestors = []) {
+        const canonicalize = function (specifier, ancestors = [], onPreprocess = null) {
             const requested = parser.parse(specifier);
+            if (onPreprocess) onPreprocess();
             return {requested, ...applyPreprocess(requested, ancestors)};
         };
 

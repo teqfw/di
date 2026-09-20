@@ -190,20 +190,90 @@ describe('TeqFw_Di_Container_Pipeline', () => {
         assert.equal((/** @type {{effective: {address: string}}} */ (records.find((record) => record.kind === 'effective')?.data)).effective.address, 'App_Effective');
     });
 
-    it('keeps resolution successful when an observation record fails', async () => {
-        const ctx = makeContext({
-            observer: {
-                addNode() {},
-                addEdge() {},
+    it('keeps resolution successful when any observation operation fails', async () => {
+        for (const method of ['addNode', 'addEdge', 'record']) {
+            let methodCalls = 0;
+            const root = createDepId();
+            const child = createDepId({moduleName: 'App_Child', origin: 'App_Child$'});
+            const observer = {
+                addNode() {
+                    if (method !== 'addNode') return;
+                    methodCalls += 1;
+                    throw new Error('observer addNode failure');
+                },
+                addEdge() {
+                    if (method !== 'addEdge') return;
+                    methodCalls += 1;
+                    throw new Error('observer addEdge failure');
+                },
                 record() {
-                    throw new Error('observer failure');
+                    if (method !== 'record') return;
+                    methodCalls += 1;
+                    throw new Error('observer record failure');
+                },
+            };
+            const ctx = method === 'addEdge'
+                ? makeContext({
+                    /**
+                     * @param {string} specifier
+                     */
+                    canonicalize(specifier) {
+                        const depId = specifier === 'App_Child$' ? child : root;
+                        return {requested: depId, effective: depId, preprocessing: []};
+                    },
+                    resolver: /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
+                        /**
+                         * @param {TeqFw_Di_Dto_DepId} depId
+                         */
+                        async resolveWithDetails(depId) {
+                            const namespace = depId.moduleName === 'App_Child'
+                                ? {default: () => ({value: 'child'})}
+                                : {
+                                    default: () => ({value: 42}),
+                                    __deps__: {child: 'App_Child$'},
+                                };
+                            return {namespace, specifier: '/App/Mod.mjs', cache: 'miss'};
+                        },
+                    })),
+                    observer,
+                })
+                : makeContext({observer});
+
+            const result = await executeContainerPipeline(ctx, 'App_Mod$');
+
+            assert.deepStrictEqual(result, {value: 42});
+            assert.ok(methodCalls > 0, `${method} must be executed`);
+        }
+    });
+
+    it('preserves a real resolution failure when observation also fails', async () => {
+        const failure = new Error('real resolution failure');
+        const ctx = makeContext({
+            resolver: /** @type {TeqFw_Di_Resolver} */ (/** @type {unknown} */ ({
+                async resolveWithDetails() {
+                    throw failure;
+                },
+            })),
+            observer: {
+                addNode() {
+                    throw new Error('observer addNode failure');
+                },
+                addEdge() {
+                    throw new Error('observer addEdge failure');
+                },
+                record() {
+                    throw new Error('observer record failure');
                 },
             },
         });
 
-        const result = await executeContainerPipeline(ctx, 'App_Mod$');
-
-        assert.deepStrictEqual(result, {value: 42});
+        await assert.rejects(
+            () => executeContainerPipeline(ctx, 'App_Mod$'),
+            (error) => {
+                assert.strictEqual(error, failure);
+                return true;
+            }
+        );
     });
 
     it('propagates canonicalization and module-loading failures', async () => {

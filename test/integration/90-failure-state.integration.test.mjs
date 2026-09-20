@@ -21,8 +21,20 @@ describe('Integration 90: failed state', () => {
         );
         const observation = /** @type {any} */ (container.getIntrospection());
 
-        assert.equal(observation.explanation.failure.stage, 'route selection');
-        assert.equal(observation.trace.some((/** @type {any} */ event) => event.kind === 'route'), false);
+        assert.equal(observation.explanation.containerState, 'failed');
+        assert.equal(observation.explanation.failure.stage, 'module loading');
+        const route = observation.explanation.resolutions[0].route;
+        assert.equal(route.addressKind, 'teq');
+        assert.deepStrictEqual(route.mapping, {
+            prefix: 'Fx_',
+            target: FIXTURE_DIR,
+            defaultExt: '.mjs',
+        });
+        assert.equal(route.moduleSpecifier, path.join(FIXTURE_DIR, 'UnavailableModule.mjs'));
+        const routeIndex = observation.trace.findIndex((/** @type {any} */ event) => event.kind === 'route');
+        const failureIndex = observation.trace.findIndex((/** @type {any} */ event) => event.kind === 'failure');
+        assert.ok(routeIndex >= 0);
+        assert.ok(failureIndex > routeIndex);
         await assert.rejects(() => container.get('Fx_Root$'), /failed state/i);
     });
 
@@ -46,25 +58,31 @@ describe('Integration 90: failed state', () => {
             {
                 configure(/** @type {TeqFw_Di_Container} */ _container) {},
                 specifier: 'teq:Fx_Root$',
+                stage: 'identifier parsing',
             },
             {
                 configure(/** @type {TeqFw_Di_Container} */ container) {
                     container.addPreprocess(() => { throw new Error('preprocess failed'); });
                 },
                 specifier: 'Fx_Root$',
+                stage: 'preprocessing',
             },
             {
                 configure(/** @type {TeqFw_Di_Container} */ _container) {},
                 specifier: 'NoMapping_Root$',
+                stage: 'route selection',
             },
         ];
 
         for (const one of cases) {
             const container = new TeqFw_Di_Container();
             container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+            container.enableIntrospection();
             one.configure(container);
 
             await assert.rejects(() => container.get(one.specifier));
+            const observation = /** @type {any} */ (container.getIntrospection());
+            assert.equal(observation.explanation.failure.stage, one.stage);
             await assert.rejects(() => container.get('Fx_Root$'), /failed state/i);
         }
     });

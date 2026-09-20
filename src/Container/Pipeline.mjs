@@ -23,11 +23,20 @@ import {createResolutionContext} from './ResolutionContext.mjs';
  * @property {TeqFw_Di_Internal_Logger_Contract} logger
  * @property {(value: unknown) => {value: unknown, mode: string}} harden
  * @property {(namespace: object) => void} registerRuntimeOwnedNamespace
- * @property {(specifier: string, ancestors?: readonly TeqFw_Di_Dto_DepId[]) => {requested: TeqFw_Di_Dto_DepId, effective: TeqFw_Di_Dto_DepId, preprocessing: TeqFw_Di_Container_Pipeline_PreprocessEffect[]}} canonicalize
+ * @property {(specifier: string, ancestors?: readonly TeqFw_Di_Dto_DepId[], onPreprocess?: () => void) => {requested: TeqFw_Di_Dto_DepId, effective: TeqFw_Di_Dto_DepId, preprocessing: TeqFw_Di_Container_Pipeline_PreprocessEffect[]}} canonicalize
  * @property {(depId: TeqFw_Di_Dto_DepId) => {found: boolean, value: unknown}} findMock
  * @property {(value: unknown, context: TeqFw_Di_Container_ResolutionContext) => unknown} applyPostprocess
  * @property {number} postprocessCount
- * @property {{addNode(data: Record<string, unknown>): void, addEdge(data: Record<string, unknown>): void, record(kind: string, data: Record<string, unknown>): void}|null} [observer]
+ * @property {TeqFw_Di_Container_Pipeline_Observer|null} [observer]
+ */
+
+/**
+ * Optional resolution observation collector.
+ *
+ * @typedef {object} TeqFw_Di_Container_Pipeline_Observer
+ * @property {(data: Record<string, unknown>) => void} addNode
+ * @property {(data: Record<string, unknown>) => void} addEdge
+ * @property {(kind: string, data: Record<string, unknown>) => void} record
  */
 
 /**
@@ -83,12 +92,16 @@ export async function executeContainerPipeline(ctx, specifier) {
     /**
      * Records one best-effort trace fact without changing resolution.
      *
-     * @param {string} kind
-     * @param {Record<string, unknown>} data
+     * @param {(observer: TeqFw_Di_Container_Pipeline_Observer) => void} operation
      * @returns {void}
      */
-    const observe = function (kind, data) {
-        if (observer) observer.record(kind, data);
+    const observe = function (operation) {
+        if (!observer) return;
+        try {
+            operation(observer);
+        } catch {
+            // Observation is diagnostic and must not alter resolution semantics.
+        }
     };
 
     /**
@@ -107,15 +120,17 @@ export async function executeContainerPipeline(ctx, specifier) {
         let stage = 'identifier parsing';
 
         try {
-            const identifiers = canonicalize(requestedSpecifier, ancestors);
+            const identifiers = canonicalize(requestedSpecifier, ancestors, function () {
+                stage = 'preprocessing';
+            });
             const requested = identifiers.requested;
             const depId = identifiers.effective;
             const context = createResolutionContext(depId, ancestors);
             key = buildDependencyKey(depId);
             const mock = findMock(depId);
 
-            if (observer) {
-                observer.addNode({
+            observe(function (collector) {
+                collector.addNode({
                     nodeId,
                     key,
                     parentNodeId,
@@ -123,26 +138,28 @@ export async function executeContainerPipeline(ctx, specifier) {
                     requested: describeDepId(requested),
                     effective: describeDepId(depId),
                 });
-            }
-            observe('requested', {nodeId, key, requested: describeDepId(requested)});
+            });
+            observe((collector) => collector.record('requested', {nodeId, key, requested: describeDepId(requested)}));
             for (const effect of identifiers.preprocessing) {
-                observe('preprocess', {
+                observe((collector) => collector.record('preprocess', {
                     nodeId,
                     key,
                     index: effect.index,
                     before: describeDepId(effect.before),
                     after: describeDepId(effect.after),
                     changed: effect.changed,
-                });
+                }));
             }
-            observe('effective', {nodeId, key, effective: describeDepId(depId)});
-            if (parentNodeId !== null && observer) {
-                observer.addEdge({
-                    parentNodeId,
-                    childNodeId: nodeId,
-                    dependencyName,
-                    requested: describeDepId(requested),
-                    effective: describeDepId(depId),
+            observe((collector) => collector.record('effective', {nodeId, key, effective: describeDepId(depId)}));
+            if (parentNodeId !== null) {
+                observe(function (collector) {
+                    collector.addEdge({
+                        parentNodeId,
+                        childNodeId: nodeId,
+                        dependencyName,
+                        requested: describeDepId(requested),
+                        effective: describeDepId(depId),
+                    });
                 });
             }
 
@@ -156,8 +173,46 @@ export async function executeContainerPipeline(ctx, specifier) {
 
             stage = 'Singleton cache lookup';
             const cache = lifecycle.lookup(depId);
-            observe('cache', {nodeId, key, outcome: cache});
+            observe((collector) => collector.record('cache', {nodeId, key, outcome: cache}));
             logger.log(`Container.pipeline: cache:${cache} '${depId.platform}::${depId.moduleName}'.`);
+
+            /**
+             * Loads one module and reports its derived route before native loading.
+             *
+             * @returns {Promise<{namespace: object, specifier: string, cache: 'hit'|'miss', mapping?: {prefix: string, target: string, defaultExt: string}}>} Loaded module details.
+             */
+            const loadModule = async function () {
+                let routeObserved = false;
+                /**
+                 * @param {{specifier: string, cache: 'hit'|'miss', mapping?: {prefix: string, target: string, defaultExt: string}}} route
+                 * @returns {void}
+                 */
+                const reportRoute = function (route) {
+                    routeObserved = true;
+                    stage = 'module loading';
+                    observe((collector) => collector.record('route', {
+                        nodeId,
+                        key,
+                        addressKind: depId.platform,
+                        moduleSpecifier: route.specifier,
+                        moduleCache: route.cache,
+                        ...(route.mapping ? {mapping: route.mapping} : {}),
+                    }));
+                };
+                const resolved = await resolver.resolveWithDetails(depId, reportRoute);
+                if (!routeObserved) {
+                    stage = 'module loading';
+                    observe((collector) => collector.record('route', {
+                        nodeId,
+                        key,
+                        addressKind: depId.platform,
+                        moduleSpecifier: resolved.specifier,
+                        moduleCache: resolved.cache,
+                        ...(resolved.mapping ? {mapping: resolved.mapping} : {}),
+                    }));
+                }
+                return resolved;
+            };
 
             return await lifecycle.apply(depId, async function () {
                 /** @type {object} */
@@ -167,50 +222,34 @@ export async function executeContainerPipeline(ctx, specifier) {
 
                 if (mock.found) {
                     stage = 'test substitution';
-                    observe('acquisition', {nodeId, key, mode: 'test-substitution'});
+                    observe((collector) => collector.record('acquisition', {nodeId, key, mode: 'test-substitution'}));
                     logger.log(`Container.pipeline: mock-lookup:hit '${key}'.`);
                     if (depId.wrappers.length > 0) {
                         stage = 'route selection';
-                        const resolved = await resolver.resolveWithDetails(depId);
+                        const resolved = await loadModule();
                         namespace = resolved.namespace;
                         registerRuntimeOwnedNamespace(namespace);
-                        observe('route', {
-                            nodeId,
-                            key,
-                            addressKind: depId.platform,
-                            moduleSpecifier: resolved.specifier,
-                            moduleCache: resolved.cache,
-                            ...(resolved.mapping ? {mapping: resolved.mapping} : {}),
-                        });
                     }
                     acquired = mock.value;
                 } else {
                     stage = 'route selection';
                     logger.log(`Container.pipeline: resolve:entry '${depId.platform}::${depId.moduleName}'.`);
-                    const resolved = await resolver.resolveWithDetails(depId);
+                    const resolved = await loadModule();
                     namespace = resolved.namespace;
                     registerRuntimeOwnedNamespace(namespace);
-                    observe('route', {
-                        nodeId,
-                        key,
-                        addressKind: depId.platform,
-                        moduleSpecifier: resolved.specifier,
-                        moduleCache: resolved.cache,
-                        ...(resolved.mapping ? {mapping: resolved.mapping} : {}),
-                    });
 
                     stage = 'Export Selection';
                     const selected = instantiator.select(depId, namespace);
-                    observe('export', {nodeId, key, exportName: depId.exportName});
+                    observe((collector) => collector.record('export', {nodeId, key, exportName: depId.exportName}));
                     /** @type {Record<string, unknown>} */
                     const dependencies = {};
                     if (depId.life !== null) {
                         stage = 'producer acquisition';
-                        observe('acquisition', {nodeId, key, mode: 'producer'});
+                        observe((collector) => collector.record('acquisition', {nodeId, key, mode: 'producer'}));
                         const declared = readDepsDecl(namespace, depId);
                         for (const [name, childSpecifier] of Object.entries(declared)) {
                             stage = 'child dependency resolution';
-                            observe('child', {nodeId, key, dependencyName: name, requestedSpecifier: childSpecifier});
+                            observe((collector) => collector.record('child', {nodeId, key, dependencyName: name, requestedSpecifier: childSpecifier}));
                             dependencies[name] = await resolveOne(
                                 /** @type {string} */ (childSpecifier),
                                 context.stack,
@@ -219,11 +258,11 @@ export async function executeContainerPipeline(ctx, specifier) {
                             );
                         }
                         stage = 'producer invocation';
-                        observe('producer invocation', {nodeId, key});
+                        observe((collector) => collector.record('producer invocation', {nodeId, key}));
                         acquired = instantiator.produce(selected, dependencies);
                     } else {
                         stage = 'Direct acquisition';
-                        observe('acquisition', {nodeId, key, mode: 'direct'});
+                        observe((collector) => collector.record('acquisition', {nodeId, key, mode: 'direct'}));
                         acquired = selected;
                     }
                 }
@@ -232,29 +271,29 @@ export async function executeContainerPipeline(ctx, specifier) {
                 logger.log(`Container.pipeline: postprocess:entry '${depId.platform}::${depId.moduleName}'.`);
                 const postprocessed = applyPostprocess(acquired, context);
                 if (postprocessCount > 0) {
-                    observe('postprocess', {nodeId, key, count: postprocessCount});
+                    observe((collector) => collector.record('postprocess', {nodeId, key, count: postprocessCount}));
                 }
 
                 stage = 'Wrapper execution';
                 const wrapped = wrapperExecutor.execute(depId, postprocessed, namespace);
                 if (depId.wrappers.length > 0) {
-                    observe('wrappers', {nodeId, key, wrappers: [...depId.wrappers]});
+                    observe((collector) => collector.record('wrappers', {nodeId, key, wrappers: [...depId.wrappers]}));
                 }
 
                 stage = 'hardening';
                 const hardening = harden(wrapped);
                 const hardened = makePromiseSafe(hardening.value);
-                observe('hardening', {nodeId, key, mode: hardening.mode});
+                observe((collector) => collector.record('hardening', {nodeId, key, mode: hardening.mode}));
                 logger.log(`Container.pipeline: return:node '${depId.platform}::${depId.moduleName}'.`);
                 return hardened;
             });
         } catch (error) {
-            observe('failure', {
+            observe((collector) => collector.record('failure', {
                 nodeId,
                 key: key || null,
                 stage,
                 cause: error instanceof Error ? error.message : String(error),
-            });
+            }));
             throw error;
         } finally {
             if (activeHere) {

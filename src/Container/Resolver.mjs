@@ -21,6 +21,10 @@
  */
 
 /**
+ * @typedef {{specifier: string, cache: 'hit'|'miss', mapping?: TeqFw_Di_Resolver_NamespaceRule}} TeqFw_Di_Resolver_RouteDetails
+ */
+
+/**
  * Infrastructure resolver that derives module specifiers, loads module namespace objects,
  * and caches them by `(platform, moduleName)`.
  */
@@ -148,9 +152,10 @@ export default class TeqFw_Di_Resolver {
          * Resolves module namespace details by depId platform and moduleName.
          *
          * @param {TeqFw_Di_Dto_DepId} depId Validated dependency identity DTO.
+         * @param {((route: TeqFw_Di_Resolver_RouteDetails) => void)|null} [onRoute]
          * @returns {Promise<{namespace: object, specifier: string, cache: 'hit'|'miss', mapping?: TeqFw_Di_Resolver_NamespaceRule}>}
          */
-        const resolveWithDetails = async function (depId) {
+        const resolveWithDetails = async function (depId, onRoute = null) {
             await Promise.resolve();
 
             const platform = depId.platform;
@@ -160,6 +165,11 @@ export default class TeqFw_Di_Resolver {
             if (cache.has(key)) {
                 if (log) log.log(`Resolver.cache: hit key='${key}'.`);
                 const cached = /** @type {{route: TeqFw_Di_Resolver_Route, promise: Promise<object>}} */ (cache.get(key));
+                if (onRoute) onRoute({
+                    specifier: cached.route.specifier,
+                    cache: 'hit',
+                    ...(cached.route.mapping ? {mapping: cached.route.mapping} : {}),
+                });
                 return {
                     namespace: await cached.promise,
                     specifier: cached.route.specifier,
@@ -171,6 +181,11 @@ export default class TeqFw_Di_Resolver {
 
             const route = deriveRoute(platform, moduleName);
             const specifier = route.specifier;
+            if (onRoute) onRoute({
+                specifier,
+                cache: 'miss',
+                ...(route.mapping ? {mapping: route.mapping} : {}),
+            });
 
             /** @type {Promise<object>} */
             const promise = (async () => {
