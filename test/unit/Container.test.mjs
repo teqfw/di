@@ -5,7 +5,6 @@ import {pathToFileURL} from 'node:url';
 
 import TeqFw_Di_Container from '../../src/Container.mjs';
 import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../../src/Dto/DepId.mjs';
-import TeqFw_Di_Enum_Composition from '../../src/Enum/Composition.mjs';
 import TeqFw_Di_Enum_Life from '../../src/Enum/Life.mjs';
 import TeqFw_Di_Enum_Platform from '../../src/Enum/Platform.mjs';
 
@@ -20,7 +19,6 @@ function createDepId(patch = {}) {
         moduleName: 'path',
         platform: TeqFw_Di_Enum_Platform.NODE,
         exportName: null,
-        composition: TeqFw_Di_Enum_Composition.AS_IS,
         life: null,
         wrappers: [],
         origin: 'unit-test',
@@ -105,6 +103,19 @@ describe('TeqFw_Di_Container', () => {
         assert.throws(() => container.enableIntrospection(), Error);
         assert.throws(() => container.enableTestMode(), Error);
         assert.throws(() => container.addNamespaceRoot('Ns_', '/x', '.mjs'), Error);
+    });
+
+    it('locks configuration when the first resolution begins', async () => {
+        const container = new TeqFw_Di_Container();
+        const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
+        container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
+
+        const pending = container.get('TestSample_Empty$');
+
+        assert.throws(() => container.addPostprocess((value) => value), /locked/);
+        const value = await pending;
+
+        assert.equal(typeof value.start, 'function');
     });
 
     it('enableLogging does not alter get result', async () => {

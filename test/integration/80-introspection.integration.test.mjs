@@ -104,6 +104,52 @@ describe('Integration 80: structured introspection', () => {
         assert.equal(Object.hasOwn(npmRoute, 'mapping'), false);
     });
 
+    it('records requested Teq to effective Node substitution without Namespace Mapping', async () => {
+        const container = new TeqFw_Di_Container();
+        container.enableIntrospection();
+        container.addPreprocess((depId) => ({
+            ...depId,
+            platform: 'node',
+            moduleName: 'path',
+            exportName: 'basename',
+            life: null,
+        }));
+
+        const value = await container.get('Fx_NodeAlias');
+        const explanation = /** @type {any} */ (container.getIntrospection()).explanation.resolutions[0];
+
+        assert.equal(typeof value, 'function');
+        assert.equal(value('/tmp/example.txt'), 'example.txt');
+        assert.equal(explanation.requested.addressKind, 'teq');
+        assert.equal(explanation.effective.addressKind, 'node');
+        assert.equal(explanation.route.addressKind, 'node');
+        assert.equal(explanation.route.moduleSpecifier, 'node:path');
+        assert.equal(Object.hasOwn(explanation.route, 'mapping'), false);
+    });
+
+    it('records requested Teq to effective npm substitution without Namespace Mapping', async () => {
+        const container = new TeqFw_Di_Container();
+        container.enableIntrospection();
+        container.addPreprocess((depId) => ({
+            ...depId,
+            platform: 'npm',
+            moduleName: '@teqfw/di',
+            exportName: 'default',
+            life: null,
+        }));
+
+        const value = await container.get('Fx_NpmAlias');
+        const explanation = /** @type {any} */ (container.getIntrospection()).explanation.resolutions[0];
+
+        assert.equal(typeof value, 'function');
+        assert.strictEqual(value, TeqFw_Di_Container);
+        assert.equal(explanation.requested.addressKind, 'teq');
+        assert.equal(explanation.effective.addressKind, 'npm');
+        assert.equal(explanation.route.addressKind, 'npm');
+        assert.equal(explanation.route.moduleSpecifier, '@teqfw/di');
+        assert.equal(Object.hasOwn(explanation.route, 'mapping'), false);
+    });
+
     it('records Direct acquisition without producer child edges', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
@@ -115,6 +161,46 @@ describe('Integration 80: structured introspection', () => {
         assert.deepStrictEqual(observation.graph.edges, []);
         assert.equal(observation.explanation.resolutions[0].acquisition, 'direct');
         assert.equal(observation.trace.some((/** @type {any} */ event) => event.kind === 'child'), false);
+    });
+
+    it('records Node Address-Kind routing for a declared child dependency', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        container.enableIntrospection();
+
+        const value = await container.get('Fx_NodeChild$');
+        const observation = /** @type {any} */ (container.getIntrospection());
+        const edge = observation.graph.edges.find((/** @type {any} */ item) => item.dependencyName === 'basename');
+        const child = observation.explanation.resolutions.find((/** @type {any} */ item) => item.nodeId === edge.childNodeId);
+
+        assert.deepStrictEqual(value, {name: 'node-child', basename: 'child-node.txt'});
+        assert.equal(edge.requested.addressKind, 'node');
+        assert.equal(edge.effective.addressKind, 'node');
+        assert.equal(child.requested.addressKind, 'node');
+        assert.equal(child.effective.addressKind, 'node');
+        assert.equal(child.route.addressKind, 'node');
+        assert.equal(child.route.moduleSpecifier, 'node:path');
+        assert.equal(Object.hasOwn(child.route, 'mapping'), false);
+    });
+
+    it('records repeated Direct resolution without Singleton cache reuse', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        container.enableIntrospection();
+
+        const first = await container.get('Fx_DirectProducer__Callable');
+        const firstObservation = /** @type {any} */ (container.getIntrospection());
+        const second = await container.get('Fx_DirectProducer__Callable');
+        const secondObservation = /** @type {any} */ (container.getIntrospection());
+        const firstResolution = firstObservation.explanation.resolutions[0];
+        const secondResolution = secondObservation.explanation.resolutions[0];
+
+        assert.strictEqual(first, second);
+        assert.equal(firstResolution.acquisition, 'direct');
+        assert.equal(secondResolution.acquisition, 'direct');
+        assert.equal(firstResolution.cache, 'bypass');
+        assert.equal(secondResolution.cache, 'bypass');
+        assert.equal(secondObservation.trace.some((/** @type {any} */ event) => event.kind === 'cache' && event.outcome === 'hit'), false);
     });
 
     it('records Export Selection only after it succeeds and before producer traversal', async () => {

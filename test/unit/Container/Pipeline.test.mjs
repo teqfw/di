@@ -190,6 +190,22 @@ describe('TeqFw_Di_Container_Pipeline', () => {
         assert.equal((/** @type {{effective: {address: string}}} */ (records.find((record) => record.kind === 'effective')?.data)).effective.address, 'App_Effective');
     });
 
+    it('keeps resolution successful when an observation record fails', async () => {
+        const ctx = makeContext({
+            observer: {
+                addNode() {},
+                addEdge() {},
+                record() {
+                    throw new Error('observer failure');
+                },
+            },
+        });
+
+        const result = await executeContainerPipeline(ctx, 'App_Mod$');
+
+        assert.deepStrictEqual(result, {value: 42});
+    });
+
     it('propagates canonicalization and module-loading failures', async () => {
         await assert.rejects(
             () => executeContainerPipeline(makeContext({canonicalize() { throw new Error('parse error'); }}), 'bad'),

@@ -14,7 +14,6 @@ function createDepId(overrides = {}) {
         moduleName: 'Ns_Group_Web_App_Service',
         platform: TeqFw_Di_Enum_Platform.TEQ,
         exportName: null,
-        composition: 'A',
         life: null,
         wrappers: [],
         origin: 'unit-test',

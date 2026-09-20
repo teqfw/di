@@ -44,4 +44,53 @@ describe('Integration 60: test mode and mocks', () => {
         assert.equal(postprocessCalls, 1);
         assert.equal(hardeningCalls, 1);
     });
+
+    it('uses the effective mock registered after preprocessing', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        container.enableTestMode();
+        const mock = {source: 'effective-mock'};
+        container.register('Fx_Root$', mock);
+        container.addPreprocess((depId) => ({
+            ...depId,
+            moduleName: depId.moduleName === 'Fx_AliasForMock'
+                ? 'Fx_Root'
+                : depId.moduleName,
+        }));
+
+        const value = await container.get('Fx_AliasForMock$');
+
+        assert.strictEqual(value, mock);
+        assert.equal(Object.isFrozen(value), true);
+    });
+
+    it('substitutes an unresolved address without module loading and preserves the common output corridor', async () => {
+        const container = new TeqFw_Di_Container();
+        container.enableIntrospection();
+        container.enableTestMode();
+        const mock = {steps: ['mock']};
+        let postprocessCalls = 0;
+        let hardeningCalls = 0;
+        container.register('NoRoute_Unresolvable$', mock);
+        container.addPostprocess((value) => {
+            postprocessCalls += 1;
+            const observed = /** @type {{steps: string[]}} */ (value);
+            return {steps: [...observed.steps, 'postprocessor']};
+        });
+        container.setHardener((value) => {
+            hardeningCalls += 1;
+            return Object.freeze(/** @type {object} */ (value));
+        });
+
+        const first = await container.get('NoRoute_Unresolvable$');
+        const second = await container.get('NoRoute_Unresolvable$');
+        const observation = /** @type {any} */ (container.getIntrospection());
+
+        assert.deepEqual(first.steps, ['mock', 'postprocessor']);
+        assert.strictEqual(first, second);
+        assert.equal(postprocessCalls, 1);
+        assert.equal(hardeningCalls, 1);
+        assert.equal(observation.explanation.resolutions[0].cache, 'hit');
+        assert.equal(observation.trace.some((/** @type {any} */ event) => event.kind === 'route'), false);
+    });
 });

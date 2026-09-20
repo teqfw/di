@@ -25,6 +25,21 @@ function assertDepId(dto, expected) {
     assert.deepStrictEqual(dto.wrappers, expected.wrappers);
 }
 
+/**
+ * Compares semantic identity fields only. Origin preserves request spelling and
+ * is intentionally not an equivalence field.
+ *
+ * @param {TeqFw_Di_Dto_DepId} left
+ * @param {TeqFw_Di_Dto_DepId} right
+ */
+function assertEquivalentDepIds(left, right) {
+    assert.strictEqual(left.platform, right.platform);
+    assert.strictEqual(left.moduleName, right.moduleName);
+    assert.strictEqual(left.exportName, right.exportName);
+    assert.strictEqual(left.life, right.life);
+    assert.deepStrictEqual(left.wrappers, right.wrappers);
+}
+
 describe('TeqFw_Di_Parser', () => {
     const parser = new TeqFw_Di_Parser();
 
@@ -282,27 +297,40 @@ describe('TeqFw_Di_Parser', () => {
         }
     });
 
-    describe('equivalence', () => {
-        it('is stable for canonical default form', () => {
-            const left = parser.parse(`${MODULE}__default$`);
-            const right = parser.parse(`${MODULE}__default$`);
-            assert.strictEqual(left.platform, right.platform);
-            assert.strictEqual(left.moduleName, right.moduleName);
-            assert.strictEqual(left.exportName, right.exportName);
-            assert.strictEqual(left.life, right.life);
-            assert.strictEqual(left.composition, right.composition);
-            assert.deepStrictEqual(left.wrappers, right.wrappers);
-        });
+    describe('semantic equivalence', () => {
+        const cases = [
+            [`${MODULE}$`, `${MODULE}__default$`],
+            [`${MODULE}$$`, `${MODULE}__default$$`],
+            [`${MODULE}$$$`, `${MODULE}__default$$$`],
+            [`${MODULE}$_${WRAPPER_LOG}`, `${MODULE}__default$_${WRAPPER_LOG}`],
+        ];
 
-        it('is stable for shorthand lifecycle form', () => {
-            const left = parser.parse(`${MODULE}$`);
-            const right = parser.parse(`${MODULE}$`);
-            assert.strictEqual(left.platform, right.platform);
-            assert.strictEqual(left.moduleName, right.moduleName);
-            assert.strictEqual(left.exportName, right.exportName);
-            assert.strictEqual(left.life, right.life);
-            assert.strictEqual(left.composition, right.composition);
-            assert.deepStrictEqual(left.wrappers, right.wrappers);
+        for (const [leftSpecifier, rightSpecifier] of cases) {
+            it(`equates '${leftSpecifier}' and '${rightSpecifier}'`, () => {
+                const left = parser.parse(leftSpecifier);
+                const right = parser.parse(rightSpecifier);
+
+                assert.notStrictEqual(left.origin, right.origin);
+                assertEquivalentDepIds(left, right);
+            });
+        }
+    });
+
+    describe('Address Kind', () => {
+        const cases = [
+            [`${MODULE}`, TeqFw_Di_Enum_Platform.TEQ],
+            ['node:fs__default$', TeqFw_Di_Enum_Platform.NODE],
+            ['npm:@vendor/package__default$$', TeqFw_Di_Enum_Platform.NPM],
+        ];
+
+        for (const [specifier, addressKind] of cases) {
+            it(`classifies '${specifier}' as ${addressKind}`, () => {
+                assert.strictEqual(parser.parse(specifier).platform, addressKind);
+            });
+        }
+
+        it('rejects explicit teq: Address Kind syntax', () => {
+            assert.throws(() => parser.parse('teq:Module'), Error);
         });
     });
 

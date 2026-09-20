@@ -22,7 +22,6 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             moduleName: 'App_Mod',
             platform: TeqFw_Di_Enum_Platform.TEQ,
             exportName: 'default',
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
             life: TeqFw_Di_Enum_Life.SINGLETON,
             wrappers: ['log', 'proxy'],
             origin: 'App_Mod$_log_proxy',
@@ -36,7 +35,6 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             moduleName: 'App_Mod',
             platform: TeqFw_Di_Enum_Platform.TEQ,
             exportName: null,
-            composition: TeqFw_Di_Enum_Composition.AS_IS,
             life: null,
             wrappers: [],
         });
@@ -49,7 +47,6 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             moduleName: 'fs',
             platform: TeqFw_Di_Enum_Platform.NODE,
             exportName: null,
-            composition: TeqFw_Di_Enum_Composition.AS_IS,
             life: null,
         });
         const key = buildDependencyKey(depId);
@@ -61,7 +58,6 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             moduleName: '@vendor/package',
             platform: TeqFw_Di_Enum_Platform.NPM,
             exportName: 'default',
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
             life: TeqFw_Di_Enum_Life.SINGLETON,
         });
         const key = buildDependencyKey(depId);
@@ -72,23 +68,21 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
         const depId1 = factory.create({
             moduleName: 'App_Mod',
             platform: TeqFw_Di_Enum_Platform.TEQ,
-            exportName: null,
-            composition: TeqFw_Di_Enum_Composition.AS_IS,
-            life: null,
+            exportName: 'default',
+            life: TeqFw_Di_Enum_Life.SINGLETON,
             origin: 'App_Mod$',
         });
         const depId2 = factory.create({
             moduleName: 'App_Mod',
             platform: TeqFw_Di_Enum_Platform.TEQ,
-            exportName: null,
-            composition: TeqFw_Di_Enum_Composition.AS_IS,
-            life: null,
+            exportName: 'default',
+            life: TeqFw_Di_Enum_Life.SINGLETON,
             origin: 'App_Mod__default$',
         });
         assert.strictEqual(buildDependencyKey(depId1), buildDependencyKey(depId2));
     });
 
-    it('does not create an identity dimension from derived composition', () => {
+    it('keeps dependency identity stable after composition normalization', () => {
         const directA = factory.create({
             moduleName: 'App_Mod',
             life: null,
@@ -110,6 +104,10 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             composition: TeqFw_Di_Enum_Composition.FACTORY,
         });
 
+        assert.equal(directA.composition, TeqFw_Di_Enum_Composition.AS_IS);
+        assert.equal(directF.composition, TeqFw_Di_Enum_Composition.AS_IS);
+        assert.equal(singletonA.composition, TeqFw_Di_Enum_Composition.FACTORY);
+        assert.equal(singletonF.composition, TeqFw_Di_Enum_Composition.FACTORY);
         assert.strictEqual(buildDependencyKey(directA), buildDependencyKey(directF));
         assert.strictEqual(buildDependencyKey(singletonA), buildDependencyKey(singletonF));
     });
@@ -134,14 +132,12 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             moduleName: 'App_Mod',
             platform: TeqFw_Di_Enum_Platform.TEQ,
             exportName: 'default',
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
             life: TeqFw_Di_Enum_Life.SINGLETON,
         });
         const depId2 = factory.create({
             moduleName: 'App_Mod',
             platform: TeqFw_Di_Enum_Platform.TEQ,
             exportName: 'Factory',
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
             life: TeqFw_Di_Enum_Life.SINGLETON,
         });
         assert.notStrictEqual(buildDependencyKey(depId1), buildDependencyKey(depId2));
@@ -152,14 +148,12 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             moduleName: 'App_Mod',
             platform: TeqFw_Di_Enum_Platform.TEQ,
             exportName: 'default',
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
             life: TeqFw_Di_Enum_Life.SINGLETON,
         });
         const depId2 = factory.create({
             moduleName: 'App_Mod',
             platform: TeqFw_Di_Enum_Platform.TEQ,
             exportName: 'default',
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
             life: TeqFw_Di_Enum_Life.TRANSIENT,
         });
         assert.notStrictEqual(buildDependencyKey(depId1), buildDependencyKey(depId2));
@@ -170,14 +164,12 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             moduleName: 'fs',
             platform: TeqFw_Di_Enum_Platform.NODE,
             exportName: null,
-            composition: TeqFw_Di_Enum_Composition.AS_IS,
             life: null,
         });
         const depId2 = factory.create({
             moduleName: 'fs',
             platform: TeqFw_Di_Enum_Platform.TEQ,
             exportName: null,
-            composition: TeqFw_Di_Enum_Composition.AS_IS,
             life: null,
         });
         assert.notStrictEqual(buildDependencyKey(depId1), buildDependencyKey(depId2));
@@ -188,7 +180,6 @@ describe('TeqFw_Di_Internal_DependencyKey', () => {
             moduleName: 'App_Mod',
             platform: TeqFw_Di_Enum_Platform.TEQ,
             exportName: 'default',
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
             life: TeqFw_Di_Enum_Life.SINGLETON,
             wrappers: ['log'],
         });

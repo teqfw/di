@@ -2,18 +2,23 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Container_Executor from '../../../src/Container/Executor.mjs';
+import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../../../src/Dto/DepId.mjs';
+import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
+import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
+
+/** @type {TeqFw_Di_Dto_DepId__Factory} */
+const factory = new TeqFw_Di_Dto_DepId_Factory();
 
 /**
  * @param {Partial<TeqFw_Di_Dto_DepId>} [patch]
  * @returns {TeqFw_Di_Dto_DepId}
  */
 function createDepId(patch = {}) {
-    return /** @type {TeqFw_Di_Dto_DepId} */ ({
+    return factory.create({
         moduleName: 'App_Module',
-        platform: 'teq',
+        platform: TeqFw_Di_Enum_Platform.TEQ,
         exportName: 'default',
-        composition: 'F',
-        life: 'T',
+        life: TeqFw_Di_Enum_Life.TRANSIENT,
         wrappers: [],
         origin: 'unit-test',
         ...patch,
@@ -46,7 +51,7 @@ describe('TeqFw_Di_Container_Executor', () => {
         assert.equal(result, 'XAB');
     });
 
-    it('Promise rejection', () => {
+    it('rejects a Promise-returning Wrapper', () => {
         const executor = new TeqFw_Di_Container_Executor();
         const depId = createDepId({wrappers: ['asyncWrap']});
         const namespace = {

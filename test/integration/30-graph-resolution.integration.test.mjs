@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 const FIXTURE_DIR = path.resolve(__dirname, './fixture');
 
 describe('Integration 30: graph resolution', () => {
-    it('injects nested __deps__ graph into factories', async () => {
+    it('injects a nested __deps__ graph into producers', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
 

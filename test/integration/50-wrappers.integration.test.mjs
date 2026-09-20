@@ -19,7 +19,7 @@ describe('Integration 50: wrappers', () => {
         assert.deepEqual(value.steps, ['core', 'wrapFirst', 'wrapSecond']);
     });
 
-    it('rejects Promise wrapper return (wrapper must be synchronous)', async () => {
+    it('rejects a Promise-returning Wrapper (Wrapper must be synchronous)', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
 

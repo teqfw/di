@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 const FIXTURE_DIR = path.resolve(__dirname, './fixture');
 
 describe('Integration 40: lifecycle', () => {
-    it('returns same identity for singleton factory', async () => {
+    it('returns same identity for a Singleton producer', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
 
@@ -21,7 +21,7 @@ describe('Integration 40: lifecycle', () => {
         assert.strictEqual(first, second);
     });
 
-    it('returns different identity for transient factory', async () => {
+    it('returns different identity for a Transient producer', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
 
@@ -31,7 +31,7 @@ describe('Integration 40: lifecycle', () => {
         assert.notStrictEqual(first, second);
     });
 
-    it('fails linking when default shallow hardening fails', async () => {
+    it('enters failed state when default shallow hardening fails', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
         container.enableIntrospection();
@@ -141,6 +141,34 @@ describe('Integration 40: lifecycle', () => {
 
         assert.strictEqual(first, second);
         assert.equal(getProducerCalls(), producerBefore + 1);
+    });
+
+    it('uses effective npm identity for Singleton aliases', async () => {
+        const container = new TeqFw_Di_Container();
+        container.enableIntrospection();
+        container.addPreprocess((depId) => ({
+            ...depId,
+            platform: 'npm',
+            moduleName: '@teqfw/di',
+            exportName: 'default',
+        }));
+
+        const first = await container.get('Fx_NpmAliasOne$');
+        const miss = /** @type {any} */ (container.getIntrospection());
+        const second = await container.get('Fx_NpmAliasTwo$');
+        const hit = /** @type {any} */ (container.getIntrospection());
+        const missExplanation = miss.explanation.resolutions[0];
+        const hitExplanation = hit.explanation.resolutions[0];
+
+        assert.strictEqual(first, second);
+        assert.equal(missExplanation.requested.addressKind, 'teq');
+        assert.equal(missExplanation.effective.addressKind, 'npm');
+        assert.equal(missExplanation.effective.address, '@teqfw/di');
+        assert.equal(missExplanation.route.addressKind, 'npm');
+        assert.equal(Object.hasOwn(missExplanation.route, 'mapping'), false);
+        assert.equal(hitExplanation.requested.address, 'Fx_NpmAliasTwo');
+        assert.equal(hitExplanation.effective.address, '@teqfw/di');
+        assert.equal(hitExplanation.cache, 'hit');
     });
 
     it('converges independent concurrent Singleton requests on one pending value', async () => {

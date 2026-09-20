@@ -2,19 +2,22 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Container_Lifecycle from '../../../src/Container/Lifecycle.mjs';
-import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
+import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../../../src/Dto/DepId.mjs';
 import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
+import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
+
+/** @type {TeqFw_Di_Dto_DepId__Factory} */
+const factory = new TeqFw_Di_Dto_DepId_Factory();
 
 /**
  * @param {Partial<TeqFw_Di_Dto_DepId>} [patch]
  * @returns {TeqFw_Di_Dto_DepId}
  */
 function createDepId(patch = {}) {
-    return /** @type {TeqFw_Di_Dto_DepId} */ ({
+    return factory.create({
         moduleName: 'App_Module',
-        platform: 'teq',
+        platform: TeqFw_Di_Enum_Platform.TEQ,
         exportName: 'default',
-        composition: TeqFw_Di_Enum_Composition.FACTORY,
         life: TeqFw_Di_Enum_Life.SINGLETON,
         wrappers: [],
         origin: 'unit-test',
@@ -56,7 +59,6 @@ describe('TeqFw_Di_Container_Lifecycle', () => {
     it('bypasses cache for Direct and Transient lifestyles', async () => {
         const registry = new TeqFw_Di_Container_Lifecycle();
         const direct = createDepId({
-            composition: TeqFw_Di_Enum_Composition.AS_IS,
             life: null,
         });
         const transient = createDepId({life: TeqFw_Di_Enum_Life.TRANSIENT});

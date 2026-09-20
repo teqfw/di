@@ -2,18 +2,22 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Container_Instantiate from '../../../src/Container/Instantiate.mjs';
+import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../../../src/Dto/DepId.mjs';
+import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
+
+/** @type {TeqFw_Di_Dto_DepId__Factory} */
+const factory = new TeqFw_Di_Dto_DepId_Factory();
 
 /**
  * @param {Partial<TeqFw_Di_Dto_DepId>} [patch]
  * @returns {TeqFw_Di_Dto_DepId}
  */
 function createDepId(patch = {}) {
-    return /** @type {TeqFw_Di_Dto_DepId} */ ({
+    return factory.create({
         moduleName: 'Ns_App_Module',
-        platform: 'teq',
+        platform: TeqFw_Di_Enum_Platform.TEQ,
         exportName: null,
-        composition: 'A',
-        life: 'direct',
+        life: null,
         wrappers: [],
         origin: 'unit-test',
         ...patch,
@@ -42,7 +46,7 @@ describe('TeqFw_Di_Container_Instantiate', () => {
         assert.strictEqual(result, expected);
     });
 
-    it('factory invokes function', () => {
+    it('invokes a function producer', () => {
         const resolvedDeps = {a: 1};
         const namespace = {
             make: (/** @type {object} */ deps) => ({deps}),
@@ -54,7 +58,7 @@ describe('TeqFw_Di_Container_Instantiate', () => {
         assert.deepStrictEqual(result, {deps: resolvedDeps});
     });
 
-    it('factory invokes class with new', () => {
+    it('invokes a constructible producer with new', () => {
         class Service {
             /**
              * @param {Record<string, unknown>} deps
@@ -78,18 +82,18 @@ describe('TeqFw_Di_Container_Instantiate', () => {
         assert.throws(() => instantiator.select(depId, {present: 1}), Error);
     });
 
-    it('non-callable factory throws', () => {
+    it('non-callable producer throws', () => {
         assert.throws(() => instantiator.produce(123, {}), Error);
     });
 
-    it('async factory returns Promise and throws', () => {
+    it('async producer return throws', () => {
         const namespace = {
             asyncFactory: () => Promise.resolve(1),
         };
         assert.throws(() => instantiator.produce(namespace.asyncFactory, {}), Error);
     });
 
-    it('factory result may be proxy that throws on `.then` access', () => {
+    it('producer result may be proxy that throws on `.then` access', () => {
         const proxy = new Proxy({ok: true}, {
             get(target, prop, receiver) {
                 if (prop === 'then') throw new Error('then access denied');
