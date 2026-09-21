@@ -73,7 +73,7 @@ export default class TeqFw_Di_Container_ModuleRouter {
          * @returns {string}
          */
         const appendExt = function (path, defaultExt) {
-            if (!defaultExt || path.endsWith(defaultExt)) return path;
+            if (path.endsWith(defaultExt)) return path;
             return `${path}${defaultExt}`;
         };
 
@@ -85,7 +85,6 @@ export default class TeqFw_Di_Container_ModuleRouter {
          * @returns {string}
          */
         const join = function (target, path) {
-            if (!target) return path;
             return target.endsWith('/') ? `${target}${path}` : `${target}/${path}`;
         };
 

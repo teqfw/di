@@ -9,7 +9,7 @@ import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
 describe('TeqFw_Di_Dto_DepId', () => {
     const factory = new Factory();
 
-    it('normalizes missing fields', () => {
+    it('applies documented defaults for omitted optional fields', () => {
         const dto = factory.create({});
         assert.strictEqual(dto.moduleName, '');
         assert.strictEqual(dto.platform, TeqFw_Di_Enum_Platform.TEQ);
@@ -36,7 +36,7 @@ describe('TeqFw_Di_Dto_DepId', () => {
         assert.deepStrictEqual(dto.wrappers, ['w1', 'w2']);
     });
 
-    it('derives composition from lifecycle and normalizes incoherent input pairs', () => {
+    it('derives composition from lifecycle', () => {
         const direct = factory.create({
             composition: TeqFw_Di_Enum_Composition.FACTORY,
             life: null,
@@ -55,19 +55,19 @@ describe('TeqFw_Di_Dto_DepId', () => {
         assert.strictEqual(transient.composition, TeqFw_Di_Enum_Composition.FACTORY);
     });
 
-    it('rejects invalid literal values structurally without throwing', () => {
-        const dto = factory.create({
+    it('does not repair malformed internal semantic fields', () => {
+        const dto = factory.create(/** @type {any} */ ({
             platform: 'bad-platform',
-            composition: 'bad-composition',
             life: 'bad-life',
             exportName: 123,
-            wrappers: ['ok', 1, {}, 'ok2'],
-        });
-        assert.strictEqual(dto.platform, TeqFw_Di_Enum_Platform.TEQ);
-        assert.strictEqual(dto.composition, TeqFw_Di_Enum_Composition.AS_IS);
-        assert.strictEqual(dto.life, null);
-        assert.strictEqual(dto.exportName, null);
-        assert.deepStrictEqual(dto.wrappers, ['ok', 'ok2']);
+            wrappers: ['ok', 1],
+        }));
+
+        assert.strictEqual(dto.platform, 'bad-platform');
+        assert.strictEqual(dto.life, 'bad-life');
+        assert.strictEqual(dto.composition, TeqFw_Di_Enum_Composition.FACTORY);
+        assert.strictEqual(dto.exportName, 123);
+        assert.deepStrictEqual(dto.wrappers, ['ok', 1]);
     });
 
     it('clones wrappers', () => {

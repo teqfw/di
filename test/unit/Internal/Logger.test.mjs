@@ -29,9 +29,9 @@ test('TeqFw_Di_Internal_Logger', async (t) => {
     await t.test('logs debug messages with default scope prefix', async () => {
         const logger = new TeqFw_Di_Internal_Logger();
         const captured = await withCapturedConsole(() => {
-            logger.log('pipeline:entry');
+            logger.log('resolution-flow:entry');
         });
-        assert.deepEqual(captured.debug, ['[teqfw/di] pipeline:entry']);
+        assert.deepEqual(captured.debug, ['[teqfw/di] resolution-flow:entry']);
         assert.deepEqual(captured.error, []);
     });
 

@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Node_Registry_Namespace from '../../src/Node/Registry/Namespace.mjs';
-import TeqFw_Di_Node_Registry_Package from '../../src/Node/Registry/Package.mjs';
 import TeqFw_Di_Container from '@teqfw/di';
+import TeqFw_Di_Node_Registry_Namespace from '@teqfw/di/node/registry/namespace';
+import TeqFw_Di_Node_Registry_Package from '@teqfw/di/node/registry/package';
 
 /**
  * @param {string} fileAbs
@@ -56,9 +57,8 @@ export const fileAbs = ${JSON.stringify(path.join(appRoot, 'src-short/Long/Servi
             teqfw: {fw: {di: {namespaces: [{prefix: 'App_Long_', path: './modules', ext: 'js'}]}}},
         });
         await writeText(path.join(depLongRoot, 'modules/Service.js'), `
-import {fileURLToPath} from 'node:url';
 export const provider = 'dep-long';
-export const fileAbs = fileURLToPath(import.meta.url);
+export const moduleUrl = import.meta.url;
 `);
 
         const depSideRoot = path.join(appRoot, 'node_modules/dep-side');
@@ -127,7 +127,7 @@ export const fileAbs = fileURLToPath(import.meta.url);
 
         const resolved = await container.get('App_Long_Service');
         assert.equal(resolved.provider, 'dep-long');
-        assert.equal(path.resolve(resolved.fileAbs), path.join(depLongRoot, 'modules/Service.js'));
+        assert.equal(fileURLToPath(resolved.moduleUrl), path.join(depLongRoot, 'modules/Service.js'));
         const otherContainer = new TeqFw_Di_Container();
         for (const entry of registry) {
             otherContainer.addNamespaceRoot(entry.prefix, entry.dirAbs, entry.ext);

@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const FIXTURE_DIR = path.resolve(__dirname, './fixture');
 
-describe('Integration 20: namespace resolution', () => {
+describe('Integration 20: namespace mapping', () => {
     it('uses longest matching namespace prefix for overlapping prefixes', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', path.join(FIXTURE_DIR, 'ns-short'), '.mjs');

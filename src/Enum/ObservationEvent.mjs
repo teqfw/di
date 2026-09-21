@@ -6,7 +6,7 @@
  */
 
 /**
- * Closed vocabulary for events emitted by the active resolution pipeline.
+ * Closed vocabulary for events emitted by the active resolution flow.
  */
 const TeqFw_Di_Enum_ObservationEvent = {
     REQUESTED: 'requested',

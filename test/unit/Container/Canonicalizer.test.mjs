@@ -19,9 +19,10 @@ describe('TeqFw_Di_Container_Canonicalizer', () => {
             return depIdFactory.create({...depId, moduleName: 'App_Effective'});
         });
 
-        const result = canonicalizer.canonicalize('App_Requested$');
+        const requested = canonicalizer.parse('App_Requested$');
+        const result = canonicalizer.preprocess(requested);
 
-        assert.equal(result.requested.moduleName, 'App_Requested');
+        assert.equal(requested.moduleName, 'App_Requested');
         assert.equal(result.effective.moduleName, 'App_Effective');
         assert.deepEqual(result.preprocessing.map((one) => one.changed), [true]);
         assert.deepEqual(seen, [1]);

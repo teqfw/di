@@ -2,7 +2,7 @@
 
 /**
  * @namespace TeqFw_Di_Container
- * @description Public DI Container facade and Container-scoped composition root.
+ * @description Public DI Container facade and resolution boundary.
  */
 
 import TeqFw_Di_Parser from './Parser.mjs';

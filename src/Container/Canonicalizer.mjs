@@ -41,17 +41,23 @@ export default class TeqFw_Di_Container_Canonicalizer {
         };
 
         /**
-         * Parses and applies all configured substitutions.
+         * Parses one requested serialized Dependency Identifier.
          *
          * @param {string} specifier
-         * @param {readonly TeqFw_Di_Dto_DepId[]} [ancestors]
-         * @param {(() => void)|null} [onPreprocess]
-         * @returns {{requested: TeqFw_Di_Dto_DepId, effective: TeqFw_Di_Dto_DepId, preprocessing: TeqFw_Di_Container_Canonicalizer_PreprocessEffect[]}}
+         * @returns {TeqFw_Di_Dto_DepId}
          */
-        this.canonicalize = function (specifier, ancestors = [], onPreprocess = null) {
-            const requested = parser.parse(specifier);
-            if (onPreprocess) onPreprocess();
+        this.parse = function (specifier) {
+            return parser.parse(specifier);
+        };
 
+        /**
+         * Applies configured substitutions to one parsed requested identity.
+         *
+         * @param {TeqFw_Di_Dto_DepId} requested
+         * @param {readonly TeqFw_Di_Dto_DepId[]} [ancestors]
+         * @returns {{effective: TeqFw_Di_Dto_DepId, preprocessing: TeqFw_Di_Container_Canonicalizer_PreprocessEffect[]}}
+         */
+        this.preprocess = function (requested, ancestors = []) {
             /** @type {TeqFw_Di_Dto_DepId} */
             let effective = requested;
             /** @type {TeqFw_Di_Container_Canonicalizer_PreprocessEffect[]} */
@@ -70,7 +76,19 @@ export default class TeqFw_Di_Container_Canonicalizer {
                 });
             }
 
-            return {requested, effective, preprocessing};
+            return {effective, preprocessing};
+        };
+
+        /**
+         * Parses and applies all configured substitutions.
+         *
+         * @param {string} specifier
+         * @param {readonly TeqFw_Di_Dto_DepId[]} [ancestors]
+         * @returns {{requested: TeqFw_Di_Dto_DepId, effective: TeqFw_Di_Dto_DepId, preprocessing: TeqFw_Di_Container_Canonicalizer_PreprocessEffect[]}}
+         */
+        this.canonicalize = function (specifier, ancestors = []) {
+            const requested = this.parse(specifier);
+            return {requested, ...this.preprocess(requested, ancestors)};
         };
     }
 }

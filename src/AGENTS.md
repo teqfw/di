@@ -97,7 +97,7 @@ Implementation under `src/` follows strict fail-fast architecture.
 Agents MUST assume that:
 
 - DepId DTO instances are structurally valid.
-- Resolver configuration DTO is valid.
+- ModuleRouter configuration DTO is valid.
 - Enum codifiers are valid.
 - Constructor dependency descriptors are correct.
 - Public API callers provide semantically correct inputs.

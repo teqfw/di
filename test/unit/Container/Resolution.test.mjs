@@ -29,7 +29,10 @@ describe('TeqFw_Di_Container_Resolution', () => {
         const order = [];
         const namespace = {default: () => ({value: 42})};
         const result = await executeResolution(/** @type {any} */ ({
-            canonicalizer: {canonicalize() { return {requested: depId, effective: depId, preprocessing: []}; }},
+            canonicalizer: {
+                parse() { return depId; },
+                preprocess() { return {effective: depId, preprocessing: []}; },
+            },
             lifecycle: new TeqFw_Di_Container_Lifecycle(),
             moduleRouter: {route() { order.push('route'); return {specifier: '/App/Service.mjs'}; }},
             moduleLoader: {

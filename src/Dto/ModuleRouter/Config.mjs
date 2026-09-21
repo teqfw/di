@@ -28,19 +28,15 @@ export class Factory {
         const namespaceFactory = new TeqFw_Di_Dto_ModuleRouter_Config_Namespace_Factory();
 
         /**
-         * Creates normalized frozen ModuleRouter configuration.
+         * Creates frozen ModuleRouter configuration from prepared mappings.
          *
-         * @param {Partial<TeqFw_Di_Dto_ModuleRouter_Config>|Record<string, unknown>} [input]
+         * @param {Partial<TeqFw_Di_Dto_ModuleRouter_Config>} [input]
          * @returns {TeqFw_Di_Dto_ModuleRouter_Config}
          */
-        this.create = function (input) {
-            /** @type {Partial<TeqFw_Di_Dto_ModuleRouter_Config>|Record<string, unknown>} */
-            const source = (input && typeof input === 'object') ? input : {};
+        this.create = function ({namespaces = []} = {}) {
             /** @type {TeqFw_Di_Dto_ModuleRouter_Config} */
             const dto = new DTO();
-            /** @type {unknown[]} */
-            const items = Array.isArray(source.namespaces) ? source.namespaces : [];
-            dto.namespaces = items.map((item) => namespaceFactory.create(/** @type {Record<string, unknown>} */ (item)));
+            dto.namespaces = namespaces.map((item) => namespaceFactory.create(item));
             Object.freeze(dto.namespaces);
             return Object.freeze(dto);
         };

@@ -10,14 +10,14 @@
  */
 /** @typedef {import('./Namespace.mjs').default} TeqFw_Di_Dto_ModuleRouter_Config_Namespace */
 export default class DTO {
-    /** @type {string|undefined} Namespace prefix. */
-    prefix;
+    /** @type {string} Namespace prefix. */
+    prefix = '';
 
-    /** @type {string|undefined} Module-location root. */
-    target;
+    /** @type {string} Module-location root. */
+    target = '';
 
-    /** @type {string|undefined} Default module extension. */
-    defaultExt;
+    /** @type {string} Default module extension. */
+    defaultExt = '';
 }
 
 /**
@@ -25,19 +25,20 @@ export default class DTO {
  */
 export class Factory {
     /**
-     * Creates one normalized frozen Namespace Mapping.
+     * Creates one frozen prepared Namespace Mapping.
      *
-     * @param {Partial<TeqFw_Di_Dto_ModuleRouter_Config_Namespace>|Record<string, unknown>} [input]
+     * @param {TeqFw_Di_Dto_ModuleRouter_Config_Namespace} input
      * @returns {TeqFw_Di_Dto_ModuleRouter_Config_Namespace}
      */
-    create(input) {
-        /** @type {Partial<TeqFw_Di_Dto_ModuleRouter_Config_Namespace>|Record<string, unknown>} */
-        const source = (input && typeof input === 'object') ? input : {};
+    create({prefix, target, defaultExt}) {
+        if ((prefix === undefined) || (target === undefined) || (defaultExt === undefined)) {
+            throw new Error('Prepared Namespace Mapping requires prefix, target, and defaultExt.');
+        }
         /** @type {TeqFw_Di_Dto_ModuleRouter_Config_Namespace} */
         const dto = new DTO();
-        dto.prefix = typeof source.prefix === 'string' ? source.prefix : undefined;
-        dto.target = typeof source.target === 'string' ? source.target : undefined;
-        dto.defaultExt = typeof source.defaultExt === 'string' ? source.defaultExt : undefined;
+        dto.prefix = prefix;
+        dto.target = target;
+        dto.defaultExt = defaultExt;
         return Object.freeze(dto);
     }
 }

@@ -21,10 +21,6 @@ declare global {
   type TeqFw_Di_Container__Class = typeof import("./src/Container.mjs").default;
   type TeqFw_Di_Dto_DepId = import("./src/Dto/DepId.mjs").default;
   type TeqFw_Di_Dto_DepId__Factory = import("./src/Dto/DepId.mjs").Factory;
-  type TeqFw_Di_Dto_Resolver_Config = import("./src/Dto/Resolver/Config.mjs").default;
-  type TeqFw_Di_Dto_Resolver_Config_Namespace = import("./src/Dto/Resolver/Config/Namespace.mjs").default;
-  type TeqFw_Di_Dto_Resolver_Config_Namespace__Factory = import("./src/Dto/Resolver/Config/Namespace.mjs").Factory;
-  type TeqFw_Di_Dto_Resolver_Config__Factory = import("./src/Dto/Resolver/Config.mjs").Factory;
   type TeqFw_Di_Enum_Composition = typeof import("./src/Enum/Composition.mjs").default;
   type TeqFw_Di_Enum_Life = typeof import("./src/Enum/Life.mjs").default;
   type TeqFw_Di_Enum_ObservationEvent = typeof import("./src/Enum/ObservationEvent.mjs").default;

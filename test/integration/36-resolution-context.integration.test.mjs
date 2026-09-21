@@ -4,12 +4,10 @@ import {fileURLToPath} from 'node:url';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Container from '@teqfw/di';
-import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../../src/Dto/DepId.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const FIXTURE_DIR = path.resolve(__dirname, './fixture');
-const depIdFactory = new TeqFw_Di_Dto_DepId_Factory();
 
 /**
  * @param {TeqFw_Di_Container_ResolutionContext} context
@@ -75,7 +73,7 @@ describe('Integration 36: resolution context', () => {
 
         container.addPreprocess((depId, context) => {
             if ((depId.moduleName === 'Fx_ContextShared') && (context.parent?.moduleName === 'Fx_ContextRight')) {
-                return depIdFactory.create({...depId, moduleName: 'Fx_ContextAlternativeShared'});
+                return {...depId, moduleName: 'Fx_ContextAlternativeShared'};
             }
             return depId;
         });

@@ -13,10 +13,17 @@ describe('TeqFw_Di_Dto_ModuleRouter_Config_Namespace', () => {
         assert.ok(Object.isFrozen(dto));
     });
 
-    it('normalizes partial inputs and drops extra fields', () => {
-        const dto = factory.create({extra: true, prefix: 'Ns_'});
+    it('preserves prepared mapping fields exactly', () => {
+        const dto = factory.create({prefix: 'Ns_', target: '/modules', defaultExt: '.js'});
         assert.equal(dto.prefix, 'Ns_');
-        assert.equal(dto.target, undefined);
-        assert.equal(dto.defaultExt, undefined);
+        assert.equal(dto.target, '/modules');
+        assert.equal(dto.defaultExt, '.js');
+    });
+
+    it('rejects an incomplete prepared mapping', () => {
+        assert.throws(
+            () => factory.create(/** @type {any} */ ({prefix: 'Ns_'})),
+            /requires prefix, target, and defaultExt/,
+        );
     });
 });

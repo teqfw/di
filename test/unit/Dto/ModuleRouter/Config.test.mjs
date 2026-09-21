@@ -17,12 +17,12 @@ describe('TeqFw_Di_Dto_ModuleRouter_Config', () => {
         assert.ok(Object.isFrozen(dto.namespaces[0]));
     });
 
-    it('drops obsolete configuration fields and normalizes partial mappings', () => {
-        const dto = factory.create({nodeModulesRoot: '/app/node_modules', extra: true, namespaces: [{prefix: 'App_'}]});
+    it('uses each prepared Namespace Mapping without compatibility fields', () => {
+        const dto = factory.create({namespaces: [{prefix: 'App_', target: '/app', defaultExt: '.mjs'}]});
         assert.deepStrictEqual(Object.keys(dto), ['namespaces']);
         assert.equal(dto.namespaces[0].prefix, 'App_');
-        assert.equal(dto.namespaces[0].target, undefined);
-        assert.equal(dto.namespaces[0].defaultExt, undefined);
+        assert.equal(dto.namespaces[0].target, '/app');
+        assert.equal(dto.namespaces[0].defaultExt, '.mjs');
     });
 
     it('is deterministic for identical input', () => {

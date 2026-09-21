@@ -104,14 +104,9 @@ export async function executeResolution(ctx, specifier) {
         let stage = TeqFw_Di_Enum_ResolutionStage.IDENTIFIER_PARSING;
 
         try {
-            const identifiers = canonicalizer.canonicalize(
-                requestedSpecifier,
-                ancestors,
-                function () {
-                    stage = TeqFw_Di_Enum_ResolutionStage.PREPROCESSING;
-                }
-            );
-            const requested = identifiers.requested;
+            const requested = canonicalizer.parse(requestedSpecifier);
+            stage = TeqFw_Di_Enum_ResolutionStage.PREPROCESSING;
+            const identifiers = canonicalizer.preprocess(requested, ancestors);
             const depId = identifiers.effective;
             const context = createResolutionContext(depId, ancestors);
             key = buildDependencyKey(depId);
