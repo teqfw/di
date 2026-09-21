@@ -2,7 +2,7 @@
 
 /**
  * @namespace TeqFw_Di_Container_Configurator
- * @description Materializes declarative Container policy before public root resolution.
+ * @description Materializes declarative Container policy before public entry resolution.
  */
 
 import TeqFw_Di_Container_Hardener from './Hardener.mjs';
@@ -61,13 +61,24 @@ export async function configureContainer(deps) {
         }, specifier);
     };
 
+    /** @type {Array<(depId: TeqFw_Di_Dto_DepId, context: TeqFw_Di_Container_ResolutionContext) => TeqFw_Di_Dto_DepId>} */
+    const configuredPreprocessors = [];
+    /** @type {Array<(value: unknown, context: TeqFw_Di_Container_ResolutionContext) => unknown>} */
+    const configuredPostprocessors = [];
+    /** @type {((value: unknown) => unknown)|null} */
+    let configuredHardener = null;
+
     for (const specifier of config.preprocessors) {
-        canonicalizer.add(/** @type {(depId: TeqFw_Di_Dto_DepId, context: TeqFw_Di_Container_ResolutionContext) => TeqFw_Di_Dto_DepId} */ (await resolvePolicy(specifier)));
+        configuredPreprocessors.push(/** @type {(depId: TeqFw_Di_Dto_DepId, context: TeqFw_Di_Container_ResolutionContext) => TeqFw_Di_Dto_DepId} */ (await resolvePolicy(specifier)));
     }
     for (const specifier of config.postprocessors) {
-        postprocessor.add(/** @type {(value: unknown, context: TeqFw_Di_Container_ResolutionContext) => unknown} */ (await resolvePolicy(specifier)));
+        configuredPostprocessors.push(/** @type {(value: unknown, context: TeqFw_Di_Container_ResolutionContext) => unknown} */ (await resolvePolicy(specifier)));
     }
     if (config.hardener !== null) {
-        hardener.setConfigured(/** @type {(value: unknown) => unknown} */ (await resolvePolicy(config.hardener)));
+        configuredHardener = /** @type {(value: unknown) => unknown} */ (await resolvePolicy(config.hardener));
     }
+
+    for (const fn of configuredPreprocessors) canonicalizer.add(fn);
+    for (const fn of configuredPostprocessors) postprocessor.add(fn);
+    if (configuredHardener !== null) hardener.setConfigured(configuredHardener);
 }

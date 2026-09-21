@@ -43,7 +43,7 @@ const command = await container.get("App_Command_Selected$");
 await command.run();
 ```
 
-The entries are deliberate phases, not arbitrary lookup. Each root's declared
+The entries are deliberate phases, not arbitrary lookup. Each entry's declared
 children resolve recursively through `__deps__` in its own graph; both entries
 share the configured policy and Container-scoped Singleton values.
 
@@ -92,15 +92,22 @@ utilities into browser code.
 
 ## Test substitution
 
-Use DTO mocks only when testing Container composition:
+Use separate test-only setup for Container composition tests:
 
 ```js
 const container = new Container({
   namespaces: [{prefix: "App_", target: fixtureRoot, defaultExt: ".mjs"}],
-  mocks: [{specifier: "App_Data_Repository$", value: mockRepository}],
 });
+container.enableTestMode();
+container.register("App_Data_Repository$", mockRepository);
 
 const app = await container.get("App$");
 ```
 
-The returned mock still passes through the applicable output boundary.
+Enable test mode and register substitutions before the first `get()`. A value
+may be any runtime JavaScript value; it is intentionally outside the JSON-safe
+DTO. The first `get()` applies the complete configured and compatibility
+preprocessing policy to each registered specifier, then lookup uses its
+effective dependency identity. A canonicalization failure fails preparation;
+the returned substitution otherwise still passes through the applicable output
+boundary.

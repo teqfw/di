@@ -4,20 +4,17 @@
 modules and selected public constructable exports. It is useful for editor lookup
 and the package's present JavaScript type checking.
 
-Do not read a bare alias as a universal type for a value resolved from a
-Dependency Identifier. The same selected JavaScript export has different
-runtime meaning by Dependency Lifestyle:
+For a class-shaped module, the bare alias names the consumer/instance contract,
+while `__Class` names the importable constructable export:
 
-- Direct exposes the raw selected export.
-- Singleton and Transient expose a producer result.
-- `$$$` remains Direct despite having a marker.
+```text
+Ns_Service         → consumer / Service-instance contract
+Ns_Service__Class  → constructable Service export
+```
 
-The package has not selected a consumer-facing alias scheme that maps all three
-outcomes automatically. Do not invent one in host code or claim that every bare
-class alias means an instance. Runtime Lifestyle Markers are not JSDoc type
-identifiers.
-
-Use a structural host-owned type for a substitutable abstraction when needed,
-and verify an exact alias against the installed `types.d.ts`. A future coherent
-consumer type-map decision requires a coordinated package change rather than a
-local naming convention.
+This static distinction is independent of Dependency Identifier syntax. A
+Dependency Identifier `Ns_Service$` acquires a produced instance, while
+`Ns_Service` or `Ns_Service$$$` acquires the class export directly; neither
+runtime marker changes JSDoc alias spelling. Use a structural host-owned type
+for a substitutable abstraction when needed, and verify an exact alias against
+the installed `types.d.ts`.

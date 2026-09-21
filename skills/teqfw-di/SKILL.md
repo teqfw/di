@@ -26,8 +26,10 @@ Node.js registry imports only in Node.js composition code.
 
 ```text
 Composition Root creates JSON-safe Container configuration
-  → new Container(config) materializes declared policy
-  → first public get() locks configuration and enters Running
+  → new Container(config) captures configuration
+  → first public get() locks configuration: Configuring → Preparing
+  → declared policy materializes once: Preparing → Running
+  → first entry resolution begins
   → sequential public get() calls create entry resolutions
   → entry roots share policy and Container-scoped Singleton reuse
 ```
@@ -42,8 +44,12 @@ and re-entrant `get()` calls reject. A failed entry leaves a Running Container
 usable, while preparation failure makes it unusable. Teq-compatible runtime
 modules have no static ES imports.
 
-Only then is a later `get()` valid, and only for
-the next deliberate application phase.
+Every later `get()` is valid only after the prior entry has settled, and only
+for the next deliberate application phase.
+
+For tests, use `enableTestMode()` and `register(specifier, value)` before the
+first `get()`. Registered values may be arbitrary runtime JavaScript values;
+they are separate test-only state, not part of the JSON-safe configuration DTO.
 
 Use only these public imports in new code:
 

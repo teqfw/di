@@ -6,7 +6,7 @@ the host Composition Root chooses locations and implementation policy before
 resolution starts.
 
 It is useful when an ESM application needs explicit dependencies, late binding,
-and one inspectable composition graph. Small applications that do not need
+and an inspectable composition space. Small applications that do not need
 runtime composition can use direct imports instead.
 
 ## Install
@@ -22,7 +22,7 @@ DI model.
 ## Start an application composition
 
 The host Composition Root discovers policy, creates a JSON-safe configuration
-DTO, then constructs a Container before it resolves its root:
+DTO, then constructs a Container before it resolves its first entry:
 
 ```js
 import path from "node:path";
@@ -44,7 +44,7 @@ await app.start();
 to a module-location root. A filesystem directory is only a Node.js example; a
 browser host can configure a URL root. `preprocessors` and `postprocessors` are
 ordered producer Dependency Identifiers, not JavaScript callbacks. Container
-materializes them under default policy before it resolves the public root.
+materializes them under default policy before it resolves the first entry.
 
 The first `get()` locks configuration, materializes policy once, and enters the
 Container's Running state. Later sequential `get()` calls create additional
@@ -89,8 +89,11 @@ and tests are the exceptions that may use static imports.
 
 ## Dependency Identifiers
 
-A Dependency Identifier has a Dependency Address and can add Export Selection,
-a Dependency Lifestyle, and ordered Wrapper Selection.
+A Dependency Identifier identifies a dependency target together with its
+resolution semantics. It serves as a public entry root, an `__deps__` child
+dependency, or a configured policy producer; those uses share one identifier
+language. It has a Dependency Address and can add Export Selection, a
+Dependency Lifestyle, and ordered Wrapper Selection.
 
 | Address Kind | Example | Resolution route |
 | --- | --- | --- |
@@ -129,14 +132,15 @@ Wrapper Selection requires a Lifestyle Marker.
 ## Composition policy
 
 The host Composition Root owns discovery of Namespace Mappings and ordered
-policy. It transfers that policy as a JSON-safe DTO; Container resolves each
-policy producer once before the first entry begins. A producer must synchronously
+policy. It transfers that policy as a JSON-safe DTO; Container resolves every
+policy producer under default policy before installing any of them and before the
+first entry begins. A producer must synchronously
 return the callable required by its role. A substitution can replace an
 abstraction identifier with a concrete one without changing the consuming
 module. Preprocessors, Postprocessors, and Wrappers are distinct mechanisms.
 
 For Node.js package-backed composition, use the public utilities before the
-first root request:
+first entry request:
 
 ```js
 import PackageRegistry from "@teqfw/di/node/registry/package";

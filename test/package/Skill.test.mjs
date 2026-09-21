@@ -20,8 +20,10 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
     for (const requiredText of [
         '@teqfw/di/node/registry/namespace',
         '@teqfw/di/node/registry/package',
-        'new Container(config) materializes declared policy',
-        'a later `get()`',
+        'new Container(config) captures configuration',
+        'Configuring → Preparing',
+        'Preparing → Running',
+        'Every later `get()`',
         'Dependency Identifiers',
         '@teqfw/di/src/Config/NamespaceRegistry.mjs',
         'references/compatibility.md',
@@ -42,9 +44,28 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
     const compatibility = fs.readFileSync(path.join(skillDir, 'references', 'compatibility.md'), 'utf8');
     assert.match(compatibility, /2027-01-28/);
     assert.match(compatibility, /approved breaking release/);
+    for (const method of [
+        'addNamespaceRoot()',
+        'addPreprocess()',
+        'addPostprocess()',
+        'setHardener()',
+        'enableLogging()',
+    ]) {
+        assert.ok(compatibility.includes(method), 'Compatibility reference must state ' + method + '.');
+    }
+    assert.match(compatibility, /first `get\(\)` locks every configuration surface/);
+    assert.match(compatibility, /no\s+mutable `enableIntrospection\(\)` compatibility path/);
+    assert.match(compatibility, /must not[\s\S]*rely on its ordering or override behavior/);
+    assert.match(compatibility, /no committed removal schedule/);
+    assert.match(compatibility, /enableTestMode\(\).*separate test-only public capability/s);
+    assert.match(compatibility, /register\(\).*arbitrary runtime values/s);
+    assert.doesNotMatch(compatibility, /deprecated test-only setup methods/);
+    assert.doesNotMatch(compatibility, /DTO `mocks`/);
 
     const usage = fs.readFileSync(path.join(skillDir, 'references', 'usage.md'), 'utf8');
     assert.match(usage, /absolute\s+application root/);
+    assert.match(usage, /container\.enableTestMode\(\)/);
+    assert.match(usage, /container\.register\("App_Data_Repository\$", mockRepository\)/);
 
     const allConsumerDocumentation = [
         fs.readFileSync(path.join(rootDir, 'README.md'), 'utf8'),
@@ -57,6 +78,8 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
     assert.doesNotMatch(allConsumerDocumentation, /\bdependency specifier\b/i);
     assert.doesNotMatch(allConsumerDocumentation, /\bruntime linker\b/i);
     assert.doesNotMatch(allConsumerDocumentation, /DepId DTO/);
+    assert.doesNotMatch(allConsumerDocumentation, /config\.mocks/);
+    assert.doesNotMatch(allConsumerDocumentation, /mocks:\s*\[/);
 
     const readme = fs.readFileSync(path.join(rootDir, 'README.md'), 'utf8');
     for (const requiredText of [

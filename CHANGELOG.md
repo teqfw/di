@@ -3,13 +3,17 @@
 ## 2.11.0 - 2026-09-21 - Dependency-resolution release
 
 * Prepared the package documentation for the current dependency-resolution
-  model: one Container now documents one public root `get()`, with declared
-  child dependencies resolving recursively through `__deps__`.
+  model: one Container supports sequential public entry `get()` calls under
+  stable policy and one Singleton cache, with declared children resolving
+  recursively through `__deps__` inside each entry graph.
 * Documented Teq, Node, and npm Dependency Address Kinds; Direct, Singleton,
   and Transient Dependency Lifestyles; and explicit Direct `$$$` semantics.
 * Added consumer guidance for structured Dependency Graph, Resolution Trace,
   and Resolution Explanation introspection, public Node.js registry imports,
   and the deprecated Namespace Registry compatibility import.
+* Finalized test substitutions against the complete configured and compatibility
+  preprocessing policy after preparation while keeping policy materialization
+  isolated from test values.
 * Rebuilt the published version-matched Agent Skill as self-contained consumer
   guidance and clarified the unresolved consumer type-map boundary.
 * Aligned published package positioning with deterministic dependency

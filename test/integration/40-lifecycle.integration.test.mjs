@@ -185,7 +185,7 @@ describe('Integration 40: lifecycle', () => {
         assert.equal(hitExplanation.cache, 'hit');
     });
 
-    it('rejects a concurrent root while an entry is resolving', async () => {
+    it('rejects a concurrent entry while an entry is resolving', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
         const first = container.get('Fx_Root$');
@@ -193,7 +193,7 @@ describe('Integration 40: lifecycle', () => {
         await first;
     });
 
-    it('shares a Singleton cache and retains entry provenance across sequential roots', async () => {
+    it('shares a Singleton cache and retains entry provenance across sequential entries', async () => {
         const container = new TeqFw_Di_Container({introspection: true});
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
         const before = getProducerCalls();

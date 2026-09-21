@@ -1,9 +1,10 @@
 # Dependency Identifiers
 
-A Dependency Identifier consists of a Dependency Address and optional Export
-Selection, Dependency Lifestyle, and ordered Wrapper Selection. It is the
-runtime declaration language used by `__deps__` and by each public
-`container.get()` entry request.
+A Dependency Identifier identifies a dependency target together with its
+resolution semantics. It consists of a Dependency Address and optional Export
+Selection, Dependency Lifestyle, and ordered Wrapper Selection. It is the one
+runtime identifier language used by `__deps__`, each public `container.get()`
+entry request, and configured policy producers during preparation.
 
 ## Address Kinds
 

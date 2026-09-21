@@ -56,4 +56,33 @@ describe('TeqFw_Di_Container_Configurator', () => {
         assert.equal(effective.address, 'Fx_Root');
         assert.deepStrictEqual(adapted, {name: 'root', policyPostprocessed: true});
     });
+
+    it('does not install partially materialized policy after a producer failure', async () => {
+        const config = new ContainerConfigFactory().create({
+            namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}],
+            preprocessors: ['Fx_PolicyPreprocessor$', 'Fx_MissingPolicy$'],
+        });
+        const canonicalizer = new TeqFw_Di_Container_Canonicalizer({
+            parser: new TeqFw_Di_Parser(),
+            depIdFactory: new DepIdFactory(),
+        });
+        const postprocessor = new TeqFw_Di_Container_Postprocessor();
+
+        await assert.rejects(() => configureContainer({
+            config,
+            canonicalizer,
+            moduleRouter: new TeqFw_Di_Container_ModuleRouter({
+                config: new ModuleRouterConfigFactory().create({namespaces: [...config.namespaces]}),
+            }),
+            moduleLoader: new TeqFw_Di_Container_ModuleLoader(),
+            producer: new TeqFw_Di_Container_Producer(),
+            wrapper: new TeqFw_Di_Container_Wrapper(),
+            hardener: new TeqFw_Di_Container_Hardener(),
+            postprocessor,
+            logger: TeqFw_Di_Internal_Logger_Noop,
+        }), /MissingPolicy\.mjs/);
+
+        assert.equal(canonicalizer.canonicalize('Fx_ConfigAlias$').effective.address, 'Fx_ConfigAlias');
+        assert.equal(postprocessor.count(), 0);
+    });
 });

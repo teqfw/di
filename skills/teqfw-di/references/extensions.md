@@ -1,12 +1,16 @@
 # Composition Extensions
 
-The Composition Root declares three separate mechanisms in the immutable DTO
-before constructing the Container. Keep their ownership and timing distinct.
+The Composition Root declares Preprocessors, Postprocessors, and an optional
+Hardener as separate Container-policy mechanisms in the immutable DTO before
+constructing the Container. Wrappers are separate: a Dependency Identifier
+selects them for an individual resolution and they are not global DTO policy.
+Keep their ownership and timing distinct.
 
 ## Preprocessors and Dependency Substitution
 
 `preprocessors` contains ordered producer Dependency Identifiers. Container
-materializes each producer under default policy once before the first entry; each
+materializes every configured policy producer under default policy once before
+installing any of them or beginning the first entry; each
 producer synchronously returns policy that receives a requested parsed
 Dependency Identifier and returns its effective replacement before module
 loading. Dependency Substitution is its primary use.
@@ -27,6 +31,13 @@ before final exposure.
 
 Postprocessors are synchronous. Do not return a Promise or mutate a value after
 the Container has exposed and hardened it.
+
+## Hardener
+
+The optional `hardener` producer Dependency Identifier materializes one
+Container policy function. It receives each final adapted value after configured
+Postprocessors and selected Wrappers. It is not a Wrapper and does not select a
+dependency-specific adaptation.
 
 ## Wrappers
 

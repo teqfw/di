@@ -12,16 +12,17 @@ describe('TeqFw_Di_Dto_Container_Config', () => {
             hardener: 'App_Policy_Hardener$',
             logging: true,
             introspection: true,
-            mocks: [{specifier: 'App_Test$', value: {kind: 'mock'}}],
         };
-        const config = new Factory().create(JSON.parse(JSON.stringify(source)));
+        const config = new Factory().create(/** @type {any} */ ({
+            ...JSON.parse(JSON.stringify(source)),
+            mocks: [{specifier: 'App_Test$', value: {kind: 'not-config'}}],
+        }));
 
         assert.deepStrictEqual(JSON.parse(JSON.stringify(config)), source);
         assert.ok(Object.isFrozen(config));
         assert.ok(Object.isFrozen(config.namespaces));
         assert.ok(Object.isFrozen(config.preprocessors));
         assert.ok(Object.isFrozen(config.postprocessors));
-        assert.ok(Object.isFrozen(config.mocks));
-        assert.ok(Object.isFrozen(config.mocks[0]));
+        assert.equal('mocks' in config, false);
     });
 });

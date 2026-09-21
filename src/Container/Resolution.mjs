@@ -2,7 +2,7 @@
 
 /**
  * @namespace TeqFw_Di_Container_Resolution
- * @description One root Dependency Resolution session and its recursive corridor.
+ * @description One entry Dependency Resolution session and its recursive corridor.
  */
 
 import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
@@ -60,7 +60,7 @@ const selectExport = function (depId, namespace) {
 };
 
 /**
- * Executes one root request and all recursive child requests. Request-local
+ * Executes one entry request and all recursive child requests. Request-local
  * active graph state is created here and never stored in Container scope.
  *
  * @param {TeqFw_Di_Container_Resolution_Context} ctx

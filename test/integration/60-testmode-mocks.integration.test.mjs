@@ -69,6 +69,53 @@ describe('Integration 60: test mode and mocks', () => {
         assert.equal(Object.isFrozen(value), true);
     });
 
+    it('finalizes a compatibility substitution through the complete preprocessing policy', async () => {
+        const container = new TeqFw_Di_Container();
+        container.enableTestMode();
+        const mock = {source: 'compatibility-effective-mock'};
+        container.register('Fx_AliasForMock$', mock);
+        container.addPreprocess((depId) => depId.address === 'Fx_AliasForMock'
+            ? {...depId, address: 'Fx_Root'}
+            : depId);
+
+        const value = await container.get('Fx_AliasForMock$');
+
+        assert.strictEqual(value, mock);
+        assert.equal(Object.isFrozen(value), true);
+    });
+
+    it('finalizes substitutions that change Address Kind', async () => {
+        const container = new TeqFw_Di_Container();
+        container.enableTestMode();
+        const mock = {source: 'npm-effective-mock'};
+        container.register('Fx_NpmAliasOne$', mock);
+        container.addPreprocess((depId) => depId.address === 'Fx_NpmAliasOne'
+            ? {...depId, addressKind: 'npm', address: '@teqfw/di', exportName: 'default'}
+            : depId);
+
+        const value = await container.get('Fx_NpmAliasOne$');
+
+        assert.strictEqual(value, mock);
+        assert.equal(Object.isFrozen(value), true);
+    });
+
+    it('fails during substitution finalization before publishing an entry snapshot', async () => {
+        const container = new TeqFw_Di_Container({introspection: true});
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        container.enableTestMode();
+        container.register('Fx_BrokenSubstitution$', {source: 'must-not-run'});
+        container.addPreprocess((depId) => {
+            if (depId.address === 'Fx_BrokenSubstitution') {
+                throw new Error('registered substitution canonicalization failed');
+            }
+            return depId;
+        });
+
+        await assert.rejects(() => container.get('Fx_Root$'), /registered substitution canonicalization failed/);
+        assert.equal(container.getIntrospection(), null);
+        await assert.rejects(() => container.get('Fx_Root$'), /preparation failed|unusable/i);
+    });
+
     it('substitutes an unresolved address without module loading and preserves the common output corridor', async () => {
         const container = new TeqFw_Di_Container({introspection: true});
         container.enableTestMode();
@@ -108,5 +155,22 @@ describe('Integration 60: test mode and mocks', () => {
             observation.trace.some((/** @type {any} */ event) => event.kind === 'route' && event.nodeId === noRoute.nodeId),
             false
         );
+    });
+
+    it('retains an arbitrary function substitution for a later sequential entry', async () => {
+        const container = new TeqFw_Di_Container({
+            namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}],
+        });
+        const mockFunction = function () {
+            return 'test-only value';
+        };
+        container.enableTestMode();
+        container.register('NoRoute_Function', mockFunction);
+
+        await container.get('Fx_Root$');
+        const value = await container.get('NoRoute_Function');
+
+        assert.strictEqual(value, mockFunction);
+        assert.equal(Object.isFrozen(value), true);
     });
 });

@@ -19,7 +19,7 @@ the exceptions because they establish or test composition.
 
 - The Application Module owns dependency intent and local dependency names.
 - The Composition Root owns Namespace Mappings, substitutions, and configured
-  processing policy before the first root request.
+  processing policy before the first entry request.
 - One Container owns a stable composition policy and Container-scoped Singleton
   cache across its entry resolutions.
 - The JavaScript runtime owns native ESM loading and its ESM cache.

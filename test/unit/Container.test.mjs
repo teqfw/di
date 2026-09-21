@@ -97,19 +97,24 @@ describe('TeqFw_Di_Container', () => {
 
         assert.throws(() => container.addPreprocess((depId) => depId), Error);
         assert.throws(() => container.addPostprocess((value) => value), Error);
+        assert.throws(() => container.setHardener((value) => value), Error);
         assert.throws(() => container.enableLogging(), Error);
         assert.throws(() => container.enableTestMode(), Error);
         assert.throws(() => container.addNamespaceRoot('Ns_', '/x', '.mjs'), Error);
+        assert.throws(() => container.register('node:path', {mock: true}), Error);
     });
 
     it('locks configuration when the first resolution begins', async () => {
         const container = new TeqFw_Di_Container();
         const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
         container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
+        container.enableTestMode();
 
         const pending = container.get('TestSample_Empty$');
 
         assert.throws(() => container.addPostprocess((value) => value), /locked/);
+        assert.throws(() => container.enableTestMode(), /locked/);
+        assert.throws(() => container.register('TestSample_Empty$', {mock: true}), /locked/);
         const value = await pending;
 
         assert.equal(typeof value.start, 'function');
@@ -216,7 +221,7 @@ describe('TeqFw_Di_Container', () => {
         await assert.rejects(/** @type {Promise<unknown>} */ (reentrant), /concurrent|re-entrant|busy/i);
     });
 
-    it('preprocess runs before mock lookup', async () => {
+    it('finalizes registered substitutions through the configured preprocessing policy', async () => {
         const container = new TeqFw_Di_Container();
         const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
         container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
@@ -229,7 +234,7 @@ describe('TeqFw_Di_Container', () => {
 
         const value = await container.get('TestSample_Empty$');
 
-        assert.notDeepStrictEqual(value, {mocked: true});
-        assert.equal(typeof value.start, 'function');
+        assert.deepStrictEqual(value, {mocked: true});
+        assert.equal(Object.isFrozen(value), true);
     });
 });

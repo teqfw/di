@@ -28,8 +28,36 @@ and leaves a Running Container available for a later entry.
 `postprocessors`, and optional `hardener` contain producer Dependency
 Identifiers. `logging` and `introspection` are booleans. The DTO contains data,
 not callbacks, so it can be JSON-serialized; a target path or URL must still be
-loadable in the receiving runtime. Test-only `mocks` are explicit configuration
-entries for composition tests.
+loadable in the receiving runtime. It does not contain runtime test-substitution
+values.
+
+For new integrations, use this DTO. The shipped builder methods
+`addNamespaceRoot()`, `addPreprocess()`, `addPostprocess()`, `setHardener()`,
+and `enableLogging()` are compatibility surfaces only while the Container is
+`Configuring`; the first `get()` locks all of them. They do not provide mutable
+introspection configuration.
+
+## Test substitutions
+
+For a composition test, enable test mode and register each arbitrary runtime
+value before the first `get()`:
+
+```js
+const container = new Container({
+  namespaces: [{prefix: "App_", target: fixtureRoot, defaultExt: ".mjs"}],
+});
+container.enableTestMode();
+container.register("App_Data_Repository$", mockRepository);
+```
+
+`register()` requires test mode and retains the requested specifier until the
+first `get()`. After configured and compatibility Preprocessors are installed,
+the Container applies that complete policy and indexes the substitution by
+effective dependency identity. Test substitutions are not part of the JSON-safe
+DTO, do not materialize configured policy producers, and remain subject to
+Postprocessors, Wrappers, Hardener, and applicable Singleton handling. A
+canonicalization failure fails preparation before any entry starts. The first
+`get()` locks test setup as well.
 
 ## Structured introspection
 
@@ -46,3 +74,5 @@ This structured API is different from `enableLogging()`. Introspection is
 enabled only by the configuration DTO; there is no mutable
 `enableIntrospection()` path. Console messages and
 private graph objects are diagnostics, not a public substitute for introspection.
+A preparation failure happens before an entry starts, so it leaves no completed
+entry snapshot; an entry-resolution failure is retained with its provenance.

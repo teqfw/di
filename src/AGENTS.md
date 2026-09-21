@@ -156,7 +156,7 @@ Source changes MUST be verified with the project-provided tests and applicable c
 
 The file `types.d.ts` defines exported structural type aliases corresponding to implementation modules.
 
-The alias scheme MUST follow `ctx/docs/code/layout/types.md`: `__Class` denotes an importable constructable value where meaningful, and `__ExportName` selects a named export. The consumer-facing meaning of a bare alias remains unresolved because Direct exposes raw exports while Singleton and Transient expose produced values; do not choose a universal bare-alias rule in source work.
+The alias scheme MUST follow `ctx/docs/code/layout/types.md`: a bare alias such as `Ns_Service` denotes the consumer or instance contract, `Ns_Service__Class` denotes an importable constructable class export where meaningful, and `__ExportName` selects a named export. Runtime Dependency Lifestyle and JSDoc alias naming are separate: `Ns_Service$` resolves a produced instance, while `Ns_Service` and `Ns_Service$$$` directly access the selected export without changing the bare JSDoc alias.
 
 When adding or renaming an exported implementation module under `src/`, agent MUST:
 

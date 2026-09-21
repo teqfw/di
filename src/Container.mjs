@@ -35,15 +35,15 @@ import {buildDependencyKey} from './Internal/DependencyKey.mjs';
  */
 export default class TeqFw_Di_Container {
     /**
-     * @param {{namespaces?: Array<{prefix: string, target: string, defaultExt: string}>, preprocessors?: string[], postprocessors?: string[], hardener?: string|null, logging?: boolean, introspection?: boolean, mocks?: Array<{specifier: string, value: unknown}>}} [data]
+     * @param {{namespaces?: Array<{prefix: string, target: string, defaultExt: string}>, preprocessors?: string[], postprocessors?: string[], hardener?: string|null, logging?: boolean, introspection?: boolean}} [data]
      */
     constructor(data = {}) {
         /** @type {TeqFw_Di_Container_State} */
         let state = 'Configuring';
         /** @type {Map<string, unknown>} */
-        const mockRegistry = new Map();
-        /** @type {Array<{key: string, value: unknown}>} */
-        const legacyMocks = [];
+        const testSubstitutionRegistry = new Map();
+        /** @type {Array<{specifier: string, value: unknown}>} */
+        const registeredTestSubstitutions = [];
         /** @type {Array<{prefix: string, target: string, defaultExt: string}>} */
         const namespaceRoots = [];
         /** @type {Array<(depId: TeqFw_Di_Dto_DepId, context: TeqFw_Di_Container_ResolutionContext) => TeqFw_Di_Dto_DepId>} */
@@ -94,18 +94,25 @@ export default class TeqFw_Di_Container {
          */
         const findMock = function (depId) {
             const key = buildDependencyKey(depId);
-            return {found: mockRegistry.has(key), value: mockRegistry.get(key)};
+            return {found: testSubstitutionRegistry.has(key), value: testSubstitutionRegistry.get(key)};
         };
 
-        /** @returns {void} */
-        const installMocks = function () {
-            for (const mock of config.mocks) {
-                const depId = canonicalizer.canonicalize(mock.specifier).effective;
-                mockRegistry.set(buildDependencyKey(depId), mock.value);
+        /**
+         * Finalizes registered substitutions against the complete preprocessing
+         * policy and installs the resulting effective-identity registry.
+         *
+         * @returns {void}
+         */
+        const finalizeTestSubstitutions = function () {
+            // Map insertion preserves the established last-registration-wins behavior.
+            /** @type {Map<string, unknown>} */
+            const finalized = new Map();
+            for (const substitution of registeredTestSubstitutions) {
+                const depId = canonicalizer.canonicalize(substitution.specifier).effective;
+                finalized.set(buildDependencyKey(depId), substitution.value);
             }
-            for (const mock of legacyMocks) {
-                mockRegistry.set(mock.key, mock.value);
-            }
+            testSubstitutionRegistry.clear();
+            for (const [key, value] of finalized) testSubstitutionRegistry.set(key, value);
         };
 
         /** @returns {void} */
@@ -155,7 +162,7 @@ export default class TeqFw_Di_Container {
             namespaceRoots.push({prefix, target, defaultExt});
         };
 
-        /** @returns {void} @deprecated Supply mocks through configuration instead. */
+        /** @returns {void} */
         this.enableTestMode = function () {
             assertConfigurationStage();
             testMode = true;
@@ -169,16 +176,16 @@ export default class TeqFw_Di_Container {
         };
 
         /**
+         * Retains a test substitution for finalization after preparation.
+         *
          * @param {string} specifier
          * @param {unknown} value
          * @returns {void}
-         * @deprecated Supply JSON-safe mocks through configuration instead.
          */
         this.register = function (specifier, value) {
             assertConfigurationStage();
             if (testMode !== true) throw new Error('Container test mode is disabled.');
-            const depId = canonicalizer.canonicalize(specifier).effective;
-            legacyMocks.push({key: buildDependencyKey(depId), value});
+            registeredTestSubstitutions.push({specifier, value});
         };
 
         /**
@@ -237,9 +244,8 @@ export default class TeqFw_Di_Container {
                 throw new Error('Container is busy; concurrent or re-entrant get() is not allowed.');
             }
 
-            const entryId = `entry-${nextEntryId++}`;
-            const observer = introspectionEnabled ? createObserver(specifier, entryId) : createNoopObserver();
-            if (state === 'Configuring') {
+            const startsPreparation = state === 'Configuring';
+            if (startsPreparation) {
                 state = 'Preparing';
                 try {
                 logger.log('Container.configuration: materializing declared policy.');
@@ -261,7 +267,7 @@ export default class TeqFw_Di_Container {
                 for (const fn of legacyPreprocessors) canonicalizer.add(fn);
                 for (const fn of legacyPostprocessors) postprocessor.add(fn);
                 if (legacyHardener !== null) hardener.setConfigured(legacyHardener);
-                installMocks();
+                finalizeTestSubstitutions();
                 resolutionContext = {
                     canonicalizer,
                     lifecycle,
@@ -273,30 +279,24 @@ export default class TeqFw_Di_Container {
                     hardener,
                     findMock,
                     logger,
-                    observer,
-                    entryId,
                 };
                 logger.log('Container.transition: Preparing -> Running.');
                 state = 'Running';
-                observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {
-                    from: 'Preparing',
-                    to: 'Running',
-                });
                 } catch (error) {
                     logger.error('Container.transition: Preparing -> Failed.', error);
                     state = 'Failed';
-                    observer.record(TeqFw_Di_Enum_ObservationEvent.FAILURE, {
-                        nodeId: null,
-                        stage: 'configuration',
-                        cause: error instanceof Error ? error.message : String(error),
-                    });
-                    observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {from: 'Preparing', to: state});
-                    observer.complete('failure', state);
-                    publishEntry(observer);
                     throw error;
                 }
             }
 
+            const entryId = `entry-${nextEntryId++}`;
+            const observer = introspectionEnabled ? createObserver(specifier, entryId) : createNoopObserver();
+            if (startsPreparation) {
+                observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {
+                    from: 'Preparing',
+                    to: 'Running',
+                });
+            }
             entryActive = true;
             try {
                 const value = await executeResolution({...resolutionContext, observer, entryId}, specifier);
