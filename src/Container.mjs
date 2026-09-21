@@ -7,7 +7,7 @@
 
 import TeqFw_Di_Parser from './Parser.mjs';
 import {Factory as TeqFw_Di_Dto_DepId_Factory} from './Dto/DepId.mjs';
-import {Factory as TeqFw_Di_Dto_Resolver_Config_Factory} from './Dto/Resolver/Config.mjs';
+import {Factory as TeqFw_Di_Dto_ModuleRouter_Config_Factory} from './Dto/ModuleRouter/Config.mjs';
 import TeqFw_Di_Container_Canonicalizer from './Container/Canonicalizer.mjs';
 import TeqFw_Di_Container_Hardener from './Container/Hardener.mjs';
 import TeqFw_Di_Container_Lifecycle from './Container/Lifecycle.mjs';
@@ -19,23 +19,25 @@ import TeqFw_Di_Container_Wrapper from './Container/Wrapper.mjs';
 import {createNoopObserver, createObserver} from './Container/Observer.mjs';
 import {executeResolution} from './Container/Resolution.mjs';
 import TeqFw_Di_Enum_ObservationEvent from './Enum/ObservationEvent.mjs';
-import TeqFw_Di_Enum_ResolutionStage from './Enum/ResolutionStage.mjs';
 import TeqFw_Di_Internal_Logger, {TeqFw_Di_Internal_Logger_Noop} from './Internal/Logger.mjs';
 import {buildDependencyKey} from './Internal/DependencyKey.mjs';
 
-/** @typedef {'notConfigured'|'operational'|'failed'} TeqFw_Di_Container_State */
+/** @typedef {'Configurable'|'Resolving'|'Resolved'|'Failed'} TeqFw_Di_Container_State */
+/** @typedef {import('./Dto/ModuleRouter/Config.mjs').default} TeqFw_Di_Dto_ModuleRouter_Config */
+/** @typedef {import('./Dto/ModuleRouter/Config/Namespace.mjs').default} TeqFw_Di_Dto_ModuleRouter_Config_Namespace */
+/** @typedef {import('./Dto/ModuleRouter/Config.mjs').Factory} TeqFw_Di_Dto_ModuleRouter_Config__Factory */
 
 /**
  * Public Container facade. It owns stable configuration, Container-scoped
- * collaborators and state; one `get()` creates one Resolution session.
+ * collaborators and state; one `get()` claims one Resolution session.
  */
 export default class TeqFw_Di_Container {
     constructor() {
         /** @type {TeqFw_Di_Container_State} */
-        let state = 'notConfigured';
+        let state = 'Configurable';
         /** @type {Map<string, unknown>} */
         const mockRegistry = new Map();
-        /** @type {TeqFw_Di_Dto_Resolver_Config_Namespace[]} */
+        /** @type {TeqFw_Di_Dto_ModuleRouter_Config_Namespace[]} */
         const namespaceRoots = [];
         let testMode = false;
         let loggingEnabled = false;
@@ -46,8 +48,8 @@ export default class TeqFw_Di_Container {
         const parser = new TeqFw_Di_Parser();
         /** @type {TeqFw_Di_Dto_DepId__Factory} */
         const depIdFactory = new TeqFw_Di_Dto_DepId_Factory();
-        /** @type {TeqFw_Di_Dto_Resolver_Config__Factory} */
-        const configFactory = new TeqFw_Di_Dto_Resolver_Config_Factory();
+        /** @type {TeqFw_Di_Dto_ModuleRouter_Config__Factory} */
+        const configFactory = new TeqFw_Di_Dto_ModuleRouter_Config_Factory();
         /** @type {TeqFw_Di_Container_Canonicalizer} */
         const canonicalizer = new TeqFw_Di_Container_Canonicalizer({parser, depIdFactory});
         /** @type {TeqFw_Di_Container_Postprocessor} */
@@ -80,7 +82,7 @@ export default class TeqFw_Di_Container {
 
         /** @returns {void} */
         const assertBuilderStage = function () {
-            if (state !== 'notConfigured') throw new Error('Container configuration is locked.');
+            if (state !== 'Configurable') throw new Error('Container configuration is locked.');
         };
 
         /** @param {string} message @returns {void} */
@@ -91,14 +93,10 @@ export default class TeqFw_Di_Container {
         /**
          * Freezes configuration and creates all Container-scoped runtime owners.
          *
-         * @param {() => void} onOperational
          * @returns {void}
          */
-        const initializeInfrastructure = function (onOperational) {
-            if (state !== 'notConfigured') return;
-            logger.log('Container.transition: notConfigured -> operational.');
-            state = 'operational';
-            onOperational();
+        const initializeInfrastructure = function () {
+            if (moduleRouter) return;
             const config = configFactory.create({namespaces: namespaceRoots});
             if (typeof parser.setLogger === 'function') parser.setLogger(logger);
             moduleRouter = new TeqFw_Di_Container_ModuleRouter({config, logger});
@@ -181,7 +179,7 @@ export default class TeqFw_Di_Container {
         };
 
         /**
-         * Returns the immutable snapshot of the latest observed request.
+         * Returns the immutable snapshot of the Container's one root request.
          *
          * @returns {object|null}
          */
@@ -205,32 +203,27 @@ export default class TeqFw_Di_Container {
         };
 
         /**
-         * Resolves one Dependency Identifier through a new Resolution session.
+         * Claims and resolves the Container's one root Dependency Identifier.
          *
          * @param {string} specifier
          * @returns {Promise<any>}
          */
         this.get = async function (specifier) {
+            if (state !== 'Configurable') {
+                throw new Error('Container root has already been claimed; a second root is not allowed.');
+            }
             const observer = introspectionEnabled ? createObserver(specifier) : createNoopObserver();
             if (introspectionEnabled) lastObserver = observer;
 
-            if (state === 'failed') {
-                logger.error(`Container.get: rejected in failed state specifier='${specifier}'.`);
-                observer.record(TeqFw_Di_Enum_ObservationEvent.FAILURE, {
-                    stage: TeqFw_Di_Enum_ResolutionStage.CONTAINER_STATE,
-                    cause: 'Container is in failed state.',
-                });
-                observer.complete('failure', state);
-                throw new Error('Container is in failed state.');
-            }
+            logger.log(`Container.transition: Configurable -> Resolving.`);
+            state = 'Resolving';
+            observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {
+                from: 'Configurable',
+                to: 'Resolving',
+            });
 
             try {
-                initializeInfrastructure(function () {
-                    observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {
-                        from: 'notConfigured',
-                        to: 'operational',
-                    });
-                });
+                initializeInfrastructure();
                 logger.log(`Container.state: '${state}'.`);
                 const value = await executeResolution({
                     canonicalizer,
@@ -245,15 +238,21 @@ export default class TeqFw_Di_Container {
                     logger,
                     observer,
                 }, specifier);
+                logger.log('Container.transition: Resolving -> Resolved.');
+                state = 'Resolved';
+                observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {
+                    from: 'Resolving',
+                    to: 'Resolved',
+                });
                 observer.complete('success', state);
                 return value;
             } catch (error) {
-                const transitioned = state === 'operational';
+                const transitioned = state === 'Resolving';
                 if (transitioned) {
-                    logger.error('Container.transition: operational -> failed.', error);
-                    state = 'failed';
+                    logger.error('Container.transition: Resolving -> Failed.', error);
+                    state = 'Failed';
                     observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {
-                        from: 'operational',
+                        from: 'Resolving',
                         to: state,
                     });
                 }

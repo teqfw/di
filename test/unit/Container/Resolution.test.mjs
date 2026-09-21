@@ -31,9 +31,8 @@ describe('TeqFw_Di_Container_Resolution', () => {
         const result = await executeResolution(/** @type {any} */ ({
             canonicalizer: {canonicalize() { return {requested: depId, effective: depId, preprocessing: []}; }},
             lifecycle: new TeqFw_Di_Container_Lifecycle(),
-            moduleRouter: {route() { order.push('route'); return {key: 'teq::App_Service', specifier: '/App/Service.mjs'}; }},
+            moduleRouter: {route() { order.push('route'); return {specifier: '/App/Service.mjs'}; }},
             moduleLoader: {
-                status() { return 'miss'; },
                 async load() { order.push('load'); return namespace; },
             },
             producer: new TeqFw_Di_Container_Producer(),
@@ -47,7 +46,7 @@ describe('TeqFw_Di_Container_Resolution', () => {
 
         assert.deepEqual(result, {value: 42});
         assert.deepEqual(order, ['route', 'load']);
-        observer.complete('success', 'operational');
+        observer.complete('success', 'Resolved');
         const snapshot = /** @type {any} */ (observer.getSnapshot());
         const events = /** @type {any[]} */ (snapshot.trace).map((event) => event.kind);
         assert.ok(events.includes(TeqFw_Di_Enum_ObservationEvent.ROUTE));

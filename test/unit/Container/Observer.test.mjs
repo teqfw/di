@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Enum_ObservationEvent from '../../../src/Enum/ObservationEvent.mjs';
-import {createObserver, protectObserver} from '../../../src/Container/Observer.mjs';
+import {createObserver} from '../../../src/Container/Observer.mjs';
 
 describe('TeqFw_Di_Container_Observer', () => {
     it('records graph, trace, and explanation facts in one immutable snapshot', () => {
@@ -20,14 +20,13 @@ describe('TeqFw_Di_Container_Observer', () => {
             nodeId: 'root',
             addressKind: 'teq',
             moduleSpecifier: '/Root.mjs',
-            moduleCache: 'miss',
         });
         observer.record(TeqFw_Di_Enum_ObservationEvent.FAILURE, {
             nodeId: 'root',
             stage: 'module loading',
             cause: 'missing module',
         });
-        observer.complete('failure', 'failed');
+        observer.complete('failure', 'Failed');
 
         const snapshot = /** @type {any} */ (observer.getSnapshot());
         assert.ok(snapshot);
@@ -41,25 +40,10 @@ describe('TeqFw_Di_Container_Observer', () => {
         assert.ok(Object.isFrozen(snapshot.explanation));
     });
 
-    it('swallows observation-operation failures at the publication boundary', () => {
-        let afterFailure = false;
-        const observer = {
-            addNode() {
-                throw new Error('observer failure');
-            },
-            addEdge() {},
-            record() {},
-            complete() {},
-            getSnapshot() {
-                return null;
-            },
-        };
-
-        const protectedObserver = protectObserver(observer);
-        protectedObserver.addNode({});
-        protectedObserver.record('failure', {});
-        afterFailure = true;
-
-        assert.equal(afterFailure, true);
+    it('keeps malformed observation operations from escaping the session boundary', () => {
+        const observer = createObserver('Root$');
+        assert.doesNotThrow(() => observer.addNode(/** @type {any} */ (null)));
+        assert.doesNotThrow(() => observer.record('failure', /** @type {any} */ (null)));
+        assert.doesNotThrow(() => observer.complete('failure', 'Failed'));
     });
 });

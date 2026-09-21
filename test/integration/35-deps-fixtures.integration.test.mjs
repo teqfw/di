@@ -3,7 +3,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container from '../../src/Container.mjs';
+import TeqFw_Di_Container from '@teqfw/di';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,12 +11,15 @@ const FIXTURE_DIR = path.resolve(__dirname, '../fixtures/deps');
 
 describe('Integration 35: dependency fixture forms', () => {
     it('resolves hierarchical __deps__ for default and named exports', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
-        container.enableTestMode();
+        const defaultContainer = new TeqFw_Di_Container();
+        defaultContainer.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        defaultContainer.enableTestMode();
+        const defaultValue = await defaultContainer.get('TestSample_Canonical$');
 
-        const defaultValue = await container.get('TestSample_Canonical$');
-        const factoryValue = await container.get('TestSample_Canonical__Factory$');
+        const factoryContainer = new TeqFw_Di_Container();
+        factoryContainer.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        factoryContainer.enableTestMode();
+        const factoryValue = await factoryContainer.get('TestSample_Canonical__Factory$');
 
         assert.equal(typeof defaultValue.start, 'function');
         assert.equal(typeof defaultValue.getStartedAt, 'function');
@@ -48,8 +51,15 @@ describe('Integration 35: dependency fixture forms', () => {
         container.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
         container.enableTestMode();
 
-        const defaultValue = await container.get('TestSample_NamedOnly$');
-        const factoryValue = await container.get('TestSample_NamedOnly__Factory$');
+        const defaultContainer = new TeqFw_Di_Container();
+        defaultContainer.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        defaultContainer.enableTestMode();
+        const defaultValue = await defaultContainer.get('TestSample_NamedOnly$');
+
+        const factoryContainer = new TeqFw_Di_Container();
+        factoryContainer.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        factoryContainer.enableTestMode();
+        const factoryValue = await factoryContainer.get('TestSample_NamedOnly__Factory$');
 
         assert.equal(typeof defaultValue.start, 'function');
         assert.equal(defaultValue.getStartedAt(), null);

@@ -3,7 +3,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container from '../../src/Container.mjs';
+import TeqFw_Di_Container from '@teqfw/di';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,7 +39,7 @@ describe('Integration 30: graph resolution', () => {
 
         assert.equal(observation.explanation.failure.stage, 'cycle detection');
         assert.equal(observation.trace.some((/** @type {any} */ event) => event.kind === 'cache' && event.outcome === 'pending'), false);
-        await assert.rejects(() => container.get('Fx_Root$'), /failed state/i);
+        await assert.rejects(() => container.get('Fx_Root$'), /root.*claimed|second root/i);
     });
 
     it('rejects a deeper recursive Singleton cycle and leaves the Container failed', async () => {
@@ -47,7 +47,7 @@ describe('Integration 30: graph resolution', () => {
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
 
         await assert.rejects(() => container.get('Fx_SingletonCycleDeepA$'), /Cyclic dependency detected/);
-        await assert.rejects(() => container.get('Fx_Root$'), /failed state/i);
+        await assert.rejects(() => container.get('Fx_Root$'), /root.*claimed|second root/i);
     });
 
     it('injects a canonical mock for a transitive dependency', async () => {

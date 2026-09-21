@@ -3,7 +3,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container from '../../src/Container.mjs';
+import TeqFw_Di_Container from '@teqfw/di';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,13 +29,14 @@ describe('Integration 50: wrappers', () => {
         );
     });
 
-    it('keeps ordered Wrapper Selection in Singleton identity', async () => {
+    it('keeps ordered Wrapper Selection in Singleton identity inside one graph', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
 
-        const first = await container.get('Fx_Wrapped$_wrapFirst_wrapSecond');
-        const reversed = await container.get('Fx_Wrapped$_wrapSecond_wrapFirst');
-        const repeated = await container.get('Fx_Wrapped$_wrapFirst_wrapSecond');
+        const root = await container.get('Fx_GraphLifestyle$');
+        const first = root.wrappedA;
+        const repeated = root.wrappedB;
+        const reversed = root.wrappedC;
 
         assert.deepEqual(first.steps, ['core', 'wrapFirst', 'wrapSecond']);
         assert.deepEqual(reversed.steps, ['core', 'wrapSecond', 'wrapFirst']);

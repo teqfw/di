@@ -8,6 +8,7 @@
 import TeqFw_Di_Enum_ObservationEvent from '../Enum/ObservationEvent.mjs';
 
 /** @typedef {{index: number, kind: string, [key: string]: unknown}} TeqFw_Di_Container_Observer_TraceEvent */
+/** @typedef {'Configurable'|'Resolving'|'Resolved'|'Failed'} TeqFw_Di_Container_State */
 
 /**
  * @typedef {object} TeqFw_Di_Container_Observer_Contract
@@ -39,7 +40,7 @@ const safely = function (operation) {
  * @param {TeqFw_Di_Container_Observer_Contract} observer
  * @returns {TeqFw_Di_Container_Observer_Contract}
  */
-export function protectObserver(observer) {
+const protectObserver = function (observer) {
     return {
         addNode(data) {
             safely(() => observer.addNode(data));
@@ -195,7 +196,6 @@ export function createObserver(specifier) {
             resolution.route = Object.freeze({
                 addressKind: payload.addressKind,
                 moduleSpecifier: payload.moduleSpecifier,
-                moduleCache: payload.moduleCache,
                 ...(payload.mapping ? {mapping: payload.mapping} : {}),
             });
         } else if (kind === TeqFw_Di_Enum_ObservationEvent.EXPORT) {

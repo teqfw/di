@@ -7,17 +7,19 @@
 
 import TeqFw_Di_Enum_Platform from '../Enum/Platform.mjs';
 
+/** @typedef {import('../Dto/ModuleRouter/Config.mjs').default} TeqFw_Di_Dto_ModuleRouter_Config */
+
 /**
  * @typedef {{prefix: string, target: string, defaultExt: string}} TeqFw_Di_Container_ModuleRouter_NamespaceRule
  */
 
 /**
- * @typedef {{key: string, specifier: string, mapping?: TeqFw_Di_Container_ModuleRouter_NamespaceRule}} TeqFw_Di_Container_ModuleRouter_Route
+ * @typedef {{specifier: string, mapping?: TeqFw_Di_Container_ModuleRouter_NamespaceRule}} TeqFw_Di_Container_ModuleRouter_Route
  */
 
 /**
  * @typedef {object} TeqFw_Di_Container_ModuleRouter_Dependencies
- * @property {TeqFw_Di_Dto_Resolver_Config} config
+ * @property {TeqFw_Di_Dto_ModuleRouter_Config} config
  * @property {TeqFw_Di_Internal_Logger_Contract|null} [logger]
  */
 
@@ -30,9 +32,8 @@ export default class TeqFw_Di_Container_ModuleRouter {
      * @param {TeqFw_Di_Container_ModuleRouter_Dependencies} deps
      */
     constructor({config, logger = null}) {
-        /** @type {{nodeModulesRoot: (string|undefined), namespaces: TeqFw_Di_Container_ModuleRouter_NamespaceRule[]}} */
+        /** @type {{namespaces: TeqFw_Di_Container_ModuleRouter_NamespaceRule[]}} */
         const snapshot = {
-            nodeModulesRoot: config.nodeModulesRoot,
             namespaces: config.namespaces.map((one) => ({
                 prefix: /** @type {string} */ (one.prefix),
                 target: /** @type {string} */ (one.target),
@@ -95,16 +96,15 @@ export default class TeqFw_Di_Container_ModuleRouter {
          * @returns {TeqFw_Di_Container_ModuleRouter_Route}
          */
         this.route = function (depId) {
-            const key = `${depId.platform}::${depId.moduleName}`;
             if (depId.platform === TeqFw_Di_Enum_Platform.NODE) {
                 const specifier = `node:${depId.moduleName}`;
                 if (log) log.log(`ModuleRouter.route: '${depId.moduleName}' -> '${specifier}'.`);
-                return Object.freeze({key, specifier});
+                return Object.freeze({specifier});
             }
             if (depId.platform === TeqFw_Di_Enum_Platform.NPM) {
                 const specifier = depId.moduleName;
                 if (log) log.log(`ModuleRouter.route: '${depId.moduleName}' -> '${specifier}'.`);
-                return Object.freeze({key, specifier});
+                return Object.freeze({specifier});
             }
             if (depId.platform !== TeqFw_Di_Enum_Platform.TEQ) {
                 throw new Error(`Unsupported platform: ${depId.platform}`);
@@ -114,7 +114,7 @@ export default class TeqFw_Di_Container_ModuleRouter {
             const relativePath = remainder.split('_').join('/');
             const specifier = join(rule.target, appendExt(relativePath, rule.defaultExt));
             if (log) log.log(`ModuleRouter.route: '${depId.moduleName}' -> '${specifier}'.`);
-            return Object.freeze({key, specifier, mapping: Object.freeze({...rule})});
+            return Object.freeze({specifier, mapping: Object.freeze({...rule})});
         };
     }
 }

@@ -5,9 +5,6 @@
  * @description Helper for protecting async return values from unsafe `then` access.
  */
 
-/** @type {WeakMap<object, object>} */
-const cache = new WeakMap();
-
 /**
  * Returns a value that is safe to hand to an async caller.
  *
@@ -22,7 +19,6 @@ export function makePromiseSafe(value) {
     const type = typeof value;
     if ((type !== 'object') && (type !== 'function')) return value;
     const obj = /** @type {object} */ (value);
-    if (cache.has(obj)) return cache.get(obj);
     try {
         void Reflect.get(obj, 'then');
         return value;
@@ -33,7 +29,6 @@ export function makePromiseSafe(value) {
                 return Reflect.get(target, property, receiver);
             },
         });
-        cache.set(obj, wrapped);
         return wrapped;
     }
 }

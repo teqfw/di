@@ -3,7 +3,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container from '../../src/Container.mjs';
+import TeqFw_Di_Container from '@teqfw/di';
 import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../../src/Dto/DepId.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -64,7 +64,6 @@ describe('Integration 36: resolution context', () => {
             {moduleName: 'Fx_ContextRoot', parent: null, stack: ['Fx_ContextRoot']},
         ]);
 
-        await container.get('Fx_ContextRoot$');
         assert.equal(postprocessCalls.length, 4);
     });
 

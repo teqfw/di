@@ -3,7 +3,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container from '../../src/Container.mjs';
+import TeqFw_Di_Container from '@teqfw/di';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,7 +21,7 @@ describe('Integration 90: failed state', () => {
         );
         const observation = /** @type {any} */ (container.getIntrospection());
 
-        assert.equal(observation.explanation.containerState, 'failed');
+        assert.equal(observation.explanation.containerState, 'Failed');
         assert.equal(observation.explanation.failure.stage, 'module loading');
         const route = observation.explanation.resolutions[0].route;
         assert.equal(route.addressKind, 'teq');
@@ -35,7 +35,8 @@ describe('Integration 90: failed state', () => {
         const failureIndex = observation.trace.findIndex((/** @type {any} */ event) => event.kind === 'failure');
         assert.ok(routeIndex >= 0);
         assert.ok(failureIndex > routeIndex);
-        await assert.rejects(() => container.get('Fx_Root$'), /failed state/i);
+        await assert.rejects(() => container.get('Fx_Root$'), /root.*claimed|second root/i);
+        assert.strictEqual(container.getIntrospection(), observation);
     });
 
     it('enters failed state after Dependency Resolution failure and rejects subsequent get/config calls', async () => {
@@ -43,7 +44,7 @@ describe('Integration 90: failed state', () => {
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
 
         await assert.rejects(() => container.get('Fx_BadExport$'), /Export 'default' is not found/);
-        await assert.rejects(() => container.get('Fx_Root$'), /failed state/i);
+        await assert.rejects(() => container.get('Fx_Root$'), /root.*claimed|second root/i);
 
         assert.throws(() => container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs'));
         assert.throws(() => container.enableLogging());
@@ -83,7 +84,7 @@ describe('Integration 90: failed state', () => {
             await assert.rejects(() => container.get(one.specifier));
             const observation = /** @type {any} */ (container.getIntrospection());
             assert.equal(observation.explanation.failure.stage, one.stage);
-            await assert.rejects(() => container.get('Fx_Root$'), /failed state/i);
+            await assert.rejects(() => container.get('Fx_Root$'), /root.*claimed|second root/i);
         }
     });
 
@@ -147,7 +148,7 @@ describe('Integration 90: failed state', () => {
                     'child resolution must begin before its nested failure'
                 );
             }
-            await assert.rejects(() => container.get('Fx_Root$'), /failed state/i);
+            await assert.rejects(() => container.get('Fx_Root$'), /root.*claimed|second root/i);
         }
     });
 });

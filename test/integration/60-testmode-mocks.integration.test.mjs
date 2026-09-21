@@ -3,7 +3,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container from '../../src/Container.mjs';
+import TeqFw_Di_Container from '@teqfw/di';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,19 +24,24 @@ describe('Integration 60: test mode and mocks', () => {
         const mock = {steps: ['mock']};
         let postprocessCalls = 0;
         let hardeningCalls = 0;
-        container.register('Fx_Wrapped$_wrapFirst', mock);
-        container.addPostprocess((value) => {
+        container.register('Fx_MockTarget$_wrapFirst', mock);
+        container.addPostprocess((value, context) => {
+            if (context.depId.moduleName !== 'Fx_MockTarget') return value;
             postprocessCalls += 1;
             const observed = /** @type {{steps: string[]}} */ (value);
             return {steps: [...observed.steps, 'postprocessor']};
         });
         container.setHardener((value) => {
-            hardeningCalls += 1;
+            if (typeof value === 'object' && value !== null && 'steps' in value
+                && /** @type {{steps: string[]}} */ (value).steps.includes('postprocessor')) {
+                hardeningCalls += 1;
+            }
             return Object.freeze(/** @type {object} */ (value));
         });
 
-        const first = await container.get('Fx_Wrapped$_wrapFirst');
-        const second = await container.get('Fx_Wrapped$_wrapFirst');
+        const root = await container.get('Fx_GraphLifestyle$');
+        const first = root.mockA;
+        const second = root.mockB;
 
         assert.deepEqual(first.steps, ['mock', 'postprocessor', 'wrapFirst']);
         assert.strictEqual(first, second);
@@ -72,25 +77,37 @@ describe('Integration 60: test mode and mocks', () => {
         let postprocessCalls = 0;
         let hardeningCalls = 0;
         container.register('NoRoute_Unresolvable$', mock);
-        container.addPostprocess((value) => {
+        container.addPostprocess((value, context) => {
+            if (context.depId.moduleName !== 'NoRoute_Unresolvable') return value;
             postprocessCalls += 1;
             const observed = /** @type {{steps: string[]}} */ (value);
             return {steps: [...observed.steps, 'postprocessor']};
         });
         container.setHardener((value) => {
-            hardeningCalls += 1;
+            if (typeof value === 'object' && value !== null && 'steps' in value
+                && /** @type {{steps: string[]}} */ (value).steps.includes('postprocessor')) {
+                hardeningCalls += 1;
+            }
             return Object.freeze(/** @type {object} */ (value));
         });
 
-        const first = await container.get('NoRoute_Unresolvable$');
-        const second = await container.get('NoRoute_Unresolvable$');
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const root = await container.get('Fx_MockRoot$');
+        const first = root.first;
+        const second = root.second;
         const observation = /** @type {any} */ (container.getIntrospection());
 
         assert.deepEqual(first.steps, ['mock', 'postprocessor']);
         assert.strictEqual(first, second);
         assert.equal(postprocessCalls, 1);
         assert.equal(hardeningCalls, 1);
-        assert.equal(observation.explanation.resolutions[0].cache, 'hit');
-        assert.equal(observation.trace.some((/** @type {any} */ event) => event.kind === 'route'), false);
+        assert.ok(observation.explanation.resolutions.some((/** @type {any} */ resolution) => resolution.cache === 'hit'));
+        const noRoute = observation.explanation.resolutions.find(
+            (/** @type {any} */ resolution) => resolution.effective.address === 'NoRoute_Unresolvable'
+        );
+        assert.equal(
+            observation.trace.some((/** @type {any} */ event) => event.kind === 'route' && event.nodeId === noRoute.nodeId),
+            false
+        );
     });
 });

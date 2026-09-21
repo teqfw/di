@@ -41,16 +41,14 @@ describe('TeqFw_Di_Container_Lifecycle', () => {
         assert.equal(registry.lookup(depId), 'hit');
     });
 
-    it('shares an in-flight singleton miss corridor', async () => {
+    it('stores the completed singleton miss result without a pending registry', async () => {
         const registry = new TeqFw_Di_Container_Lifecycle();
         const depId = createDepId();
         let calls = 0;
         const onMiss = async () => ({id: ++calls});
 
-        const [first, second] = await Promise.all([
-            registry.apply(depId, onMiss),
-            registry.apply(depId, onMiss),
-        ]);
+        const first = await registry.apply(depId, onMiss);
+        const second = await registry.apply(depId, onMiss);
 
         assert.equal(calls, 1);
         assert.strictEqual(first, second);
@@ -94,5 +92,17 @@ describe('TeqFw_Di_Container_Lifecycle', () => {
         assert.strictEqual(a, repeated);
         assert.notStrictEqual(a, b);
         assert.notStrictEqual(a, c);
+    });
+
+    it('does not store a failed miss and can report a later successful miss', async () => {
+        const registry = new TeqFw_Di_Container_Lifecycle();
+        const depId = createDepId();
+        const failure = new Error('miss failed');
+        await assert.rejects(registry.apply(depId, () => { throw failure; }), (error) => error === failure);
+        assert.equal(registry.lookup(depId), 'miss');
+
+        const value = await registry.apply(depId, () => ({ok: true}));
+        assert.deepStrictEqual(value, {ok: true});
+        assert.equal(registry.lookup(depId), 'hit');
     });
 });

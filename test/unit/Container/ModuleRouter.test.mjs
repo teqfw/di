@@ -3,7 +3,7 @@ import {describe, it} from 'node:test';
 
 import TeqFw_Di_Container_ModuleRouter from '../../../src/Container/ModuleRouter.mjs';
 import {Factory as DepIdFactory} from '../../../src/Dto/DepId.mjs';
-import {Factory as ConfigFactory} from '../../../src/Dto/Resolver/Config.mjs';
+import {Factory as ConfigFactory} from '../../../src/Dto/ModuleRouter/Config.mjs';
 import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
 
 const depIdFactory = new DepIdFactory();
@@ -29,12 +29,10 @@ describe('TeqFw_Di_Container_ModuleRouter', () => {
         });
 
         assert.deepEqual(router.route(depId()), {
-            key: 'teq::Ns_Group_Web_Service',
             specifier: '/web/Service.mjs',
             mapping: {prefix: 'Ns_Group_Web_', target: '/web', defaultExt: '.mjs'},
         });
         assert.deepEqual(router.route(depId({platform: TeqFw_Di_Enum_Platform.NODE, moduleName: 'fs'})), {
-            key: 'node::fs',
             specifier: 'node:fs',
         });
     });

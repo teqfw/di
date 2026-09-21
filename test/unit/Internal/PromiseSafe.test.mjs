@@ -47,7 +47,7 @@ describe('TeqFw_Di_Internal_PromiseSafe', () => {
         assert.strictEqual(safe.then, undefined);
     });
 
-    it('caches wrapped proxy and returns same wrapper', () => {
+    it('creates a safe wrapper for each unsafe proxy boundary crossing', () => {
         const target = {value: 42};
         const proxy = new Proxy(target, {
             get(obj, prop) {
@@ -57,7 +57,7 @@ describe('TeqFw_Di_Internal_PromiseSafe', () => {
         });
         const safe1 = makePromiseSafe(proxy);
         const safe2 = makePromiseSafe(proxy);
-        assert.strictEqual(safe1, safe2);
+        assert.notStrictEqual(safe1, safe2);
     });
 
     it('does not wrap non-object values', () => {

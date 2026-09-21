@@ -11,7 +11,6 @@ import {makePromiseSafe} from '../Internal/PromiseSafe.mjs';
 import TeqFw_Di_Enum_ObservationEvent from '../Enum/ObservationEvent.mjs';
 import TeqFw_Di_Enum_ResolutionStage from '../Enum/ResolutionStage.mjs';
 import {createResolutionContext} from './ResolutionContext.mjs';
-import {protectObserver} from './Observer.mjs';
 
 /**
  * @typedef {object} TeqFw_Di_Container_Resolution_Context
@@ -80,9 +79,8 @@ export async function executeResolution(ctx, specifier) {
         hardener,
         findMock,
         logger,
-        observer: sourceObserver,
+        observer,
     } = ctx;
-    const observer = protectObserver(sourceObserver);
 
     /** @type {Set<string>} */
     const active = new Set();
@@ -190,7 +188,6 @@ export async function executeResolution(ctx, specifier) {
                         key,
                         addressKind: depId.platform,
                         moduleSpecifier: route.specifier,
-                        moduleCache: moduleLoader.status(route),
                         ...(route.mapping ? {mapping: route.mapping} : {}),
                     });
                     stage = TeqFw_Di_Enum_ResolutionStage.MODULE_LOADING;

@@ -6,7 +6,7 @@ import {describe, it} from 'node:test';
 
 import TeqFw_Di_Node_Registry_Namespace from '../../src/Node/Registry/Namespace.mjs';
 import TeqFw_Di_Node_Registry_Package from '../../src/Node/Registry/Package.mjs';
-import TeqFw_Di_Container from '../../src/Container.mjs';
+import TeqFw_Di_Container from '@teqfw/di';
 
 /**
  * @param {string} fileAbs
@@ -128,6 +128,10 @@ export const fileAbs = fileURLToPath(import.meta.url);
         const resolved = await container.get('App_Long_Service');
         assert.equal(resolved.provider, 'dep-long');
         assert.equal(path.resolve(resolved.fileAbs), path.join(depLongRoot, 'modules/Service.js'));
-        assert.equal((await container.get('Root_Service')).provider, 'root-extra');
+        const otherContainer = new TeqFw_Di_Container();
+        for (const entry of registry) {
+            otherContainer.addNamespaceRoot(entry.prefix, entry.dirAbs, entry.ext);
+        }
+        assert.equal((await otherContainer.get('Root_Service')).provider, 'root-extra');
     });
 });

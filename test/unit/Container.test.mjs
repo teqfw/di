@@ -153,14 +153,33 @@ describe('TeqFw_Di_Container', () => {
         assert.equal(Object.isFrozen(value), true);
     });
 
-    it('failed state blocks subsequent get calls', async () => {
+    it('rejects a second root after resolution failure without reopening the Container', async () => {
         const container = new TeqFw_Di_Container();
         const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
         container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
 
         await assert.rejects(container.get('TestSample_Missing$'));
-        await assert.rejects(container.get('x'), /failed state/);
+        await assert.rejects(container.get('x'), /root.*claimed|second root/i);
         assert.throws(() => container.addPreprocess((depId) => depId), /locked/);
+    });
+
+    it('rejects a second root while the first resolution is pending', async () => {
+        const container = new TeqFw_Di_Container();
+        const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
+        container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
+
+        const first = container.get('TestSample_Empty$');
+        await assert.rejects(container.get('TestSample_Empty$'), /root.*claimed|second root/i);
+        await first;
+    });
+
+    it('rejects a second root after resolution succeeds', async () => {
+        const container = new TeqFw_Di_Container();
+        const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
+        container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
+
+        await container.get('TestSample_Empty$');
+        await assert.rejects(container.get('TestSample_Empty$'), /root.*claimed|second root/i);
     });
 
     it('preprocess runs before mock lookup', async () => {

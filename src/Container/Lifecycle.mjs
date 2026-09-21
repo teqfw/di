@@ -26,8 +26,6 @@ export default class TeqFw_Di_Container_Lifecycle {
     constructor(logger = null) {
         /** @type {Map<string, unknown>} */
         const singletonCache = new Map();
-        /** @type {Map<string, Promise<unknown>>} */
-        const pendingSingletons = new Map();
         /** @type {{log(message: string): void}|null} */
         const log = logger;
 
@@ -43,13 +41,12 @@ export default class TeqFw_Di_Container_Lifecycle {
          * Reports the current cache branch without changing cache state.
          *
          * @param {TeqFw_Di_Dto_DepId} depId
-         * @returns {'bypass'|'hit'|'pending'|'miss'}
+         * @returns {'bypass'|'hit'|'miss'}
          */
         this.lookup = function (depId) {
             if (depId.life !== TeqFw_Di_Enum_Life.SINGLETON) return 'bypass';
             const key = buildKey(depId);
             if (singletonCache.has(key)) return 'hit';
-            if (pendingSingletons.has(key)) return 'pending';
             return 'miss';
         };
 
@@ -72,22 +69,11 @@ export default class TeqFw_Di_Container_Lifecycle {
                 if (log) log.log(`Lifecycle.cache: hit key='${key}'.`);
                 return singletonCache.get(key);
             }
-            if (pendingSingletons.has(key)) {
-                if (log) log.log(`Lifecycle.cache: pending key='${key}'.`);
-                return /** @type {Promise<unknown>} */ (pendingSingletons.get(key));
-            }
-
             if (log) log.log(`Lifecycle.cache: miss key='${key}', create.`);
-            const pending = Promise.resolve().then(onMiss);
-            pendingSingletons.set(key, pending);
-            try {
-                const created = await pending;
-                singletonCache.set(key, created);
-                if (log) log.log(`Lifecycle.cache: stored key='${key}'.`);
-                return created;
-            } finally {
-                pendingSingletons.delete(key);
-            }
+            const created = await onMiss();
+            singletonCache.set(key, created);
+            if (log) log.log(`Lifecycle.cache: stored key='${key}'.`);
+            return created;
         };
     }
 }

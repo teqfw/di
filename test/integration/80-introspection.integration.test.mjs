@@ -3,7 +3,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {describe, it} from 'node:test';
 
-import TeqFw_Di_Container from '../../src/Container.mjs';
+import TeqFw_Di_Container from '@teqfw/di';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -63,15 +63,16 @@ describe('Integration 80: structured introspection', () => {
         container.enableIntrospection();
         container.addPostprocess((value) => value);
 
-        await container.get('Fx_ObservedSingleton$_wrapTag');
-        const miss = /** @type {any} */ (container.getIntrospection());
-        await container.get('Fx_ObservedSingleton$_wrapTag');
-        const hit = /** @type {any} */ (container.getIntrospection());
-        const missExplanation = miss.explanation.resolutions[0];
-        const hitExplanation = hit.explanation.resolutions[0];
+        await container.get('Fx_GraphLifestyle$');
+        const observation = /** @type {any} */ (container.getIntrospection());
+        const singletonResolutions = observation.explanation.resolutions.filter(
+            (/** @type {any} */ one) => one.effective.address === 'Fx_ObservedSingleton'
+        );
+        const missExplanation = singletonResolutions.find((/** @type {any} */ one) => one.cache === 'miss');
+        const hitExplanation = singletonResolutions.find((/** @type {any} */ one) => one.cache === 'hit');
 
-        assert.ok(miss.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'notConfigured' && event.to === 'operational'));
-        assert.equal(hit.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'notConfigured' && event.to === 'operational'), false);
+        assert.ok(observation.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'Configurable' && event.to === 'Resolving'));
+        assert.ok(observation.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'Resolving' && event.to === 'Resolved'));
         assert.equal(missExplanation.cache, 'miss');
         assert.equal(missExplanation.postprocessors, 1);
         assert.deepStrictEqual(missExplanation.wrappers, ['wrapTag']);
@@ -79,7 +80,7 @@ describe('Integration 80: structured introspection', () => {
         assert.equal(Object.hasOwn(missExplanation, 'hardened'), false);
         assert.equal(hitExplanation.cache, 'hit');
         for (const kind of ['route', 'export', 'acquisition', 'child', 'postprocess', 'wrappers', 'hardening']) {
-            assert.equal(hit.trace.some((/** @type {any} */ event) => event.kind === kind), false, `Singleton hit must not record ${kind}.`);
+            assert.equal(observation.trace.filter((/** @type {any} */ event) => event.nodeId === hitExplanation.nodeId && event.kind === kind).length, 0, `Singleton hit must not record ${kind}.`);
         }
     });
 
@@ -188,19 +189,20 @@ describe('Integration 80: structured introspection', () => {
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
         container.enableIntrospection();
 
-        const first = await container.get('Fx_DirectProducer__Callable');
-        const firstObservation = /** @type {any} */ (container.getIntrospection());
-        const second = await container.get('Fx_DirectProducer__Callable');
-        const secondObservation = /** @type {any} */ (container.getIntrospection());
-        const firstResolution = firstObservation.explanation.resolutions[0];
-        const secondResolution = secondObservation.explanation.resolutions[0];
+        const root = await container.get('Fx_GraphLifestyle$');
+        const observation = /** @type {any} */ (container.getIntrospection());
+        const directResolutions = observation.explanation.resolutions.filter(
+            (/** @type {any} */ one) => one.effective.address === 'Fx_DirectProducer' && one.effective.exportName === 'Callable'
+        );
+        const firstResolution = directResolutions[0];
+        const secondResolution = directResolutions[1];
 
-        assert.strictEqual(first, second);
+        assert.strictEqual(root.directA, root.directB);
         assert.equal(firstResolution.acquisition, 'direct');
         assert.equal(secondResolution.acquisition, 'direct');
         assert.equal(firstResolution.cache, 'bypass');
         assert.equal(secondResolution.cache, 'bypass');
-        assert.equal(secondObservation.trace.some((/** @type {any} */ event) => event.kind === 'cache' && event.outcome === 'hit'), false);
+        assert.equal(observation.trace.some((/** @type {any} */ event) => event.kind === 'cache' && event.outcome === 'hit' && event.nodeId === secondResolution.nodeId), false);
     });
 
     it('records Export Selection only after it succeeds and before producer traversal', async () => {
@@ -298,9 +300,9 @@ describe('Integration 80: structured introspection', () => {
         const failure = /** @type {any} */ (failing.getIntrospection());
 
         assert.equal(failure.explanation.outcome, 'failure');
-        assert.equal(failure.explanation.containerState, 'failed');
+        assert.equal(failure.explanation.containerState, 'Failed');
         assert.equal(failure.explanation.failure.stage, 'identifier parsing');
-        assert.ok(failure.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'notConfigured' && event.to === 'operational'));
-        assert.ok(failure.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'operational' && event.to === 'failed'));
+        assert.ok(failure.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'Configurable' && event.to === 'Resolving'));
+        assert.ok(failure.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'Resolving' && event.to === 'Failed'));
     });
 });
