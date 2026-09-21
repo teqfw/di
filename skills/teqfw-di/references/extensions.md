@@ -6,7 +6,7 @@ before constructing the Container. Keep their ownership and timing distinct.
 ## Preprocessors and Dependency Substitution
 
 `preprocessors` contains ordered producer Dependency Identifiers. Container
-materializes each producer under default policy before root resolution; each
+materializes each producer under default policy once before the first entry; each
 producer synchronously returns policy that receives a requested parsed
 Dependency Identifier and returns its effective replacement before module
 loading. Dependency Substitution is its primary use.

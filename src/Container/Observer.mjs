@@ -8,7 +8,7 @@
 import TeqFw_Di_Enum_ObservationEvent from '../Enum/ObservationEvent.mjs';
 
 /** @typedef {{index: number, kind: string, [key: string]: unknown}} TeqFw_Di_Container_Observer_TraceEvent */
-/** @typedef {'Configurable'|'Resolving'|'Resolved'|'Failed'} TeqFw_Di_Container_State */
+/** @typedef {'Configuring'|'Preparing'|'Running'|'Failed'} TeqFw_Di_Container_State */
 
 /**
  * @typedef {object} TeqFw_Di_Container_Observer_Contract
@@ -79,12 +79,13 @@ export function createNoopObserver() {
 }
 
 /**
- * Creates one graph, trace, and explanation session for a root request.
+ * Creates one graph, trace, and explanation session for an entry request.
  *
  * @param {string} specifier
+ * @param {string} entryId
  * @returns {TeqFw_Di_Container_Observer_Contract}
  */
-export function createObserver(specifier) {
+export function createObserver(specifier, entryId = 'entry-0') {
     /** @type {object[]} */
     const nodes = [];
     /** @type {object[]} */
@@ -226,6 +227,7 @@ export function createObserver(specifier) {
             }),
             trace: Object.freeze([...trace]),
             explanation: Object.freeze({
+                entryId,
                 requestedSpecifier: specifier,
                 outcome,
                 containerState: state,

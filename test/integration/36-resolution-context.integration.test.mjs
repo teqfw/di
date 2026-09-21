@@ -99,4 +99,23 @@ describe('Integration 36: resolution context', () => {
             'root:Fx_ContextRoot',
         ]);
     });
+
+    it('resets hook root provenance for each sequential entry', async () => {
+        const container = new TeqFw_Di_Container();
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        /** @type {string[]} */
+        const roots = [];
+        container.addPreprocess((depId, context) => {
+            roots.push(`${context.root.address}:${depId.address}`);
+            return depId;
+        });
+
+        await container.get('Fx_Root$');
+        await container.get('Fx_Singleton$');
+
+        assert.deepStrictEqual(roots, [
+            'Fx_Root:Fx_Root',
+            'Fx_Singleton:Fx_Singleton',
+        ]);
+    });
 });

@@ -44,19 +44,16 @@ test('release browser distributions match a clean Rollup build', async () => {
 test('browser ESM distribution preserves current resolution semantics', async () => {
     const {default: Container} = await import(pathToFileURL(path.join(rootDir, 'dist', 'esm.js')).href);
     const fixtureDir = pathToFileURL(path.join(rootDir, 'test', 'integration', 'fixture')).href;
-    const container = new Container();
+    const container = new Container({introspection: true});
     container.addNamespaceRoot('Fx_', fixtureDir, '.mjs');
-    container.enableIntrospection();
 
     const root = await container.get('Fx_GraphLifestyle$');
 
     assert.strictEqual(root.singletonA, root.singletonB);
     assert.notStrictEqual(root.transientA, root.transientB);
     assert.strictEqual(root.directA, root.directB);
-    await assert.rejects(
-        () => container.get('Fx_Singleton$'),
-        /root.*claimed|second root/i,
-    );
+    const singleton = await container.get('Fx_Singleton$');
+    assert.equal(singleton.token.kind, 'singleton');
 
     const observation = container.getIntrospection();
     assert.equal(observation.explanation.resolutions[0].effective.addressKind, 'teq');

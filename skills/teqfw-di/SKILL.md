@@ -27,16 +27,23 @@ Node.js registry imports only in Node.js composition code.
 ```text
 Composition Root creates JSON-safe Container configuration
   → new Container(config) materializes declared policy
-  → one public get(root Dependency Identifier)
-  → one root Dependency Resolution and Dependency Graph
-  → host uses the returned root
+  → first public get() locks configuration and enters Running
+  → sequential public get() calls create entry resolutions
+  → entry roots share policy and Container-scoped Singleton reuse
 ```
 
-Do not treat `Container` as a service locator. Its first `get()` claims the
-only root; a later `get()`, even for the same identifier, is invalid. A different
-root requires another configured Container. Runtime modules declare child
-dependencies in `__deps__`; the Container resolves them recursively in that
-same graph. Teq-compatible runtime modules have no static ES imports.
+Do not treat `Container` as a service locator. Use multiple `get()` calls only
+as controlled staged or lazy application entry points, such as bootstrap,
+plugins, then a selected command. Runtime modules declare ordinary child
+dependencies in `__deps__`; each entry resolves those recursively in its own
+graph. The first `get()` locks configuration and prepares policy once;
+subsequent sequential entries share that policy and Singleton cache. Concurrent
+and re-entrant `get()` calls reject. A failed entry leaves a Running Container
+usable, while preparation failure makes it unusable. Teq-compatible runtime
+modules have no static ES imports.
+
+Only then is a later `get()` valid, and only for
+the next deliberate application phase.
 
 Use only these public imports in new code:
 
@@ -54,7 +61,7 @@ migration path, not a new-code import. No other `src/**` path is public.
 | Consumer task | Read |
 | --- | --- |
 | Decide whether the package fits; preserve module and runtime boundaries | [Concepts](references/concepts.md) |
-| Create configuration, resolve one root, introspect it, use test mode, or diagnose failure | [Container](references/container.md) |
+| Create configuration, resolve staged entries, introspect them, use test mode, or diagnose failure | [Container](references/container.md) |
 | Write `__deps__`, construct Dependency Identifiers, or select a Lifestyle | [Usage](references/usage.md), [Dependency Identifiers](references/dependency-id.md) |
 | Configure substitutions, Preprocessors, Postprocessors, or Wrappers | [Extensions](references/extensions.md) |
 | Use Node.js package metadata and namespace utilities | [Usage](references/usage.md), [Concepts](references/concepts.md) |

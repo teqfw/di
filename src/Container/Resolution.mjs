@@ -25,6 +25,7 @@ import {createResolutionContext} from './ResolutionContext.mjs';
  * @property {(depId: TeqFw_Di_Dto_DepId) => {found: boolean, value: unknown}} findMock
  * @property {TeqFw_Di_Internal_Logger_Contract} logger
  * @property {TeqFw_Di_Container_Observer_Contract} observer
+ * @property {string} [entryId]
  */
 
 /**
@@ -79,6 +80,7 @@ export async function executeResolution(ctx, specifier) {
         findMock,
         logger,
         observer,
+        entryId = 'entry-0',
     } = ctx;
 
     /** @type {Set<string>} */
@@ -305,7 +307,7 @@ export async function executeResolution(ctx, specifier) {
     };
 
     try {
-        logger.log(`Container.get: specifier='${specifier}'.`);
+        logger.log(`Container.entry: id='${entryId}' specifier='${specifier}'.`);
         return await resolveOne(specifier, [], null, null);
     } catch (error) {
         logger.error('Resolution: failed.', error);

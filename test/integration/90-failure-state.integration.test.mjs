@@ -9,11 +9,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const FIXTURE_DIR = path.resolve(__dirname, './fixture');
 
-describe('Integration 90: failed state', () => {
-    it('makes a native module-loading failure terminal after Teq mapping succeeds', async () => {
-        const container = new TeqFw_Di_Container();
+describe('Integration 90: entry and preparation failures', () => {
+    it('records a native module-loading entry failure and permits a later entry', async () => {
+        const container = new TeqFw_Di_Container({introspection: true});
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-        container.enableIntrospection();
 
         await assert.rejects(
             () => container.get('Fx_UnavailableModule$'),
@@ -21,7 +20,7 @@ describe('Integration 90: failed state', () => {
         );
         const observation = /** @type {any} */ (container.getIntrospection());
 
-        assert.equal(observation.explanation.containerState, 'Failed');
+        assert.equal(observation.explanation.containerState, 'Running');
         assert.equal(observation.explanation.failure.stage, 'module loading');
         const route = observation.explanation.resolutions[0].route;
         assert.equal(route.addressKind, 'teq');
@@ -35,16 +34,18 @@ describe('Integration 90: failed state', () => {
         const failureIndex = observation.trace.findIndex((/** @type {any} */ event) => event.kind === 'failure');
         assert.ok(routeIndex >= 0);
         assert.ok(failureIndex > routeIndex);
-        await assert.rejects(() => container.get('Fx_Root$'), /root.*claimed|second root/i);
-        assert.strictEqual(container.getIntrospection(), observation);
+        const root = await container.get('Fx_Root$');
+        assert.deepEqual(root, {name: 'root'});
+        assert.equal((/** @type {any} */ (container.getIntrospection())).entries.length, 2);
     });
 
-    it('enters failed state after Dependency Resolution failure and rejects subsequent get/config calls', async () => {
+    it('locks configuration but permits a later valid entry after failure', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
 
         await assert.rejects(() => container.get('Fx_BadExport$'), /Export 'default' is not found/);
-        await assert.rejects(() => container.get('Fx_Root$'), /root.*claimed|second root/i);
+        const root = await container.get('Fx_Root$');
+        assert.deepEqual(root, {name: 'root'});
 
         assert.throws(() => container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs'));
         assert.throws(() => container.enableLogging());
@@ -54,7 +55,7 @@ describe('Integration 90: failed state', () => {
         assert.throws(() => container.register('Fx_Root$', {mock: true}));
     });
 
-    it('makes parsing, preprocessing, and mapping failures terminal', async () => {
+    it('isolates parsing, preprocessing, and mapping entry failures', async () => {
         const cases = [
             {
                 configure(/** @type {TeqFw_Di_Container} */ _container) {},
@@ -63,7 +64,14 @@ describe('Integration 90: failed state', () => {
             },
             {
                 configure(/** @type {TeqFw_Di_Container} */ container) {
-                    container.addPreprocess(() => { throw new Error('preprocess failed'); });
+                    let failed = false;
+                    container.addPreprocess((depId) => {
+                        if (!failed) {
+                            failed = true;
+                            throw new Error('preprocess failed');
+                        }
+                        return depId;
+                    });
                 },
                 specifier: 'Fx_Root$',
                 stage: 'preprocessing',
@@ -76,19 +84,19 @@ describe('Integration 90: failed state', () => {
         ];
 
         for (const one of cases) {
-            const container = new TeqFw_Di_Container();
+            const container = new TeqFw_Di_Container({introspection: true});
             container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-            container.enableIntrospection();
             one.configure(container);
 
             await assert.rejects(() => container.get(one.specifier));
             const observation = /** @type {any} */ (container.getIntrospection());
             assert.equal(observation.explanation.failure.stage, one.stage);
-            await assert.rejects(() => container.get('Fx_Root$'), /root.*claimed|second root/i);
+            const root = await container.get('Fx_Root$');
+            assert.deepEqual(root, {name: 'root'});
         }
     });
 
-    it('makes child, producer, postprocessing, and Wrapper failures terminal', async () => {
+    it('isolates child, producer, postprocessing, and Wrapper entry failures', async () => {
         const cases = [
             {
                 name: 'child resolution',
@@ -115,8 +123,13 @@ describe('Integration 90: failed state', () => {
             {
                 name: 'Postprocessor execution',
                 configure(/** @type {TeqFw_Di_Container} */ container) {
-                    container.addPostprocess(() => {
-                        throw new Error('postprocessor failure');
+                    let failed = false;
+                    container.addPostprocess((value) => {
+                        if (!failed) {
+                            failed = true;
+                            throw new Error('postprocessor failure');
+                        }
+                        return value;
                     });
                 },
                 specifier: 'Fx_Root$',
@@ -133,9 +146,8 @@ describe('Integration 90: failed state', () => {
         ];
 
         for (const one of cases) {
-            const container = new TeqFw_Di_Container();
+            const container = new TeqFw_Di_Container({introspection: true});
             container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-            container.enableIntrospection();
             one.configure(container);
 
             await assert.rejects(() => container.get(one.specifier), one.expected);
@@ -148,7 +160,8 @@ describe('Integration 90: failed state', () => {
                     'child resolution must begin before its nested failure'
                 );
             }
-            await assert.rejects(() => container.get('Fx_Root$'), /root.*claimed|second root/i);
+            const root = await container.get('Fx_Root$');
+            assert.deepEqual(root, {name: 'root'});
         }
     });
 });

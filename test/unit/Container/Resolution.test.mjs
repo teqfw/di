@@ -49,7 +49,7 @@ describe('TeqFw_Di_Container_Resolution', () => {
 
         assert.deepEqual(result, {value: 42});
         assert.deepEqual(order, ['route', 'load']);
-        observer.complete('success', 'Resolved');
+        observer.complete('success', 'Running');
         const snapshot = /** @type {any} */ (observer.getSnapshot());
         const events = /** @type {any[]} */ (snapshot.trace).map((event) => event.kind);
         assert.ok(events.includes(TeqFw_Di_Enum_ObservationEvent.ROUTE));

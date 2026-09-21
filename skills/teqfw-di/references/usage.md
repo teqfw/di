@@ -25,7 +25,7 @@ The key under `default` is the producer parameter name. A named producer uses
 its named export as the outer key. A flat declaration is supported only for a
 default-export-only module; omit `__deps__` when there are no dependencies.
 
-## One root in a Node.js Composition Root
+## Staged entries in a Node.js Composition Root
 
 ```js
 import path from "node:path";
@@ -39,10 +39,13 @@ const container = new Container({
 
 const app = await container.get("App$");
 await app.start();
+const command = await container.get("App_Command_Selected$");
+await command.run();
 ```
 
-There is no second lookup from this Container. The `App$` producer's declared
-children resolve recursively through `__deps__` in its one graph.
+The entries are deliberate phases, not arbitrary lookup. Each root's declared
+children resolve recursively through `__deps__` in its own graph; both entries
+share the configured policy and Container-scoped Singleton values.
 
 ## Package-backed namespace composition
 

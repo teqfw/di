@@ -19,7 +19,7 @@ Native ESM is the normative runtime model. The package also ships browser
 compatibility bundles, but UMD is a distribution artifact rather than a second
 DI model.
 
-## Start one application graph
+## Start an application composition
 
 The host Composition Root discovers policy, creates a JSON-safe configuration
 DTO, then constructs a Container before it resolves its root:
@@ -46,17 +46,24 @@ browser host can configure a URL root. `preprocessors` and `postprocessors` are
 ordered producer Dependency Identifiers, not JavaScript callbacks. Container
 materializes them under default policy before it resolves the public root.
 
-One Container accepts exactly one public root `get()`. That first call claims
-the root graph. The host uses the returned `app`; it does not use the Container
-as a service locator. A later `get()`, including the same Dependency
-Identifier, is invalid second-root usage. Create and configure another
-Container for another root.
+The first `get()` locks configuration, materializes policy once, and enters the
+Container's Running state. Later sequential `get()` calls create additional
+entry resolutions in the same configured composition space. They share
+Namespace Mappings, processors, hardening policy, and the Container-scoped
+Singleton cache, so a common Singleton is produced once. This supports staged
+composition such as bootstrap, plugins, and a lazily selected command.
+
+The Container is still not an arbitrary service locator: public entries are
+deliberate application phases, while ordinary dependencies remain declarations
+in `__deps__`. Concurrent or re-entrant `get()` calls reject deterministically.
+An entry-resolution failure does not destroy an already Running Container; a
+policy-preparation failure does make it unusable.
 
 ## Declare runtime dependencies
 
 Teq-compatible runtime modules have no static ES imports. They declare runtime
 dependencies in source-attached `__deps__`; the Container resolves those child
-dependencies recursively inside the one root graph.
+dependencies recursively inside the entry Dependency Graph.
 
 ```js
 // src/App/App.mjs
@@ -111,7 +118,7 @@ The Lifestyle Marker selects how the export becomes the dependency value:
 | Lifestyle | Marker | Meaning |
 | --- | --- | --- |
 | Direct | none, or `$$$` explicitly | Exposes the selected export as-is. It does not call a function or construct a class. |
-| Singleton | `$` | Uses the selected export as a producer and reuses one final managed value inside this Container graph. |
+| Singleton | `$` | Uses the selected export as a producer and reuses one final managed value in this Container. |
 | Transient | `$$` | Uses the selected export as a producer and creates a fresh value for each applicable resolution. |
 
 Direct is not Transient. Native ESM caching belongs to the JavaScript runtime;
@@ -123,7 +130,7 @@ Wrapper Selection requires a Lifestyle Marker.
 
 The host Composition Root owns discovery of Namespace Mappings and ordered
 policy. It transfers that policy as a JSON-safe DTO; Container resolves each
-policy producer before the root graph begins. A producer must synchronously
+policy producer once before the first entry begins. A producer must synchronously
 return the callable required by its role. A substitution can replace an
 abstraction identifier with a concrete one without changing the consuming
 module. Preprocessors, Postprocessors, and Wrappers are distinct mechanisms.
@@ -142,7 +149,7 @@ Node.js-only infrastructure. Neither belongs in browser-reachable modules.
 `@teqfw/di/src/Config/NamespaceRegistry.mjs` remains only as the deprecated
 COMPAT-001 migration import; new code must use the canonical namespace path.
 
-## Inspect one resolution
+## Inspect entry resolutions
 
 Structured introspection is separate from optional console logging. Declare it
 in configuration and read its immutable snapshot afterward:
@@ -157,7 +164,8 @@ const app = await container.get("App$");
 const inspection = container.getIntrospection();
 ```
 
-`inspection` contains three projections:
+`inspection` retains immutable snapshots in `entries`, one for each completed
+entry. Each entry contains three projections:
 
 - Dependency Graph — actual Container-managed relationships.
 - Resolution Trace — ordered resolution events.
@@ -165,8 +173,8 @@ const inspection = container.getIntrospection();
   failure.
 
 Logging is diagnostic console output; it is not structured introspection or a
-public graph API. A resolution failure leaves that Container unusable, so use a
-new configured Container rather than retrying with the old one.
+public graph API. An entry failure is retained with its entry provenance and
+the Container remains Running; only preparation failure makes it unusable.
 
 ## Guidance for coding agents
 

@@ -7,8 +7,8 @@ loads ES modules through native `import()`.
 
 ```text
 Application Module → __deps__ → Dependency Identifier
-Composition Root → configured Container → one root get()
-Container → one Dependency Graph → resolved root value
+Composition Root → configured Container → sequential entry get() calls
+Container → entry Dependency Graphs + shared Singleton cache → entry values
 ```
 
 Teq-compatible runtime modules have no static ES imports. They express runtime
@@ -20,7 +20,8 @@ the exceptions because they establish or test composition.
 - The Application Module owns dependency intent and local dependency names.
 - The Composition Root owns Namespace Mappings, substitutions, and configured
   processing policy before the first root request.
-- One Container owns one root graph and its Container-scoped Singleton cache.
+- One Container owns a stable composition policy and Container-scoped Singleton
+  cache across its entry resolutions.
 - The JavaScript runtime owns native ESM loading and its ESM cache.
 
 An ESM cache hit is not Container Singleton reuse. Direct and Transient remain
@@ -37,4 +38,5 @@ may be imported by browser-reachable code.
 Use this package for ESM applications that need explicit dependency contracts,
 host-selected implementations, and observable runtime composition. Do not use
 it to hide ordinary local imports, infer interfaces, or retrieve unrelated
-objects on demand from one Container.
+objects on demand from one Container. Multiple entries are for explicit staged
+or lazy composition, not ad-hoc retrieval.

@@ -70,8 +70,7 @@ describe('Integration 60: test mode and mocks', () => {
     });
 
     it('substitutes an unresolved address without module loading and preserves the common output corridor', async () => {
-        const container = new TeqFw_Di_Container();
-        container.enableIntrospection();
+        const container = new TeqFw_Di_Container({introspection: true});
         container.enableTestMode();
         const mock = {steps: ['mock']};
         let postprocessCalls = 0;

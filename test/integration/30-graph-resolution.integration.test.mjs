@@ -30,23 +30,23 @@ describe('Integration 30: graph resolution', () => {
     });
 
     it('rejects a recursive Singleton cycle', async () => {
-        const container = new TeqFw_Di_Container();
+        const container = new TeqFw_Di_Container({introspection: true});
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-        container.enableIntrospection();
 
         await assert.rejects(() => container.get('Fx_SingletonCycleA$'), /Cyclic dependency detected/);
         const observation = /** @type {any} */ (container.getIntrospection());
 
         assert.equal(observation.explanation.failure.stage, 'cycle detection');
-        await assert.rejects(() => container.get('Fx_Root$'), /root.*claimed|second root/i);
+        assert.equal(observation.explanation.containerState, 'Running');
+        assert.deepEqual(await container.get('Fx_Root$'), {name: 'root'});
     });
 
-    it('rejects a deeper recursive Singleton cycle and leaves the Container failed', async () => {
+    it('isolates a deeper recursive Singleton cycle from a later entry', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
 
         await assert.rejects(() => container.get('Fx_SingletonCycleDeepA$'), /Cyclic dependency detected/);
-        await assert.rejects(() => container.get('Fx_Root$'), /root.*claimed|second root/i);
+        assert.deepEqual(await container.get('Fx_Root$'), {name: 'root'});
     });
 
     it('injects a canonical mock for a transitive dependency', async () => {

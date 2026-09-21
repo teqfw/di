@@ -80,15 +80,13 @@ describe('Integration 37: as-is export resolution', () => {
     it('does not invoke callable or class Direct exports or inspect their producer declarations', async () => {
         const directFixtureDir = path.resolve(__dirname, './fixture');
 
-        const callableContainer = new TeqFw_Di_Container();
+        const callableContainer = new TeqFw_Di_Container({introspection: true});
         callableContainer.addNamespaceRoot('Fx_', directFixtureDir, '.mjs');
-        callableContainer.enableIntrospection();
         const callable = await callableContainer.get('Fx_DirectProducer__Callable');
         const callableObservation = /** @type {any} */ (callableContainer.getIntrospection());
 
-        const classContainer = new TeqFw_Di_Container();
+        const classContainer = new TeqFw_Di_Container({introspection: true});
         classContainer.addNamespaceRoot('Fx_', directFixtureDir, '.mjs');
-        classContainer.enableIntrospection();
         const directClass = await classContainer.get('Fx_DirectProducer__DirectClass');
         const classObservation = /** @type {any} */ (classContainer.getIntrospection());
 
@@ -122,10 +120,9 @@ describe('Integration 37: as-is export resolution', () => {
     });
 
     it('preserves an already frozen Direct value', async () => {
-        const container = new TeqFw_Di_Container();
+        const container = new TeqFw_Di_Container({introspection: true});
         const directFixtureDir = path.resolve(__dirname, './fixture');
         container.addNamespaceRoot('Fx_', directFixtureDir, '.mjs');
-        container.enableIntrospection();
 
         const value = await container.get('Fx_AlreadyFrozen__value');
         const observation = /** @type {any} */ (container.getIntrospection());
@@ -137,8 +134,7 @@ describe('Integration 37: as-is export resolution', () => {
 
     it('exposes a native ES Module Namespace through Direct without freezing it', async () => {
         const expected = await import('node:fs');
-        const container = new TeqFw_Di_Container();
-        container.enableIntrospection();
+        const container = new TeqFw_Di_Container({introspection: true});
 
         const value = await container.get('node:fs');
         const observation = /** @type {any} */ (container.getIntrospection());

@@ -23,22 +23,21 @@ describe('Integration 40: lifecycle', () => {
         assert.equal(getProducerCalls(), before + 1);
     });
 
-    it('enters failed state when default shallow hardening fails', async () => {
-        const container = new TeqFw_Di_Container();
+    it('keeps Running when an entry hardening failure occurs', async () => {
+        const container = new TeqFw_Di_Container({introspection: true});
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-        container.enableIntrospection();
 
         await assert.rejects(container.get('Fx_ProtectedProxy$'), /defineProperty is forbidden/);
         const observation = /** @type {any} */ (container.getIntrospection());
 
         assert.equal(observation.explanation.failure.stage, 'hardening');
-        assert.equal(observation.explanation.containerState, 'Failed');
-        await assert.rejects(container.get('Fx_ProtectedProxy$'), /root.*claimed|second root/i);
+        assert.equal(observation.explanation.containerState, 'Running');
+        const value = await container.get('Fx_Root$');
+        assert.deepEqual(value, {name: 'root'});
     });
 
     it('uses a configured hardener as the full host policy', async () => {
-        const container = new TeqFw_Di_Container();
-        container.enableIntrospection();
+        const container = new TeqFw_Di_Container({introspection: true});
         /** @type {unknown} */
         let received;
         container.setHardener((value) => {
@@ -55,8 +54,7 @@ describe('Integration 40: lifecycle', () => {
     });
 
     it('attributes a hostile Hardener result to native value exposure', async () => {
-        const container = new TeqFw_Di_Container();
-        container.enableIntrospection();
+        const container = new TeqFw_Di_Container({introspection: true});
         const hostile = new Proxy({}, {
             get(target, property, receiver) {
                 if (property === 'then') throw new Error('then access is blocked');
@@ -70,7 +68,7 @@ describe('Integration 40: lifecycle', () => {
 
         assert.equal(observation.explanation.resolutions[0].hardening.mode, 'configured');
         assert.equal(observation.explanation.failure.stage, 'value exposure');
-        assert.equal(observation.explanation.containerState, 'Failed');
+        assert.equal(observation.explanation.containerState, 'Running');
     });
 
     it('keeps singleton identities separate for default and named exports from same module', async () => {
@@ -158,9 +156,8 @@ describe('Integration 40: lifecycle', () => {
     });
 
     it('uses effective npm identity for Singleton aliases', async () => {
-        const container = new TeqFw_Di_Container();
+        const container = new TeqFw_Di_Container({introspection: true});
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-        container.enableIntrospection();
         container.addPreprocess((depId) => ({
             ...depId,
             ...(depId.address.startsWith('Fx_NpmAlias') ? {
@@ -188,22 +185,51 @@ describe('Integration 40: lifecycle', () => {
         assert.equal(hitExplanation.cache, 'hit');
     });
 
-    it('rejects a second root while the first root is resolving', async () => {
+    it('rejects a concurrent root while an entry is resolving', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
         const first = container.get('Fx_Root$');
-        await assert.rejects(container.get('Fx_Singleton$'), /root.*claimed|second root/i);
+        await assert.rejects(container.get('Fx_Singleton$'), /concurrent|re-entrant|busy/i);
         await first;
     });
 
-    it('rejects a second root after the first root is resolved', async () => {
+    it('shares a Singleton cache and retains entry provenance across sequential roots', async () => {
+        const container = new TeqFw_Di_Container({introspection: true});
+        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const before = getProducerCalls();
+        const first = await container.get('Fx_GraphLifestyle$');
+        const second = await container.get('Fx_ObservedSingleton$_wrapTag');
+        const observation = /** @type {any} */ (container.getIntrospection());
+
+        assert.strictEqual(first.singletonA, second);
+        assert.equal(getProducerCalls(), before + 1);
+        assert.equal(observation.entries.length, 2);
+        assert.equal(observation.entries[0].explanation.entryId, 'entry-0');
+        assert.equal(observation.entries[1].explanation.entryId, 'entry-1');
+        assert.equal(observation.entries[1].explanation.resolutions[0].cache, 'hit');
+    });
+
+    it('applies Postprocessors, Wrappers, and Hardener to every sequential entry', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-        container.enableIntrospection();
-        await container.get('Fx_Root$');
-        const observation = container.getIntrospection();
+        /** @type {string[]} */
+        const postprocessedRoots = [];
+        let hardeningCalls = 0;
+        container.addPostprocess((value, context) => {
+            postprocessedRoots.push(context.root.address);
+            return value;
+        });
+        container.setHardener((value) => {
+            hardeningCalls += 1;
+            return Object.freeze(/** @type {object} */ (value));
+        });
 
-        await assert.rejects(container.get('Fx_Singleton$'), /root.*claimed|second root/i);
-        assert.strictEqual(container.getIntrospection(), observation);
+        const first = await container.get('Fx_Wrapped$_wrapFirst');
+        const second = await container.get('Fx_Wrapped$_wrapSecond');
+
+        assert.deepStrictEqual(first.steps, ['core', 'wrapFirst']);
+        assert.deepStrictEqual(second.steps, ['core', 'wrapSecond']);
+        assert.deepStrictEqual(postprocessedRoots, ['Fx_Wrapped', 'Fx_Wrapped']);
+        assert.equal(hardeningCalls, 2);
     });
 });

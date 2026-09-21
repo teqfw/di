@@ -2,8 +2,8 @@
 
 A Dependency Identifier consists of a Dependency Address and optional Export
 Selection, Dependency Lifestyle, and ordered Wrapper Selection. It is the
-runtime declaration language used by `__deps__` and by the one public
-`container.get()` root request.
+runtime declaration language used by `__deps__` and by each public
+`container.get()` entry request.
 
 ## Address Kinds
 
@@ -35,7 +35,7 @@ App_Service__format$$$_trace   named export, explicit Direct with Wrapper Select
 | Dependency Lifestyle | Marker | Result |
 | --- | --- | --- |
 | Direct | no marker, or `$$$` explicitly | Exposes the selected export as-is. It does not invoke a function or construct a class. |
-| Singleton | `$` | Uses the selected export as a producer and reuses one final managed value in this Container graph. |
+| Singleton | `$` | Uses the selected export as a producer and reuses one final managed value in the Container scope. |
 | Transient | `$$` | Uses the selected export as a producer and produces a fresh value for each applicable resolution. |
 
 Direct is not Transient. `$$$` is explicit Direct, not a producer mode. Native

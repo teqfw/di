@@ -12,7 +12,7 @@ declare global {
   type TeqFw_Di_Container_Wrapper = import("./src/Container/Wrapper.mjs").default;
   type TeqFw_Di_Container_Configurator = typeof import("./src/Container/Configurator.mjs").configureContainer;
   type TeqFw_Di_Container_Observer_Contract = ReturnType<typeof import("./src/Container/Observer.mjs").createObserver>;
-  type TeqFw_Di_Container_State = 'Configurable'|'Resolving'|'Resolved'|'Failed';
+  type TeqFw_Di_Container_State = 'Configuring'|'Preparing'|'Running'|'Failed';
   type TeqFw_Di_Container_ResolutionContext = Readonly<{
     depId: TeqFw_Di_Dto_DepId,
     root: TeqFw_Di_Dto_DepId,

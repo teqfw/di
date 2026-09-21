@@ -1,7 +1,7 @@
 # Container
 
 Create a JSON-safe configuration in the host Composition Root, then construct a
-Container and call `get()` exactly once for the application root.
+Container. The first `get()` prepares policy and starts an entry resolution.
 
 ```js
 import Container from "@teqfw/di";
@@ -15,10 +15,12 @@ const container = new Container({
 const app = await container.get("App$");
 ```
 
-The first `get()` claims the public root, materializes policy producers under
-default policy, then resolves that root. A preparation or resolution failure
-leaves the Container failed. Configuration never reopens and every later `get()`
-rejects as invalid second-root usage.
+The first `get()` locks configuration, materializes policy producers under
+default policy once, then enters Running and resolves its entry root. Later
+sequential `get()` calls resolve additional entry roots using that same policy
+and Singleton cache. Concurrent and re-entrant calls reject. Preparation
+failure leaves the Container unusable; a resolution failure ends only its entry
+and leaves a Running Container available for a later entry.
 
 ## Configuration DTO
 
@@ -31,14 +33,16 @@ entries for composition tests.
 
 ## Structured introspection
 
-Set `introspection: true`, then call `getIntrospection()` after the root settles.
+Set `introspection: true`, then call `getIntrospection()` after an entry settles.
 It returns `null` when no introspection snapshot exists, otherwise
 an immutable object with:
 
-- `graph` — Dependency Graph nodes and edges for the one root graph;
-- `trace` — ordered Resolution Trace events;
-- `explanation` — Resolution Explanation, including requested and effective
-  decisions, result or failure, and Container state.
+- `entries` — completed entry snapshots with explicit `entryId` and root
+  provenance;
+- `graph`, `trace`, and `explanation` — compatibility views of the latest
+  entry, with the same projections available on every entry snapshot.
 
-This structured API is different from `enableLogging()`. Console messages and
+This structured API is different from `enableLogging()`. Introspection is
+enabled only by the configuration DTO; there is no mutable
+`enableIntrospection()` path. Console messages and
 private graph objects are diagnostics, not a public substitute for introspection.

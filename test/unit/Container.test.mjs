@@ -33,7 +33,7 @@ describe('TeqFw_Di_Container', () => {
         assert.equal(typeof container.addPostprocess, 'function');
         assert.equal(typeof container.addNamespaceRoot, 'function');
         assert.equal(typeof container.enableLogging, 'function');
-        assert.equal(typeof container.enableIntrospection, 'function');
+        assert.equal('enableIntrospection' in container, false);
         assert.equal(typeof container.getIntrospection, 'function');
         assert.equal(typeof container.enableTestMode, 'function');
         assert.equal(typeof container.register, 'function');
@@ -98,7 +98,6 @@ describe('TeqFw_Di_Container', () => {
         assert.throws(() => container.addPreprocess((depId) => depId), Error);
         assert.throws(() => container.addPostprocess((value) => value), Error);
         assert.throws(() => container.enableLogging(), Error);
-        assert.throws(() => container.enableIntrospection(), Error);
         assert.throws(() => container.enableTestMode(), Error);
         assert.throws(() => container.addNamespaceRoot('Ns_', '/x', '.mjs'), Error);
     });
@@ -133,6 +132,26 @@ describe('TeqFw_Di_Container', () => {
         assert.throws(() => container.enableLogging(), /locked/);
     });
 
+    it('preserves entry provenance in diagnostics for sequential entries', async () => {
+        const container = new TeqFw_Di_Container();
+        const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
+        container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
+        /** @type {string[]} */
+        const messages = [];
+        const debug = console.debug;
+        console.debug = (message) => messages.push(String(message));
+        try {
+            container.enableLogging();
+            await container.get('TestSample_Empty$');
+            await container.get('TestSample_NamedOnly');
+        } finally {
+            console.debug = debug;
+        }
+
+        assert.ok(messages.some((message) => message.includes("Container.entry: id='entry-0' specifier='TestSample_Empty$'")));
+        assert.ok(messages.some((message) => message.includes("Container.entry: id='entry-1' specifier='TestSample_NamedOnly'")));
+    });
+
     it('register throws if test mode is disabled', () => {
         const container = new TeqFw_Di_Container();
         assert.throws(() => container.register('node:path', {mock: true}), /test mode is disabled/);
@@ -151,33 +170,50 @@ describe('TeqFw_Di_Container', () => {
         assert.equal(Object.isFrozen(value), true);
     });
 
-    it('rejects a second root after resolution failure without reopening the Container', async () => {
+    it('keeps Running after an entry resolution failure', async () => {
         const container = new TeqFw_Di_Container();
         const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
         container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
 
         await assert.rejects(container.get('TestSample_Missing$'));
-        await assert.rejects(container.get('x'), /root.*claimed|second root/i);
+        const value = await container.get('TestSample_Empty$');
+        assert.equal(typeof value.start, 'function');
         assert.throws(() => container.addPreprocess((depId) => depId), /locked/);
     });
 
-    it('rejects a second root while the first resolution is pending', async () => {
+    it('rejects concurrent public entries while an entry is active', async () => {
         const container = new TeqFw_Di_Container();
         const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
         container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
 
         const first = container.get('TestSample_Empty$');
-        await assert.rejects(container.get('TestSample_Empty$'), /root.*claimed|second root/i);
+        await assert.rejects(container.get('TestSample_Empty$'), /concurrent|re-entrant|busy/i);
         await first;
     });
 
-    it('rejects a second root after resolution succeeds', async () => {
+    it('accepts sequential public entries after the Container is Running', async () => {
         const container = new TeqFw_Di_Container();
         const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
         container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
 
+        const first = await container.get('TestSample_Empty$');
+        const second = await container.get('TestSample_Empty$');
+        assert.strictEqual(first, second);
+    });
+
+    it('rejects a re-entrant public entry from an active resolution', async () => {
+        const container = new TeqFw_Di_Container();
+        const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
+        container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
+        /** @type {Promise<unknown>|undefined} */
+        let reentrant;
+        container.addPostprocess((value) => {
+            reentrant = container.get('TestSample_Empty$');
+            return value;
+        });
+
         await container.get('TestSample_Empty$');
-        await assert.rejects(container.get('TestSample_Empty$'), /root.*claimed|second root/i);
+        await assert.rejects(/** @type {Promise<unknown>} */ (reentrant), /concurrent|re-entrant|busy/i);
     });
 
     it('preprocess runs before mock lookup', async () => {

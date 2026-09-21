@@ -2,7 +2,7 @@
 
 /**
  * @namespace TeqFw_Di_Container
- * @description Public DI Container facade and one-root resolution boundary.
+ * @description Public DI Container facade and multi-entry resolution boundary.
  */
 
 import TeqFw_Di_Parser from './Parser.mjs';
@@ -24,14 +24,14 @@ import TeqFw_Di_Enum_ObservationEvent from './Enum/ObservationEvent.mjs';
 import TeqFw_Di_Internal_Logger, {TeqFw_Di_Internal_Logger_Noop} from './Internal/Logger.mjs';
 import {buildDependencyKey} from './Internal/DependencyKey.mjs';
 
-/** @typedef {'Configuring'|'Preparing'|'Resolving'|'Resolved'|'Failed'} TeqFw_Di_Container_State */
+/** @typedef {'Configuring'|'Preparing'|'Running'|'Failed'} TeqFw_Di_Container_State */
 /** @typedef {import('./Dto/Container/Config.mjs').default} TeqFw_Di_Dto_Container_Config */
 /** @typedef {import('./Dto/Container/Config.mjs').Factory} TeqFw_Di_Dto_Container_Config__Factory */
 /** @typedef {import('./Dto/ModuleRouter/Config.mjs').Factory} TeqFw_Di_Dto_ModuleRouter_Config__Factory */
 
 /**
  * Public Container facade. Construction captures immutable declarative policy;
- * its first public `get()` materializes policy and resolves the only root.
+ * its first public `get()` materializes policy and starts the first entry.
  */
 export default class TeqFw_Di_Container {
     /**
@@ -53,8 +53,14 @@ export default class TeqFw_Di_Container {
         /** @type {((value: unknown) => unknown)|null} */
         let legacyHardener = null;
         let testMode = false;
-        /** @type {ReturnType<typeof createObserver>|null} */
-        let lastObserver = null;
+        /** @type {any[]} */
+        const entrySnapshots = [];
+        /** @type {object|null} */
+        let introspectionSnapshot = null;
+        let nextEntryId = 0;
+        let entryActive = false;
+        /** @type {any} */
+        let resolutionContext = null;
         /** @type {TeqFw_Di_Dto_Container_Config__Factory} */
         const containerConfigFactory = new TeqFw_Di_Dto_Container_Config_Factory();
         const config = containerConfigFactory.create(data);
@@ -77,7 +83,7 @@ export default class TeqFw_Di_Container {
         const hardener = new TeqFw_Di_Container_Hardener();
         /** @type {TeqFw_Di_Internal_Logger_Contract} */
         let logger = config.logging ? new TeqFw_Di_Internal_Logger() : TeqFw_Di_Internal_Logger_Noop;
-        let introspectionEnabled = config.introspection;
+        const introspectionEnabled = config.introspection;
         if (typeof parser.setLogger === 'function') parser.setLogger(logger);
 
         /**
@@ -162,12 +168,6 @@ export default class TeqFw_Di_Container {
             if (typeof parser.setLogger === 'function') parser.setLogger(logger);
         };
 
-        /** @returns {void} @deprecated Supply introspection through configuration instead. */
-        this.enableIntrospection = function () {
-            assertConfigurationStage();
-            introspectionEnabled = true;
-        };
-
         /**
          * @param {string} specifier
          * @param {unknown} value
@@ -182,30 +182,66 @@ export default class TeqFw_Di_Container {
         };
 
         /**
-         * Returns the immutable snapshot of the Container's one public root.
+         * Returns immutable snapshots for completed entry resolutions. The
+         * top-level graph, trace, and explanation retain the latest entry for
+         * compatibility; `entries` preserves the complete entry history.
          *
          * @returns {object|null}
          */
         this.getIntrospection = function () {
-            return lastObserver ? lastObserver.getSnapshot() : null;
+            return introspectionSnapshot;
         };
 
         /**
-         * Materializes configured policy, then resolves the Container's one
-         * public root Dependency Identifier.
+         * Publishes the completed entry and refreshes the Container-level
+         * introspection projection.
+         *
+         * @param {ReturnType<typeof createObserver>} observer
+         * @returns {void}
+         */
+        const publishEntry = function (observer) {
+            if (!introspectionEnabled) return;
+            const snapshot = /** @type {any} */ (observer.getSnapshot());
+            if (snapshot === null) return;
+            entrySnapshots.push(snapshot);
+            const latest = snapshot;
+            const entries = Object.freeze([...entrySnapshots]);
+            const entrySummary = Object.freeze(entries.map((entry) => {
+                const explanation = /** @type {{entryId: string, requestedSpecifier: string, outcome: string, containerState: string}} */ (entry.explanation);
+                return Object.freeze({
+                    entryId: explanation.entryId,
+                    requestedSpecifier: explanation.requestedSpecifier,
+                    outcome: explanation.outcome,
+                    containerState: explanation.containerState,
+                });
+            }));
+            introspectionSnapshot = Object.freeze({
+                ...latest,
+                entries,
+                explanation: Object.freeze({...latest.explanation, entries: entrySummary}),
+            });
+        };
+
+        /**
+         * Materializes configured policy once, then resolves one sequential
+         * public entry Dependency Identifier.
          *
          * @param {string} specifier
          * @returns {Promise<any>}
          */
         this.get = async function (specifier) {
-            if (state !== 'Configuring') {
-                throw new Error('Container root has already been claimed; a second root is not allowed.');
+            if (state === 'Failed') {
+                throw new Error('Container preparation failed; the Container is unusable.');
             }
-            state = 'Preparing';
-            const observer = introspectionEnabled ? createObserver(specifier) : createNoopObserver();
-            if (introspectionEnabled) lastObserver = observer;
+            if ((state === 'Preparing') || entryActive) {
+                throw new Error('Container is busy; concurrent or re-entrant get() is not allowed.');
+            }
 
-            try {
+            const entryId = `entry-${nextEntryId++}`;
+            const observer = introspectionEnabled ? createObserver(specifier, entryId) : createNoopObserver();
+            if (state === 'Configuring') {
+                state = 'Preparing';
+                try {
                 logger.log('Container.configuration: materializing declared policy.');
                 const moduleRouterConfig = moduleRouterConfigFactory.create({namespaces: [...namespaceRoots]});
                 const moduleRouter = new TeqFw_Di_Container_ModuleRouter({config: moduleRouterConfig, logger});
@@ -226,13 +262,7 @@ export default class TeqFw_Di_Container {
                 for (const fn of legacyPostprocessors) postprocessor.add(fn);
                 if (legacyHardener !== null) hardener.setConfigured(legacyHardener);
                 installMocks();
-                logger.log('Container.transition: Preparing -> Resolving.');
-                state = 'Resolving';
-                observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {
-                    from: 'Preparing',
-                    to: 'Resolving',
-                });
-                const value = await executeResolution({
+                resolutionContext = {
                     canonicalizer,
                     lifecycle,
                     moduleRouter,
@@ -244,27 +274,52 @@ export default class TeqFw_Di_Container {
                     findMock,
                     logger,
                     observer,
-                }, specifier);
-                logger.log('Container.transition: Resolving -> Resolved.');
-                state = 'Resolved';
+                    entryId,
+                };
+                logger.log('Container.transition: Preparing -> Running.');
+                state = 'Running';
                 observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {
-                    from: 'Resolving',
-                    to: 'Resolved',
+                    from: 'Preparing',
+                    to: 'Running',
+                });
+                } catch (error) {
+                    logger.error('Container.transition: Preparing -> Failed.', error);
+                    state = 'Failed';
+                    observer.record(TeqFw_Di_Enum_ObservationEvent.FAILURE, {
+                        nodeId: null,
+                        stage: 'configuration',
+                        cause: error instanceof Error ? error.message : String(error),
+                    });
+                    observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {from: 'Preparing', to: state});
+                    observer.complete('failure', state);
+                    publishEntry(observer);
+                    throw error;
+                }
+            }
+
+            entryActive = true;
+            try {
+                const value = await executeResolution({...resolutionContext, observer, entryId}, specifier);
+                observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {
+                    from: 'Running',
+                    to: 'Running',
                 });
                 observer.complete('success', state);
+                publishEntry(observer);
                 return value;
             } catch (error) {
-                const from = state;
-                logger.error(`Container.transition: ${from} -> Failed.`, error);
-                state = 'Failed';
+                logger.error('Container.entry: resolution failed; Container remains Running.', error);
                 observer.record(TeqFw_Di_Enum_ObservationEvent.FAILURE, {
                     nodeId: null,
-                    stage: from === 'Preparing' ? 'configuration' : 'resolution',
+                    stage: 'resolution',
                     cause: error instanceof Error ? error.message : String(error),
                 });
-                observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {from, to: state});
+                observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {from: 'Running', to: 'Running'});
                 observer.complete('failure', state);
+                publishEntry(observer);
                 throw error;
+            } finally {
+                entryActive = false;
             }
         };
     }
