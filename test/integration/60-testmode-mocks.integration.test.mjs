@@ -26,7 +26,7 @@ describe('Integration 60: test mode and mocks', () => {
         let hardeningCalls = 0;
         container.register('Fx_MockTarget$_wrapFirst', mock);
         container.addPostprocess((value, context) => {
-            if (context.depId.moduleName !== 'Fx_MockTarget') return value;
+            if (context.depId.address !== 'Fx_MockTarget') return value;
             postprocessCalls += 1;
             const observed = /** @type {{steps: string[]}} */ (value);
             return {steps: [...observed.steps, 'postprocessor']};
@@ -58,9 +58,9 @@ describe('Integration 60: test mode and mocks', () => {
         container.register('Fx_Root$', mock);
         container.addPreprocess((depId) => ({
             ...depId,
-            moduleName: depId.moduleName === 'Fx_AliasForMock'
+            address: depId.address === 'Fx_AliasForMock'
                 ? 'Fx_Root'
-                : depId.moduleName,
+                : depId.address,
         }));
 
         const value = await container.get('Fx_AliasForMock$');
@@ -78,7 +78,7 @@ describe('Integration 60: test mode and mocks', () => {
         let hardeningCalls = 0;
         container.register('NoRoute_Unresolvable$', mock);
         container.addPostprocess((value, context) => {
-            if (context.depId.moduleName !== 'NoRoute_Unresolvable') return value;
+            if (context.depId.address !== 'NoRoute_Unresolvable') return value;
             postprocessCalls += 1;
             const observed = /** @type {{steps: string[]}} */ (value);
             return {steps: [...observed.steps, 'postprocessor']};

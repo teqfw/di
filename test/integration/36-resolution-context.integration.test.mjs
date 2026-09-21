@@ -14,16 +14,16 @@ const FIXTURE_DIR = path.resolve(__dirname, './fixture');
  * @returns {string[]}
  */
 function stackNames(context) {
-    return context.stack.map((depId) => depId.moduleName);
+    return context.stack.map((depId) => depId.address);
 }
 
 describe('Integration 36: resolution context', () => {
     it('exposes immutable root-to-current context to preprocess and postprocess hooks', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-        /** @type {{moduleName: string, stack: string[]}[]} */
+        /** @type {{address: string, stack: string[]}[]} */
         const preprocessCalls = [];
-        /** @type {{moduleName: string, parent: string|null, stack: string[]}[]} */
+        /** @type {{address: string, parent: string|null, stack: string[]}[]} */
         const postprocessCalls = [];
 
         container.addPreprocess((depId, context) => {
@@ -31,13 +31,13 @@ describe('Integration 36: resolution context', () => {
             assert.strictEqual(context.stack.at(-1), depId);
             assert.ok(Object.isFrozen(context));
             assert.ok(Object.isFrozen(context.stack));
-            preprocessCalls.push({moduleName: depId.moduleName, stack: stackNames(context)});
+            preprocessCalls.push({address: depId.address, stack: stackNames(context)});
             return depId;
         });
         container.addPostprocess((value, context) => {
             postprocessCalls.push({
-                moduleName: context.depId.moduleName,
-                parent: context.parent?.moduleName ?? null,
+                address: context.depId.address,
+                parent: context.parent?.address ?? null,
                 stack: stackNames(context),
             });
             return value;
@@ -49,17 +49,17 @@ describe('Integration 36: resolution context', () => {
         assert.equal(value.right.name, 'right');
         assert.strictEqual(value.left.shared, value.right.shared);
         assert.deepStrictEqual(preprocessCalls, [
-            {moduleName: 'Fx_ContextRoot', stack: ['Fx_ContextRoot']},
-            {moduleName: 'Fx_ContextLeft', stack: ['Fx_ContextRoot', 'Fx_ContextLeft']},
-            {moduleName: 'Fx_ContextShared', stack: ['Fx_ContextRoot', 'Fx_ContextLeft', 'Fx_ContextShared']},
-            {moduleName: 'Fx_ContextRight', stack: ['Fx_ContextRoot', 'Fx_ContextRight']},
-            {moduleName: 'Fx_ContextShared', stack: ['Fx_ContextRoot', 'Fx_ContextRight', 'Fx_ContextShared']},
+            {address: 'Fx_ContextRoot', stack: ['Fx_ContextRoot']},
+            {address: 'Fx_ContextLeft', stack: ['Fx_ContextRoot', 'Fx_ContextLeft']},
+            {address: 'Fx_ContextShared', stack: ['Fx_ContextRoot', 'Fx_ContextLeft', 'Fx_ContextShared']},
+            {address: 'Fx_ContextRight', stack: ['Fx_ContextRoot', 'Fx_ContextRight']},
+            {address: 'Fx_ContextShared', stack: ['Fx_ContextRoot', 'Fx_ContextRight', 'Fx_ContextShared']},
         ]);
         assert.deepStrictEqual(postprocessCalls, [
-            {moduleName: 'Fx_ContextShared', parent: 'Fx_ContextLeft', stack: ['Fx_ContextRoot', 'Fx_ContextLeft', 'Fx_ContextShared']},
-            {moduleName: 'Fx_ContextLeft', parent: 'Fx_ContextRoot', stack: ['Fx_ContextRoot', 'Fx_ContextLeft']},
-            {moduleName: 'Fx_ContextRight', parent: 'Fx_ContextRoot', stack: ['Fx_ContextRoot', 'Fx_ContextRight']},
-            {moduleName: 'Fx_ContextRoot', parent: null, stack: ['Fx_ContextRoot']},
+            {address: 'Fx_ContextShared', parent: 'Fx_ContextLeft', stack: ['Fx_ContextRoot', 'Fx_ContextLeft', 'Fx_ContextShared']},
+            {address: 'Fx_ContextLeft', parent: 'Fx_ContextRoot', stack: ['Fx_ContextRoot', 'Fx_ContextLeft']},
+            {address: 'Fx_ContextRight', parent: 'Fx_ContextRoot', stack: ['Fx_ContextRoot', 'Fx_ContextRight']},
+            {address: 'Fx_ContextRoot', parent: null, stack: ['Fx_ContextRoot']},
         ]);
 
         assert.equal(postprocessCalls.length, 4);
@@ -72,15 +72,15 @@ describe('Integration 36: resolution context', () => {
         const postprocessed = [];
 
         container.addPreprocess((depId, context) => {
-            if ((depId.moduleName === 'Fx_ContextShared') && (context.parent?.moduleName === 'Fx_ContextRight')) {
-                return {...depId, moduleName: 'Fx_ContextAlternativeShared'};
+            if ((depId.address === 'Fx_ContextShared') && (context.parent?.address === 'Fx_ContextRight')) {
+                return {...depId, address: 'Fx_ContextAlternativeShared'};
             }
             return depId;
         });
         container.addPostprocess((value, context) => {
-            postprocessed.push(`${context.parent?.moduleName ?? 'root'}:${context.depId.moduleName}`);
-            if ((context.depId.moduleName === 'Fx_ContextLeft') || (context.depId.moduleName === 'Fx_ContextRight')) {
-                return {...(/** @type {object} */ (value)), postPosition: context.parent?.moduleName};
+            postprocessed.push(`${context.parent?.address ?? 'root'}:${context.depId.address}`);
+            if ((context.depId.address === 'Fx_ContextLeft') || (context.depId.address === 'Fx_ContextRight')) {
+                return {...(/** @type {object} */ (value)), postPosition: context.parent?.address};
             }
             return value;
         });

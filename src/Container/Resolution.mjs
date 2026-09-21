@@ -7,8 +7,8 @@
 
 import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
 import {readDepsDecl} from '../Internal/DepsDecl.mjs';
-import {makePromiseSafe} from '../Internal/PromiseSafe.mjs';
 import TeqFw_Di_Enum_ObservationEvent from '../Enum/ObservationEvent.mjs';
+import TeqFw_Di_Enum_Lifestyle from '../Enum/Lifestyle.mjs';
 import TeqFw_Di_Enum_ResolutionStage from '../Enum/ResolutionStage.mjs';
 import {createResolutionContext} from './ResolutionContext.mjs';
 
@@ -31,16 +31,15 @@ import {createResolutionContext} from './ResolutionContext.mjs';
  * Converts an identity into the public observation carrier.
  *
  * @param {TeqFw_Di_Dto_DepId} depId
- * @returns {{addressKind: string, address: string, exportName: string|null, life: string|null, wrappers: string[], origin: string}}
+ * @returns {{addressKind: string, address: string, exportName: string|null, lifestyle: string, wrappers: string[]}}
  */
 const describeDepId = function (depId) {
     return {
-        addressKind: depId.platform,
-        address: depId.moduleName,
+        addressKind: depId.addressKind,
+        address: depId.address,
         exportName: depId.exportName,
-        life: depId.life,
+        lifestyle: depId.lifestyle,
         wrappers: [...depId.wrappers],
-        origin: depId.origin,
     };
 };
 
@@ -161,7 +160,7 @@ export async function executeResolution(ctx, specifier) {
             stage = TeqFw_Di_Enum_ResolutionStage.SINGLETON_CACHE_LOOKUP;
             const cache = lifecycle.lookup(depId);
             observer.record(TeqFw_Di_Enum_ObservationEvent.CACHE, {nodeId, key, outcome: cache});
-            logger.log(`Resolution.cache: ${cache} '${depId.platform}::${depId.moduleName}'.`);
+            logger.log(`Resolution.cache: ${cache} addressKind='${depId.addressKind}' address='${depId.address}'.`);
 
             return await lifecycle.apply(depId, async function () {
                 /** @type {object} */
@@ -181,7 +180,7 @@ export async function executeResolution(ctx, specifier) {
                     observer.record(TeqFw_Di_Enum_ObservationEvent.ROUTE, {
                         nodeId,
                         key,
-                        addressKind: depId.platform,
+                        addressKind: depId.addressKind,
                         moduleSpecifier: route.specifier,
                         ...(route.mapping ? {mapping: route.mapping} : {}),
                     });
@@ -202,7 +201,7 @@ export async function executeResolution(ctx, specifier) {
                     if (depId.wrappers.length > 0) namespace = await loadNamespace();
                     acquired = mock.value;
                 } else {
-                    logger.log(`Resolution.route: entry '${depId.platform}::${depId.moduleName}'.`);
+                    logger.log(`Resolution.route: entry addressKind='${depId.addressKind}' address='${depId.address}'.`);
                     namespace = await loadNamespace();
 
                     stage = TeqFw_Di_Enum_ResolutionStage.EXPORT_SELECTION;
@@ -214,40 +213,47 @@ export async function executeResolution(ctx, specifier) {
                     });
                     /** @type {Record<string, unknown>} */
                     const dependencies = {};
-                    if (depId.life !== null) {
-                        stage = TeqFw_Di_Enum_ResolutionStage.PRODUCER_ACQUISITION;
-                        observer.record(TeqFw_Di_Enum_ObservationEvent.ACQUISITION, {
-                            nodeId,
-                            key,
-                            mode: 'producer',
-                        });
-                        const declared = readDepsDecl(namespace, depId);
-                        for (const [name, childSpecifier] of Object.entries(declared)) {
-                            stage = TeqFw_Di_Enum_ResolutionStage.CHILD_DEPENDENCY_RESOLUTION;
-                            observer.record(TeqFw_Di_Enum_ObservationEvent.CHILD, {
+                    switch (depId.lifestyle) {
+                        case TeqFw_Di_Enum_Lifestyle.DIRECT:
+                            stage = TeqFw_Di_Enum_ResolutionStage.DIRECT_ACQUISITION;
+                            observer.record(TeqFw_Di_Enum_ObservationEvent.ACQUISITION, {
                                 nodeId,
                                 key,
-                                dependencyName: name,
-                                requestedSpecifier: childSpecifier,
+                                mode: 'direct',
                             });
-                            dependencies[name] = await resolveOne(
-                                /** @type {string} */ (childSpecifier),
-                                context.stack,
+                            acquired = selected;
+                            break;
+                        case TeqFw_Di_Enum_Lifestyle.SINGLETON:
+                        case TeqFw_Di_Enum_Lifestyle.TRANSIENT: {
+                            stage = TeqFw_Di_Enum_ResolutionStage.PRODUCER_ACQUISITION;
+                            observer.record(TeqFw_Di_Enum_ObservationEvent.ACQUISITION, {
                                 nodeId,
-                                name
-                            );
+                                key,
+                                mode: 'producer',
+                            });
+                            const declared = readDepsDecl(namespace, depId);
+                            for (const [name, childSpecifier] of Object.entries(declared)) {
+                                stage = TeqFw_Di_Enum_ResolutionStage.CHILD_DEPENDENCY_RESOLUTION;
+                                observer.record(TeqFw_Di_Enum_ObservationEvent.CHILD, {
+                                    nodeId,
+                                    key,
+                                    dependencyName: name,
+                                    requestedSpecifier: childSpecifier,
+                                });
+                                dependencies[name] = await resolveOne(
+                                    /** @type {string} */ (childSpecifier),
+                                    context.stack,
+                                    nodeId,
+                                    name
+                                );
+                            }
+                            stage = TeqFw_Di_Enum_ResolutionStage.PRODUCER_INVOCATION;
+                            observer.record(TeqFw_Di_Enum_ObservationEvent.PRODUCER_INVOCATION, {nodeId, key});
+                            acquired = producer.produce(selected, dependencies);
+                            break;
                         }
-                        stage = TeqFw_Di_Enum_ResolutionStage.PRODUCER_INVOCATION;
-                        observer.record(TeqFw_Di_Enum_ObservationEvent.PRODUCER_INVOCATION, {nodeId, key});
-                        acquired = producer.produce(selected, dependencies);
-                    } else {
-                        stage = TeqFw_Di_Enum_ResolutionStage.DIRECT_ACQUISITION;
-                        observer.record(TeqFw_Di_Enum_ObservationEvent.ACQUISITION, {
-                            nodeId,
-                            key,
-                            mode: 'direct',
-                        });
-                        acquired = selected;
+                        default:
+                            throw new Error(`Unsupported Dependency Lifestyle: ${String(depId.lifestyle)}.`);
                     }
                 }
 
@@ -273,14 +279,13 @@ export async function executeResolution(ctx, specifier) {
 
                 stage = TeqFw_Di_Enum_ResolutionStage.HARDENING;
                 const hardening = hardener.harden(wrapped);
-                const hardened = makePromiseSafe(hardening.value);
                 observer.record(TeqFw_Di_Enum_ObservationEvent.HARDENING, {
                     nodeId,
                     key,
                     mode: hardening.mode,
                 });
-                logger.log(`Resolution.return: '${depId.platform}::${depId.moduleName}'.`);
-                return hardened;
+                logger.log(`Resolution.return: addressKind='${depId.addressKind}' address='${depId.address}'.`);
+                return hardening.value;
             });
         } catch (error) {
             observer.record(TeqFw_Di_Enum_ObservationEvent.FAILURE, {
@@ -300,7 +305,7 @@ export async function executeResolution(ctx, specifier) {
 
     try {
         logger.log(`Container.get: specifier='${specifier}'.`);
-        return makePromiseSafe(await resolveOne(specifier, [], null, null));
+        return await resolveOne(specifier, [], null, null);
     } catch (error) {
         logger.error('Resolution: failed.', error);
         throw error;

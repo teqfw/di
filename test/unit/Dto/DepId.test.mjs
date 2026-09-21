@@ -2,87 +2,70 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import DTO, {Factory} from '../../../src/Dto/DepId.mjs';
-import TeqFw_Di_Enum_Composition from '../../../src/Enum/Composition.mjs';
-import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
-import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
+import TeqFw_Di_Enum_AddressKind from '../../../src/Enum/AddressKind.mjs';
+import TeqFw_Di_Enum_Lifestyle from '../../../src/Enum/Lifestyle.mjs';
 
 describe('TeqFw_Di_Dto_DepId', () => {
     const factory = new Factory();
 
-    it('applies documented defaults for omitted optional fields', () => {
-        const dto = factory.create({});
-        assert.strictEqual(dto.moduleName, '');
-        assert.strictEqual(dto.platform, TeqFw_Di_Enum_Platform.TEQ);
-        assert.strictEqual(dto.exportName, null);
-        assert.strictEqual(dto.composition, TeqFw_Di_Enum_Composition.AS_IS);
-        assert.strictEqual(dto.life, null);
-        assert.deepStrictEqual(dto.wrappers, []);
-        assert.strictEqual(dto.origin, '');
-    });
-
-    it('accepts valid literal values', () => {
+    it('contains exactly the normalized semantic Dependency Identifier fields', () => {
         const dto = factory.create({
-            moduleName: 'Ns_Module',
-            platform: TeqFw_Di_Enum_Platform.NODE,
-            exportName: 'default',
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
-            life: TeqFw_Di_Enum_Life.SINGLETON,
-            wrappers: ['w1', 'w2'],
-            origin: 'node:Ns_Module$',
+            addressKind: TeqFw_Di_Enum_AddressKind.TEQ,
+            address: 'Ns_Module',
+            lifestyle: TeqFw_Di_Enum_Lifestyle.DIRECT,
         });
-        assert.strictEqual(dto.platform, TeqFw_Di_Enum_Platform.NODE);
-        assert.strictEqual(dto.composition, TeqFw_Di_Enum_Composition.FACTORY);
-        assert.strictEqual(dto.life, TeqFw_Di_Enum_Life.SINGLETON);
-        assert.deepStrictEqual(dto.wrappers, ['w1', 'w2']);
+
+        assert.deepStrictEqual(Object.keys(dto).sort(), [
+            'address',
+            'addressKind',
+            'exportName',
+            'lifestyle',
+            'wrappers',
+        ]);
+        assert.strictEqual(dto.addressKind, TeqFw_Di_Enum_AddressKind.TEQ);
+        assert.strictEqual(dto.address, 'Ns_Module');
+        assert.strictEqual(dto.exportName, null);
+        assert.strictEqual(dto.lifestyle, TeqFw_Di_Enum_Lifestyle.DIRECT);
+        assert.deepStrictEqual(dto.wrappers, []);
     });
 
-    it('derives composition from lifecycle', () => {
-        const direct = factory.create({
-            composition: TeqFw_Di_Enum_Composition.FACTORY,
-            life: null,
-        });
-        const singleton = factory.create({
-            composition: TeqFw_Di_Enum_Composition.AS_IS,
-            life: TeqFw_Di_Enum_Life.SINGLETON,
-        });
-        const transient = factory.create({
-            composition: TeqFw_Di_Enum_Composition.AS_IS,
-            life: TeqFw_Di_Enum_Life.TRANSIENT,
+    it('retains coherent supplied semantic values', () => {
+        const dto = factory.create({
+            addressKind: TeqFw_Di_Enum_AddressKind.NODE,
+            address: 'fs/promises',
+            exportName: 'readFile',
+            lifestyle: TeqFw_Di_Enum_Lifestyle.SINGLETON,
+            wrappers: ['log', 'proxy'],
         });
 
-        assert.strictEqual(direct.composition, TeqFw_Di_Enum_Composition.AS_IS);
-        assert.strictEqual(singleton.composition, TeqFw_Di_Enum_Composition.FACTORY);
-        assert.strictEqual(transient.composition, TeqFw_Di_Enum_Composition.FACTORY);
+        assert.strictEqual(dto.addressKind, TeqFw_Di_Enum_AddressKind.NODE);
+        assert.strictEqual(dto.address, 'fs/promises');
+        assert.strictEqual(dto.exportName, 'readFile');
+        assert.strictEqual(dto.lifestyle, TeqFw_Di_Enum_Lifestyle.SINGLETON);
+        assert.deepStrictEqual(dto.wrappers, ['log', 'proxy']);
     });
 
-    it('does not repair malformed internal semantic fields', () => {
-        const dto = factory.create(/** @type {any} */ ({
-            platform: 'bad-platform',
-            life: 'bad-life',
-            exportName: 123,
-            wrappers: ['ok', 1],
-        }));
-
-        assert.strictEqual(dto.platform, 'bad-platform');
-        assert.strictEqual(dto.life, 'bad-life');
-        assert.strictEqual(dto.composition, TeqFw_Di_Enum_Composition.FACTORY);
-        assert.strictEqual(dto.exportName, 123);
-        assert.deepStrictEqual(dto.wrappers, ['ok', 1]);
-    });
-
-    it('clones wrappers', () => {
+    it('clones and freezes wrappers', () => {
         const wrappers = ['w1'];
-        const dto = factory.create({wrappers});
-        assert.notStrictEqual(dto.wrappers, wrappers);
-    });
+        const dto = factory.create({
+            addressKind: TeqFw_Di_Enum_AddressKind.TEQ,
+            address: 'Ns_Module',
+            lifestyle: TeqFw_Di_Enum_Lifestyle.DIRECT,
+            wrappers,
+        });
 
-    it('always freezes wrappers', () => {
-        const dto = factory.create({wrappers: ['w1']});
+        assert.notStrictEqual(dto.wrappers, wrappers);
         assert.ok(Object.isFrozen(dto.wrappers));
     });
 
-    it('always freezes DTO', () => {
-        const dto = factory.create({});
+    it('returns a frozen DTO instance', () => {
+        const dto = factory.create({
+            addressKind: TeqFw_Di_Enum_AddressKind.TEQ,
+            address: 'Ns_Module',
+            lifestyle: TeqFw_Di_Enum_Lifestyle.DIRECT,
+        });
+
+        assert.ok(dto instanceof DTO);
         assert.ok(Object.isFrozen(dto));
     });
 });

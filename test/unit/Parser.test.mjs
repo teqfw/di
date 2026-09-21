@@ -3,329 +3,113 @@ import {describe, it} from 'node:test';
 
 import TeqFw_Di_Parser from '../../src/Parser.mjs';
 import TeqFw_Di_Dto_DepId_DTO from '../../src/Dto/DepId.mjs';
-import TeqFw_Di_Enum_Composition from '../../src/Enum/Composition.mjs';
-import TeqFw_Di_Enum_Life from '../../src/Enum/Life.mjs';
-import TeqFw_Di_Enum_Platform from '../../src/Enum/Platform.mjs';
+import TeqFw_Di_Enum_AddressKind from '../../src/Enum/AddressKind.mjs';
+import TeqFw_Di_Enum_Lifestyle from '../../src/Enum/Lifestyle.mjs';
 
-const MODULE = 'Project_Package_Module';
+const ADDRESS = 'Project_Package_Module';
 const NAMED_EXPORT = 'namedExport';
 const WRAPPER_LOG = 'log';
 const WRAPPER_PROXY = 'proxy';
 
 /**
  * @param {TeqFw_Di_Dto_DepId} dto
- * @param {{platform: string, moduleName: string, exportName: string|null, life: string|null, composition: string, wrappers: string[]}} expected
+ * @param {{addressKind: string, address: string, exportName: string|null, lifestyle: string, wrappers: string[]}} expected
  */
 function assertDepId(dto, expected) {
-    assert.strictEqual(dto.platform, expected.platform);
-    assert.strictEqual(dto.moduleName, expected.moduleName);
-    assert.strictEqual(dto.exportName, expected.exportName);
-    assert.strictEqual(dto.life, expected.life);
-    assert.strictEqual(dto.composition, expected.composition);
-    assert.deepStrictEqual(dto.wrappers, expected.wrappers);
+    assert.deepStrictEqual({
+        addressKind: dto.addressKind,
+        address: dto.address,
+        exportName: dto.exportName,
+        lifestyle: dto.lifestyle,
+        wrappers: [...dto.wrappers],
+    }, expected);
 }
 
 /**
- * Compares semantic identity fields only. Origin preserves request spelling and
- * is intentionally not an equivalence field.
- *
- * @param {TeqFw_Di_Dto_DepId} left
- * @param {TeqFw_Di_Dto_DepId} right
+ * @param {string} addressKind
+ * @param {string} address
+ * @param {string|null} exportName
+ * @param {string} lifestyle
+ * @param {string[]} [wrappers]
  */
-function assertEquivalentDepIds(left, right) {
-    assert.strictEqual(left.platform, right.platform);
-    assert.strictEqual(left.moduleName, right.moduleName);
-    assert.strictEqual(left.exportName, right.exportName);
-    assert.strictEqual(left.life, right.life);
-    assert.deepStrictEqual(left.wrappers, right.wrappers);
+function expected(addressKind, address, exportName, lifestyle, wrappers = []) {
+    return {addressKind, address, exportName, lifestyle, wrappers};
 }
 
 describe('TeqFw_Di_Parser', () => {
     const parser = new TeqFw_Di_Parser();
 
     describe('accepted forms', () => {
+        /** @type {[string, {addressKind: string, address: string, exportName: string|null, lifestyle: string, wrappers: string[]}][]} */
         const cases = [
-            {
-                specifier: MODULE,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: null,
-                    life: null,
-                    composition: TeqFw_Di_Enum_Composition.AS_IS,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `${MODULE}__${NAMED_EXPORT}`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: NAMED_EXPORT,
-                    life: null,
-                    composition: TeqFw_Di_Enum_Composition.AS_IS,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `${MODULE}__default`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: null,
-                    composition: TeqFw_Di_Enum_Composition.AS_IS,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `${MODULE}__default$`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: TeqFw_Di_Enum_Life.SINGLETON,
-                    composition: TeqFw_Di_Enum_Composition.FACTORY,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `${MODULE}$`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: TeqFw_Di_Enum_Life.SINGLETON,
-                    composition: TeqFw_Di_Enum_Composition.FACTORY,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `${MODULE}__default$$`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: TeqFw_Di_Enum_Life.TRANSIENT,
-                    composition: TeqFw_Di_Enum_Composition.FACTORY,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `${MODULE}$$`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: TeqFw_Di_Enum_Life.TRANSIENT,
-                    composition: TeqFw_Di_Enum_Composition.FACTORY,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `${MODULE}__default$$$`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: null,
-                    composition: TeqFw_Di_Enum_Composition.AS_IS,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `${MODULE}$$$`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: null,
-                    composition: TeqFw_Di_Enum_Composition.AS_IS,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `${MODULE}__default$_${WRAPPER_LOG}`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: TeqFw_Di_Enum_Life.SINGLETON,
-                    composition: TeqFw_Di_Enum_Composition.FACTORY,
-                    wrappers: [WRAPPER_LOG],
-                },
-            },
-            {
-                specifier: `${MODULE}$_${WRAPPER_LOG}`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: TeqFw_Di_Enum_Life.SINGLETON,
-                    composition: TeqFw_Di_Enum_Composition.FACTORY,
-                    wrappers: [WRAPPER_LOG],
-                },
-            },
-            {
-                specifier: `${MODULE}__default$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: TeqFw_Di_Enum_Life.TRANSIENT,
-                    composition: TeqFw_Di_Enum_Composition.FACTORY,
-                    wrappers: [WRAPPER_LOG, WRAPPER_PROXY],
-                },
-            },
-            {
-                specifier: `${MODULE}$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: TeqFw_Di_Enum_Life.TRANSIENT,
-                    composition: TeqFw_Di_Enum_Composition.FACTORY,
-                    wrappers: [WRAPPER_LOG, WRAPPER_PROXY],
-                },
-            },
-            {
-                specifier: `${MODULE}__default$$$_${WRAPPER_LOG}`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: null,
-                    composition: TeqFw_Di_Enum_Composition.AS_IS,
-                    wrappers: [WRAPPER_LOG],
-                },
-            },
-            {
-                specifier: `${MODULE}$$$_${WRAPPER_LOG}`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.TEQ,
-                    moduleName: MODULE,
-                    exportName: 'default',
-                    life: null,
-                    composition: TeqFw_Di_Enum_Composition.AS_IS,
-                    wrappers: [WRAPPER_LOG],
-                },
-            },
-            {
-                specifier: `node:fs`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.NODE,
-                    moduleName: 'fs',
-                    exportName: null,
-                    life: null,
-                    composition: TeqFw_Di_Enum_Composition.AS_IS,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `node:fs/promises`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.NODE,
-                    moduleName: 'fs/promises',
-                    exportName: null,
-                    life: null,
-                    composition: TeqFw_Di_Enum_Composition.AS_IS,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `node:child_process`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.NODE,
-                    moduleName: 'child_process',
-                    exportName: null,
-                    life: null,
-                    composition: TeqFw_Di_Enum_Composition.AS_IS,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `node:worker_threads`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.NODE,
-                    moduleName: 'worker_threads',
-                    exportName: null,
-                    life: null,
-                    composition: TeqFw_Di_Enum_Composition.AS_IS,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `node:child_process__execFile`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.NODE,
-                    moduleName: 'child_process',
-                    exportName: 'execFile',
-                    life: null,
-                    composition: TeqFw_Di_Enum_Composition.AS_IS,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `npm:@vendor/package`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.NPM,
-                    moduleName: '@vendor/package',
-                    exportName: null,
-                    life: null,
-                    composition: TeqFw_Di_Enum_Composition.AS_IS,
-                    wrappers: [],
-                },
-            },
-            {
-                specifier: `npm:@vendor/package__default$$`,
-                expected: {
-                    platform: TeqFw_Di_Enum_Platform.NPM,
-                    moduleName: '@vendor/package',
-                    exportName: 'default',
-                    life: TeqFw_Di_Enum_Life.TRANSIENT,
-                    composition: TeqFw_Di_Enum_Composition.FACTORY,
-                    wrappers: [],
-                },
-            },
+            [ADDRESS, expected(TeqFw_Di_Enum_AddressKind.TEQ, ADDRESS, null, TeqFw_Di_Enum_Lifestyle.DIRECT)],
+            [`${ADDRESS}__${NAMED_EXPORT}`, expected(TeqFw_Di_Enum_AddressKind.TEQ, ADDRESS, NAMED_EXPORT, TeqFw_Di_Enum_Lifestyle.DIRECT)],
+            [`${ADDRESS}__default`, expected(TeqFw_Di_Enum_AddressKind.TEQ, ADDRESS, 'default', TeqFw_Di_Enum_Lifestyle.DIRECT)],
+            [`${ADDRESS}$`, expected(TeqFw_Di_Enum_AddressKind.TEQ, ADDRESS, 'default', TeqFw_Di_Enum_Lifestyle.SINGLETON)],
+            [`${ADDRESS}__default$`, expected(TeqFw_Di_Enum_AddressKind.TEQ, ADDRESS, 'default', TeqFw_Di_Enum_Lifestyle.SINGLETON)],
+            [`${ADDRESS}$$`, expected(TeqFw_Di_Enum_AddressKind.TEQ, ADDRESS, 'default', TeqFw_Di_Enum_Lifestyle.TRANSIENT)],
+            [`${ADDRESS}__default$$`, expected(TeqFw_Di_Enum_AddressKind.TEQ, ADDRESS, 'default', TeqFw_Di_Enum_Lifestyle.TRANSIENT)],
+            [`${ADDRESS}$$$`, expected(TeqFw_Di_Enum_AddressKind.TEQ, ADDRESS, 'default', TeqFw_Di_Enum_Lifestyle.DIRECT)],
+            [`${ADDRESS}__default$$$`, expected(TeqFw_Di_Enum_AddressKind.TEQ, ADDRESS, 'default', TeqFw_Di_Enum_Lifestyle.DIRECT)],
+            [`${ADDRESS}$_${WRAPPER_LOG}`, expected(TeqFw_Di_Enum_AddressKind.TEQ, ADDRESS, 'default', TeqFw_Di_Enum_Lifestyle.SINGLETON, [WRAPPER_LOG])],
+            [`${ADDRESS}$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`, expected(TeqFw_Di_Enum_AddressKind.TEQ, ADDRESS, 'default', TeqFw_Di_Enum_Lifestyle.TRANSIENT, [WRAPPER_LOG, WRAPPER_PROXY])],
+            [`${ADDRESS}$$$_${WRAPPER_LOG}`, expected(TeqFw_Di_Enum_AddressKind.TEQ, ADDRESS, 'default', TeqFw_Di_Enum_Lifestyle.DIRECT, [WRAPPER_LOG])],
+            ['node:fs', expected(TeqFw_Di_Enum_AddressKind.NODE, 'fs', null, TeqFw_Di_Enum_Lifestyle.DIRECT)],
+            ['node:fs/promises', expected(TeqFw_Di_Enum_AddressKind.NODE, 'fs/promises', null, TeqFw_Di_Enum_Lifestyle.DIRECT)],
+            ['node:child_process__execFile', expected(TeqFw_Di_Enum_AddressKind.NODE, 'child_process', 'execFile', TeqFw_Di_Enum_Lifestyle.DIRECT)],
+            ['npm:@vendor/package', expected(TeqFw_Di_Enum_AddressKind.NPM, '@vendor/package', null, TeqFw_Di_Enum_Lifestyle.DIRECT)],
+            ['npm:@vendor/package__default$$', expected(TeqFw_Di_Enum_AddressKind.NPM, '@vendor/package', 'default', TeqFw_Di_Enum_Lifestyle.TRANSIENT)],
         ];
 
-        for (const one of cases) {
-            it(`parses '${one.specifier}'`, () => {
-                const dto = parser.parse(one.specifier);
-                assertDepId(dto, one.expected);
+        for (const [specifier, value] of cases) {
+            it(`parses '${specifier}'`, () => {
+                assertDepId(parser.parse(specifier), /** @type {{addressKind: string, address: string, exportName: string|null, lifestyle: string, wrappers: string[]}} */ (value));
             });
         }
     });
 
+    it('normalizes unmarked and explicit Direct forms to D', () => {
+        const unmarked = parser.parse(ADDRESS);
+        const explicit = parser.parse(`${ADDRESS}$$$`);
+
+        assert.strictEqual(unmarked.lifestyle, TeqFw_Di_Enum_Lifestyle.DIRECT);
+        assert.strictEqual(explicit.lifestyle, TeqFw_Di_Enum_Lifestyle.DIRECT);
+    });
+
     describe('semantic equivalence', () => {
         const cases = [
-            [`${MODULE}$`, `${MODULE}__default$`],
-            [`${MODULE}$$`, `${MODULE}__default$$`],
-            [`${MODULE}$$$`, `${MODULE}__default$$$`],
-            [`${MODULE}$_${WRAPPER_LOG}`, `${MODULE}__default$_${WRAPPER_LOG}`],
+            [`${ADDRESS}$`, `${ADDRESS}__default$`],
+            [`${ADDRESS}$$`, `${ADDRESS}__default$$`],
+            [`${ADDRESS}$$$`, `${ADDRESS}__default$$$`],
+            [`${ADDRESS}$_${WRAPPER_LOG}`, `${ADDRESS}__default$_${WRAPPER_LOG}`],
         ];
 
         for (const [leftSpecifier, rightSpecifier] of cases) {
             it(`equates '${leftSpecifier}' and '${rightSpecifier}'`, () => {
                 const left = parser.parse(leftSpecifier);
                 const right = parser.parse(rightSpecifier);
-
-                assert.notStrictEqual(left.origin, right.origin);
-                assertEquivalentDepIds(left, right);
+                assertDepId(left, {
+                    addressKind: right.addressKind,
+                    address: right.address,
+                    exportName: right.exportName,
+                    lifestyle: right.lifestyle,
+                    wrappers: [...right.wrappers],
+                });
             });
         }
     });
 
     describe('Address Kind', () => {
+        /** @type {[string, string][]} */
         const cases = [
-            [`${MODULE}`, TeqFw_Di_Enum_Platform.TEQ],
-            ['node:fs__default$', TeqFw_Di_Enum_Platform.NODE],
-            ['npm:@vendor/package__default$$', TeqFw_Di_Enum_Platform.NPM],
+            [ADDRESS, TeqFw_Di_Enum_AddressKind.TEQ],
+            ['node:fs__default$', TeqFw_Di_Enum_AddressKind.NODE],
+            ['npm:@vendor/package__default$$', TeqFw_Di_Enum_AddressKind.NPM],
         ];
 
         for (const [specifier, addressKind] of cases) {
             it(`classifies '${specifier}' as ${addressKind}`, () => {
-                assert.strictEqual(parser.parse(specifier).platform, addressKind);
+                assert.strictEqual(parser.parse(specifier).addressKind, addressKind);
             });
         }
 
@@ -336,25 +120,13 @@ describe('TeqFw_Di_Parser', () => {
 
     describe('rejections', () => {
         const invalidCases = [
-            '',
-            'teq:Module',
-            'teq:Module$',
-            'node:',
-            'node:fs:promises',
-            'npm:',
-            'node:fs$__default',
-            'npm:@vendor/package__named_export',
-            'Project_Package_Module_wrapper',
-            'Project_Package_Module__named_export_wrapper',
-            'Project_Package_Module____$',
-            'Project_Package_Module$____',
-            'Project_Package_Module$$_',
-            'Project_Package_Module$$_Default',
-            'Project_Package_Module$$$$',
-            'Project_Package_Module__default__extra',
-            'Project_Package_Module__',
-            '_Project_Package_Module',
-            '$Project_Package_Module',
+            '', 'teq:Module', 'teq:Module$', 'node:', 'node:fs:promises', 'npm:',
+            'node:fs$__default', 'npm:@vendor/package__named_export',
+            'Project_Package_Module_wrapper', 'Project_Package_Module__named_export_wrapper',
+            'Project_Package_Module____$', 'Project_Package_Module$____',
+            'Project_Package_Module$$_', 'Project_Package_Module$$_Default',
+            'Project_Package_Module$$$$', 'Project_Package_Module__default__extra',
+            'Project_Package_Module__', '_Project_Package_Module', '$Project_Package_Module',
             'Project_Package_Module__named_Export',
         ];
 
@@ -366,13 +138,9 @@ describe('TeqFw_Di_Parser', () => {
     });
 
     describe('DTO shape', () => {
-        it('returns DepId DTO instance', () => {
-            const dto = parser.parse(MODULE);
+        it('returns a frozen DepId DTO and Wrapper Selection', () => {
+            const dto = parser.parse(`${ADDRESS}$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`);
             assert.ok(dto instanceof TeqFw_Di_Dto_DepId_DTO);
-        });
-
-        it('returns frozen DTO and wrappers', () => {
-            const dto = parser.parse(`${MODULE}$$_${WRAPPER_LOG}_${WRAPPER_PROXY}`);
             assert.ok(Object.isFrozen(dto));
             assert.ok(Object.isFrozen(dto.wrappers));
         });

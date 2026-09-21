@@ -11,7 +11,7 @@ declare global {
   type TeqFw_Di_Container_Resolution = typeof import("./src/Container/Resolution.mjs").executeResolution;
   type TeqFw_Di_Container_Wrapper = import("./src/Container/Wrapper.mjs").default;
   type TeqFw_Di_Container_Observer_Contract = ReturnType<typeof import("./src/Container/Observer.mjs").createObserver>;
-  type TeqFw_Di_Container_State = 'notConfigured'|'operational'|'failed';
+  type TeqFw_Di_Container_State = 'Configurable'|'Resolving'|'Resolved'|'Failed';
   type TeqFw_Di_Container_ResolutionContext = Readonly<{
     depId: TeqFw_Di_Dto_DepId,
     root: TeqFw_Di_Dto_DepId,
@@ -21,17 +21,15 @@ declare global {
   type TeqFw_Di_Container__Class = typeof import("./src/Container.mjs").default;
   type TeqFw_Di_Dto_DepId = import("./src/Dto/DepId.mjs").default;
   type TeqFw_Di_Dto_DepId__Factory = import("./src/Dto/DepId.mjs").Factory;
-  type TeqFw_Di_Enum_Composition = typeof import("./src/Enum/Composition.mjs").default;
-  type TeqFw_Di_Enum_Life = typeof import("./src/Enum/Life.mjs").default;
+  type TeqFw_Di_Enum_AddressKind = typeof import("./src/Enum/AddressKind.mjs").default;
+  type TeqFw_Di_Enum_Lifestyle = typeof import("./src/Enum/Lifestyle.mjs").default;
   type TeqFw_Di_Enum_ObservationEvent = typeof import("./src/Enum/ObservationEvent.mjs").default;
-  type TeqFw_Di_Enum_Platform = typeof import("./src/Enum/Platform.mjs").default;
   type TeqFw_Di_Enum_ResolutionStage = typeof import("./src/Enum/ResolutionStage.mjs").default;
   type TeqFw_Di_Internal_DependencyKey = typeof import("./src/Internal/DependencyKey.mjs").buildDependencyKey;
   type TeqFw_Di_Internal_DepsDecl = typeof import("./src/Internal/DepsDecl.mjs").readDepsDecl;
   type TeqFw_Di_Internal_Logger = import("./src/Internal/Logger.mjs").default;
   type TeqFw_Di_Internal_Logger_Contract = Readonly<{log(message: string): void, error(message: string, error?: unknown): void}>;
   type TeqFw_Di_Internal_Logger_Noop = typeof import("./src/Internal/Logger.mjs").TeqFw_Di_Internal_Logger_Noop;
-  type TeqFw_Di_Internal_PromiseSafe = typeof import("./src/Internal/PromiseSafe.mjs").makePromiseSafe;
   type TeqFw_Di_Node_Registry_Namespace = import("./src/Node/Registry/Namespace.mjs").default;
   type TeqFw_Di_Node_Registry_Namespace_Entry = Readonly<{prefix: string, dirAbs: string, ext: string}>;
   type TeqFw_Di_Node_Registry_Namespace__Class = typeof import("./src/Node/Registry/Namespace.mjs").default;

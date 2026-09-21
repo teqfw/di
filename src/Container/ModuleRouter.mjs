@@ -5,7 +5,7 @@
  * @description Derives stable module routes from effective dependency identities.
  */
 
-import TeqFw_Di_Enum_Platform from '../Enum/Platform.mjs';
+import TeqFw_Di_Enum_AddressKind from '../Enum/AddressKind.mjs';
 
 /** @typedef {import('../Dto/ModuleRouter/Config.mjs').default} TeqFw_Di_Dto_ModuleRouter_Config */
 
@@ -46,22 +46,22 @@ export default class TeqFw_Di_Container_ModuleRouter {
         /**
          * Selects the deterministic longest matching Namespace Mapping.
          *
-         * @param {string} moduleName
+         * @param {string} address
          * @returns {TeqFw_Di_Container_ModuleRouter_NamespaceRule}
          */
-        const selectNamespaceRule = function (moduleName) {
+        const selectNamespaceRule = function (address) {
             /** @type {TeqFw_Di_Container_ModuleRouter_NamespaceRule|null} */
             let found = null;
             let foundLength = -1;
             for (const one of snapshot.namespaces) {
-                const match = moduleName.startsWith(one.prefix);
-                if (log) log.log(`ModuleRouter.namespace: prefix='${one.prefix}' match=${String(match)} module='${moduleName}'.`);
+                const match = address.startsWith(one.prefix);
+                if (log) log.log(`ModuleRouter.namespace: prefix='${one.prefix}' match=${String(match)} address='${address}'.`);
                 if (match && one.prefix.length > foundLength) {
                     found = one;
                     foundLength = one.prefix.length;
                 }
             }
-            if (!found) throw new Error(`Namespace rule is not found for '${moduleName}'.`);
+            if (!found) throw new Error(`Namespace rule is not found for Address '${address}'.`);
             return found;
         };
 
@@ -95,24 +95,24 @@ export default class TeqFw_Di_Container_ModuleRouter {
          * @returns {TeqFw_Di_Container_ModuleRouter_Route}
          */
         this.route = function (depId) {
-            if (depId.platform === TeqFw_Di_Enum_Platform.NODE) {
-                const specifier = `node:${depId.moduleName}`;
-                if (log) log.log(`ModuleRouter.route: '${depId.moduleName}' -> '${specifier}'.`);
+            if (depId.addressKind === TeqFw_Di_Enum_AddressKind.NODE) {
+                const specifier = `node:${depId.address}`;
+                if (log) log.log(`ModuleRouter.route: addressKind='${depId.addressKind}' address='${depId.address}' -> '${specifier}'.`);
                 return Object.freeze({specifier});
             }
-            if (depId.platform === TeqFw_Di_Enum_Platform.NPM) {
-                const specifier = depId.moduleName;
-                if (log) log.log(`ModuleRouter.route: '${depId.moduleName}' -> '${specifier}'.`);
+            if (depId.addressKind === TeqFw_Di_Enum_AddressKind.NPM) {
+                const specifier = depId.address;
+                if (log) log.log(`ModuleRouter.route: addressKind='${depId.addressKind}' address='${depId.address}' -> '${specifier}'.`);
                 return Object.freeze({specifier});
             }
-            if (depId.platform !== TeqFw_Di_Enum_Platform.TEQ) {
-                throw new Error(`Unsupported platform: ${depId.platform}`);
+            if (depId.addressKind !== TeqFw_Di_Enum_AddressKind.TEQ) {
+                throw new Error(`Unsupported Address Kind: ${depId.addressKind}`);
             }
-            const rule = selectNamespaceRule(depId.moduleName);
-            const remainder = depId.moduleName.slice(rule.prefix.length);
+            const rule = selectNamespaceRule(depId.address);
+            const remainder = depId.address.slice(rule.prefix.length);
             const relativePath = remainder.split('_').join('/');
             const specifier = join(rule.target, appendExt(relativePath, rule.defaultExt));
-            if (log) log.log(`ModuleRouter.route: '${depId.moduleName}' -> '${specifier}'.`);
+            if (log) log.log(`ModuleRouter.route: addressKind='${depId.addressKind}' address='${depId.address}' -> '${specifier}'.`);
             return Object.freeze({specifier, mapping: Object.freeze({...rule})});
         };
     }

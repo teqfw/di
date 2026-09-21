@@ -29,7 +29,7 @@ describe('Integration 30: graph resolution', () => {
         await assert.rejects(() => container.get('Fx_CycleA$$'), /Cyclic dependency detected/);
     });
 
-    it('rejects a recursive Singleton cycle instead of awaiting its own pending value', async () => {
+    it('rejects a recursive Singleton cycle', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
         container.enableIntrospection();
@@ -38,7 +38,6 @@ describe('Integration 30: graph resolution', () => {
         const observation = /** @type {any} */ (container.getIntrospection());
 
         assert.equal(observation.explanation.failure.stage, 'cycle detection');
-        assert.equal(observation.trace.some((/** @type {any} */ event) => event.kind === 'cache' && event.outcome === 'pending'), false);
         await assert.rejects(() => container.get('Fx_Root$'), /root.*claimed|second root/i);
     });
 

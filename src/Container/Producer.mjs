@@ -37,7 +37,7 @@ export default class TeqFw_Di_Container_Producer {
          */
         this.produce = function (selected, resolvedDeps) {
             if (typeof selected !== 'function') {
-                throw new Error('Producer composition requires a callable export.');
+                throw new Error('Producer requires a callable export.');
             }
             /** @type {TeqFw_Di_Container_Producer_Value} */
             const producer = /** @type {TeqFw_Di_Container_Producer_Value} */ (selected);
@@ -53,7 +53,7 @@ export default class TeqFw_Di_Container_Producer {
                 result = callable(resolvedDeps);
             }
             if (result instanceof Promise) {
-                throw new Error('Producer composition must return synchronously (non-Promise).');
+                throw new Error('Producer must return synchronously (non-Promise).');
             }
             return result;
         };

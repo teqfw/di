@@ -4,15 +4,17 @@ import {describe, it} from 'node:test';
 import TeqFw_Di_Container_ModuleRouter from '../../../src/Container/ModuleRouter.mjs';
 import {Factory as DepIdFactory} from '../../../src/Dto/DepId.mjs';
 import {Factory as ConfigFactory} from '../../../src/Dto/ModuleRouter/Config.mjs';
-import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
+import TeqFw_Di_Enum_AddressKind from '../../../src/Enum/AddressKind.mjs';
+import TeqFw_Di_Enum_Lifestyle from '../../../src/Enum/Lifestyle.mjs';
 
 const depIdFactory = new DepIdFactory();
 const configFactory = new ConfigFactory();
 
 function depId(patch = {}) {
     return depIdFactory.create({
-        moduleName: 'Ns_Group_Web_Service',
-        platform: TeqFw_Di_Enum_Platform.TEQ,
+        addressKind: TeqFw_Di_Enum_AddressKind.TEQ,
+        address: 'Ns_Group_Web_Service',
+        lifestyle: TeqFw_Di_Enum_Lifestyle.DIRECT,
         ...patch,
     });
 }
@@ -32,7 +34,7 @@ describe('TeqFw_Di_Container_ModuleRouter', () => {
             specifier: '/web/Service.mjs',
             mapping: {prefix: 'Ns_Group_Web_', target: '/web', defaultExt: '.mjs'},
         });
-        assert.deepEqual(router.route(depId({platform: TeqFw_Di_Enum_Platform.NODE, moduleName: 'fs'})), {
+        assert.deepEqual(router.route(depId({addressKind: TeqFw_Di_Enum_AddressKind.NODE, address: 'fs'})), {
             specifier: 'node:fs',
         });
     });

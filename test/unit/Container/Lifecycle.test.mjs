@@ -3,24 +3,23 @@ import {describe, it} from 'node:test';
 
 import TeqFw_Di_Container_Lifecycle from '../../../src/Container/Lifecycle.mjs';
 import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../../../src/Dto/DepId.mjs';
-import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
-import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
+import TeqFw_Di_Enum_AddressKind from '../../../src/Enum/AddressKind.mjs';
+import TeqFw_Di_Enum_Lifestyle from '../../../src/Enum/Lifestyle.mjs';
 
 /** @type {TeqFw_Di_Dto_DepId__Factory} */
 const factory = new TeqFw_Di_Dto_DepId_Factory();
 
 /**
- * @param {Partial<TeqFw_Di_Dto_DepId>} [patch]
+ * @param {Partial<Pick<TeqFw_Di_Dto_DepId, 'addressKind'|'address'|'exportName'|'lifestyle'|'wrappers'>>} [patch]
  * @returns {TeqFw_Di_Dto_DepId}
  */
 function createDepId(patch = {}) {
     return factory.create({
-        moduleName: 'App_Module',
-        platform: TeqFw_Di_Enum_Platform.TEQ,
+        addressKind: TeqFw_Di_Enum_AddressKind.TEQ,
+        address: 'App_Module',
         exportName: 'default',
-        life: TeqFw_Di_Enum_Life.SINGLETON,
+        lifestyle: TeqFw_Di_Enum_Lifestyle.SINGLETON,
         wrappers: [],
-        origin: 'unit-test',
         ...patch,
     });
 }
@@ -41,7 +40,7 @@ describe('TeqFw_Di_Container_Lifecycle', () => {
         assert.equal(registry.lookup(depId), 'hit');
     });
 
-    it('stores the completed singleton miss result without a pending registry', async () => {
+    it('stores and reuses the completed Singleton miss result', async () => {
         const registry = new TeqFw_Di_Container_Lifecycle();
         const depId = createDepId();
         let calls = 0;
@@ -57,9 +56,9 @@ describe('TeqFw_Di_Container_Lifecycle', () => {
     it('bypasses cache for Direct and Transient lifestyles', async () => {
         const registry = new TeqFw_Di_Container_Lifecycle();
         const direct = createDepId({
-            life: null,
+            lifestyle: TeqFw_Di_Enum_Lifestyle.DIRECT,
         });
-        const transient = createDepId({life: TeqFw_Di_Enum_Life.TRANSIENT});
+        const transient = createDepId({lifestyle: TeqFw_Di_Enum_Lifestyle.TRANSIENT});
         let calls = 0;
         const onMiss = () => ({id: ++calls});
 

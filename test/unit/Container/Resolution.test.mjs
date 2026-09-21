@@ -8,9 +8,9 @@ import TeqFw_Di_Container_Postprocessor from '../../../src/Container/Postprocess
 import TeqFw_Di_Container_Producer from '../../../src/Container/Producer.mjs';
 import TeqFw_Di_Container_Wrapper from '../../../src/Container/Wrapper.mjs';
 import {createObserver} from '../../../src/Container/Observer.mjs';
-import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
+import TeqFw_Di_Enum_AddressKind from '../../../src/Enum/AddressKind.mjs';
+import TeqFw_Di_Enum_Lifestyle from '../../../src/Enum/Lifestyle.mjs';
 import TeqFw_Di_Enum_ObservationEvent from '../../../src/Enum/ObservationEvent.mjs';
-import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
 import {Factory as DepIdFactory} from '../../../src/Dto/DepId.mjs';
 
 const factory = new DepIdFactory();
@@ -18,10 +18,10 @@ const factory = new DepIdFactory();
 describe('TeqFw_Di_Container_Resolution', () => {
     it('observes route before load and keeps export selection before production', async () => {
         const depId = factory.create({
-            moduleName: 'App_Service',
-            platform: TeqFw_Di_Enum_Platform.TEQ,
+            addressKind: TeqFw_Di_Enum_AddressKind.TEQ,
+            address: 'App_Service',
             exportName: 'default',
-            life: TeqFw_Di_Enum_Life.SINGLETON,
+            lifestyle: TeqFw_Di_Enum_Lifestyle.SINGLETON,
             wrappers: [],
         });
         const observer = createObserver('App_Service$');

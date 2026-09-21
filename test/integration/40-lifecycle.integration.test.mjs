@@ -54,6 +54,23 @@ describe('Integration 40: lifecycle', () => {
         assert.equal(observation.explanation.resolutions[0].hardening.mode, 'configured');
     });
 
+    it('lets a Hardener result hostile to Promise assimilation fail naturally', async () => {
+        const container = new TeqFw_Di_Container();
+        container.enableIntrospection();
+        const hostile = new Proxy({}, {
+            get(target, property, receiver) {
+                if (property === 'then') throw new Error('then access is blocked');
+                return Reflect.get(target, property, receiver);
+            },
+        });
+        container.setHardener(() => hostile);
+
+        await assert.rejects(container.get('node:fs'), /then access is blocked/);
+        const observation = /** @type {any} */ (container.getIntrospection());
+
+        assert.equal(observation.explanation.failure.stage, 'hardening');
+    });
+
     it('keeps singleton identities separate for default and named exports from same module', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
@@ -70,7 +87,7 @@ describe('Integration 40: lifecycle', () => {
     it('applies preprocess and postprocess in registration order', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-        container.addPreprocess((depId, _context) => ({...depId, moduleName: depId.moduleName.replace('Singleton', 'Transient')}));
+        container.addPreprocess((depId, _context) => ({...depId, address: depId.address.replace('Singleton', 'Transient')}));
         container.addPostprocess((value, _context) => {
             /** @type {{steps?: string[]}} */
             const post1 = /** @type {{steps?: string[]}} */ (value);
@@ -94,7 +111,7 @@ describe('Integration 40: lifecycle', () => {
         let postprocessCalls = 0;
         let hardeningCalls = 0;
         container.addPostprocess((value, context) => {
-            if (context.depId.moduleName !== 'Fx_ObservedSingleton') return value;
+            if (context.depId.address !== 'Fx_ObservedSingleton') return value;
             postprocessCalls += 1;
             const observed = /** @type {{producerCalls: number, steps: string[]}} */ (value);
             return {...observed, steps: [...observed.steps, 'postprocessor']};
@@ -125,9 +142,9 @@ describe('Integration 40: lifecycle', () => {
         const producerBefore = getProducerCalls();
         container.addPreprocess((depId) => ({
             ...depId,
-            moduleName: depId.moduleName.startsWith('Fx_Alias')
+            address: depId.address.startsWith('Fx_Alias')
                 ? 'Fx_ObservedSingleton'
-                : depId.moduleName,
+                : depId.address,
         }));
 
         const root = await container.get('Fx_GraphLifestyle$');
@@ -144,9 +161,9 @@ describe('Integration 40: lifecycle', () => {
         container.enableIntrospection();
         container.addPreprocess((depId) => ({
             ...depId,
-            ...(depId.moduleName.startsWith('Fx_NpmAlias') ? {
-                platform: 'npm',
-                moduleName: '@teqfw/di',
+            ...(depId.address.startsWith('Fx_NpmAlias') ? {
+                addressKind: 'npm',
+                address: '@teqfw/di',
                 exportName: 'default',
             } : {}),
         }));

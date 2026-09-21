@@ -5,23 +5,22 @@ import {pathToFileURL} from 'node:url';
 
 import TeqFw_Di_Container from '../../src/Container.mjs';
 import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../../src/Dto/DepId.mjs';
-import TeqFw_Di_Enum_Life from '../../src/Enum/Life.mjs';
-import TeqFw_Di_Enum_Platform from '../../src/Enum/Platform.mjs';
+import TeqFw_Di_Enum_AddressKind from '../../src/Enum/AddressKind.mjs';
+import TeqFw_Di_Enum_Lifestyle from '../../src/Enum/Lifestyle.mjs';
 
 const depIdFactory = new TeqFw_Di_Dto_DepId_Factory();
 
 /**
- * @param {Partial<TeqFw_Di_Dto_DepId>} [patch]
+ * @param {Partial<Pick<TeqFw_Di_Dto_DepId, 'addressKind'|'address'|'exportName'|'lifestyle'|'wrappers'>>} [patch]
  * @returns {TeqFw_Di_Dto_DepId}
  */
 function createDepId(patch = {}) {
     return depIdFactory.create({
-        moduleName: 'path',
-        platform: TeqFw_Di_Enum_Platform.NODE,
+        addressKind: TeqFw_Di_Enum_AddressKind.NODE,
+        address: 'path',
         exportName: null,
-        life: null,
+        lifestyle: TeqFw_Di_Enum_Lifestyle.DIRECT,
         wrappers: [],
-        origin: 'unit-test',
         ...patch,
     });
 }
@@ -69,7 +68,7 @@ describe('TeqFw_Di_Container', () => {
         const container = new TeqFw_Di_Container();
         const dataDir = pathToFileURL(path.resolve('test/fixtures/deps')).href;
         container.addNamespaceRoot('TestSample_', dataDir, '.mjs');
-        container.addPreprocess((depId, _context) => createDepId({...depId, moduleName: 'TestSample_NamedOnly'}));
+        container.addPreprocess((depId, _context) => createDepId({...depId, address: 'TestSample_NamedOnly'}));
         /** @type {TeqFw_Di_Container_ResolutionContext|undefined} */
         let context;
         container.addPostprocess((_value, receivedContext) => {
@@ -84,8 +83,7 @@ describe('TeqFw_Di_Container', () => {
 
         assert.deepStrictEqual(value.order, [1, 2]);
         assert.ok(Object.isFrozen(value));
-        assert.equal(context?.depId.moduleName, 'TestSample_NamedOnly');
-        assert.equal(context?.depId.origin, 'TestSample_Empty$');
+        assert.equal(context?.depId.address, 'TestSample_NamedOnly');
         assert.ok(Object.isFrozen(context));
         assert.ok(Object.isFrozen(context?.depId));
     });
@@ -190,7 +188,7 @@ describe('TeqFw_Di_Container', () => {
         container.register('TestSample_Empty$', {mocked: true});
         container.addPreprocess((depId, _context) => createDepId({
             ...depId,
-            moduleName: 'TestSample_NamedOnly',
+            address: 'TestSample_NamedOnly',
         }));
 
         const value = await container.get('TestSample_Empty$');

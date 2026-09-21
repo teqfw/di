@@ -9,22 +9,22 @@ import {describe, it} from 'node:test';
 
 import {readDepsDecl} from '../../../src/Internal/DepsDecl.mjs';
 import {Factory as TeqFw_Di_Dto_DepId_Factory} from '../../../src/Dto/DepId.mjs';
-import TeqFw_Di_Enum_Life from '../../../src/Enum/Life.mjs';
-import TeqFw_Di_Enum_Platform from '../../../src/Enum/Platform.mjs';
+import TeqFw_Di_Enum_AddressKind from '../../../src/Enum/AddressKind.mjs';
+import TeqFw_Di_Enum_Lifestyle from '../../../src/Enum/Lifestyle.mjs';
 
 /** @type {TeqFw_Di_Dto_DepId__Factory} */
 const factory = new TeqFw_Di_Dto_DepId_Factory();
 
 /**
- * @param {Partial<TeqFw_Di_Dto_DepId>} [patch]
+ * @param {Partial<Pick<TeqFw_Di_Dto_DepId, 'addressKind'|'address'|'exportName'|'lifestyle'|'wrappers'>>} [patch]
  * @returns {TeqFw_Di_Dto_DepId}
  */
 function createProducerDepId(patch = {}) {
     return factory.create({
-        moduleName: 'Mod',
-        platform: TeqFw_Di_Enum_Platform.TEQ,
+        addressKind: TeqFw_Di_Enum_AddressKind.TEQ,
+        address: 'Mod',
         exportName: 'default',
-        life: TeqFw_Di_Enum_Life.SINGLETON,
+        lifestyle: TeqFw_Di_Enum_Lifestyle.SINGLETON,
         ...patch,
     });
 }
@@ -67,7 +67,7 @@ describe('TeqFw_Di_Internal_DepsDecl', () => {
     it('returns empty object for named export not present in scoped __deps__', () => {
         const depId = createProducerDepId({
             exportName: 'Other',
-            life: TeqFw_Di_Enum_Life.TRANSIENT,
+            lifestyle: TeqFw_Di_Enum_Lifestyle.TRANSIENT,
         });
         const namespace = {
             __deps__: {

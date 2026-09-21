@@ -95,9 +95,9 @@ describe('Integration 90: failed state', () => {
                 configure(/** @type {TeqFw_Di_Container} */ container) {
                     container.addPreprocess((depId) => ({
                         ...depId,
-                        moduleName: depId.moduleName === 'Fx_Child'
+                        address: depId.address === 'Fx_Child'
                             ? 'Fx_BadExport'
-                            : depId.moduleName,
+                            : depId.address,
                     }));
                 },
                 specifier: 'Fx_GraphRoot$',

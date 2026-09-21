@@ -2,11 +2,11 @@
 
 /**
  * @namespace TeqFw_Di_Parser
- * @description Dependency Identifier parser that builds dependency identity DTOs.
+ * @description Dependency Identifier parser that builds normalized semantic DTOs.
  */
 
-import TeqFw_Di_Enum_Life from './Enum/Life.mjs';
-import TeqFw_Di_Enum_Platform from './Enum/Platform.mjs';
+import TeqFw_Di_Enum_AddressKind from './Enum/AddressKind.mjs';
+import TeqFw_Di_Enum_Lifestyle from './Enum/Lifestyle.mjs';
 import {Factory as TeqFw_Di_Dto_DepId_Factory} from './Dto/DepId.mjs';
 
 /**
@@ -23,39 +23,39 @@ export default class TeqFw_Di_Parser {
         let logger = null;
 
         /**
-         * Detects platform prefix and strips it from the source string.
+         * Detects Address Kind prefix and strips it from the source string.
          *
          * @param {string} source Dependency Identifier source without validation.
-         * @returns {{platform: typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform], source: string}}
+         * @returns {{addressKind: typeof TeqFw_Di_Enum_AddressKind[keyof typeof TeqFw_Di_Enum_AddressKind], source: string}}
          */
-        const detectPlatform = function (source) {
-            /** @type {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} */
-            let platform = TeqFw_Di_Enum_Platform.TEQ;
+        const detectAddressKind = function (source) {
+            /** @type {typeof TeqFw_Di_Enum_AddressKind[keyof typeof TeqFw_Di_Enum_AddressKind]} */
+            let addressKind = TeqFw_Di_Enum_AddressKind.TEQ;
             if (source.startsWith('node:')) {
-                platform = TeqFw_Di_Enum_Platform.NODE;
-                return {platform, source: source.slice(5)};
+                addressKind = TeqFw_Di_Enum_AddressKind.NODE;
+                return {addressKind, source: source.slice(5)};
             }
             if (source.startsWith('npm:')) {
-                platform = TeqFw_Di_Enum_Platform.NPM;
-                return {platform, source: source.slice(4)};
+                addressKind = TeqFw_Di_Enum_AddressKind.NPM;
+                return {addressKind, source: source.slice(4)};
             }
             if (source.startsWith('teq:')) {
                 throw new Error('Explicit teq: prefix is forbidden.');
             }
-            return {platform, source};
+            return {addressKind, source};
         };
 
         /**
-         * Parses lifecycle and wrapper suffix from the source string.
+         * Parses Lifestyle and Wrapper suffix from the source string.
          *
-         * @param {string} source Dependency Identifier source without platform prefix.
-         * @param {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} platform
-         * @returns {{core: string, life: typeof TeqFw_Di_Enum_Life[keyof typeof TeqFw_Di_Enum_Life] | null, lifecycleDeclared: boolean, wrappers: string[]}}
+         * @param {string} source Dependency Identifier source without Address Kind prefix.
+         * @param {typeof TeqFw_Di_Enum_AddressKind[keyof typeof TeqFw_Di_Enum_AddressKind]} addressKind
+         * @returns {{core: string, lifestyle: typeof TeqFw_Di_Enum_Lifestyle[keyof typeof TeqFw_Di_Enum_Lifestyle], lifestyleDeclared: boolean, wrappers: string[]}}
          */
-        const parseLifecycle = function (source, platform) {
-            /** @type {typeof TeqFw_Di_Enum_Life[keyof typeof TeqFw_Di_Enum_Life] | null} */
-            let life = null;
-            let lifecycleDeclared = false;
+        const parseLifestyle = function (source, addressKind) {
+            /** @type {typeof TeqFw_Di_Enum_Lifestyle[keyof typeof TeqFw_Di_Enum_Lifestyle]} */
+            let lifestyle = TeqFw_Di_Enum_Lifestyle.DIRECT;
+            let lifestyleDeclared = false;
             /** @type {string[]} */
             let wrappers = [];
             let core = source;
@@ -64,76 +64,76 @@ export default class TeqFw_Di_Parser {
             if (markerMatch) {
                 const marker = markerMatch[1];
                 const suffix = markerMatch[0].slice(marker.length);
-                lifecycleDeclared = true;
-                if (marker === '$') life = TeqFw_Di_Enum_Life.SINGLETON;
-                else if (marker === '$$') life = TeqFw_Di_Enum_Life.TRANSIENT;
-                else if (marker === '$$$') life = null;
+                lifestyleDeclared = true;
+                if (marker === '$') lifestyle = TeqFw_Di_Enum_Lifestyle.SINGLETON;
+                else if (marker === '$$') lifestyle = TeqFw_Di_Enum_Lifestyle.TRANSIENT;
+                else if (marker === '$$$') lifestyle = TeqFw_Di_Enum_Lifestyle.DIRECT;
                 else throw new Error('Lifecycle marker is invalid.');
 
                 core = core.slice(0, markerMatch.index);
                 if (suffix.length > 0) {
                     wrappers = suffix.slice(1).split('_');
                 }
-                return {core, life, lifecycleDeclared, wrappers};
+                return {core, lifestyle, lifestyleDeclared, wrappers};
             }
 
             if (source.includes('$')) throw new Error('Invalid lifecycle encoding.');
-            if ((platform !== TeqFw_Di_Enum_Platform.NODE) && /(?:^|[^_])_[a-z][0-9A-Za-z]*$/.test(source)) {
+            if ((addressKind !== TeqFw_Di_Enum_AddressKind.NODE) && /(?:^|[^_])_[a-z][0-9A-Za-z]*$/.test(source)) {
                 throw new Error('Wrapper without lifecycle is forbidden.');
             }
 
-            return {core, life, lifecycleDeclared, wrappers};
+            return {core, lifestyle, lifestyleDeclared, wrappers};
         };
 
         /**
-         * Splits module and export names from canonical core string.
+         * Splits Address and export names from canonical core string.
          *
          * @param {string} core Dependency Identifier core without lifecycle suffix.
-         * @returns {{moduleName: string, exportName: string|null}}
+         * @returns {{address: string, exportName: string|null}}
          */
-        const parseModuleExport = function (core) {
+        const parseAddressExport = function (core) {
             const firstDelim = core.indexOf('__');
             const lastDelim = core.lastIndexOf('__');
             if ((firstDelim !== -1) && (firstDelim !== lastDelim)) throw new Error('Export delimiter must appear at most once.');
             if (core.startsWith('__') || core.endsWith('__')) throw new Error('Malformed export segment.');
 
-            let moduleName = core;
+            let address = core;
             /** @type {string|null} */
             let exportName = null;
 
             if (firstDelim !== -1) {
-                moduleName = core.slice(0, firstDelim);
+                address = core.slice(0, firstDelim);
                 exportName = core.slice(firstDelim + 2);
                 if (!exportName) throw new Error('Export must be non-empty.');
                 if (exportName.includes('_')) throw new Error('Export must not contain _.');
                 if (exportName.includes('$')) throw new Error('Export must not contain $.');
             }
 
-            return {moduleName, exportName};
+            return {address, exportName};
         };
 
         /**
-         * Validates canonical module name for platform-specific rules.
+         * Validates a prepared Address for Address-Kind-specific rules.
          *
-         * @param {string} moduleName
-         * @param {typeof TeqFw_Di_Enum_Platform[keyof typeof TeqFw_Di_Enum_Platform]} platform
+         * @param {string} address
+         * @param {typeof TeqFw_Di_Enum_AddressKind[keyof typeof TeqFw_Di_Enum_AddressKind]} addressKind
          * @returns {void}
          */
-        const assertModuleName = function (moduleName, platform) {
-            if (!moduleName) throw new Error('moduleName must be non-empty.');
-            if (moduleName.startsWith('_') || moduleName.startsWith('$')) throw new Error('moduleName must not start with _ or $.');
-            if (moduleName.includes('__')) throw new Error('moduleName must not contain __.');
-            if (moduleName.includes('$')) throw new Error('moduleName must not contain $.');
-            if (platform !== TeqFw_Di_Enum_Platform.NPM) {
-                if (platform === TeqFw_Di_Enum_Platform.NODE) {
-                    if (!/^[A-Za-z_][$0-9A-Za-z_/-]*$/.test(moduleName)) {
-                        throw new Error('node moduleName must satisfy the built-in specifier form.');
+        const assertAddress = function (address, addressKind) {
+            if (!address) throw new Error('Address must be non-empty.');
+            if (address.startsWith('_') || address.startsWith('$')) throw new Error('Address must not start with _ or $.');
+            if (address.includes('__')) throw new Error('Address must not contain __.');
+            if (address.includes('$')) throw new Error('Address must not contain $.');
+            if (addressKind !== TeqFw_Di_Enum_AddressKind.NPM) {
+                if (addressKind === TeqFw_Di_Enum_AddressKind.NODE) {
+                    if (!/^[A-Za-z_][$0-9A-Za-z_/-]*$/.test(address)) {
+                        throw new Error('Node Address must satisfy the built-in specifier form.');
                     }
-                } else if (!/^[A-Za-z_][$0-9A-Za-z_]*$/.test(moduleName)) {
-                    throw new Error('moduleName must satisfy the canonical identifier form.');
+                } else if (!/^[A-Za-z_][$0-9A-Za-z_]*$/.test(address)) {
+                    throw new Error('Teq Address must satisfy the canonical identifier form.');
                 }
-            } else if (!/^[@A-Za-z_][$0-9A-Za-z_./-]*$/.test(moduleName)) {
-                throw new Error('npm moduleName must satisfy the package specifier form.');
+            } else if (!/^[@A-Za-z_][$0-9A-Za-z_./-]*$/.test(address)) {
+                throw new Error('npm Address must satisfy the package specifier form.');
             }
         };
 
@@ -149,32 +149,29 @@ export default class TeqFw_Di_Parser {
             if (specifier.length === 0) throw new Error('Dependency Identifier must be non-empty.');
             if (!/^[\x00-\x7F]+$/.test(specifier)) throw new Error('Dependency Identifier must be ASCII.');
 
-            /** @type {string} */
-            const origin = specifier;
-            const detected = detectPlatform(specifier);
-            const platform = detected.platform;
+            const detected = detectAddressKind(specifier);
+            const addressKind = detected.addressKind;
             const source = detected.source;
-            if (source.length === 0) throw new Error('moduleName must be non-empty.');
-            const lifecycle = parseLifecycle(source, platform);
-            const split = parseModuleExport(lifecycle.core);
-            assertModuleName(split.moduleName, platform);
+            if (source.length === 0) throw new Error('Address must be non-empty.');
+            const parsedLifestyle = parseLifestyle(source, addressKind);
+            const split = parseAddressExport(parsedLifestyle.core);
+            assertAddress(split.address, addressKind);
 
             let exportName = split.exportName;
-            if (lifecycle.lifecycleDeclared) {
+            if (parsedLifestyle.lifestyleDeclared) {
                 if (exportName === null) {
                     exportName = 'default';
                 }
             }
 
             const depId = depIdFactory.create({
-                moduleName: split.moduleName,
-                platform,
+                addressKind,
+                address: split.address,
                 exportName,
-                life: lifecycle.life,
-                wrappers: lifecycle.wrappers,
-                origin,
+                lifestyle: parsedLifestyle.lifestyle,
+                wrappers: parsedLifestyle.wrappers,
             });
-            if (logger) logger.log(`Parser.parse: produced='${depId.platform}::${depId.moduleName}'.`);
+            if (logger) logger.log(`Parser.parse: produced='${depId.addressKind}::${depId.address}'.`);
             return depId;
         };
 

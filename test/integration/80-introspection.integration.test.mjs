@@ -16,9 +16,9 @@ describe('Integration 80: structured introspection', () => {
         container.enableIntrospection();
         container.addPreprocess((depId) => ({
             ...depId,
-            moduleName: depId.moduleName === 'Fx_AliasGraphRoot'
+            address: depId.address === 'Fx_AliasGraphRoot'
                 ? 'Fx_GraphRoot'
-                : depId.moduleName,
+                : depId.address,
         }));
 
         const value = await container.get('Fx_AliasGraphRoot$');
@@ -29,6 +29,15 @@ describe('Integration 80: structured introspection', () => {
 
         assert.equal(value.name, 'graph-root');
         assert.equal(observation.explanation.outcome, 'success');
+        assert.deepStrictEqual(Object.keys(root.requested).sort(), [
+            'address',
+            'addressKind',
+            'exportName',
+            'lifestyle',
+            'wrappers',
+        ]);
+        assert.equal(root.requested.lifestyle, 'S');
+        assert.equal(root.effective.lifestyle, 'S');
         assert.equal(root.effective.address, 'Fx_GraphRoot');
         assert.equal(edge.parentNodeId, root.nodeId);
         assert.equal(edge.requested.addressKind, 'teq');
@@ -110,10 +119,10 @@ describe('Integration 80: structured introspection', () => {
         container.enableIntrospection();
         container.addPreprocess((depId) => ({
             ...depId,
-            platform: 'node',
-            moduleName: 'path',
+            addressKind: 'node',
+            address: 'path',
             exportName: 'basename',
-            life: null,
+            lifestyle: 'D',
         }));
 
         const value = await container.get('Fx_NodeAlias');
@@ -133,10 +142,10 @@ describe('Integration 80: structured introspection', () => {
         container.enableIntrospection();
         container.addPreprocess((depId) => ({
             ...depId,
-            platform: 'npm',
-            moduleName: '@teqfw/di',
+            addressKind: 'npm',
+            address: '@teqfw/di',
             exportName: 'default',
-            life: null,
+            lifestyle: 'D',
         }));
 
         const value = await container.get('Fx_NpmAlias');

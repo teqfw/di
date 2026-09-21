@@ -6,11 +6,51 @@
  */
 
 import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
+import TeqFw_Di_Enum_AddressKind from '../Enum/AddressKind.mjs';
+import TeqFw_Di_Enum_Lifestyle from '../Enum/Lifestyle.mjs';
 import {createResolutionContext} from './ResolutionContext.mjs';
 
 /**
  * @typedef {{index: number, before: TeqFw_Di_Dto_DepId, after: TeqFw_Di_Dto_DepId, changed: boolean}} TeqFw_Di_Container_Canonicalizer_PreprocessEffect
  */
+
+/**
+ * Ensures a parsed or substituted Dependency Identifier is coherent before it
+ * becomes effective resolution identity.
+ *
+ * @param {TeqFw_Di_Dto_DepId} depId
+ * @returns {void}
+ */
+const assertCoherentDepId = function (depId) {
+    const {addressKind, address, exportName, lifestyle, wrappers} = depId;
+    if (!Object.values(TeqFw_Di_Enum_AddressKind).includes(addressKind)) {
+        throw new Error(`Unsupported Address Kind: ${String(addressKind)}.`);
+    }
+    if (!Object.values(TeqFw_Di_Enum_Lifestyle).includes(lifestyle)) {
+        throw new Error(`Unsupported Dependency Lifestyle: ${String(lifestyle)}.`);
+    }
+    if ((typeof address !== 'string') || !address) {
+        throw new Error('Dependency Address must be a non-empty string.');
+    }
+    if ((exportName !== null) && ((typeof exportName !== 'string') || !exportName || exportName.includes('_') || exportName.includes('$'))) {
+        throw new Error('Export Selection must be null or a supported export name.');
+    }
+    if (!Array.isArray(wrappers) || !wrappers.every((name) => typeof name === 'string' && /^[a-z][0-9A-Za-z]*$/.test(name))) {
+        throw new Error('Wrapper Selection must contain supported ordered names.');
+    }
+    if ((address.startsWith('_')) || address.startsWith('$') || address.includes('__') || address.includes('$')) {
+        throw new Error('Dependency Address contains reserved identifier syntax.');
+    }
+    if (addressKind === TeqFw_Di_Enum_AddressKind.TEQ && !/^[A-Za-z_][$0-9A-Za-z_]*$/.test(address)) {
+        throw new Error('Teq Address must satisfy the canonical identifier form.');
+    }
+    if (addressKind === TeqFw_Di_Enum_AddressKind.NODE && !/^[A-Za-z_][$0-9A-Za-z_/-]*$/.test(address)) {
+        throw new Error('Node Address must satisfy the built-in specifier form.');
+    }
+    if (addressKind === TeqFw_Di_Enum_AddressKind.NPM && !/^[@A-Za-z_][$0-9A-Za-z_./-]*$/.test(address)) {
+        throw new Error('npm Address must satisfy the package specifier form.');
+    }
+};
 
 /**
  * @typedef {object} TeqFw_Di_Container_Canonicalizer_Dependencies
@@ -47,7 +87,9 @@ export default class TeqFw_Di_Container_Canonicalizer {
          * @returns {TeqFw_Di_Dto_DepId}
          */
         this.parse = function (specifier) {
-            return parser.parse(specifier);
+            const requested = parser.parse(specifier);
+            assertCoherentDepId(requested);
+            return requested;
         };
 
         /**
@@ -68,6 +110,7 @@ export default class TeqFw_Di_Container_Canonicalizer {
                     effective,
                     createResolutionContext(effective, ancestors)
                 ));
+                assertCoherentDepId(effective);
                 preprocessing.push({
                     index,
                     before,
@@ -84,11 +127,11 @@ export default class TeqFw_Di_Container_Canonicalizer {
          *
          * @param {string} specifier
          * @param {readonly TeqFw_Di_Dto_DepId[]} [ancestors]
-         * @returns {{requested: TeqFw_Di_Dto_DepId, effective: TeqFw_Di_Dto_DepId, preprocessing: TeqFw_Di_Container_Canonicalizer_PreprocessEffect[]}}
+         * @returns {{specifier: string, requested: TeqFw_Di_Dto_DepId, effective: TeqFw_Di_Dto_DepId, preprocessing: TeqFw_Di_Container_Canonicalizer_PreprocessEffect[]}}
          */
         this.canonicalize = function (specifier, ancestors = []) {
             const requested = this.parse(specifier);
-            return {requested, ...this.preprocess(requested, ancestors)};
+            return {specifier, requested, ...this.preprocess(requested, ancestors)};
         };
     }
 }

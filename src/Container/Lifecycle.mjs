@@ -5,7 +5,7 @@
  * @description Singleton cache policy for final managed values.
  */
 
-import TeqFw_Di_Enum_Life from '../Enum/Life.mjs';
+import TeqFw_Di_Enum_Lifestyle from '../Enum/Lifestyle.mjs';
 import {buildDependencyKey} from '../Internal/DependencyKey.mjs';
 
 /**
@@ -44,10 +44,18 @@ export default class TeqFw_Di_Container_Lifecycle {
          * @returns {'bypass'|'hit'|'miss'}
          */
         this.lookup = function (depId) {
-            if (depId.life !== TeqFw_Di_Enum_Life.SINGLETON) return 'bypass';
-            const key = buildKey(depId);
-            if (singletonCache.has(key)) return 'hit';
-            return 'miss';
+            switch (depId.lifestyle) {
+                case TeqFw_Di_Enum_Lifestyle.DIRECT:
+                    return 'bypass';
+                case TeqFw_Di_Enum_Lifestyle.SINGLETON: {
+                    const key = buildKey(depId);
+                    return singletonCache.has(key) ? 'hit' : 'miss';
+                }
+                case TeqFw_Di_Enum_Lifestyle.TRANSIENT:
+                    return 'bypass';
+                default:
+                    throw new Error(`Unsupported Dependency Lifestyle: ${String(depId.lifestyle)}.`);
+            }
         };
 
         /**
@@ -58,22 +66,28 @@ export default class TeqFw_Di_Container_Lifecycle {
          * @returns {Promise<unknown>}
          */
         this.apply = async function (depId, onMiss) {
-            if (depId.life !== TeqFw_Di_Enum_Life.SINGLETON) {
-                if (log) log.log(`Lifecycle.apply: life='${String(depId.life)}' cache=skip.`);
-                return onMiss();
+            switch (depId.lifestyle) {
+                case TeqFw_Di_Enum_Lifestyle.DIRECT:
+                    if (log) log.log(`Lifecycle.apply: lifestyle='${depId.lifestyle}' cache=bypass.`);
+                    return onMiss();
+                case TeqFw_Di_Enum_Lifestyle.SINGLETON: {
+                    const key = buildKey(depId);
+                    if (singletonCache.has(key)) {
+                        if (log) log.log(`Lifecycle.cache: hit key='${key}'.`);
+                        return singletonCache.get(key);
+                    }
+                    if (log) log.log(`Lifecycle.cache: miss key='${key}', create.`);
+                    const created = await onMiss();
+                    singletonCache.set(key, created);
+                    if (log) log.log(`Lifecycle.cache: stored key='${key}'.`);
+                    return created;
+                }
+                case TeqFw_Di_Enum_Lifestyle.TRANSIENT:
+                    if (log) log.log(`Lifecycle.apply: lifestyle='${depId.lifestyle}' cache=bypass.`);
+                    return onMiss();
+                default:
+                    throw new Error(`Unsupported Dependency Lifestyle: ${String(depId.lifestyle)}.`);
             }
-
-            /** @type {string} */
-            const key = buildKey(depId);
-            if (singletonCache.has(key)) {
-                if (log) log.log(`Lifecycle.cache: hit key='${key}'.`);
-                return singletonCache.get(key);
-            }
-            if (log) log.log(`Lifecycle.cache: miss key='${key}', create.`);
-            const created = await onMiss();
-            singletonCache.set(key, created);
-            if (log) log.log(`Lifecycle.cache: stored key='${key}'.`);
-            return created;
         };
     }
 }
