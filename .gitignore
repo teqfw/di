@@ -4,5 +4,4 @@
 /**/output*.zip
 /**/tmp/
 /ctx/
-/dist/
 /node_modules/

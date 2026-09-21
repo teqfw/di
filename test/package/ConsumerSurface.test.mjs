@@ -47,6 +47,10 @@ test('declares the supported package metadata and export surface', async () => {
         './node/registry/package',
         './src/Config/NamespaceRegistry.mjs',
     ]);
+    assert.deepEqual(manifest.exports['.'].browser, {
+        import: './dist/esm.js',
+        require: './dist/umd.js',
+    });
     assert.equal(manifest.engines.node, '>=20');
     assert.deepEqual(manifest.teqfw.fw.di.namespaces, [{
         prefix: 'TeqFw_Di_',

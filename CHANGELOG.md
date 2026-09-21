@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.11.0 - 2026-09-21 - Dependency-resolution release
 
 * Prepared the package documentation for the current dependency-resolution
   model: one Container now documents one public root `get()`, with declared

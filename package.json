@@ -1,6 +1,6 @@
 {
   "name": "@teqfw/di",
-  "version": "2.10.0",
+  "version": "2.11.0",
   "description": "Deterministic dependency-resolution container for native JavaScript ES modules.",
   "keywords": [
     "teqfw",
