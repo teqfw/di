@@ -1,7 +1,7 @@
 {
   "name": "@teqfw/di",
   "version": "2.10.0",
-  "description": "Deterministic token-based runtime linker for native JavaScript ES modules.",
+  "description": "Deterministic dependency-resolution container for native JavaScript ES modules.",
   "keywords": [
     "teqfw",
     "javascript",
@@ -9,7 +9,8 @@
     "es modules",
     "runtime linking",
     "dependency injection",
-    "module tokens",
+    "dependency resolution",
+    "dependency identifiers",
     "namespace",
     "late binding"
   ],
@@ -18,11 +19,13 @@
     "url": "https://github.com/teqfw/di/issues"
   },
   "license": "Apache-2.0",
-  "author": {
-    "name": "Alex Gusev",
-    "email": "alex@flancer64.com",
-    "url": "https://github.com/flancer64"
-  },
+  "authors": [
+    {
+      "name": "Alex Gusev",
+      "email": "alex@flancer64.com",
+      "url": "https://github.com/flancer64"
+    }
+  ],
   "files": [
     "skills/",
     "dist/",

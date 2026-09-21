@@ -1,10 +1,8 @@
 ---
 name: teqfw-di
 description: >
-  Use this skill when integrating, using, testing, reviewing, or modifying JavaScript
-  modules that use @teqfw/di runtime linking, Dependency Specifiers, namespace
-  mappings, lifecycle selectors, hooks, wrappers, mocks, browser ESM, or Node.js
-  package and namespace registries.
+  Use when installing, composing, testing, reviewing, or modifying native
+  JavaScript ESM code that uses the @teqfw/di dependency-resolution Container.
 license: Apache-2.0
 metadata:
   package: "@teqfw/di"
@@ -12,26 +10,56 @@ metadata:
 
 # @teqfw/di
 
-Use this skill for consumer code that composes or depends on the installed `@teqfw/di` package. Treat the host project's instructions, architecture, and test conventions as authoritative.
+Use this version-matched skill for the installed `@teqfw/di` package. The host
+project's instructions, architecture, and test conventions remain authoritative.
 
-## Apply
+## Install and import
 
-1. Use only public imports: `@teqfw/di`, `@teqfw/di/node/registry/namespace`, and `@teqfw/di/node/registry/package`.
-2. Never import `@teqfw/di/src/**`. Preserve `@teqfw/di/src/Config/NamespaceRegistry.mjs` only in existing migration code; new code uses `@teqfw/di/node/registry/namespace`.
-3. Configure the container before its first `get()`; retain the canonical export-scoped `__deps__` form for new or changed modules.
-4. Keep NamespaceRegistry and all container configuration in a Node.js composition root before its first get(). PackageRegistry may run in a Node.js-only runtime component solely to read static package metadata; neither registry may be imported by browser-reachable code.
-5. Read the references selected below before editing, then validate with the host project tests.
+```sh
+npm install @teqfw/di
+```
 
-## Select References
+Import the Container with `import Container from "@teqfw/di";`. Use the public
+Node.js registry imports only in Node.js composition code.
+
+## Non-negotiable use model
+
+```text
+Composition Root configures Container
+  → one public get(root Dependency Identifier)
+  → one root Dependency Resolution and Dependency Graph
+  → host uses the returned root
+```
+
+Do not treat `Container` as a service locator. Its first `get()` claims the
+only root; a later `get()`, even for the same identifier, is invalid. A different
+root requires another configured Container. Runtime modules declare child
+dependencies in `__deps__`; the Container resolves them recursively in that
+same graph. Teq-compatible runtime modules have no static ES imports.
+
+Use only these public imports in new code:
+
+```text
+@teqfw/di
+@teqfw/di/node/registry/package
+@teqfw/di/node/registry/namespace
+```
+
+`@teqfw/di/src/Config/NamespaceRegistry.mjs` is the deprecated COMPAT-001
+migration path, not a new-code import. No other `src/**` path is public.
+
+## Select references
 
 | Consumer task | Read |
 | --- | --- |
-| Understand package boundaries, token mapping, or compatibility | [Concepts](references/concepts.md), [Compatibility](references/compatibility.md) |
-| Write or change a DI module, compose an application, use browser ESM, mocks, or package metadata | [Usage](references/usage.md), [Dependency Specifiers](references/dependency-id.md) |
-| Configure a container, diagnose lock/failure behavior, or register mocks | [Container](references/container.md), [Package API](references/package-api.ts) |
-| Add preprocess, postprocess, or wrappers | [Extensions](references/extensions.md), [Dependency Specifiers](references/dependency-id.md) |
-| Build Node.js package-backed composition | [Usage](references/usage.md), [Concepts](references/concepts.md), [Package API](references/package-api.ts) |
-| Annotate resolved values or design substitutable tokens | [Types](references/types.md), [Package API](references/package-api.ts) |
-| Mount or discover the installed skill | [Distribution](references/distribution.md) |
+| Decide whether the package fits; preserve module and runtime boundaries | [Concepts](references/concepts.md) |
+| Configure one root, introspect it, use test mode, or diagnose failure | [Container](references/container.md) |
+| Write `__deps__`, construct Dependency Identifiers, or select a Lifestyle | [Usage](references/usage.md), [Dependency Identifiers](references/dependency-id.md) |
+| Configure substitutions, Preprocessors, Postprocessors, or Wrappers | [Extensions](references/extensions.md) |
+| Use Node.js package metadata and namespace utilities | [Usage](references/usage.md), [Concepts](references/concepts.md) |
+| Work with JSDoc aliases | [Types](references/types.md) |
+| Preserve a deprecated surface or mount the installed skill | [Compatibility](references/compatibility.md), [Distribution](references/distribution.md) |
 
-The container links stable Module Tokens through finalized namespace roots. Prefer one principal application value in `default export` and explicit source-attached `__deps__` declarations. This skill defines correct package use, not host application architecture or policy.
+The references are self-contained package guidance. Verify exact runtime behavior
+against the installed package and test the host's composition before relying on
+an integration.

@@ -1,142 +1,179 @@
 # @teqfw/di
 
-![npms.io](https://img.shields.io/npm/dm/@teqfw/di)
-![jsdelivr](https://img.shields.io/jsdelivr/npm/hm/@teqfw/di)
+`@teqfw/di` is a deterministic dependency-resolution Container for native
+JavaScript ES modules. Runtime modules declare what they need with `__deps__`;
+the host Composition Root chooses locations and implementation policy before
+resolution starts.
 
-> **Human-governed. Agent-built. Agent-ready.**
+It is useful when an ESM application needs explicit dependencies, late binding,
+and one inspectable composition graph. Small applications that do not need
+runtime composition can use direct imports instead.
 
-`@teqfw/di` links native ESM modules through explicit dependency tokens, letting host applications choose implementations, lifecycles, and composition policies at runtime. It is a foundational package of the Tequila Framework ([TeqFW](https://teqfw.com/)): created and evolved by coding agents under the architectural direction and final responsibility of [Alex Gusev](https://github.com/flancer64), and shipped with a version-matched Agent Skill so other agents can understand, integrate, and use it correctly.
-
-## Why use it
-
-> **JavaScript applications do not need a compiler to gain late binding, explicit contracts, controlled composition, and agent-readable architecture.**
-
-Static imports bind a consumer to a concrete module:
-
-```text
-consumer → file path → implementation
-```
-
-`@teqfw/di` separates the contract from the implementation:
-
-```text
-consumer → dependency token → host policy → implementation
-```
-
-That enables:
-
-- late binding and replaceable implementations;
-- isomorphic modules for Node.js and browser environments;
-- explicit dependency graphs that agents can analyze;
-- lifecycle control for transient and singleton values;
-- preprocessing, postprocessing, wrappers, diagnostics, and test substitution at the composition boundary;
-- shallow hardening of resolved values against ordinary runtime patching.
-
-The package uses native ESM, dynamic `import()`, JSDoc, and standard JavaScript runtime features. No compilation layer is required.
-
----
-
-<details>
-
-<summary><strong>Quick Start: Node.js host</strong></summary>
-
-This Node.js example maps `App_` module tokens to modules below `src/App`. A namespace root is host-owned location mapping, not a dependency contract.
-
-```js
-export default function Service({ repository }) {
-  return {
-    async getProfile(id) {
-      return { id, name: await repository.findNameById(id) };
-    },
-  };
-}
-
-export const __deps__ = {
-  default: {
-    repository: "App_User_Repository$",
-  },
-};
-```
-
-```js
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import Container from "@teqfw/di";
-
-const rootDir = path.dirname(fileURLToPath(import.meta.url));
-
-const container = new Container();
-container.addNamespaceRoot("App_", path.join(rootDir, "src/App"), ".mjs");
-
-const service = await container.get("App_User_Service$");
-```
-
-</details>
-
----
-
-## Agent-ready package
-
-The package ships with three aligned interfaces:
-
-- runtime code in `src`;
-- type information through JSDoc and `types.d.ts`;
-- a version-matched Agent Skill in `skills/teqfw-di`.
-
-The skill explains the token model, module contracts, lifecycle, configuration, testing, environment boundaries, and approved integration patterns. An agent does not need to reconstruct the package architecture from source code alone.
-
-Project instructions and application architecture remain authoritative. The package skill supplies product knowledge; the host supplies intent and policy.
-
-## Public API
-
-- `@teqfw/di` — `Container`;
-- `@teqfw/di/node/registry/namespace` — namespace discovery;
-- `@teqfw/di/node/registry/package` — package graph discovery.
-
-Do not import `@teqfw/di/src/**`.
-
-## Best fit
-
-Use `@teqfw/di` for modular, long-lived, plugin-oriented ESM applications where implementations, environments, and integrations will evolve.
-
-Use direct imports for small applications where runtime composition adds no practical value.
-
-## Add to a project
-
-Install the runtime package as a project dependency:
+## Install
 
 ```sh
 npm install @teqfw/di
 ```
 
-For agent-assisted development, provide the coding agent with the skills relevant to its task:
+Native ESM is the normative runtime model. The package also ships browser
+compatibility bundles, but UMD is a distribution artifact rather than a second
+DI model.
 
-- `teqfw-di` — version-matched guidance for the `@teqfw/di` API, dependency tokens, module contracts, lifecycle, testing, and composition rules;
-- `teqfw-platform` — the architecture, philosophy, conventions, plugin model, and integration rules of the Tequila Framework;
-- `teqfw-esm-validator` — validation rules for native ESM modules and TeqFW-compatible JavaScript structure.
+## Start one application graph
 
-The package includes `teqfw-di`. The other skills are installed or mounted separately by the host project. Project instructions and cognitive context remain authoritative over all package-level guidance.
+The host Composition Root statically imports only the bootstrap infrastructure,
+then configures a Container before it resolves its root:
 
-## Boundaries
+```js
+import path from "node:path";
+import {fileURLToPath} from "node:url";
+import Container from "@teqfw/di";
 
-The package provides interface-like contracts, composition interception, and shallow value hardening. It does not claim language-level interfaces, full general-purpose AOP, or deep immutability of arbitrary object graphs.
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
+const container = new Container();
 
-## Agent-Driven Development
+container.addNamespaceRoot("App_", path.join(rootDir, "src/App"), ".mjs");
 
-TeqFW is built through the same development model that it is designed to enable: one human defines the intent, architecture, constraints, and acceptance criteria; coding agents implement and maintain the products; other agents use those products in different combinations to create applications.
+const app = await container.get("App$");
+await app.start();
+```
 
-`@teqfw/di` is a foundational package of TeqFW. The package includes a version-matched Agent Skill in `skills/teqfw-di`. The README provides a human-facing product overview; the skill provides agents with the package concepts, contracts, integration rules, examples, and boundaries.
+`addNamespaceRoot(prefix, target, defaultExt)` prepares a Namespace Mapping:
+it maps Teq addresses in a namespace to a module-location root. A filesystem
+directory is only a Node.js example; a browser host can configure a URL root.
 
-Mount the skill into a host project:
+One Container accepts exactly one public root `get()`. That first call claims
+the root graph. The host uses the returned `app`; it does not use the Container
+as a service locator. A later `get()`, including the same Dependency
+Identifier, is invalid second-root usage. Create and configure another
+Container for another root.
+
+## Declare runtime dependencies
+
+Teq-compatible runtime modules have no static ES imports. They declare runtime
+dependencies in source-attached `__deps__`; the Container resolves those child
+dependencies recursively inside the one root graph.
+
+```js
+// src/App/App.mjs
+export const __deps__ = {
+  default: {
+    repository: "App_Data_Repository$",
+  },
+};
+
+export default function App({repository}) {
+  return {
+    async start() {
+      return repository.connect();
+    },
+  };
+}
+```
+
+The hierarchical, export-scoped form shown above is canonical. A flat
+`__deps__` object is supported only for a default-export-only module. Omit
+`__deps__` when a producer has no dependencies. Composition Root/bootstrap code
+and tests are the exceptions that may use static imports.
+
+## Dependency Identifiers
+
+A Dependency Identifier has a Dependency Address and can add Export Selection,
+a Dependency Lifestyle, and ordered Wrapper Selection.
+
+| Address Kind | Example | Resolution route |
+| --- | --- | --- |
+| Teq | `App_Service` | Unprefixed. Namespace Mapping derives its module location. |
+| Node | `node:fs` | Uses the Node-native module specifier. |
+| npm | `npm:@scope/package` | Uses an environment-appropriate package specifier. |
+
+Namespace Mapping applies only to Teq. `teq:` is not a supported serialized
+prefix. Node addresses are Node.js-specific; npm addresses can use a supported
+environment-specific route and are not Teq namespace lookups.
+
+`__ExportName` selects a named export. With no selected export and no Lifestyle
+Marker, Direct exposes the whole module namespace. A Lifestyle Marker selects
+the default export when no explicit export is named.
+
+```text
+App_Service__format                 named export, Direct
+App_Service$                        default export, Singleton
+App_Service__create$$               named export, Transient
+App_Service__format$$$_wrapTrace    named export, explicit Direct with a Wrapper
+```
+
+The Lifestyle Marker selects how the export becomes the dependency value:
+
+| Lifestyle | Marker | Meaning |
+| --- | --- | --- |
+| Direct | none, or `$$$` explicitly | Exposes the selected export as-is. It does not call a function or construct a class. |
+| Singleton | `$` | Uses the selected export as a producer and reuses one final managed value inside this Container graph. |
+| Transient | `$$` | Uses the selected export as a producer and creates a fresh value for each applicable resolution. |
+
+Direct is not Transient. Native ESM caching belongs to the JavaScript runtime;
+it does not provide Container Singleton behavior. Wrappers are selected by the
+identifier and can adapt even a Direct value. `$$$` keeps Direct explicit when
+Wrapper Selection requires a Lifestyle Marker.
+
+## Composition policy
+
+The host Composition Root owns Namespace Mappings and any ordered policy. It
+can configure Preprocessors for Dependency Substitution, Postprocessors for
+final-value adaptation, and identifier-selected Wrappers before the root
+`get()`. A substitution can replace an abstraction identifier with a concrete
+one without changing the consuming module. Preprocessors, Postprocessors, and
+Wrappers are distinct mechanisms; the Container does not infer dependencies or
+interfaces from parameter names, decorators, reflection, or imports.
+
+For Node.js package-backed composition, use the public utilities before the
+first root request:
+
+```js
+import PackageRegistry from "@teqfw/di/node/registry/package";
+import NamespaceRegistry from "@teqfw/di/node/registry/namespace";
+```
+
+`NamespaceRegistry` builds namespace roots from package metadata for a Node.js
+Composition Root. `PackageRegistry` reads the static runtime package graph in
+Node.js-only infrastructure. Neither belongs in browser-reachable modules.
+`@teqfw/di/src/Config/NamespaceRegistry.mjs` remains only as the deprecated
+COMPAT-001 migration import; new code must use the canonical namespace path.
+
+## Inspect one resolution
+
+Structured introspection is separate from optional console logging. Enable it
+before the root request and read its immutable snapshot afterward:
+
+```js
+const container = new Container();
+container.enableIntrospection();
+container.addNamespaceRoot("App_", "https://cdn.example.com/app", ".mjs");
+
+const app = await container.get("App$");
+const inspection = container.getIntrospection();
+```
+
+`inspection` contains three projections:
+
+- Dependency Graph — actual Container-managed relationships.
+- Resolution Trace — ordered resolution events.
+- Resolution Explanation — the policy and causal decisions behind results or a
+  failure.
+
+Logging is diagnostic console output; it is not structured introspection or a
+public graph API. A resolution failure leaves that Container unusable, so use a
+new configured Container rather than retrying with the old one.
+
+## Guidance for coding agents
+
+The npm package includes the version-matched `teqfw-di` Agent Skill at
+`skills/teqfw-di/`. A host may mount it explicitly in its own skill catalog:
 
 ```sh
 mkdir -p .agents/skills
-ln -s ../../node_modules/@teqfw/di/skills/teqfw-di \
-  .agents/skills/teqfw-di
+ln -s ../../node_modules/@teqfw/di/skills/teqfw-di .agents/skills/teqfw-di
 ```
 
-Each TeqFW package is both a practical software component and a working demonstration of human-governed, agent-driven development. This work follows the Agent-Driven Software Management (ADSM) approach: human intent, architectural authority, acceptance, and responsibility remain authoritative; agents act as implementation and reasoning partners.
-
-- [Tequila Framework](https://teqfw.com/?from=github-teqfw-di)
-- [Agent-Driven Software Management: A Practical Guide](http://fly.wiredgeese.com/flancer/leanpub/adsm-en/?from=github-teqfw-di)
-- [Alex Gusev](https://github.com/flancer64)
+The design uses established dependency and composition ideas. Its explicit
+declarations and deterministic behavior are also a good fit for coding agents;
+they do not replace the host project's architecture or instructions.

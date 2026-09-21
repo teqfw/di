@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+* Prepared the package documentation for the current dependency-resolution
+  model: one Container now documents one public root `get()`, with declared
+  child dependencies resolving recursively through `__deps__`.
+* Documented Teq, Node, and npm Dependency Address Kinds; Direct, Singleton,
+  and Transient Dependency Lifestyles; and explicit Direct `$$$` semantics.
+* Added consumer guidance for structured Dependency Graph, Resolution Trace,
+  and Resolution Explanation introspection, public Node.js registry imports,
+  and the deprecated Namespace Registry compatibility import.
+* Rebuilt the published version-matched Agent Skill as self-contained consumer
+  guidance and clarified the unresolved consumer type-map boundary.
+* Aligned published package positioning with deterministic dependency
+  resolution rather than the former token terminology.
+
 ## 2.10.0 - 2026-08-27 - Dependency-resolution context
 
 * Added the immutable `TeqFw_Di_Container_ResolutionContext` to preprocess and postprocess hooks. It provides the current dependency identity, root, parent, and root-to-current stack without changing graph identity or lifecycle cache keys.

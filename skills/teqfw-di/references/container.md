@@ -1,91 +1,50 @@
-# container.md
+# Container
 
-Version: 20260827
+Create a Container in the host Composition Root. Configure it fully, then call
+`get()` exactly once for the application root.
 
-## Role
+```js
+import Container from "@teqfw/di";
 
-The container is the Runtime Linker and composition root of the package. It parses Dependency Specifiers, extracts Module Tokens, derives Module Specifiers through the configured registry, loads ES modules, and returns Resolved Values.
+const container = new Container();
+container.addNamespaceRoot("App_", "https://example.test/app", ".mjs");
 
-Application modules do not resolve dependencies themselves. They declare dependency contracts and rely on the container to perform linking.
+const app = await container.get("App$");
+```
 
-## Configuration Stage
+The first `get()` transitions the Container out of its configurable state before
+identifier processing or loading can fail. A successful request leaves it
+resolved; a resolution failure leaves it failed. In either case, configuration
+does not reopen and every later `get()` rejects as invalid second-root usage.
+Use another configured Container for another root or after a failure.
 
-Before the first `get()`, the container is in builder stage.
+## Configuration API
 
-During this stage external code may:
+Call these only before the root `get()`:
 
-- register namespace roots with `addNamespaceRoot()`;
-- add preprocess hooks with `addPreprocess()`;
-- add postprocess hooks with `addPostprocess()`;
-- enable diagnostics with `enableLogging()`;
-- enable test-only mock registration with `enableTestMode()` and `register()`.
+- `addNamespaceRoot(prefix, target, defaultExt)` — adds a Teq Namespace Mapping.
+- `addPreprocess(fn)` — adds ordered requested-to-effective identifier policy.
+- `addPostprocess(fn)` — adds ordered final-value adaptation policy.
+- `setHardener(fn)` — replaces the default final-value hardening policy.
+- `enableLogging()` — enables optional console diagnostics.
+- `enableIntrospection()` — enables structured observation of the one root.
+- `enableTestMode()` and `register(identifier, mock)` — enable explicit test
+  substitutions.
 
-On the first `get()`:
+`register()` is unavailable unless test mode is enabled. Test substitutions are
+for composition tests, not production implementation selection. Prefer direct
+construction for an ordinary unit test.
 
-- configuration is locked;
-- namespace rules are snapshotted;
-- internal resolution infrastructure is created.
+## Structured introspection
 
-After the first `get()`, builder-stage methods are no longer supported.
+Enable introspection before `get()`, then call `getIntrospection()` after the
+root settles. It returns `null` when no introspection snapshot exists, otherwise
+an immutable object with:
 
-## Resolution Pipeline
+- `graph` — Dependency Graph nodes and edges for the one root graph;
+- `trace` — ordered Resolution Trace events;
+- `explanation` — Resolution Explanation, including requested and effective
+  decisions, result or failure, and Container state.
 
-For each `get(specifier)` request the container applies this pipeline:
-
-1. `Parse` — convert the Dependency Specifier string into a DepId DTO.
-2. `Preprocess hooks` — transform the DepId DTO through ordered `addPreprocess()` hooks.
-3. `Resolve` — map the identifier to a concrete module location.
-4. `Instantiate` — load the module and either return the selected export as-is or instantiate it according to lifecycle composition rules.
-5. `Postprocess hooks` — apply ordered `addPostprocess()` value transforms.
-6. `Wrapper exports` — apply ordered wrapper exports selected by dependency specifier suffixes.
-7. `Lifecycle` — apply singleton caching or transient behavior.
-8. `Freeze` — freeze the resolved value before returning it.
-
-The pipeline is deterministic for a fixed configuration and input Dependency Specifier. Preprocess and postprocess callbacks are synchronous and run in registration order; their return values are used immediately.
-
-Both hook kinds receive a frozen resolution context. It contains `depId`, the root `DepId`, the immediate `parent` (`null` for root), and `stack`, an immutable root-to-current sequence. Preprocess sees the identity currently entering that callback; postprocess sees the final preprocessed identity. This provenance is request-local and is never part of a graph key or lifecycle cache key. A postprocess hook runs only when a value is produced, so a cached singleton retains the adaptation from its first deterministic discovery path.
-
-## State Model
-
-The container operates in three states:
-
-- `builder` — configuration is still mutable.
-- `operational` — dependency resolution is active.
-- `failed` — a fatal pipeline error has occurred.
-
-State transitions:
-
-- construction starts in `builder`;
-- the first successful or failed `get()` transitions the container out of mutable builder configuration;
-- a fatal resolution error moves the container to `failed`.
-
-## Freeze Semantics
-
-Values returned by the container are frozen before they are returned to callers.
-
-Freeze happens after:
-
-- instantiation;
-- postprocess hooks;
-- wrapper exports;
-- lifecycle application.
-
-This means consumers receive stable linked values and should not mutate them.
-
-## Failure Semantics
-
-If any fatal error occurs during parsing, preprocessing, resolution, instantiation, postprocessing, wrapping, or lifecycle handling, the container enters `failed` state.
-
-Once in `failed` state:
-
-- the current `get()` request rejects;
-- all subsequent `get()` calls reject;
-- the container does not attempt partial recovery.
-
-This fail-fast behavior prevents partially linked systems from continuing execution.
-
-## Package Graph Boundary
-
-PackageRegistry and NamespaceRegistry are Node.js-only utilities outside Container builder state. NamespaceRegistry prepares namespace roots in the composition root before the first Container.get(). PackageRegistry may be used after Container startup by a Node.js-only runtime component that only reads static package metadata; it neither configures Container nor resolves, loads, or interprets providers. Browser-reachable runtime modules must not import either registry.
-
-The Rollup browser distribution build rejects any reachable `src/Node/` module.
+This structured API is different from `enableLogging()`. Console messages and
+private graph objects are diagnostics, not a public substitute for introspection.

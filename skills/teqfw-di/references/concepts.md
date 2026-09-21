@@ -1,43 +1,40 @@
-# concepts.md
+# Package Model
 
-Version: 20260727
-
-## Core Model
+`@teqfw/di` resolves native ESM dependencies deterministically. An Application
+Module declares a Dependency Identifier in `__deps__`; the host Composition Root
+configures policy; the Container resolves the graph; the JavaScript runtime
+loads ES modules through native `import()`.
 
 ```text
-Module Token -> Module Registry -> ES Module -> Principal Application Value
+Application Module → __deps__ → Dependency Identifier
+Composition Root → configured Container → one root get()
+Container → one Dependency Graph → resolved root value
 ```
 
-A Module Token is logical identity. A Module Specifier is the physical location passed to `import()`. The ES Module is the loading unit. Its `default export` is the preferred Principal Application Value; `__deps__` is metadata describing the values required to link it.
+Teq-compatible runtime modules have no static ES imports. They express runtime
+dependencies through `__deps__`. Composition Root/bootstrap code and tests are
+the exceptions because they establish or test composition.
 
-## Late Binding
+## Ownership and boundaries
 
-Dependencies are resolved at runtime rather than through direct static imports between application modules. This keeps modules independent of concrete implementations and moves dependency binding into the container.
+- The Application Module owns dependency intent and local dependency names.
+- The Composition Root owns Namespace Mappings, substitutions, and configured
+  processing policy before the first root request.
+- One Container owns one root graph and its Container-scoped Singleton cache.
+- The JavaScript runtime owns native ESM loading and its ESM cache.
 
-## Runtime Linker
+An ESM cache hit is not Container Singleton reuse. Direct and Transient remain
+different even when the runtime returns the same module namespace.
 
-The container acts as a runtime linker for ES modules. It interprets dependency specifiers, resolves modules, selects exports, and produces linked values for callers.
+Namespace Mapping locates only Teq addresses. Node and npm addresses use their
+own loading routes. A Node.js `NamespaceRegistry` can prepare package-declared
+mappings during composition; `PackageRegistry` reads static package metadata in
+Node.js-only infrastructure. Neither registry is part of the Container graph or
+may be imported by browser-reachable code.
 
-## Dependency Specifiers And Declarations
+## Suitable use
 
-Dependencies are declared through Dependency Specifier strings and module-level `__deps__` declarations. A specifier contains a Module Token plus optional export, lifecycle, and wrapper selectors.
-
-The canonical `__deps__` form is hierarchical and keyed by export name.
-
-## Namespace Mapping
-
-Logical module identifiers are translated into module-specifier bases through namespace roots. This keeps dependency addressing independent from concrete filesystem paths or URL locations.
-
-A package may publish multiple namespace mappings in the canonical `teqfw.fw.di.namespaces` array. The legacy `teqfw.namespaces` array is a temporary fallback only when canonical metadata is absent; support is planned through 2027-01-28. The singular `teqfw.fw.di.namespace` form is unsupported.
-
-## Immutable Linked Values
-
-Values returned by the container are frozen after linking. Consumers should treat them as stable resolved values rather than mutable construction targets.
-
-## Cycle Boundary
-
-Cycles in the dependency graph managed by the container are forbidden and fail linking. Circular imports internal to third-party ESM packages remain outside the package boundary and are handled by the native loader.
-
-## Runtime Package Graph
-
-PackageRegistry is a Node.js-only static package-discovery helper. It may be used by a Node.js-only runtime component after Container startup when that component only reads immutable static metadata. NamespaceRegistry remains a composition-stage helper that derives namespace roots before the first Container.get(). Neither registry may be imported by browser-reachable code; PackageRegistry neither configures Container nor loads or interprets providers.
+Use this package for ESM applications that need explicit dependency contracts,
+host-selected implementations, and observable runtime composition. Do not use
+it to hide ordinary local imports, infer interfaces, or retrieve unrelated
+objects on demand from one Container.

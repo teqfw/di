@@ -20,7 +20,9 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
     for (const requiredText of [
         '@teqfw/di/node/registry/namespace',
         '@teqfw/di/node/registry/package',
-        'before its first',
+        'one public get(root Dependency Identifier)',
+        'a later `get()`',
+        'Dependency Identifiers',
         '@teqfw/di/src/Config/NamespaceRegistry.mjs',
         'references/compatibility.md',
         'references/distribution.md',
@@ -33,7 +35,8 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
     for (const reference of new Set(references)) {
         const referencePath = path.join(skillDir, 'references', reference);
         assert.ok(fs.existsSync(referencePath), 'Missing skill reference: ' + reference);
-        assert.doesNotMatch(fs.readFileSync(referencePath, 'utf8'), /(^|[^a-z])ctx\//);
+        const content = fs.readFileSync(referencePath, 'utf8');
+        assert.doesNotMatch(content, /(?:^|[(/`])(?:\.\.\/)*(?:ctx|test|tmp)\//m);
     }
 
     const compatibility = fs.readFileSync(path.join(skillDir, 'references', 'compatibility.md'), 'utf8');
@@ -41,8 +44,34 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
     assert.match(compatibility, /approved breaking release/);
 
     const usage = fs.readFileSync(path.join(skillDir, 'references', 'usage.md'), 'utf8');
-    assert.match(usage, /node:fs\/promises/);
-    assert.match(usage, /absolute application root/);
+    assert.match(usage, /absolute\s+application root/);
+
+    const allConsumerDocumentation = [
+        fs.readFileSync(path.join(rootDir, 'README.md'), 'utf8'),
+        ...[...fs.readdirSync(path.join(skillDir, 'references'))]
+            .filter((file) => file.endsWith('.md'))
+            .map((file) => fs.readFileSync(path.join(skillDir, 'references', file), 'utf8')),
+        skill,
+    ].join('\n');
+    assert.doesNotMatch(allConsumerDocumentation, /\bmodule token\b/i);
+    assert.doesNotMatch(allConsumerDocumentation, /\bdependency specifier\b/i);
+    assert.doesNotMatch(allConsumerDocumentation, /\bruntime linker\b/i);
+    assert.doesNotMatch(allConsumerDocumentation, /DepId DTO/);
+
+    const readme = fs.readFileSync(path.join(rootDir, 'README.md'), 'utf8');
+    for (const requiredText of [
+        'const app = await container.get("App$");',
+        'exactly one public root `get()`',
+        '__deps__',
+        'node:fs',
+        'npm:@scope/package',
+        '`teq:` is not a supported serialized',
+        '`$$$` explicitly',
+        'enableIntrospection()',
+        'getIntrospection()',
+    ]) {
+        assert.ok(readme.includes(requiredText), 'README must state ' + requiredText + '.');
+    }
 
     const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
     assert.ok(manifest.files.includes('skills/'), 'Published package must include skills/.');

@@ -1,7 +1,5 @@
 # compatibility.md
 
-Version: 20260730
-
 ## Purpose
 
 This reference describes temporary public compatibility surfaces that consumers can encounter. Use canonical surfaces for all new code.

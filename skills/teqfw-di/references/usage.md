@@ -1,220 +1,53 @@
-# usage.md
+# Usage Patterns
 
-Version: 20260730
+## Runtime module declaration
 
-## Purpose
-
-This document shows canonical usage patterns for the container. Examples are intentionally short and prioritize supported, recommended forms over convenience shorthand.
-
-## Contents
-
-- [Canonical Module Descriptor](#canonical-module-descriptor)
-- [Canonical Container Setup](#canonical-container-setup)
-- [Lifecycle Composition](#lifecycle-composition)
-- [Test Mode And Mocks](#test-mode-and-mocks)
-- [Browser Entry Point](#browser-entry-point)
-- [Package-Backed Composition](#package-backed-composition)
-- [Package Namespace Metadata](#package-namespace-metadata)
-
-## Canonical Module Descriptor
-
-The preferred module exposes one Principal Application Value through `default export`. The `__deps__` export is declarative metadata listing the values required to link it. The canonical declaration form is hierarchical and keyed by export name.
+Use the hierarchical export-scoped `__deps__` form for new runtime modules. The
+module has no static ES imports for its runtime dependencies.
 
 ```js
-// @ts-check
-
 export const __deps__ = {
   default: {
-    cast: "App_Helper_Cast$",
+    clock: "App_Time_Clock$",
   },
 };
 
-export default class App_Root {
-  /**
-   * @param {{cast: (value: unknown) => string}} deps
-   */
-  constructor({ cast }) {
-    return {
-      configure(params = {}) {
-        return {
-          name: cast(params.name ?? "app"),
-        };
-      },
-    };
-  }
-}
-```
-
-Dependency module:
-
-```js
-// @ts-check
-
-export default function App_Helper_Cast() {
-  return function cast(value) {
-    return String(value);
+export default function App_Feature({clock}) {
+  return {
+    now() {
+      return clock.now();
+    },
   };
 }
 ```
 
-Rules:
+The key under `default` is the producer parameter name. A named producer uses
+its named export as the outer key. A flat declaration is supported only for a
+default-export-only module; omit `__deps__` when there are no dependencies.
 
-- the hierarchical export-scoped form is canonical;
-- each export entry maps constructor dependency names to dependency specifiers;
-- if `__deps__` is omitted, the module has no declared dependencies;
-- dependencies are resolved recursively before instantiation.
-
-## Canonical Container Setup
-
-The container is configured in the composition root before the first resolution.
+## One root in a Node.js Composition Root
 
 ```js
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import {fileURLToPath} from "node:url";
 import Container from "@teqfw/di";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+const hostDir = path.dirname(fileURLToPath(import.meta.url));
 const container = new Container();
-container.addNamespaceRoot("App_", path.resolve(__dirname, "./src/App"), ".mjs");
+
+container.addNamespaceRoot("App_", path.join(hostDir, "src/App"), ".mjs");
+
+const app = await container.get("App$");
+await app.start();
 ```
 
-Namespace roots may also use URL-backed module-specifier bases:
+There is no second lookup from this Container. The `App$` producer's declared
+children resolve recursively through `__deps__` in its one graph.
 
-```js
-container.addNamespaceRoot("App_", "https://cdn.example.com/app", ".mjs");
-```
+## Package-backed namespace composition
 
-## Resolve Root Dependency
-
-Applications typically resolve one root dependency and let the container build the full object graph.
-
-```js
-const root = await container.get("App_Root$");
-console.log(root.configure({name: 123}).name);
-console.log(Object.isFrozen(root));
-```
-
-## Named Export
-
-Named exports are a JavaScript ecosystem compatibility surface. They use the `__ExportName` segment in the Dependency Specifier and the same hierarchical `__deps__` structure.
-
-```js
-export const __deps__ = {
-  default: {
-    cast: "App_Helper_Cast$",
-  },
-  Factory: {
-    cast: "App_Helper_Cast$",
-  },
-};
-
-export default class RuntimeWrapper {
-  constructor() {
-    return {mode: "runtime"};
-  }
-}
-
-export class Factory {
-  constructor({ cast }) {
-    this.configure = function (params = {}) {
-      return {
-        mode: "factory",
-        name: cast(params.name ?? "app"),
-      };
-    };
-  }
-}
-```
-
-Resolution examples:
-
-```js
-const runtime = await container.get("App_Module$");
-const factory = await container.get("App_Module__Factory$");
-```
-
-Without a lifecycle marker, the export is resolved as-is — the class or function itself, not an instance:
-
-```js
-const FactoryClass = await container.get("App_Module__Factory");
-const factory = new FactoryClass({cast: resolvedCast});
-```
-
-## Lifecycle Composition
-
-Common lifecycle-based compositions:
-
-```txt
-App_Service$
-App_Task$$
-App_Task$$$
-```
-
-- `$` creates and reuses a singleton instance;
-- `$$` creates a new instance for each request;
-- `$$$` uses direct factory composition: it produces a value for the request without lifecycle caching.
-
-## Wrappers
-
-Wrapper exports are selected by dependency specifier suffixes and are applied after postprocess hooks.
-
-```txt
-App_Service$$_wrapLog_wrapTrace
-```
-
-This pattern is useful when runtime behavior should be decorated without changing the service module contract.
-
-## Platform Modules
-
-Dependency Specifier may refer to platform modules directly.
-
-```txt
-node:fs
-npm:@humanfs/core
-node:worker_threads
-```
-
-These forms resolve the selected platform module export as-is unless a lifecycle marker is explicitly added.
-
-## Non-Canonical Shorthand
-
-A flat `__deps__` object is a supported shorthand for default-export-only modules, but it is not the canonical model.
-
-```js
-export const __deps__ = {
-  cast: "App_Helper_Cast$",
-};
-
-export default class App_Short {
-  constructor({ cast }) {
-    this.cast = cast;
-  }
-}
-```
-
-Prefer the hierarchical form for new integrations and for any module that exposes named exports.
-
-## Empty Descriptor
-
-Modules with no declared dependencies omit `__deps__` entirely.
-
-```js
-export default class App_Empty {
-  constructor() {
-    this.ready = function () {
-      return true;
-    };
-  }
-}
-```
-
-## Package-Backed Composition
-
-In Node.js, a composition root uses NamespaceRegistry and configures Container before the first get(). PackageRegistry may also be used after Container startup by a Node.js-only runtime component solely to read static package metadata; it neither configures Container nor resolves, loads, or interprets providers. Neither registry may be imported by browser-reachable runtime code. All src/** package subpaths are unsupported except the deprecated @teqfw/di/src/Config/NamespaceRegistry.mjs compatibility import; new code must use @teqfw/di/node/registry/namespace instead.
-
-Build namespace roots and register each one before the first `get()`:
+Use Node.js registries only in a Node.js Composition Root. Register every
+derived mapping before the root request.
 
 ```js
 import fs from "node:fs/promises";
@@ -224,60 +57,49 @@ import NamespaceRegistry from "@teqfw/di/node/registry/namespace";
 
 const appRoot = "/absolute/path/to/application";
 const container = new Container();
-const namespaces = await new NamespaceRegistry({fs, path, appRoot}).build();
+const mappings = await new NamespaceRegistry({fs, path, appRoot}).build();
 
-for (const {prefix, dirAbs, ext} of namespaces) {
+for (const {prefix, dirAbs, ext} of mappings) {
   container.addNamespaceRoot(prefix, dirAbs, ext);
 }
 
-const root = await container.get("App_Root$");
+const app = await container.get("App$");
 ```
 
-`appRoot` is the absolute application root containing its `package.json`. Do not assume that the current working directory is that root unless the host application guarantees it.
+A package publishes mappings in the canonical array at
+`package.json#teqfw.fw.di.namespaces`. The legacy `teqfw.namespaces` fallback is
+active only when canonical metadata is absent. `appRoot` is the absolute
+application root containing its `package.json`. Browser-reachable modules must
+not import either registry.
 
-## Test Mode And Mocks
+## Browser-compatible ESM
 
-Enable test mode and register mocks before the first `get()`. A registered mock is selected by canonical Dependency Specifier identity, bypasses resolution and instantiation, and is frozen before it is returned.
+The same runtime declaration can use a URL-backed Teq Namespace Mapping:
+
+```js
+import Container from "https://cdn.jsdelivr.net/npm/@teqfw/di@2/+esm";
+
+const container = new Container();
+container.addNamespaceRoot("App_", "https://cdn.example.com/app", ".mjs");
+
+const app = await container.get("App$");
+```
+
+This does not make Node addresses browser-compatible. Do not pull Node registry
+utilities into browser code.
+
+## Test substitution
+
+Use explicit test mode only when testing Container composition:
 
 ```js
 const container = new Container();
 container.enableTestMode();
-container.register("App_Service$", mockService);
+container.register("App_Data_Repository$", mockRepository);
+container.addNamespaceRoot("App_", fixtureRoot, ".mjs");
 
-const service = await container.get("App_Service$");
+const app = await container.get("App$");
 ```
 
-Do not use test mode as an application-time substitution mechanism: configuration is locked by the first `get()`.
-
-## Browser Entry Point
-
-The container and URL-backed namespace roots can be used in browser ESM code. Node.js registry utilities are excluded from browser runtime code.
-
-```html
-<script type="module">
-  import Container from "https://cdn.jsdelivr.net/npm/@teqfw/di@2/+esm";
-
-  const container = new Container();
-  container.addNamespaceRoot("App_", "https://cdn.example.com/app", ".mjs");
-</script>
-```
-
-## Package Namespace Metadata
-
-A package declares namespace mappings in `package.json` using `teqfw.fw.di.namespaces`; the declaration is always an array, including one mapping.
-
-```json
-{
-  "teqfw": {
-    "fw": {
-      "di": {
-        "namespaces": [
-          {"prefix": "App_", "path": "./src", "ext": ".mjs"}
-        ]
-      }
-    }
-  }
-}
-```
-
-Each `path` is a non-empty relative path from its publishing package, must resolve to an existing directory inside that package, and must use an ESM-compatible extension. Canonical metadata takes precedence over the legacy `teqfw.namespaces` array; they are never merged. Build registries and add their roots during composition, before the first `container.get()`.
+Register substitutions and configure mappings before `get()`. The returned mock
+still passes through the applicable output boundary.

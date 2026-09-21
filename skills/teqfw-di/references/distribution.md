@@ -1,7 +1,5 @@
 # distribution.md
 
-Version: 20260730
-
 ## Installed Location
 
 The package publishes the version-matched skill at `node_modules/@teqfw/di/skills/teqfw-di/`. Load `SKILL.md` as its entry point. Every required reference is below that directory and describes the installed package version.

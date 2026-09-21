@@ -1,119 +1,42 @@
-# extensions.md
+# Composition Extensions
 
-Version: 20260827
+The Composition Root may configure three separate mechanisms before the one
+root request. Keep their ownership and timing distinct.
 
-## Purpose
+## Preprocessors and Dependency Substitution
 
-The container supports controlled extension of dependency resolution through three distinct mechanisms:
+`addPreprocess(fn)` registers ordered policy that receives a requested parsed
+Dependency Identifier and returns its effective replacement before module
+loading. Dependency Substitution is its primary use: application code declares
+an abstraction while host composition chooses a concrete implementation.
 
-- preprocess hooks;
-- postprocess hooks;
-- wrapper exports.
+A substitution may change the address kind, address, export selection,
+lifestyle, or wrappers. It must preserve a coherent Dependency Identifier. Do
+not create a second identifier language, depend on Container internals, or
+substitute by adding static imports to runtime modules. Treat the callback's
+identifier carrier as package-internal structure; this skill intentionally does
+not prescribe its fields or a new consumer type model.
 
-These mechanisms are related but not interchangeable.
+## Postprocessors
 
-## Contents
+`addPostprocess(fn)` registers ordered functions that adapt each newly acquired
+dependency value after Direct exposure or producer acquisition and before final
+exposure. A postprocessor receives the value and read-only request provenance.
+It is appropriate for host-wide instrumentation or value adaptation.
 
-- [Preprocess Hooks](#preprocess-hooks)
-- [Postprocess Hooks](#postprocess-hooks)
-- [Wrapper Exports](#wrapper-exports)
-- [Execution Order](#execution-order)
-- [Constraints](#constraints)
+Postprocessors are synchronous. Do not return a Promise or mutate a value after
+the Container has exposed and hardened it.
 
-## Preprocess Hooks
+## Wrappers
 
-Preprocess hooks transform parsed dependency identities before resolution.
+Wrappers are not registered global policy. They are selected by the Dependency
+Identifier and resolved from the dependency module itself:
 
-They apply to the root request and every dependency declaration discovered transitively in the requested graph, exactly once per occurrence.
-
-Signature:
-
-```js
-(depId, context) => depId
+```text
+App_Service$$_trace_metrics
+App_Service__format$$$_trace
 ```
 
-Properties:
-
-- registered with `addPreprocess()`;
-- run in declared order;
-- receive and return DepId DTO values;
-- receive immutable `context` with `depId`, `root`, `parent`, and `stack`;
-- receive `stack` in root-to-current order, with its last value equal to the `depId` passed to the hook;
-- receive `parent: null` for the root request;
-- affect identifier interpretation before module resolution.
-
-Typical uses:
-
-- Dependency Specifier alias rewriting;
-- policy-driven identifier normalization;
-- project-specific prefix adaptation.
-
-## Postprocess Hooks
-
-Postprocess hooks transform resolved values after instantiation and before wrapper exports.
-
-Signature:
-
-```js
-(value, context) => value
-```
-
-Properties:
-
-- registered with `addPostprocess()`;
-- run when the container actually produces a resolved value, not on a lifecycle-cache hit;
-- run in declared order;
-- receive the same immutable provenance fields (`depId`, `root`, `parent`, `stack`) for the final preprocessed dependency identity;
-- do not alter dependency specifier parsing or module resolution.
-
-The stack identifies a request path only. It never changes dependency identity, graph node sharing, mock lookup, or singleton cache keys. If a shared dependency is reached through several branches, preprocess runs for each edge; postprocess runs once when the shared value is first produced, using its deterministic first-discovery path.
-
-Typical uses:
-
-- global instrumentation;
-- value normalization;
-- cross-cutting adaptation applied uniformly to all resolved values.
-
-## Wrapper Exports
-
-Wrapper exports are selected directly from dependency specifier suffixes and are resolved from the same module namespace as the dependency being composed.
-
-Signature:
-
-```js
-(value) => value
-```
-
-Properties:
-
-- selected by wrapper suffixes such as `_wrapLog`;
-- applied only when present in the Dependency Specifier;
-- executed after postprocess hooks and before freeze;
-- not registered globally in the container.
-
-Example:
-
-```txt
-App_Service$$_wrapLog_wrapTrace
-```
-
-In this example the container composes the dependency, applies postprocess hooks, then applies wrapper exports `wrapLog` and `wrapTrace` in that order.
-
-## Execution Order
-
-The extension-related execution order is:
-
-1. preprocess hooks;
-2. instantiation or as-is resolution;
-3. postprocess hooks;
-4. wrapper exports;
-5. freeze.
-
-## Constraints
-
-Extensions must satisfy these constraints:
-
-- they must be registered before the first `get()` if they use container registration APIs;
-- they should be deterministic for the same input;
-- they must not rely on mutating frozen returned values;
-- they must not bypass lifecycle semantics enforced by the container.
+Configured Postprocessors run in configuration order, then selected Wrappers
+run in identifier order, then applicable final-value hardening occurs. A Wrapper
+does not change the selected Dependency Lifestyle or Address Kind.
