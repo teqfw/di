@@ -18,6 +18,7 @@ description: Project-specific conventions. Use for every task in this repository
 - At the start of work, check upstream in the root and `ctx/`; keep each local `main` synchronized by fast-forwarding when safe.
 - Before changes, inspect every affected working tree.
 - Do not commit or push unless the user requests it.
+- Ignore every file matching `output*.md` when searching, reviewing, or validating the project. These files aggregate other project documents and are not an authoritative source.
 
 ## Communication
 
