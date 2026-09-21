@@ -24,6 +24,7 @@ const TeqFw_Di_Enum_ResolutionStage = {
     POSTPROCESSOR_EXECUTION: 'Postprocessor execution',
     WRAPPER_EXECUTION: 'Wrapper execution',
     HARDENING: 'hardening',
+    VALUE_EXPOSURE: 'value exposure',
     CONTAINER_STATE: 'Container state',
 };
 

@@ -68,7 +68,7 @@ export default class TeqFw_Di_Parser {
                 if (marker === '$') lifestyle = TeqFw_Di_Enum_Lifestyle.SINGLETON;
                 else if (marker === '$$') lifestyle = TeqFw_Di_Enum_Lifestyle.TRANSIENT;
                 else if (marker === '$$$') lifestyle = TeqFw_Di_Enum_Lifestyle.DIRECT;
-                else throw new Error('Lifecycle marker is invalid.');
+                else throw new Error('Lifestyle marker is invalid.');
 
                 core = core.slice(0, markerMatch.index);
                 if (suffix.length > 0) {
@@ -77,9 +77,9 @@ export default class TeqFw_Di_Parser {
                 return {core, lifestyle, lifestyleDeclared, wrappers};
             }
 
-            if (source.includes('$')) throw new Error('Invalid lifecycle encoding.');
+            if (source.includes('$')) throw new Error('Invalid Lifestyle encoding.');
             if ((addressKind !== TeqFw_Di_Enum_AddressKind.NODE) && /(?:^|[^_])_[a-z][0-9A-Za-z]*$/.test(source)) {
-                throw new Error('Wrapper without lifecycle is forbidden.');
+                throw new Error('Wrapper without a Lifestyle marker is forbidden.');
             }
 
             return {core, lifestyle, lifestyleDeclared, wrappers};
@@ -88,7 +88,7 @@ export default class TeqFw_Di_Parser {
         /**
          * Splits Address and export names from canonical core string.
          *
-         * @param {string} core Dependency Identifier core without lifecycle suffix.
+         * @param {string} core Dependency Identifier core without Lifestyle suffix.
          * @returns {{address: string, exportName: string|null}}
          */
         const parseAddressExport = function (core) {

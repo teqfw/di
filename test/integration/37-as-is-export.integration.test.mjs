@@ -54,7 +54,7 @@ describe('Integration 37: as-is export resolution', () => {
         assert.ok(result.createdAt instanceof Date);
     });
 
-    it('resolves singleton with lifecycle marker still produces instance', async () => {
+    it('resolves Singleton with a Lifestyle marker and produces an instance', async () => {
         const container = new TeqFw_Di_Container();
         container.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
 

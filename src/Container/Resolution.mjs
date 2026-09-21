@@ -284,6 +284,7 @@ export async function executeResolution(ctx, specifier) {
                     key,
                     mode: hardening.mode,
                 });
+                stage = TeqFw_Di_Enum_ResolutionStage.VALUE_EXPOSURE;
                 logger.log(`Resolution.return: addressKind='${depId.addressKind}' address='${depId.address}'.`);
                 return hardening.value;
             });

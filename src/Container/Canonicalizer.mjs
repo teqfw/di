@@ -15,8 +15,8 @@ import {createResolutionContext} from './ResolutionContext.mjs';
  */
 
 /**
- * Ensures a parsed or substituted Dependency Identifier is coherent before it
- * becomes effective resolution identity.
+ * Ensures a substituted Dependency Identifier is coherent before it becomes
+ * effective resolution identity.
  *
  * @param {TeqFw_Di_Dto_DepId} depId
  * @returns {void}
@@ -87,9 +87,7 @@ export default class TeqFw_Di_Container_Canonicalizer {
          * @returns {TeqFw_Di_Dto_DepId}
          */
         this.parse = function (specifier) {
-            const requested = parser.parse(specifier);
-            assertCoherentDepId(requested);
-            return requested;
+            return parser.parse(specifier);
         };
 
         /**

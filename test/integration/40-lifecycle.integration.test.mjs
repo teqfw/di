@@ -54,7 +54,7 @@ describe('Integration 40: lifecycle', () => {
         assert.equal(observation.explanation.resolutions[0].hardening.mode, 'configured');
     });
 
-    it('lets a Hardener result hostile to Promise assimilation fail naturally', async () => {
+    it('attributes a hostile Hardener result to native value exposure', async () => {
         const container = new TeqFw_Di_Container();
         container.enableIntrospection();
         const hostile = new Proxy({}, {
@@ -68,7 +68,9 @@ describe('Integration 40: lifecycle', () => {
         await assert.rejects(container.get('node:fs'), /then access is blocked/);
         const observation = /** @type {any} */ (container.getIntrospection());
 
-        assert.equal(observation.explanation.failure.stage, 'hardening');
+        assert.equal(observation.explanation.resolutions[0].hardening.mode, 'configured');
+        assert.equal(observation.explanation.failure.stage, 'value exposure');
+        assert.equal(observation.explanation.containerState, 'Failed');
     });
 
     it('keeps singleton identities separate for default and named exports from same module', async () => {

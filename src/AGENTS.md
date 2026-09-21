@@ -97,6 +97,8 @@ Implementation under `src/` follows strict fail-fast architecture.
 Agents MUST assume that:
 
 - DepId DTO instances are structurally valid.
+- Parser exclusively owns serialized Dependency-Identifier grammar and requested-DepId coherence; Canonicalizer trusts Parser output.
+- Canonicalizer validates each Preprocessor substitution before it becomes effective identity.
 - ModuleRouter configuration DTO is valid.
 - Enum codifiers are valid.
 - Constructor dependency descriptors are correct.
