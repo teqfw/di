@@ -20,7 +20,7 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
     for (const requiredText of [
         '@teqfw/di/node/registry/namespace',
         '@teqfw/di/node/registry/package',
-        'one public get(root Dependency Identifier)',
+        'new Container(config) materializes declared policy',
         'a later `get()`',
         'Dependency Identifiers',
         '@teqfw/di/src/Config/NamespaceRegistry.mjs',
@@ -61,13 +61,13 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
     const readme = fs.readFileSync(path.join(rootDir, 'README.md'), 'utf8');
     for (const requiredText of [
         'const app = await container.get("App$");',
-        'exactly one public root `get()`',
+        'new Container({',
         '__deps__',
         'node:fs',
         'npm:@scope/package',
         '`teq:` is not a supported serialized',
         '`$$$` explicitly',
-        'enableIntrospection()',
+        'introspection: true',
         'getIntrospection()',
     ]) {
         assert.ok(readme.includes(requiredText), 'README must state ' + requiredText + '.');

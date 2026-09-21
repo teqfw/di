@@ -21,8 +21,8 @@ DI model.
 
 ## Start one application graph
 
-The host Composition Root statically imports only the bootstrap infrastructure,
-then configures a Container before it resolves its root:
+The host Composition Root discovers policy, creates a JSON-safe configuration
+DTO, then constructs a Container before it resolves its root:
 
 ```js
 import path from "node:path";
@@ -30,17 +30,21 @@ import {fileURLToPath} from "node:url";
 import Container from "@teqfw/di";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
-const container = new Container();
-
-container.addNamespaceRoot("App_", path.join(rootDir, "src/App"), ".mjs");
+const container = new Container({
+  namespaces: [{prefix: "App_", target: path.join(rootDir, "src/App"), defaultExt: ".mjs"}],
+  preprocessors: ["App_Composition_Preprocessor$"],
+  postprocessors: ["App_Composition_Postprocessor$"],
+});
 
 const app = await container.get("App$");
 await app.start();
 ```
 
-`addNamespaceRoot(prefix, target, defaultExt)` prepares a Namespace Mapping:
-it maps Teq addresses in a namespace to a module-location root. A filesystem
-directory is only a Node.js example; a browser host can configure a URL root.
+`namespaces` prepares Namespace Mappings: each maps Teq addresses in a namespace
+to a module-location root. A filesystem directory is only a Node.js example; a
+browser host can configure a URL root. `preprocessors` and `postprocessors` are
+ordered producer Dependency Identifiers, not JavaScript callbacks. Container
+materializes them under default policy before it resolves the public root.
 
 One Container accepts exactly one public root `get()`. That first call claims
 the root graph. The host uses the returned `app`; it does not use the Container
@@ -117,13 +121,12 @@ Wrapper Selection requires a Lifestyle Marker.
 
 ## Composition policy
 
-The host Composition Root owns Namespace Mappings and any ordered policy. It
-can configure Preprocessors for Dependency Substitution, Postprocessors for
-final-value adaptation, and identifier-selected Wrappers before the root
-`get()`. A substitution can replace an abstraction identifier with a concrete
-one without changing the consuming module. Preprocessors, Postprocessors, and
-Wrappers are distinct mechanisms; the Container does not infer dependencies or
-interfaces from parameter names, decorators, reflection, or imports.
+The host Composition Root owns discovery of Namespace Mappings and ordered
+policy. It transfers that policy as a JSON-safe DTO; Container resolves each
+policy producer before the root graph begins. A producer must synchronously
+return the callable required by its role. A substitution can replace an
+abstraction identifier with a concrete one without changing the consuming
+module. Preprocessors, Postprocessors, and Wrappers are distinct mechanisms.
 
 For Node.js package-backed composition, use the public utilities before the
 first root request:
@@ -141,13 +144,14 @@ COMPAT-001 migration import; new code must use the canonical namespace path.
 
 ## Inspect one resolution
 
-Structured introspection is separate from optional console logging. Enable it
-before the root request and read its immutable snapshot afterward:
+Structured introspection is separate from optional console logging. Declare it
+in configuration and read its immutable snapshot afterward:
 
 ```js
-const container = new Container();
-container.enableIntrospection();
-container.addNamespaceRoot("App_", "https://cdn.example.com/app", ".mjs");
+const container = new Container({
+  namespaces: [{prefix: "App_", target: "https://cdn.example.com/app", defaultExt: ".mjs"}],
+  introspection: true,
+});
 
 const app = await container.get("App$");
 const inspection = container.getIntrospection();

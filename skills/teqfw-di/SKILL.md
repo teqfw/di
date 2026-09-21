@@ -25,7 +25,8 @@ Node.js registry imports only in Node.js composition code.
 ## Non-negotiable use model
 
 ```text
-Composition Root configures Container
+Composition Root creates JSON-safe Container configuration
+  → new Container(config) materializes declared policy
   → one public get(root Dependency Identifier)
   → one root Dependency Resolution and Dependency Graph
   → host uses the returned root
@@ -53,7 +54,7 @@ migration path, not a new-code import. No other `src/**` path is public.
 | Consumer task | Read |
 | --- | --- |
 | Decide whether the package fits; preserve module and runtime boundaries | [Concepts](references/concepts.md) |
-| Configure one root, introspect it, use test mode, or diagnose failure | [Container](references/container.md) |
+| Create configuration, resolve one root, introspect it, use test mode, or diagnose failure | [Container](references/container.md) |
 | Write `__deps__`, construct Dependency Identifiers, or select a Lifestyle | [Usage](references/usage.md), [Dependency Identifiers](references/dependency-id.md) |
 | Configure substitutions, Preprocessors, Postprocessors, or Wrappers | [Extensions](references/extensions.md) |
 | Use Node.js package metadata and namespace utilities | [Usage](references/usage.md), [Concepts](references/concepts.md) |

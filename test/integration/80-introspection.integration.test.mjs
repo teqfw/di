@@ -80,7 +80,7 @@ describe('Integration 80: structured introspection', () => {
         const missExplanation = singletonResolutions.find((/** @type {any} */ one) => one.cache === 'miss');
         const hitExplanation = singletonResolutions.find((/** @type {any} */ one) => one.cache === 'hit');
 
-        assert.ok(observation.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'Configurable' && event.to === 'Resolving'));
+        assert.ok(observation.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'Preparing' && event.to === 'Resolving'));
         assert.ok(observation.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'Resolving' && event.to === 'Resolved'));
         assert.equal(missExplanation.cache, 'miss');
         assert.equal(missExplanation.postprocessors, 1);
@@ -311,7 +311,7 @@ describe('Integration 80: structured introspection', () => {
         assert.equal(failure.explanation.outcome, 'failure');
         assert.equal(failure.explanation.containerState, 'Failed');
         assert.equal(failure.explanation.failure.stage, 'identifier parsing');
-        assert.ok(failure.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'Configurable' && event.to === 'Resolving'));
+        assert.ok(failure.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'Preparing' && event.to === 'Resolving'));
         assert.ok(failure.trace.some((/** @type {any} */ event) => event.kind === 'state' && event.from === 'Resolving' && event.to === 'Failed'));
     });
 });

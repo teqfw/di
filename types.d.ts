@@ -10,6 +10,7 @@ declare global {
   type TeqFw_Di_Container_Producer = import("./src/Container/Producer.mjs").default;
   type TeqFw_Di_Container_Resolution = typeof import("./src/Container/Resolution.mjs").executeResolution;
   type TeqFw_Di_Container_Wrapper = import("./src/Container/Wrapper.mjs").default;
+  type TeqFw_Di_Container_Configurator = typeof import("./src/Container/Configurator.mjs").configureContainer;
   type TeqFw_Di_Container_Observer_Contract = ReturnType<typeof import("./src/Container/Observer.mjs").createObserver>;
   type TeqFw_Di_Container_State = 'Configurable'|'Resolving'|'Resolved'|'Failed';
   type TeqFw_Di_Container_ResolutionContext = Readonly<{
@@ -21,6 +22,8 @@ declare global {
   type TeqFw_Di_Container__Class = typeof import("./src/Container.mjs").default;
   type TeqFw_Di_Dto_DepId = import("./src/Dto/DepId.mjs").default;
   type TeqFw_Di_Dto_DepId__Factory = import("./src/Dto/DepId.mjs").Factory;
+  type TeqFw_Di_Dto_Container_Config = import("./src/Dto/Container/Config.mjs").default;
+  type TeqFw_Di_Dto_Container_Config__Factory = import("./src/Dto/Container/Config.mjs").Factory;
   type TeqFw_Di_Enum_AddressKind = typeof import("./src/Enum/AddressKind.mjs").default;
   type TeqFw_Di_Enum_Lifestyle = typeof import("./src/Enum/Lifestyle.mjs").default;
   type TeqFw_Di_Enum_ObservationEvent = typeof import("./src/Enum/ObservationEvent.mjs").default;

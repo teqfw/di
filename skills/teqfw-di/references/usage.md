@@ -33,9 +33,9 @@ import {fileURLToPath} from "node:url";
 import Container from "@teqfw/di";
 
 const hostDir = path.dirname(fileURLToPath(import.meta.url));
-const container = new Container();
-
-container.addNamespaceRoot("App_", path.join(hostDir, "src/App"), ".mjs");
+const container = new Container({
+  namespaces: [{prefix: "App_", target: path.join(hostDir, "src/App"), defaultExt: ".mjs"}],
+});
 
 const app = await container.get("App$");
 await app.start();
@@ -46,8 +46,8 @@ children resolve recursively through `__deps__` in its one graph.
 
 ## Package-backed namespace composition
 
-Use Node.js registries only in a Node.js Composition Root. Register every
-derived mapping before the root request.
+Use Node.js registries only in a Node.js Composition Root. Put every derived
+mapping in the DTO before Container construction.
 
 ```js
 import fs from "node:fs/promises";
@@ -56,12 +56,10 @@ import Container from "@teqfw/di";
 import NamespaceRegistry from "@teqfw/di/node/registry/namespace";
 
 const appRoot = "/absolute/path/to/application";
-const container = new Container();
 const mappings = await new NamespaceRegistry({fs, path, appRoot}).build();
-
-for (const {prefix, dirAbs, ext} of mappings) {
-  container.addNamespaceRoot(prefix, dirAbs, ext);
-}
+const container = new Container({
+  namespaces: mappings.map(({prefix, dirAbs, ext}) => ({prefix, target: dirAbs, defaultExt: ext})),
+});
 
 const app = await container.get("App$");
 ```
@@ -79,8 +77,9 @@ The same runtime declaration can use a URL-backed Teq Namespace Mapping:
 ```js
 import Container from "https://cdn.jsdelivr.net/npm/@teqfw/di@2/+esm";
 
-const container = new Container();
-container.addNamespaceRoot("App_", "https://cdn.example.com/app", ".mjs");
+const container = new Container({
+  namespaces: [{prefix: "App_", target: "https://cdn.example.com/app", defaultExt: ".mjs"}],
+});
 
 const app = await container.get("App$");
 ```
@@ -90,16 +89,15 @@ utilities into browser code.
 
 ## Test substitution
 
-Use explicit test mode only when testing Container composition:
+Use DTO mocks only when testing Container composition:
 
 ```js
-const container = new Container();
-container.enableTestMode();
-container.register("App_Data_Repository$", mockRepository);
-container.addNamespaceRoot("App_", fixtureRoot, ".mjs");
+const container = new Container({
+  namespaces: [{prefix: "App_", target: fixtureRoot, defaultExt: ".mjs"}],
+  mocks: [{specifier: "App_Data_Repository$", value: mockRepository}],
+});
 
 const app = await container.get("App$");
 ```
 
-Register substitutions and configure mappings before `get()`. The returned mock
-still passes through the applicable output boundary.
+The returned mock still passes through the applicable output boundary.
