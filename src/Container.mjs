@@ -324,5 +324,3 @@ export default class TeqFw_Di_Container {
         };
     }
 }
-
-export {Factory as ConfigFactory} from './Dto/Container/Config.mjs';

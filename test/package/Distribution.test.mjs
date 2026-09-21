@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import {fileURLToPath, pathToFileURL} from 'node:url';
+import vm from 'node:vm';
 
 import {rollup} from 'rollup';
 
@@ -64,4 +65,13 @@ test('browser ESM distribution preserves current resolution semantics', async ()
     assert.doesNotMatch(artifact, /PromiseSafe/);
     assert.doesNotMatch(artifact, /class Resolver/);
     assert.doesNotMatch(artifact, /class Pipeline/);
+});
+
+test('browser UMD distribution exposes Container as its global constructor', async () => {
+    const source = await fs.readFile(path.join(rootDir, 'dist', 'umd.js'), 'utf8');
+    const context = vm.createContext({});
+
+    vm.runInContext(source, context);
+
+    assert.equal(typeof context.TeqFw_Di_Container, 'function');
 });
