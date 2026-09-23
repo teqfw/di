@@ -2,7 +2,7 @@
 
 /**
  * @namespace TeqFw_Di_Node_Registry_Package
- * @description Deterministic Node.js composition-stage graph of installed runtime packages.
+ * @description Deterministic Node.js composition-stage graph of installed declared packages.
  */
 
 /**
@@ -13,7 +13,7 @@
  */
 
 /**
- * Builds a deterministic immutable dependency-first list of root and installed runtime packages.
+ * Builds a deterministic immutable dependency-first list of root and installed declared packages.
  */
 export default class TeqFw_Di_Node_Registry_Package {
     /**
@@ -77,21 +77,22 @@ export default class TeqFw_Di_Node_Registry_Package {
                 throw new Error('Invalid package metadata ' + packageJsonAbs + ': name must be a non-empty string.');
             }
 
-            const rawDependencies = packageJson.dependencies;
-            if (rawDependencies === undefined) {
-                return {name, packageJson, dependencies: []};
-            }
-            if (!isRecord(rawDependencies)) {
-                throw new Error('Invalid dependency metadata ' + packageJsonAbs + ': dependencies must be an object.');
-            }
-            const dependencies = Object.keys(rawDependencies).sort();
-            for (const dependencyName of dependencies) {
-                const dependencyRange = rawDependencies[dependencyName];
-                if ((dependencyName.length === 0) || (typeof dependencyRange !== 'string') || (dependencyRange.length === 0)) {
-                    throw new Error('Invalid dependency metadata ' + packageJsonAbs + ': ' + dependencyName + ' must have a non-empty string declaration.');
+            /** @type {Set<string>} */
+            const declaredNames = new Set();
+            for (const field of ['dependencies', 'devDependencies']) {
+                const declarations = packageJson[field];
+                if (declarations === undefined) continue;
+                if (!isRecord(declarations)) {
+                    throw new Error('Invalid dependency metadata ' + packageJsonAbs + ': ' + field + ' must be an object.');
+                }
+                for (const [dependencyName, dependencyRange] of Object.entries(declarations)) {
+                    if ((dependencyName.length === 0) || (typeof dependencyRange !== 'string') || (dependencyRange.length === 0)) {
+                        throw new Error('Invalid dependency metadata ' + packageJsonAbs + ': ' + dependencyName + ' must have a non-empty string declaration.');
+                    }
+                    declaredNames.add(dependencyName);
                 }
             }
-            return {name, packageJson, dependencies};
+            return {name, packageJson, dependencies: [...declaredNames].sort()};
         };
 
         /**
@@ -132,7 +133,7 @@ export default class TeqFw_Di_Node_Registry_Package {
         /**
          * @param {string} packageName
          * @param {string} fromPackageRootAbs
-         * @returns {Promise<string>}
+         * @returns {Promise<string | undefined>}
          */
         const resolveDependencyPackageRoot = async function (packageName, fromPackageRootAbs) {
             let cursor = fromPackageRootAbs;
@@ -146,7 +147,7 @@ export default class TeqFw_Di_Node_Registry_Package {
                 if (parent === cursor) break;
                 cursor = parent;
             }
-            throw new Error('Installed dependency is not found: ' + packageName + ' from ' + fromPackageRootAbs + '.');
+            return undefined;
         };
 
         /**
@@ -191,7 +192,7 @@ export default class TeqFw_Di_Node_Registry_Package {
 
                 for (const dependencyName of metadata.dependencies) {
                     const dependencyRootAbs = await resolveDependencyPackageRoot(dependencyName, rootAbs);
-                    dependencies.push(await visit(dependencyRootAbs));
+                    if (dependencyRootAbs !== undefined) dependencies.push(await visit(dependencyRootAbs));
                 }
 
                 pathStack.pop();

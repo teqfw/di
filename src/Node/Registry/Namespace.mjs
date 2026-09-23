@@ -4,7 +4,7 @@ import TeqFw_Di_Node_Registry_Package from './Package.mjs';
 
 /**
  * @namespace TeqFw_Di_Node_Registry_Namespace
- * @description Deterministic Node.js namespace registry derived from the runtime package graph.
+ * @description Deterministic Node.js namespace registry derived from the installed package graph.
  */
 
 /**
@@ -15,7 +15,7 @@ import TeqFw_Di_Node_Registry_Package from './Package.mjs';
  */
 
 /**
- * Builds a deterministic immutable Node.js namespace registry from runtime package records.
+ * Builds a deterministic immutable Node.js namespace registry from installed package records.
  */
 export default class TeqFw_Di_Node_Registry_Namespace {
     /**

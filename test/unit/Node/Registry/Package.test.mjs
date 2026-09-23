@@ -53,7 +53,7 @@ function mockFs(files, realpaths = {}) {
 }
 
 describe('TeqFw_Di_Node_Registry_Package', () => {
-    it('builds immutable dependency-first records for scoped, nested, and hoisted runtime dependencies', async () => {
+    it('builds immutable dependency-first records for scoped, nested, and hoisted dependencies', async () => {
         const fs = mockFs({
             '/app/package.json': json({name: 'app', dependencies: {'z': '1', '@scope/a': '1', 'b': '1'}, devDependencies: {dev: '1'}}),
             '/app/node_modules/@scope/a/package.json': json({name: '@scope/a', dependencies: {nested: '1'}}),
@@ -103,6 +103,27 @@ describe('TeqFw_Di_Node_Registry_Package', () => {
             // @ts-ignore intentional mutation of frozen array
             records[0].dependencies.push('/changed');
         });
+    });
+
+    it('visits installed declarations from both fields recursively and skips absent declarations', async () => {
+        const records = await new PackageRegistry({
+            fs: mockFs({
+                '/app/package.json': json({name: 'app', dependencies: {runtime: '1', absentRuntime: '1', shared: '1'}, devDependencies: {tool: '1', absentDev: '1', shared: '1'}}),
+                '/app/node_modules/runtime/package.json': json({name: 'runtime', dependencies: {nested: '1', missing: '1'}, devDependencies: {nestedDev: '1'}}),
+                '/app/node_modules/runtime/node_modules/nested/package.json': json({name: 'nested'}),
+                '/app/node_modules/runtime/node_modules/nestedDev/package.json': json({name: 'nestedDev'}),
+                '/app/node_modules/shared/package.json': json({name: 'shared'}),
+                '/app/node_modules/tool/package.json': json({name: 'tool', devDependencies: {shared: '1', missing: '1'}}),
+                '/app/node_modules/undeclared/package.json': json({name: 'undeclared'}),
+            }),
+            path,
+            appRoot: '/app',
+        }).build();
+
+        assert.deepStrictEqual(records.map((item) => item.name), ['nested', 'nestedDev', 'runtime', 'shared', 'tool', 'app']);
+        assert.deepStrictEqual(records.at(-1)?.dependencies, ['/app/node_modules/runtime', '/app/node_modules/shared', '/app/node_modules/tool']);
+        assert.deepStrictEqual(records.find((item) => item.name === 'runtime')?.dependencies, ['/app/node_modules/runtime/node_modules/nested', '/app/node_modules/runtime/node_modules/nestedDev']);
+        assert.deepStrictEqual(records.find((item) => item.name === 'tool')?.dependencies, ['/app/node_modules/shared']);
     });
 
     it('uses ascending dependency package names as the stable tie-breaker', async () => {
@@ -184,12 +205,7 @@ describe('TeqFw_Di_Node_Registry_Package', () => {
         );
     });
 
-    it('fails for missing dependencies and invalid package metadata', async () => {
-        const missing = new PackageRegistry({
-            fs: mockFs({'/app/package.json': json({name: 'app', dependencies: {missing: '1'}})}),
-            path,
-            appRoot: '/app',
-        });
+    it('fails for invalid package and dependency metadata', async () => {
         const invalidJson = new PackageRegistry({
             fs: mockFs({'/app/package.json': '{'}),
             path,
@@ -200,9 +216,14 @@ describe('TeqFw_Di_Node_Registry_Package', () => {
             path,
             appRoot: '/app',
         });
+        const invalidDevDependencies = new PackageRegistry({
+            fs: mockFs({'/app/package.json': json({name: 'app', devDependencies: []})}),
+            path,
+            appRoot: '/app',
+        });
 
-        await assert.rejects(() => missing.build(), /Installed dependency is not found/);
         await assert.rejects(() => invalidJson.build(), /Invalid package metadata/);
         await assert.rejects(() => invalidDependencies.build(), /Invalid dependency metadata/);
+        await assert.rejects(() => invalidDevDependencies.build(), /Invalid dependency metadata/);
     });
 });

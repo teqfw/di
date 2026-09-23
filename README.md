@@ -148,8 +148,13 @@ import NamespaceRegistry from "@teqfw/di/node/registry/namespace";
 ```
 
 `NamespaceRegistry` builds namespace roots from package metadata for a Node.js
-Composition Root. `PackageRegistry` reads the static runtime package graph in
+Composition Root. `PackageRegistry` reads the installed package graph in
 Node.js-only infrastructure. Neither belongs in browser-reachable modules.
+Both registries follow `dependencies` and `devDependencies` recursively through
+Node.js `node_modules` lookup. Installed packages contribute metadata; declared
+packages absent from the installation, including those omitted by
+`npm ci --omit=dev`, are skipped. Undeclared packages are not scanned. The
+package list is dependency-first, with ascending package names breaking ties.
 `@teqfw/di/src/Config/NamespaceRegistry.mjs` remains only as the deprecated
 COMPAT-001 migration import; new code must use the canonical namespace path.
 

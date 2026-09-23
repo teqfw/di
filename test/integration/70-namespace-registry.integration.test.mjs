@@ -39,7 +39,8 @@ describe('Namespace registry integration', () => {
         await writeJson(path.join(appRoot, 'package.json'), {
             name: 'app-root',
             version: '1.0.0',
-            dependencies: {'dep-long': '1.0.0', 'dep-side': '1.0.0'},
+            dependencies: {'dep-long': '1.0.0', 'missing-runtime': '1.0.0'},
+            devDependencies: {'dep-side': '1.0.0', 'missing-dev': '1.0.0'},
             teqfw: {fw: {di: {namespaces: [{prefix: 'App_', path: './src-short', ext: '.mjs'}, {prefix: 'Root_', path: './src-root'}]}}},
         });
 
