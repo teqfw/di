@@ -1,120 +1,19 @@
 # Root Level
 
 - Path: `AGENTS.md`
-- Template Version: `20260720`
+- Template Version: `20261024`
 - Changed: `20261024`
 
-## Purpose
+## Boundary
 
-This file defines the root-level working rules for the project repository.
+This file controls repository work. `ctx/` owns project meaning and is authoritative for product and implementation decisions; consult `ctx/AGENTS.md` and task-relevant context for design or code changes. If implementation conflicts with accepted context, follow the context and report any proposed change to accepted meaning for human approval rather than silently rewriting it. Read navigation documents only when needed and avoid rereading unchanged instructions within a session. Use the `adsm-ctx` skill when available for context lifecycle work.
 
-This file is the first instruction source for every agent operating within the repository.
+`ctx/` may be part of this repository or a separately mounted repository. Detect its Git boundary before editing, preserve separate histories, and never remove, replace, relocate, or unmount it. If absent, create `ctx/` only when bootstrap is within the assigned scope. Deeper `AGENTS.md` files refine local rules without overriding root invariants.
 
-## Level Boundary
+A task may cover multiple repositories. Coordinate affected contracts and consumers, verify their integration, and keep each Git history separate. Do not expand into unrelated repositories. The human defines scope and approves changes to accepted meaning.
 
-Defines:
+## Efficient Execution
 
-- Root-level working boundaries between the repository, the cognitive context, and the software product.
-- Repository-topology rules needed to work safely when `ctx/` may be mounted separately.
-- Root-level protection and escalation rules for this project.
+Classify the task before reading context or running checks. Git-only work needs Git-state checks, not product-context scans or tests. For code or context changes, inspect only relevant owners; run deterministic checks chosen by changed responsibility and risk. Capture verbose output outside the model context and inspect logs on failure or when evidence is needed. Report results, omitted coverage, and material risks concisely.
 
-Does NOT define:
-
-- Product-specific meaning, requirements, or domain knowledge.
-- Implementation-level structure such as source code, runtime details, or filesystem layout.
-- Task-specific instructions, workflows, or local operational procedures.
-
-## ADSM Project Model
-
-An ADSM project consists of two interconnected spaces:
-
-- the **Cognitive Context** located in `./ctx/`
-- the **Software Product** located outside `./ctx/`
-
-The cognitive context is the long-term textual memory of the project.
-
-The cognitive context is the primary communication medium between Humans and Agents working on the project.
-
-The cognitive context is the authoritative knowledge source used by Agents when modifying the project.
-
-The software product is the implementation that must be kept consistent with the cognitive context.
-
-## Human and Agent Roles
-
-The Human defines goals, authorizes work, evaluates outcomes, and evolves the project.
-
-The Agent interprets the cognitive context, performs assigned tasks, modifies the project within task boundaries, and maintains consistency between the cognitive context and the software product.
-
-The Agent operates through text and must treat project documentation as operational memory, not as secondary commentary.
-
-## Cognitive Context
-
-The canonical execution location of the cognitive context is `./ctx/`.
-
-Project-specific knowledge, requirements, architecture, environment descriptions, and implementation guidance are defined within the cognitive context.
-
-The Agent must consult `./ctx/AGENTS.md` for project-specific instructions when `./ctx/` exists.
-
-The Agent must consult `./ctx/docs/filesystem.md` for the project filesystem structure and documentation layout when that file exists.
-
-Documentation distributed with the software product may exist outside `./ctx/`, but it does not replace, redefine, or supersede the cognitive context.
-
-## Bootstrap and Repository Topology
-
-An ADSM project may use one repository or two repositories.
-
-In a one-repository topology, the software product and the cognitive context are versioned together.
-
-In a two-repository topology, the software product and the cognitive context are independent version-controlled repositories, and the cognitive context repository is mounted under `./ctx/`.
-
-The Agent must detect whether `./ctx/` is part of the current repository or an independent repository.
-
-The Agent must preserve repository boundaries.
-
-The Agent must not mix changes between independent repositories.
-
-The Agent must not remove, replace, relocate, or unmount `./ctx/`.
-
-If `./ctx/` does not exist, the Agent may perform bootstrap operations required to create the initial cognitive context structure.
-
-After bootstrap is complete, `./ctx/AGENTS.md` becomes the entry point for project-specific instructions.
-
-## Context and Product Consistency
-
-The cognitive context is the source of truth for the project.
-
-If the cognitive context and the software product diverge, the Agent must treat the cognitive context as authoritative.
-
-The Agent must maintain consistency between the cognitive context and the software product.
-
-The Agent may modify the cognitive context when required by the assigned task and when the modification remains consistent with higher-level context constraints.
-
-The Agent may modify the software product when required by the assigned task and when the modification remains consistent with the cognitive context.
-
-## AGENTS.md Hierarchy
-
-Additional `AGENTS.md` files may exist in subdirectories.
-
-The effective working context of the agent is the aggregate of all `AGENTS.md` files located along the path from the repository root to the target directory.
-
-Rules:
-
-- deeper levels override higher levels within their scope
-- root-level invariants cannot be overridden
-- all levels must remain mutually consistent
-
-## Root File Protection
-
-This file defines root-level project control rules.
-
-The agent must not modify, replace, delete, relocate, or reinterpret this file unless explicitly instructed by the human.
-
-Violation of this rule constitutes an execution error.
-
-## Secret Handling
-
-The Agent must never read, load, print, search for, or expose secret-bearing project files, including `.env` and `.env.*` files, credentials, private keys, tokens, or secret stores. This rule applies even when a file is Git-ignored and includes broad search or command output that could reveal its contents.
-
-The Agent may use a non-secret example template such as `.env.example` only to learn the configuration shape. It must not infer or request the value of any secret.
-
-If secret data is exposed accidentally, the Agent must stop handling that value, must not repeat it, and must tell the Human that the secret should be rotated or revoked.
+Do not modify, replace, delete, or relocate this file without explicit human instruction. Do not read, search, or expose secret-bearing files or credentials; non-secret examples may describe configuration shape. If a secret is accidentally exposed, do not repeat it; notify the human that it should be rotated or revoked.
