@@ -1,22 +1,28 @@
 # Root Level
 
 - Path: `AGENTS.md`
-- Template Version: `20260605`
-- Changed: `20260605`
+- Template Version: `20260720`
+- Changed: `YYYYMMDD`
 
 ## Purpose
 
-This file defines the root invariants of ADSM (Agent-Driven Software Management) for the entire project.
+This file defines the root-level working rules for the project repository.
 
-This file is the first instruction source for every Agent operating within the repository.
+This file is the first instruction source for every agent operating within the repository.
 
 ## Level Boundary
 
-This level defines methodological invariants, Human and Agent responsibilities, cognitive context principles, repository topology rules, context-product consistency rules, AGENTS.md hierarchy resolution rules, and root file protection rules.
+Defines:
 
-This level does not define product-specific requirements, domain-specific knowledge, implementation details, project filesystem structure, or task-specific instructions.
+- Root-level working boundaries between the repository, the cognitive context, and the software product.
+- Repository-topology rules needed to work safely when `ctx/` may be mounted separately.
+- Root-level protection and escalation rules for this project.
 
-Such information belongs to the cognitive context.
+Does NOT define:
+
+- Product-specific meaning, requirements, or domain knowledge.
+- Implementation-level structure such as source code, runtime details, or filesystem layout.
+- Task-specific instructions, workflows, or local operational procedures.
 
 ## ADSM Project Model
 
@@ -89,7 +95,7 @@ The Agent may modify the software product when required by the assigned task and
 
 Additional `AGENTS.md` files may exist in subdirectories.
 
-The effective working context of the Agent is the aggregate of all `AGENTS.md` files located along the path from the repository root to the target directory.
+The effective working context of the agent is the aggregate of all `AGENTS.md` files located along the path from the repository root to the target directory.
 
 Rules:
 
@@ -99,8 +105,16 @@ Rules:
 
 ## Root File Protection
 
-This file defines ADSM template-level invariants.
+This file defines root-level project control rules.
 
-The Agent must not modify, replace, delete, relocate, or reinterpret this file unless explicitly instructed by the Human.
+The agent must not modify, replace, delete, relocate, or reinterpret this file unless explicitly instructed by the human.
 
 Violation of this rule constitutes an execution error.
+
+## Secret Handling
+
+The Agent must never read, load, print, search for, or expose secret-bearing project files, including `.env` and `.env.*` files, credentials, private keys, tokens, or secret stores. This rule applies even when a file is Git-ignored and includes broad search or command output that could reveal its contents.
+
+The Agent may use a non-secret example template such as `.env.example` only to learn the configuration shape. It must not infer or request the value of any secret.
+
+If secret data is exposed accidentally, the Agent must stop handling that value, must not repeat it, and must tell the Human that the secret should be rotated or revoked.
