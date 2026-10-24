@@ -2,7 +2,7 @@
 
 - Path: `AGENTS.md`
 - Template Version: `20260720`
-- Changed: `YYYYMMDD`
+- Changed: `20261024`
 
 ## Purpose
 
