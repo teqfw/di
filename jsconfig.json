@@ -7,7 +7,17 @@
     "noEmit": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ESNext"
+    "target": "ESNext",
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src", "test", "types.d.ts"]
+  "include": [
+    "bin",
+    "src",
+    "test",
+    "types.d.ts",
+    "node_modules/@flancer32",
+    "node_modules/@teqfw"
+  ]
 }
