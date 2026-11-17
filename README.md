@@ -9,6 +9,11 @@ It is useful when an ESM application needs explicit dependencies, late binding,
 and an inspectable composition space. Small applications that do not need
 runtime composition can use direct imports instead.
 
+The FIFO, deferred-dependency, and strengthened final-value hardening contracts
+below are accepted targets awaiting implementation and verification. Examples
+using these capabilities describe the target; check availability in the
+installed release before relying on them.
+
 ## Install
 
 ```sh
@@ -47,7 +52,7 @@ ordered producer Dependency Identifiers, not JavaScript callbacks. Container
 materializes them under default policy before it resolves the first entry.
 
 The first `get()` locks configuration, materializes policy once, and enters the
-Container's Running state. Later sequential `get()` calls create additional
+Container's Running state. Later `get()` calls create additional
 entry resolutions in the same configured composition space. They share
 Namespace Mappings, processors, hardening policy, and the Container-scoped
 Singleton cache, so a common Singleton is produced once. This supports staged
@@ -55,9 +60,11 @@ composition such as bootstrap, plugins, and a lazily selected command.
 
 The Container is still not an arbitrary service locator: public entries are
 deliberate application phases, while ordinary dependencies remain declarations
-in `__deps__`. Concurrent or re-entrant `get()` calls reject deterministically.
-An entry-resolution failure does not destroy an already Running Container; a
-policy-preparation failure does make it unusable.
+in `__deps__`. Concurrent and re-entrant public or Provider requests join one
+FIFO queue; at most one entry graph executes at a time. Requests made during
+preparation wait for it. An entry failure rejects only its own request and the
+queue continues. A preparation failure makes the Container unusable and rejects
+waiting requests before their entries begin.
 
 ## Declare runtime dependencies
 
@@ -86,6 +93,38 @@ The hierarchical, export-scoped form shown above is canonical. A flat
 `__deps__` object is supported only for a default-export-only module. Omit
 `__deps__` when a producer has no dependencies. Composition Root/bootstrap code
 and tests are the exceptions that may use static imports.
+
+## Deferred dependencies
+
+A single leading `~` in `__deps__` injects a frozen Provider exposing only
+`resolve()`. This accepted capability is tracked in
+[issue #59](https://github.com/teqfw/di/issues/59).
+
+```js
+export const __deps__ = {
+  default: {service: "~App_Service$"},
+};
+
+export default function Feature({service}) {
+  return {
+    async run() {
+      const value = await service.resolve();
+      return value.run();
+    },
+  };
+}
+```
+
+Creating `Feature` does not load, preprocess, or traverse the deferred target.
+Each later `resolve()` queues a separate entry with fresh ancestry under the
+same Container policy, Singleton cache, and Hardener. Singleton shares its value
+with eager requests; Transient produces a fresh value per call; Direct retains
+ordinary export semantics. The Provider has no result cache and exposes no
+Container. Public `get()` and configured policy identifiers reject `~`.
+
+Call the Provider from application work after the creating entry settles, as in
+`run()` above. An active entry awaiting its own later queued request can
+deadlock; the Container provides no re-entrancy guard or automatic recovery.
 
 ## Dependency Identifiers
 
@@ -128,6 +167,23 @@ Direct is not Transient. Native ESM caching belongs to the JavaScript runtime;
 it does not provide Container Singleton behavior. Wrappers are selected by the
 identifier and can adapt even a Direct value. `$$$` keeps Direct explicit when
 Wrapper Selection requires a Lifestyle Marker.
+
+## Final-value protection
+
+The Hardener boundary is mandatory for eager and deferred resolutions under
+default and configured policy. After adaptation, Promise/thenable values settle
+before the ordinary object or function actually delivered to the consumer is
+shallow-frozen. Freezing a carrying Promise alone is insufficient. A custom
+Hardener is optional, synchronous processing of that settled value; its result
+must be terminal and is subject to the same mandatory freeze. Returning a
+Promise/thenable from that function or failing to freeze an ordinary value
+rejects only the active entry. A Singleton cache hit reuses its already hardened
+final value.
+
+Primitives and already frozen values pass through. Runtime-owned ES module
+namespace objects retain native semantics and live bindings. Shallow freezing
+protects object structure; nested objects, closure state, and represented
+external resources may still change.
 
 ## Composition policy
 

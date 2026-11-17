@@ -17,10 +17,28 @@ const app = await container.get("App$");
 
 The first `get()` locks configuration, materializes policy producers under
 default policy once, then enters Running and resolves its entry root. Later
-sequential `get()` calls resolve additional entry roots using that same policy
-and Singleton cache. Concurrent and re-entrant calls reject. Preparation
-failure leaves the Container unusable; a resolution failure ends only its entry
-and leaves a Running Container available for a later entry.
+`get()` calls and deferred Provider `resolve()` calls join one FIFO queue using
+that same policy and Singleton cache. Concurrent and re-entrant requests wait;
+at most one entry graph executes at a time. Requests made during preparation
+wait for it, which still occurs only once. Preparation failure leaves the
+Container unusable and rejects waiting requests without completed entry
+snapshots. A resolution failure ends only its own entry, retains its snapshot
+when introspection is enabled, and lets the next request execute.
+
+## Deferred entries
+
+Only `__deps__` accepts one leading `~`, yielding a frozen Provider with only
+`resolve(): Promise<T>`. Creation validates the underlying identifier without
+preprocessing, loading the target, or traversing its children. Each call queues
+a new entry with empty ancestry and one ordinary root preprocessing pass. It
+shares policy, test substitutions, lifestyle handling, wrappers, postprocessors,
+settlement, mandatory Hardener, and the Singleton cache with eager entries.
+The Provider retains no result cache and exposes no Container. Deferred timing
+does not change Singleton identity; Transient is fresh per successful call.
+
+Queueing is allowed from synchronous policy hooks, but those hooks remain
+synchronous. An active entry that awaits its own later queued request can
+deadlock. There is no re-entrancy guard, automatic timeout, or recovery promise.
 
 ## Configuration DTO
 
@@ -76,3 +94,6 @@ enabled only by the configuration DTO; there is no mutable
 private graph objects are diagnostics, not a public substitute for introspection.
 A preparation failure happens before an entry starts, so it leaves no completed
 entry snapshot; an entry-resolution failure is retained with its provenance.
+Each executed Provider request has its own entry snapshot. Provider creation
+is observed in its originating entry without a resolved target node or a
+fabricated cross-entry graph edge.

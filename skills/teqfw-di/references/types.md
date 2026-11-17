@@ -14,7 +14,8 @@ Ns_Service__Class  → constructable Service export
 
 This static distinction is independent of Dependency Identifier syntax. A
 Dependency Identifier `Ns_Service$` acquires a produced instance, while
-`Ns_Service` or `Ns_Service$$$` acquires the class export directly; neither
-runtime marker changes JSDoc alias spelling. Use a structural host-owned type
-for a substitutable abstraction when needed, and verify an exact alias against
-the installed `types.d.ts`.
+`Ns_Service__default` or `Ns_Service$$$` acquires the default class export
+directly. Bare `Ns_Service` acquires the whole module namespace and is not a
+constructor value. Neither runtime marker changes JSDoc alias spelling. Use a
+structural host-owned type for a substitutable abstraction when needed, and
+verify an exact alias against the installed `types.d.ts`.

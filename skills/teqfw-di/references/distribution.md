@@ -4,6 +4,11 @@
 
 The package publishes the version-matched skill at `node_modules/@teqfw/di/skills/teqfw-di/`. Load `SKILL.md` as its entry point. Every required reference is below that directory and describes the installed package version.
 
+During an unreleased documentation change, explicit availability notes identify
+accepted targets awaiting implementation and verification. Before release,
+verify those capabilities against the version that will ship; documentation
+alone does not establish runtime support.
+
 ## Host-Owned Mounting
 
 The host project decides whether and how to make the skill discoverable. Installation performs no `postinstall` mutation, creates no links, and does not modify host agent configuration.

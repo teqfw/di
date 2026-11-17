@@ -4,7 +4,8 @@ A Dependency Identifier identifies a dependency target together with its
 resolution semantics. It consists of a Dependency Address and optional Export
 Selection, Dependency Lifestyle, and ordered Wrapper Selection. It is the one
 runtime identifier language used by `__deps__`, each public `container.get()`
-entry request, and configured policy producers during preparation.
+entry request, and configured policy producers during preparation. Deferred
+timing is an additional declaration-only modifier, not another Lifestyle.
 
 ## Address Kinds
 
@@ -54,3 +55,25 @@ App_Service__format$$$_trace
 Wrappers are selected by the Dependency Identifier and run in their declared
 order. They can adapt a Direct value. Use `$$$` when a Direct request needs the
 explicit Lifestyle Marker required by Wrapper Selection.
+
+## Deferred declarations
+
+Prefix an ordinary identifier with exactly one `~` only in an `__deps__` value:
+
+```text
+~App_Workspace$         Singleton
+~App_Editor$$           Transient
+~App_Configuration      Direct module namespace
+~App_Config__default    Direct default export
+~App_Service$$_trace    Transient with Wrapper Selection
+~node:fs                Node address
+~npm:@scope/package     npm address
+```
+
+The injected value is a frozen Provider with `resolve(): Promise<T>`; target
+address, export, lifestyle, and wrapper semantics are unchanged. Creation does
+not preprocess, import, or traverse the target. Each call resolves an ordinary
+entry in the originating Container FIFO queue. Public `get()`, test-registration
+identifiers, and configured policy-producer identifiers reject `~`. Doubled or
+misplaced modifiers and `~teq:...` are invalid. Timing never enters Singleton
+identity; eager and deferred requests for the same effective Singleton share it.

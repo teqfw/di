@@ -25,6 +25,33 @@ The key under `default` is the producer parameter name. A named producer uses
 its named export as the outer key. A flat declaration is supported only for a
 default-export-only module; omit `__deps__` when there are no dependencies.
 
+## Deferred runtime dependency
+
+```js
+export const __deps__ = {
+  default: {workspace: "~App_Workspace$"},
+};
+
+export default function Feature({workspace}) {
+  return {
+    async open() {
+      const value = await workspace.resolve();
+      return value.open();
+    },
+  };
+}
+```
+
+The frozen Provider has only `resolve()` and exposes no Container. Creating
+`Feature` validates the identifier but does not preprocess, load, or traverse
+the target. Invoke `open()` from application work after the creating entry
+settles. Each call creates a new FIFO entry with empty ancestors, ordinary
+preprocessing once, shared Container policy and Singleton cache, and mandatory
+final-value hardening. The Provider itself caches no result; `~...$$` produces
+a fresh Transient value per successful call. Public and policy identifiers
+reject `~`. Awaiting a later queued request from its own active entry can
+deadlock; no re-entrancy guard prevents this application error.
+
 ## Staged entries in a Node.js Composition Root
 
 ```js
@@ -46,6 +73,19 @@ await command.run();
 The entries are deliberate phases, not arbitrary lookup. Each entry's declared
 children resolve recursively through `__deps__` in its own graph; both entries
 share the configured policy and Container-scoped Singleton values.
+
+Public and Provider requests may be submitted concurrently. Their execution
+is serialized in request order, for example these deliberate composition phases:
+
+```js
+const bootstrap = container.get("App_Bootstrap$");
+const plugin = container.get("App_Plugin$");
+const [bootstrapValue, pluginValue] = await Promise.all([bootstrap, plugin]);
+```
+
+Only one entry graph executes at a time. A failed entry rejects its own Promise
+and the next request still runs; preparation failure rejects all waiting
+requests and makes the Container unusable.
 
 ## Package-backed namespace composition
 

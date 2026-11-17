@@ -7,7 +7,7 @@ loads ES modules through native `import()`.
 
 ```text
 Application Module → __deps__ → Dependency Identifier
-Composition Root → configured Container → sequential entry get() calls
+Composition Root → configured Container → FIFO public and Provider entries
 Container → entry Dependency Graphs + shared Singleton cache → entry values
 ```
 
@@ -21,7 +21,7 @@ the exceptions because they establish or test composition.
 - The Composition Root owns Namespace Mappings, substitutions, and configured
   processing policy before the first entry request.
 - One Container owns a stable composition policy and Container-scoped Singleton
-  cache across its entry resolutions.
+  cache across its entry resolutions, with one FIFO queue and one active graph.
 - The JavaScript runtime owns native ESM loading and its ESM cache.
 
 An ESM cache hit is not Container Singleton reuse. Direct and Transient remain
@@ -40,3 +40,9 @@ host-selected implementations, and observable runtime composition. Do not use
 it to hide ordinary local imports, infer interfaces, or retrieve unrelated
 objects on demand from one Container. Multiple entries are for explicit staged
 or lazy composition, not ad-hoc retrieval.
+
+A deferred `__deps__` declaration injects a frozen Provider without resolving
+its target. Each `resolve()` creates a separate queued entry with the same
+policy and cache. An entry awaiting its own later queued request can deadlock.
+The ordinary delivered object or function is shallow-frozen after adaptation
+and Promise/thenable settlement; optional custom policy cannot disable Hardener.
