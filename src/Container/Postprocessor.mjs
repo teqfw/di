@@ -46,7 +46,8 @@ export default class TeqFw_Di_Container_Postprocessor {
             let current = value;
             for (const fn of postprocessors) {
                 current = fn(current, context);
-                if (current instanceof Promise) {
+                if (((current !== null) && ((typeof current === 'object') || (typeof current === 'function')))
+                    && (typeof /** @type {{then?: unknown}} */ (current).then === 'function')) {
                     throw new Error('Postprocess callback must return synchronously (non-Promise).');
                 }
             }

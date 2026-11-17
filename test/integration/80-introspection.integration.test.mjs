@@ -11,14 +11,7 @@ const FIXTURE_DIR = path.resolve(__dirname, './fixture');
 
 describe('Integration 80: structured introspection', () => {
     it('explains requested-to-effective Teq resolution and records actual graph relationships', async () => {
-        const container = new TeqFw_Di_Container({introspection: true});
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-        container.addPreprocess((depId) => ({
-            ...depId,
-            address: depId.address === 'Fx_AliasGraphRoot'
-                ? 'Fx_GraphRoot'
-                : depId.address,
-        }));
+        const container = new TeqFw_Di_Container({preprocessors: ['Fx_Policies__GraphAlias$'], introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         const value = await container.get('Fx_AliasGraphRoot$');
         const observation = /** @type {any} */ (container.getIntrospection());
@@ -66,9 +59,7 @@ describe('Integration 80: structured introspection', () => {
     });
 
     it('records a real activation only once and does not invent miss-corridor stages on a Singleton hit', async () => {
-        const container = new TeqFw_Di_Container({introspection: true});
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-        container.addPostprocess((value) => value);
+        const container = new TeqFw_Di_Container({postprocessors: ['Fx_Policies__RecordPostprocessing$'], introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         await container.get('Fx_GraphLifestyle$');
         const observation = /** @type {any} */ (container.getIntrospection());
@@ -111,14 +102,7 @@ describe('Integration 80: structured introspection', () => {
     });
 
     it('records requested Teq to effective Node substitution without Namespace Mapping', async () => {
-        const container = new TeqFw_Di_Container({introspection: true});
-        container.addPreprocess((depId) => ({
-            ...depId,
-            addressKind: 'node',
-            address: 'path',
-            exportName: 'basename',
-            lifestyle: 'D',
-        }));
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}], preprocessors: ['Fx_Policies__NodeAlias$'], introspection: true});
 
         const value = await container.get('Fx_NodeAlias');
         const explanation = /** @type {any} */ (container.getIntrospection()).explanation.resolutions[0];
@@ -133,14 +117,7 @@ describe('Integration 80: structured introspection', () => {
     });
 
     it('records requested Teq to effective npm substitution without Namespace Mapping', async () => {
-        const container = new TeqFw_Di_Container({introspection: true});
-        container.addPreprocess((depId) => ({
-            ...depId,
-            addressKind: 'npm',
-            address: '@teqfw/di',
-            exportName: 'default',
-            lifestyle: 'D',
-        }));
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}], preprocessors: ['Fx_Policies__NpmAlias$'], introspection: true});
 
         const value = await container.get('Fx_NpmAlias');
         const explanation = /** @type {any} */ (container.getIntrospection()).explanation.resolutions[0];
@@ -155,8 +132,7 @@ describe('Integration 80: structured introspection', () => {
     });
 
     it('records Direct acquisition without producer child edges', async () => {
-        const container = new TeqFw_Di_Container({introspection: true});
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         await container.get('Fx_DirectProducer__Callable$$$');
         const observation = /** @type {any} */ (container.getIntrospection());
@@ -167,8 +143,7 @@ describe('Integration 80: structured introspection', () => {
     });
 
     it('records Node Address-Kind routing for a declared child dependency', async () => {
-        const container = new TeqFw_Di_Container({introspection: true});
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         const value = await container.get('Fx_NodeChild$');
         const observation = /** @type {any} */ (container.getIntrospection());
@@ -186,8 +161,7 @@ describe('Integration 80: structured introspection', () => {
     });
 
     it('records repeated Direct resolution without Singleton cache reuse', async () => {
-        const container = new TeqFw_Di_Container({introspection: true});
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         const root = await container.get('Fx_GraphLifestyle$');
         const observation = /** @type {any} */ (container.getIntrospection());
@@ -206,8 +180,7 @@ describe('Integration 80: structured introspection', () => {
     });
 
     it('records Export Selection only after it succeeds and before producer traversal', async () => {
-        const container = new TeqFw_Di_Container({introspection: true});
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         await assert.rejects(
             () => container.get('Fx_MissingExportWithDeps$'),
@@ -227,8 +200,7 @@ describe('Integration 80: structured introspection', () => {
     });
 
     it('orders successful producer events after Export Selection', async () => {
-        const container = new TeqFw_Di_Container({introspection: true});
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         await container.get('Fx_GraphRoot$');
         const trace = /** @type {any[]} */ ((/** @type {any} */ (container.getIntrospection())).trace);
@@ -243,24 +215,20 @@ describe('Integration 80: structured introspection', () => {
     });
 
     it('classifies default hardening by the final candidate identity', async () => {
-        const ordinary = new TeqFw_Di_Container({introspection: true});
-        ordinary.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const ordinary = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         const ordinaryValue = await ordinary.get('Fx_Root$');
         const ordinaryObservation = /** @type {any} */ (ordinary.getIntrospection());
 
-        const primitive = new TeqFw_Di_Container({introspection: true});
-        primitive.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const primitive = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         const primitiveValue = await primitive.get('Fx_BadExport__ok');
         const primitiveObservation = /** @type {any} */ (primitive.getIntrospection());
 
-        const spoofed = new TeqFw_Di_Container({introspection: true});
-        spoofed.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const spoofed = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         const spoofedValue = await spoofed.get('Fx_SpoofedModule$');
         const spoofedObservation = /** @type {any} */ (spoofed.getIntrospection());
 
-        const replaced = new TeqFw_Di_Container({introspection: true});
+        const replaced = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}], postprocessors: ['Fx_Policies__ReplaceNamespace$'], introspection: true});
         const replacement = {kind: 'replacement'};
-        replaced.addPostprocess(() => replacement);
         const replacedValue = await replaced.get('node:fs');
         const replacedObservation = /** @type {any} */ (replaced.getIntrospection());
 
@@ -271,21 +239,23 @@ describe('Integration 80: structured introspection', () => {
         assert.equal(Object.prototype.toString.call(spoofedValue), '[object Module]');
         assert.equal(Object.isFrozen(spoofedValue), true);
         assert.equal(spoofedObservation.explanation.resolutions[0].hardening.mode, 'frozen');
-        assert.strictEqual(replacedValue, replacement);
+        assert.deepStrictEqual(replacedValue, replacement);
         assert.equal(Object.isFrozen(replacedValue), true);
         assert.equal(replacedObservation.explanation.resolutions[0].hardening.mode, 'frozen');
     });
 
     it('records failure and preserves equivalent resolution when observation is disabled', async () => {
-        const observed = new TeqFw_Di_Container({introspection: true});
-        const plain = new TeqFw_Di_Container();
-        observed.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-        plain.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const namespaces = [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}];
+        const observed = new TeqFw_Di_Container({introspection: true, namespaces});
+        const plain = new TeqFw_Di_Container({namespaces});
 
         const observedValue = await observed.get('Fx_Root$');
         const plainValue = await plain.get('Fx_Root$');
 
         assert.deepStrictEqual(observedValue, plainValue);
+        assert.equal(Object.isFrozen(observedValue), true);
+        assert.strictEqual(await observed.get('Fx_Root$'), observedValue);
+        assert.strictEqual(await plain.get('Fx_Root$'), plainValue);
 
         const failing = new TeqFw_Di_Container({introspection: true});
         await assert.rejects(() => failing.get('teq:Fx_Root$'));

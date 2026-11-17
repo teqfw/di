@@ -11,8 +11,7 @@ const FIXTURE_DIR = path.resolve(__dirname, './fixture');
 
 describe('Integration 50: wrappers', () => {
     it('applies wrappers in declared order', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         const value = await container.get('Fx_Wrapped$$_wrapFirst_wrapSecond');
 
@@ -20,8 +19,7 @@ describe('Integration 50: wrappers', () => {
     });
 
     it('rejects a Promise-returning Wrapper (Wrapper must be synchronous)', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         await assert.rejects(
             () => container.get('Fx_Wrapped$$_wrapThenable'),
@@ -30,8 +28,7 @@ describe('Integration 50: wrappers', () => {
     });
 
     it('keeps ordered Wrapper Selection in Singleton identity inside one graph', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         const root = await container.get('Fx_GraphLifestyle$');
         const first = root.wrappedA;

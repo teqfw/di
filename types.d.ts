@@ -1,5 +1,4 @@
 declare global {
-  type TeqFw_Di_Config_NamespaceRegistry = import("./src/Config/NamespaceRegistry.mjs").default;
   type TeqFw_Di_Container = import("./src/Container.mjs").default;
   type TeqFw_Di_Container_Canonicalizer = import("./src/Container/Canonicalizer.mjs").default;
   type TeqFw_Di_Container_Hardener = import("./src/Container/Hardener.mjs").default;
@@ -24,6 +23,26 @@ declare global {
   type TeqFw_Di_Dto_DepId__Factory = import("./src/Dto/DepId.mjs").Factory;
   type TeqFw_Di_Dto_Container_Config = import("./src/Dto/Container/Config.mjs").default;
   type TeqFw_Di_Dto_Container_Config__Factory = import("./src/Dto/Container/Config.mjs").Factory;
+  type TeqFw_Di_Dto_ModuleRouter_Config = import("./src/Dto/ModuleRouter/Config.mjs").default;
+  type TeqFw_Di_Dto_ModuleRouter_Config__Class = typeof import("./src/Dto/ModuleRouter/Config.mjs").default;
+  type TeqFw_Di_Dto_ModuleRouter_Config__Factory = import("./src/Dto/ModuleRouter/Config.mjs").Factory;
+  type TeqFw_Di_Dto_ModuleRouter_Config_Namespace = import("./src/Dto/ModuleRouter/Config/Namespace.mjs").default;
+  type TeqFw_Di_Dto_ModuleRouter_Config_Namespace__Class = typeof import("./src/Dto/ModuleRouter/Config/Namespace.mjs").default;
+  type TeqFw_Di_Dto_ModuleRouter_Config_Namespace__Factory = import("./src/Dto/ModuleRouter/Config/Namespace.mjs").Factory;
+  type TeqFw_Di_Container_ConfigInput = Readonly<{
+    namespaces?: Array<Readonly<{prefix: string, target: string, defaultExt: string}>>,
+    preprocessors?: string[],
+    postprocessors?: string[],
+    hardener?: string|null,
+    logging?: boolean,
+    introspection?: boolean,
+  }>;
+  type TeqFw_Di_Parser_Declaration = Readonly<{
+    specifier: string,
+    depId: TeqFw_Di_Dto_DepId,
+    deferred: boolean,
+  }>;
+  type TeqFw_Di_Container_Provider<T = unknown> = Readonly<{resolve(): Promise<T>}>
   type TeqFw_Di_Enum_AddressKind = typeof import("./src/Enum/AddressKind.mjs").default;
   type TeqFw_Di_Enum_Lifestyle = typeof import("./src/Enum/Lifestyle.mjs").default;
   type TeqFw_Di_Enum_ObservationEvent = typeof import("./src/Enum/ObservationEvent.mjs").default;

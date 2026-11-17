@@ -23,7 +23,11 @@ export default class TeqFw_Di_Internal_Logger {
          * @returns {void}
          */
         this.log = function (message) {
-            console.debug(`${prefix} ${message}`);
+            try {
+                console.debug(`${prefix} ${message}`);
+            } catch {
+                // Diagnostics cannot change application behavior.
+            }
         };
 
         /**
@@ -32,13 +36,15 @@ export default class TeqFw_Di_Internal_Logger {
          * @returns {void}
          */
         this.error = function (message, error) {
-            console.error(`${prefix} ${message}`);
-            if (error instanceof Error) {
-                console.error(error.stack ?? error.message);
-                return;
-            }
-            if (error !== undefined) {
-                console.error(error);
+            try {
+                console.error(`${prefix} ${message}`);
+                if (error instanceof Error) {
+                    console.error(error.stack ?? error.message);
+                    return;
+                }
+                if (error !== undefined) console.error(error);
+            } catch {
+                // A broken diagnostic sink must not mask an application error.
             }
         };
     }

@@ -46,4 +46,18 @@ describe('TeqFw_Di_Container_Observer', () => {
         assert.doesNotThrow(() => observer.record('failure', /** @type {any} */ (null)));
         assert.doesNotThrow(() => observer.complete('failure', 'Failed'));
     });
+
+    it('keeps collector failures from escaping observation operations', () => {
+        const observer = createObserver('Root$');
+        const brokenPayload = new Proxy({}, {
+            ownKeys() {
+                throw new Error('controlled collector failure');
+            },
+        });
+
+        assert.doesNotThrow(() => observer.addNode(/** @type {any} */ (brokenPayload)));
+        assert.doesNotThrow(() => observer.addEdge(/** @type {any} */ (brokenPayload)));
+        assert.doesNotThrow(() => observer.record('event', /** @type {any} */ (brokenPayload)));
+        assert.doesNotThrow(() => observer.complete('success', 'Running'));
+    });
 });

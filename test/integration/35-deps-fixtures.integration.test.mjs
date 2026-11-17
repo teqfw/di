@@ -11,13 +11,11 @@ const FIXTURE_DIR = path.resolve(__dirname, '../fixtures/deps');
 
 describe('Integration 35: dependency fixture forms', () => {
     it('resolves hierarchical __deps__ for default and named exports', async () => {
-        const defaultContainer = new TeqFw_Di_Container();
-        defaultContainer.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        const defaultContainer = new TeqFw_Di_Container({namespaces: [{prefix: 'TestSample_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         defaultContainer.enableTestMode();
         const defaultValue = await defaultContainer.get('TestSample_Canonical$');
 
-        const factoryContainer = new TeqFw_Di_Container();
-        factoryContainer.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        const factoryContainer = new TeqFw_Di_Container({namespaces: [{prefix: 'TestSample_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         factoryContainer.enableTestMode();
         const factoryValue = await factoryContainer.get('TestSample_Canonical__Factory$');
 
@@ -36,8 +34,7 @@ describe('Integration 35: dependency fixture forms', () => {
     });
 
     it('resolves flat shorthand __deps__ for single-export form', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'TestSample_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         container.enableTestMode();
 
         const value = await container.get('TestSample_Shorthand$');
@@ -47,17 +44,14 @@ describe('Integration 35: dependency fixture forms', () => {
     });
 
     it('resolves named-only __deps__ without a default entry', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'TestSample_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         container.enableTestMode();
 
-        const defaultContainer = new TeqFw_Di_Container();
-        defaultContainer.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        const defaultContainer = new TeqFw_Di_Container({namespaces: [{prefix: 'TestSample_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         defaultContainer.enableTestMode();
         const defaultValue = await defaultContainer.get('TestSample_NamedOnly$');
 
-        const factoryContainer = new TeqFw_Di_Container();
-        factoryContainer.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        const factoryContainer = new TeqFw_Di_Container({namespaces: [{prefix: 'TestSample_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         factoryContainer.enableTestMode();
         const factoryValue = await factoryContainer.get('TestSample_NamedOnly__Factory$');
 
@@ -68,8 +62,7 @@ describe('Integration 35: dependency fixture forms', () => {
     });
 
     it('resolves empty descriptor modules without mock dependencies', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'TestSample_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         const value = await container.get('TestSample_Empty$');
 

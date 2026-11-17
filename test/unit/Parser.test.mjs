@@ -145,4 +145,25 @@ describe('TeqFw_Di_Parser', () => {
             assert.ok(Object.isFrozen(dto.wrappers));
         });
     });
+
+    describe('declaration timing', () => {
+        it('returns a frozen ordinary descriptor and keeps timing outside DepId', () => {
+            const ordinary = parser.parseDeclaration(`${ADDRESS}$`);
+            const deferred = parser.parseDeclaration(`~${ADDRESS}$`);
+            assert.equal(ordinary.specifier, `${ADDRESS}$`);
+            assert.equal(ordinary.deferred, false);
+            assert.equal(deferred.specifier, `${ADDRESS}$`);
+            assert.equal(deferred.deferred, true);
+            assert.equal(deferred.depId.address, ADDRESS);
+            assert.equal(Object.isFrozen(deferred), true);
+            assert.equal(Object.isFrozen(deferred.depId), true);
+            assert.equal(Object.hasOwn(deferred.depId, 'deferred'), false);
+        });
+
+        it('rejects invalid deferred encodings through the ordinary grammar', () => {
+            for (const specifier of ['~~App_Service$', 'App_~Service$', '~teq:App_Service$', '~']) {
+                assert.throws(() => parser.parseDeclaration(specifier), Error);
+            }
+        });
+    });
 });

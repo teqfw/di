@@ -13,11 +13,6 @@ metadata:
 Use this version-matched skill for the installed `@teqfw/di` package. The host
 project's instructions, architecture, and test conventions remain authoritative.
 
-Availability: FIFO entries, deferred Providers, and strengthened final-value
-hardening below are accepted targets awaiting implementation and verification.
-Their examples describe the target contract; verify support in the installed
-release before using them. This status does not change the accepted contract.
-
 ## Install and import
 
 ```sh
@@ -54,7 +49,11 @@ Teq-compatible runtime modules have no static ES imports.
 Use `~` only in `__deps__` for a frozen Provider exposing `resolve()`. Its
 creation does not load or preprocess the target; each call queues a new entry
 with ordinary policy, lifestyles, fresh ancestry, and no Provider-owned cache.
-An active entry awaiting its own later queued request can deadlock.
+**Application error:** never await a Provider's `resolve()` while resolving an
+active entry in the same Container. Its request is queued behind that entry, so
+both remain pending and block the queue. The Container does not detect or throw
+for this deadlock. Invoke the Provider after the creating entry has settled. The
+same restriction applies when awaiting a later `get()` of that Container.
 
 Final-value hardening is mandatory: settle a Promise/thenable before freezing
 the ordinary object or function actually delivered. Optional custom Hardener
@@ -73,8 +72,8 @@ Use only these public imports in new code:
 @teqfw/di/node/registry/namespace
 ```
 
-`@teqfw/di/src/Config/NamespaceRegistry.mjs` is the deprecated COMPAT-001
-migration path, not a new-code import. No other `src/**` path is public.
+All `src/**` package subpaths are internal. The construction DTO is the only
+composition-policy surface.
 
 ## Select references
 
@@ -86,7 +85,7 @@ migration path, not a new-code import. No other `src/**` path is public.
 | Configure substitutions, Preprocessors, Postprocessors, Wrappers, or final-value protection | [Extensions](references/extensions.md) |
 | Use Node.js package metadata and namespace utilities | [Usage](references/usage.md), [Concepts](references/concepts.md) |
 | Work with JSDoc aliases | [Types](references/types.md) |
-| Preserve a deprecated surface or mount the installed skill | [Compatibility](references/compatibility.md), [Distribution](references/distribution.md) |
+| Install or mount the package-distributed skill | [Distribution](references/distribution.md) |
 
 The references are self-contained package guidance. Verify exact runtime behavior
 against the installed package and test the host's composition before relying on

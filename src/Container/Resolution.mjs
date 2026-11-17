@@ -24,6 +24,7 @@ import {createResolutionContext} from './ResolutionContext.mjs';
  * @property {TeqFw_Di_Container_Hardener} hardener
  * @property {(depId: TeqFw_Di_Dto_DepId) => {found: boolean, value: unknown}} findMock
  * @property {TeqFw_Di_Internal_Logger_Contract} logger
+ * @property {(specifier: string) => Promise<unknown>} [enqueue]
  * @property {TeqFw_Di_Container_Observer_Contract} observer
  * @property {string} [entryId]
  */
@@ -60,6 +61,31 @@ const selectExport = function (depId, namespace) {
 };
 
 /**
+ * Rejects values whose Promise transport could call a dynamic or callable
+ * `then` after hardening. Native Promise delivery cannot expose such a value
+ * without assimilating it again.
+ *
+ * @param {unknown} value
+ * @returns {void}
+ */
+const assertStablePromiseExposure = function (value) {
+    if ((value === null) || ((typeof value !== 'object') && (typeof value !== 'function'))) return;
+    let cursor = /** @type {object|null} */ (value);
+    while (cursor !== null) {
+        const descriptor = Object.getOwnPropertyDescriptor(cursor, 'then');
+        if (descriptor) {
+            if (('get' in descriptor) || ('set' in descriptor) || (typeof descriptor.value === 'function')) {
+                throw new Error('Terminal value cannot be exposed safely through native Promise delivery.');
+            }
+            if (descriptor.value !== undefined) {
+                throw new Error('Terminal value has a non-terminal Promise delivery property.');
+            }
+        }
+        cursor = Object.getPrototypeOf(cursor);
+    }
+};
+
+/**
  * Executes one entry request and all recursive child requests. Request-local
  * active graph state is created here and never stored in Container scope.
  *
@@ -80,6 +106,7 @@ export async function executeResolution(ctx, specifier) {
         findMock,
         logger,
         observer,
+        enqueue = () => Promise.reject(new Error('Deferred Provider entry queue is unavailable during policy preparation.')),
         entryId = 'entry-0',
     } = ctx;
 
@@ -88,6 +115,10 @@ export async function executeResolution(ctx, specifier) {
     /** @type {string[]} */
     const chain = [];
     let nextNodeId = 0;
+    /** @type {string|null} */
+    let rootKey = null;
+    /** @type {'bypass'|'hit'|'miss'|null} */
+    let rootCache = null;
 
     /**
      * Resolves one dependency node through the effective identity.
@@ -102,6 +133,8 @@ export async function executeResolution(ctx, specifier) {
         const nodeId = `resolution-${nextNodeId++}`;
         let key = '';
         let activeHere = false;
+        /** @type {'bypass'|'hit'|'miss'|null} */
+        let cacheOutcome = null;
         let stage = TeqFw_Di_Enum_ResolutionStage.IDENTIFIER_PARSING;
 
         try {
@@ -111,6 +144,7 @@ export async function executeResolution(ctx, specifier) {
             const depId = identifiers.effective;
             const context = createResolutionContext(depId, ancestors);
             key = buildDependencyKey(depId);
+            if (parentNodeId === null) rootKey = key;
             const mock = findMock(depId);
 
             observer.addNode({
@@ -161,6 +195,8 @@ export async function executeResolution(ctx, specifier) {
 
             stage = TeqFw_Di_Enum_ResolutionStage.SINGLETON_CACHE_LOOKUP;
             const cache = lifecycle.lookup(depId);
+            cacheOutcome = cache;
+            if (parentNodeId === null) rootCache = cache;
             observer.record(TeqFw_Di_Enum_ObservationEvent.CACHE, {nodeId, key, outcome: cache});
             logger.log(`Resolution.cache: ${cache} addressKind='${depId.addressKind}' address='${depId.address}'.`);
 
@@ -235,6 +271,21 @@ export async function executeResolution(ctx, specifier) {
                             });
                             const declared = readDepsDecl(namespace, depId);
                             for (const [name, childSpecifier] of Object.entries(declared)) {
+                                stage = TeqFw_Di_Enum_ResolutionStage.IDENTIFIER_PARSING;
+                                const declaration = canonicalizer.parseDeclaration(/** @type {string} */ (childSpecifier));
+                                if (declaration.deferred) {
+                                    const provider = Object.freeze({
+                                        resolve: () => enqueue(declaration.specifier),
+                                    });
+                                    dependencies[name] = provider;
+                                    observer.record(TeqFw_Di_Enum_ObservationEvent.PROVIDER, {
+                                        nodeId,
+                                        key,
+                                        dependencyName: name,
+                                        requestedSpecifier: declaration.specifier,
+                                    });
+                                    continue;
+                                }
                                 stage = TeqFw_Di_Enum_ResolutionStage.CHILD_DEPENDENCY_RESOLUTION;
                                 observer.record(TeqFw_Di_Enum_ObservationEvent.CHILD, {
                                     nodeId,
@@ -243,7 +294,7 @@ export async function executeResolution(ctx, specifier) {
                                     requestedSpecifier: childSpecifier,
                                 });
                                 dependencies[name] = await resolveOne(
-                                    /** @type {string} */ (childSpecifier),
+                                    declaration.specifier,
                                     context.stack,
                                     nodeId,
                                     name
@@ -279,18 +330,26 @@ export async function executeResolution(ctx, specifier) {
                     });
                 }
 
+                stage = TeqFw_Di_Enum_ResolutionStage.VALUE_SETTLEMENT;
+                const settled = await wrapped;
+                observer.record(TeqFw_Di_Enum_ObservationEvent.SETTLEMENT, {nodeId, key});
+
                 stage = TeqFw_Di_Enum_ResolutionStage.HARDENING;
-                const hardening = hardener.harden(wrapped);
+                const hardening = hardener.harden(settled);
                 observer.record(TeqFw_Di_Enum_ObservationEvent.HARDENING, {
                     nodeId,
                     key,
                     mode: hardening.mode,
                 });
                 stage = TeqFw_Di_Enum_ResolutionStage.VALUE_EXPOSURE;
+                assertStablePromiseExposure(hardening.value);
                 logger.log(`Resolution.return: addressKind='${depId.addressKind}' address='${depId.address}'.`);
                 return hardening.value;
             });
         } catch (error) {
+            if ((cacheOutcome === 'miss') && (stage === TeqFw_Di_Enum_ResolutionStage.VALUE_EXPOSURE) && key) {
+                lifecycle.evict(key);
+            }
             observer.record(TeqFw_Di_Enum_ObservationEvent.FAILURE, {
                 nodeId,
                 key: key || null,
@@ -308,7 +367,8 @@ export async function executeResolution(ctx, specifier) {
 
     try {
         logger.log(`Container.entry: id='${entryId}' specifier='${specifier}'.`);
-        return await resolveOne(specifier, [], null, null);
+        const value = await resolveOne(specifier, [], null, null);
+        return {value, rootKey, rootCache};
     } catch (error) {
         logger.error('Resolution: failed.', error);
         throw error;

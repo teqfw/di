@@ -35,7 +35,7 @@ import {buildDependencyKey} from './Internal/DependencyKey.mjs';
  */
 export default class TeqFw_Di_Container {
     /**
-     * @param {{namespaces?: Array<{prefix: string, target: string, defaultExt: string}>, preprocessors?: string[], postprocessors?: string[], hardener?: string|null, logging?: boolean, introspection?: boolean}} [data]
+     * @param {TeqFw_Di_Container_ConfigInput} [data]
      */
     constructor(data = {}) {
         /** @type {TeqFw_Di_Container_State} */
@@ -44,14 +44,6 @@ export default class TeqFw_Di_Container {
         const testSubstitutionRegistry = new Map();
         /** @type {Array<{specifier: string, value: unknown}>} */
         const registeredTestSubstitutions = [];
-        /** @type {Array<{prefix: string, target: string, defaultExt: string}>} */
-        const namespaceRoots = [];
-        /** @type {Array<(depId: TeqFw_Di_Dto_DepId, context: TeqFw_Di_Container_ResolutionContext) => TeqFw_Di_Dto_DepId>} */
-        const legacyPreprocessors = [];
-        /** @type {Array<(value: unknown, context: TeqFw_Di_Container_ResolutionContext) => unknown>} */
-        const legacyPostprocessors = [];
-        /** @type {((value: unknown) => unknown)|null} */
-        let legacyHardener = null;
         let testMode = false;
         /** @type {any[]} */
         const entrySnapshots = [];
@@ -59,12 +51,16 @@ export default class TeqFw_Di_Container {
         let introspectionSnapshot = null;
         let nextEntryId = 0;
         let entryActive = false;
+        /** @type {Array<{specifier: string, promise: Promise<any>, delivery: Promise<{success: boolean, error?: unknown}>, resolve: (value: any) => void, reject: (error: unknown) => void, onDelivery: () => void, onDeliveryFailure: (error: unknown) => void}>} */
+        const entryQueue = [];
+        let draining = false;
+        /** @type {Promise<void>|null} */
+        let preparationPromise = null;
         /** @type {any} */
         let resolutionContext = null;
         /** @type {TeqFw_Di_Dto_Container_Config__Factory} */
         const containerConfigFactory = new TeqFw_Di_Dto_Container_Config_Factory();
         const config = containerConfigFactory.create(data);
-        namespaceRoots.splice(0, namespaceRoots.length, ...config.namespaces);
         /** @type {TeqFw_Di_Dto_ModuleRouter_Config__Factory} */
         const moduleRouterConfigFactory = new TeqFw_Di_Dto_ModuleRouter_Config_Factory();
         /** @type {TeqFw_Di_Parser} */
@@ -82,7 +78,7 @@ export default class TeqFw_Di_Container {
         /** @type {TeqFw_Di_Container_Hardener} */
         const hardener = new TeqFw_Di_Container_Hardener();
         /** @type {TeqFw_Di_Internal_Logger_Contract} */
-        let logger = config.logging ? new TeqFw_Di_Internal_Logger() : TeqFw_Di_Internal_Logger_Noop;
+        const logger = config.logging ? new TeqFw_Di_Internal_Logger() : TeqFw_Di_Internal_Logger_Noop;
         const introspectionEnabled = config.introspection;
         if (typeof parser.setLogger === 'function') parser.setLogger(logger);
 
@@ -120,59 +116,10 @@ export default class TeqFw_Di_Container {
             if (state !== 'Configuring') throw new Error('Container configuration is locked.');
         };
 
-        /**
-         * @param {(depId: TeqFw_Di_Dto_DepId, context: TeqFw_Di_Container_ResolutionContext) => TeqFw_Di_Dto_DepId} fn
-         * @returns {void}
-         * @deprecated Supply a producer identifier through configuration instead.
-         */
-        this.addPreprocess = function (fn) {
-            assertConfigurationStage();
-            legacyPreprocessors.push(fn);
-        };
-
-        /**
-         * @param {(value: unknown, context: TeqFw_Di_Container_ResolutionContext) => unknown} fn
-         * @returns {void}
-         * @deprecated Supply a producer identifier through configuration instead.
-         */
-        this.addPostprocess = function (fn) {
-            assertConfigurationStage();
-            legacyPostprocessors.push(fn);
-        };
-
-        /**
-         * @param {(value: unknown) => unknown} fn
-         * @returns {void}
-         * @deprecated Supply a producer identifier through configuration instead.
-         */
-        this.setHardener = function (fn) {
-            assertConfigurationStage();
-            legacyHardener = fn;
-        };
-
-        /**
-         * @param {string} prefix
-         * @param {string} target
-         * @param {string} defaultExt
-         * @returns {void}
-         * @deprecated Supply namespace mappings through configuration instead.
-         */
-        this.addNamespaceRoot = function (prefix, target, defaultExt) {
-            assertConfigurationStage();
-            namespaceRoots.push({prefix, target, defaultExt});
-        };
-
         /** @returns {void} */
         this.enableTestMode = function () {
             assertConfigurationStage();
             testMode = true;
-        };
-
-        /** @returns {void} @deprecated Supply logging through configuration instead. */
-        this.enableLogging = function () {
-            assertConfigurationStage();
-            logger = new TeqFw_Di_Internal_Logger();
-            if (typeof parser.setLogger === 'function') parser.setLogger(logger);
         };
 
         /**
@@ -190,8 +137,8 @@ export default class TeqFw_Di_Container {
 
         /**
          * Returns immutable snapshots for completed entry resolutions. The
-         * top-level graph, trace, and explanation retain the latest entry for
-         * compatibility; `entries` preserves the complete entry history.
+         * top-level graph, trace, and explanation describe the latest entry;
+         * `entries` preserves the complete entry history.
          *
          * @returns {object|null}
          */
@@ -229,98 +176,151 @@ export default class TeqFw_Di_Container {
             });
         };
 
+        /** @returns {Promise<void>} */
+        const prepare = async function () {
+            logger.log('Container.configuration: materializing declared policy.');
+            const moduleRouterConfig = moduleRouterConfigFactory.create({namespaces: [...config.namespaces]});
+            const moduleRouter = new TeqFw_Di_Container_ModuleRouter({config: moduleRouterConfig, logger});
+            const moduleLoader = new TeqFw_Di_Container_ModuleLoader({logger});
+            const lifecycle = new TeqFw_Di_Container_Lifecycle(logger);
+            await configureContainer({config, canonicalizer, moduleRouter, moduleLoader, producer, wrapper, hardener, postprocessor, logger, enqueue: requestEntry});
+            finalizeTestSubstitutions();
+            resolutionContext = {
+                canonicalizer, lifecycle, moduleRouter, moduleLoader, producer, postprocessor, wrapper, hardener,
+                findMock, logger, enqueue: /** @type {(specifier: string) => Promise<any>} */ ((specifier) => requestEntry(specifier)),
+            };
+            logger.log('Container.transition: Preparing -> Running.');
+            state = 'Running';
+        };
+
         /**
-         * Materializes configured policy once, then resolves one sequential
-         * public entry Dependency Identifier.
+         * @param {unknown} error
+         * @returns {void}
+         */
+        const failPreparation = function (error) {
+            logger.error('Container.transition: Preparing -> Failed.', error);
+            state = 'Failed';
+            for (const request of entryQueue.splice(0)) request.reject(error);
+        };
+
+        /** @param {string} specifier @returns {Promise<any>} */
+        const requestEntry = (/** @type {string} */ specifier) => this.get(specifier);
+
+        /** @returns {Promise<void>} */
+        const drainQueue = async function () {
+            if (draining || (state !== 'Running')) return;
+            draining = true;
+            try {
+                while (entryQueue.length > 0) {
+                    const request = /** @type {NonNullable<typeof entryQueue[number]>} */ (entryQueue.shift());
+                    entryActive = true;
+                    const entryId = `entry-${nextEntryId++}`;
+                    const observer = introspectionEnabled ? createObserver(request.specifier, entryId) : createNoopObserver();
+                    if (entryId === 'entry-0') {
+                        observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {from: 'Preparing', to: 'Running'});
+                    }
+                    try {
+                        const result = await executeResolution({...resolutionContext, observer, entryId}, request.specifier);
+                        request.onDelivery = () => {
+                            observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {from: 'Running', to: 'Running'});
+                            observer.complete('success', state);
+                            publishEntry(observer);
+                        };
+                        request.onDeliveryFailure = (error) => {
+                            if ((result.rootCache === 'miss') && result.rootKey) resolutionContext.lifecycle.evict(result.rootKey);
+                            observer.record(TeqFw_Di_Enum_ObservationEvent.FAILURE, {
+                                nodeId: null,
+                                stage: 'value exposure',
+                                cause: error instanceof Error ? error.message : String(error),
+                            });
+                            observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {from: 'Running', to: 'Running'});
+                            observer.complete('failure', state);
+                            publishEntry(observer);
+                        };
+                        request.resolve(result.value);
+                        const exposed = await request.delivery;
+                        if (!exposed.success) logger.error('Container.entry: native value delivery failed.', exposed.error);
+                    } catch (error) {
+                        logger.error('Container.entry: resolution failed; Container remains Running.', error);
+                        observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {from: 'Running', to: 'Running'});
+                        observer.complete('failure', state);
+                        publishEntry(observer);
+                        request.reject(error);
+                    } finally {
+                        entryActive = false;
+                    }
+                }
+            } finally {
+                draining = false;
+                if ((entryQueue.length > 0) && (state === 'Running')) void drainQueue();
+            }
+        };
+
+        /**
+         * Enqueues one public entry. The first call locks configuration before
+         * returning, so all synchronous setup attempts observe the locked state.
          *
          * @param {string} specifier
          * @returns {Promise<any>}
          */
-        this.get = async function (specifier) {
-            if (state === 'Failed') {
-                throw new Error('Container preparation failed; the Container is unusable.');
-            }
-            if ((state === 'Preparing') || entryActive) {
-                throw new Error('Container is busy; concurrent or re-entrant get() is not allowed.');
-            }
-
-            const startsPreparation = state === 'Configuring';
-            if (startsPreparation) {
-                state = 'Preparing';
-                try {
-                logger.log('Container.configuration: materializing declared policy.');
-                const moduleRouterConfig = moduleRouterConfigFactory.create({namespaces: [...namespaceRoots]});
-                const moduleRouter = new TeqFw_Di_Container_ModuleRouter({config: moduleRouterConfig, logger});
-                const moduleLoader = new TeqFw_Di_Container_ModuleLoader({logger});
-                const lifecycle = new TeqFw_Di_Container_Lifecycle(logger);
-                await configureContainer({
-                    config,
-                    canonicalizer,
-                    moduleRouter,
-                    moduleLoader,
-                    producer,
-                    wrapper,
-                    hardener,
-                    postprocessor,
-                    logger,
-                });
-                for (const fn of legacyPreprocessors) canonicalizer.add(fn);
-                for (const fn of legacyPostprocessors) postprocessor.add(fn);
-                if (legacyHardener !== null) hardener.setConfigured(legacyHardener);
-                finalizeTestSubstitutions();
-                resolutionContext = {
-                    canonicalizer,
-                    lifecycle,
-                    moduleRouter,
-                    moduleLoader,
-                    producer,
-                    postprocessor,
-                    wrapper,
-                    hardener,
-                    findMock,
-                    logger,
-                };
-                logger.log('Container.transition: Preparing -> Running.');
-                state = 'Running';
-                } catch (error) {
-                    logger.error('Container.transition: Preparing -> Failed.', error);
-                    state = 'Failed';
-                    throw error;
+        this.get = function (specifier) {
+            if (state === 'Failed') return Promise.reject(new Error('Container preparation failed; the Container is unusable.'));
+            /** @type {(value: any) => void} */
+            let resolveRequest = () => {};
+            /** @type {(error: unknown) => void} */
+            let rejectRequest = () => {};
+            const result = new Promise((resolve, reject) => {
+                resolveRequest = resolve;
+                rejectRequest = reject;
+            });
+            /** @type {() => void} */
+            let onDelivery = () => {};
+            /** @type {(error: unknown) => void} */
+            let onDeliveryFailure = () => {};
+            /** @type {(value: {success: boolean, error?: unknown}) => void} */
+            let completeDelivery = () => {};
+            const delivery = new Promise((resolve) => {
+                completeDelivery = resolve;
+            });
+            result.then(
+                () => {
+                    try {
+                        onDelivery();
+                    } catch {
+                        // Observation publication must not alter a delivered value.
+                    } finally {
+                        completeDelivery({success: true});
+                    }
+                },
+                (error) => {
+                    try {
+                        onDeliveryFailure(error);
+                    } catch {
+                        // Observation publication must not mask native delivery failure.
+                    } finally {
+                        completeDelivery({success: false, error});
+                    }
                 }
+            );
+            entryQueue.push({
+                specifier,
+                promise: result,
+                delivery,
+                resolve: resolveRequest,
+                reject: rejectRequest,
+                get onDelivery() { return onDelivery; },
+                set onDelivery(fn) { onDelivery = fn; },
+                get onDeliveryFailure() { return onDeliveryFailure; },
+                set onDeliveryFailure(fn) { onDeliveryFailure = fn; },
+            });
+            if (state === 'Configuring') {
+                state = 'Preparing';
+                preparationPromise = prepare();
+                void preparationPromise.then(() => drainQueue(), (error) => failPreparation(error));
+            } else if (state === 'Running' && !entryActive) {
+                void drainQueue();
             }
-
-            const entryId = `entry-${nextEntryId++}`;
-            const observer = introspectionEnabled ? createObserver(specifier, entryId) : createNoopObserver();
-            if (startsPreparation) {
-                observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {
-                    from: 'Preparing',
-                    to: 'Running',
-                });
-            }
-            entryActive = true;
-            try {
-                const value = await executeResolution({...resolutionContext, observer, entryId}, specifier);
-                observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {
-                    from: 'Running',
-                    to: 'Running',
-                });
-                observer.complete('success', state);
-                publishEntry(observer);
-                return value;
-            } catch (error) {
-                logger.error('Container.entry: resolution failed; Container remains Running.', error);
-                observer.record(TeqFw_Di_Enum_ObservationEvent.FAILURE, {
-                    nodeId: null,
-                    stage: 'resolution',
-                    cause: error instanceof Error ? error.message : String(error),
-                });
-                observer.record(TeqFw_Di_Enum_ObservationEvent.STATE, {from: 'Running', to: 'Running'});
-                observer.complete('failure', state);
-                publishEntry(observer);
-                throw error;
-            } finally {
-                entryActive = false;
-            }
+            return result;
         };
     }
 }

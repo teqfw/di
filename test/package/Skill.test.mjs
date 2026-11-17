@@ -23,14 +23,15 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
         'new Container(config) captures configuration',
         'Configuring → Preparing',
         'Preparing → Running',
-        'Every later `get()`',
         'Dependency Identifiers',
-        '@teqfw/di/src/Config/NamespaceRegistry.mjs',
-        'references/compatibility.md',
         'references/distribution.md',
     ]) {
         assert.ok(skill.includes(requiredText), 'Skill must state ' + requiredText + '.');
     }
+    assert.match(skill, /\bSingleton\b/);
+    assert.match(skill, /\bFIFO\b/);
+    assert.match(skill, /`resolve\(\)`/);
+    assert.match(skill, /\bHardener\b/);
 
     const references = [...skill.matchAll(/references\/([a-z0-9.-]+)/g)].map((match) => match[1]);
     assert.ok(references.length > 0, 'SKILL.md must name reference files.');
@@ -40,27 +41,6 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
         const content = fs.readFileSync(referencePath, 'utf8');
         assert.doesNotMatch(content, /(?:^|[(/`])(?:\.\.\/)*(?:ctx|test|tmp)\//m);
     }
-
-    const compatibility = fs.readFileSync(path.join(skillDir, 'references', 'compatibility.md'), 'utf8');
-    assert.match(compatibility, /2027-01-28/);
-    assert.match(compatibility, /approved breaking release/);
-    for (const method of [
-        'addNamespaceRoot()',
-        'addPreprocess()',
-        'addPostprocess()',
-        'setHardener()',
-        'enableLogging()',
-    ]) {
-        assert.ok(compatibility.includes(method), 'Compatibility reference must state ' + method + '.');
-    }
-    assert.match(compatibility, /first `get\(\)` locks every configuration surface/);
-    assert.match(compatibility, /no\s+mutable `enableIntrospection\(\)` compatibility path/);
-    assert.match(compatibility, /must not[\s\S]*rely on its ordering or override behavior/);
-    assert.match(compatibility, /no committed removal schedule/);
-    assert.match(compatibility, /enableTestMode\(\).*separate test-only public capability/s);
-    assert.match(compatibility, /register\(\).*arbitrary runtime values/s);
-    assert.doesNotMatch(compatibility, /deprecated test-only setup methods/);
-    assert.doesNotMatch(compatibility, /DTO `mocks`/);
 
     const usage = fs.readFileSync(path.join(skillDir, 'references', 'usage.md'), 'utf8');
     assert.match(usage, /absolute\s+application root/);
@@ -80,6 +60,15 @@ test('publishes the teqfw-di Agent Skill consumer contract', () => {
     assert.doesNotMatch(allConsumerDocumentation, /DepId DTO/);
     assert.doesNotMatch(allConsumerDocumentation, /config\.mocks/);
     assert.doesNotMatch(allConsumerDocumentation, /mocks:\s*\[/);
+    for (const concept of [
+        /frozen Provider/i,
+        /resolve\(\):\s*Promise/i,
+        /deadlock/i,
+        /mandatory[^.\n]{0,100}(?:freeze|hardening)|(?:freeze|hardening)[^.\n]{0,100}mandatory/i,
+        /__Class/,
+    ]) {
+        assert.match(allConsumerDocumentation, concept, 'Consumer documentation must preserve the declared contract concept.');
+    }
 
     const readme = fs.readFileSync(path.join(rootDir, 'README.md'), 'utf8');
     for (const requiredText of [

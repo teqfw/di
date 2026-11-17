@@ -2,56 +2,38 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import {executeResolution} from '../../../src/Container/Resolution.mjs';
-import TeqFw_Di_Container_Hardener from '../../../src/Container/Hardener.mjs';
-import TeqFw_Di_Container_Lifecycle from '../../../src/Container/Lifecycle.mjs';
-import TeqFw_Di_Container_Postprocessor from '../../../src/Container/Postprocessor.mjs';
-import TeqFw_Di_Container_Producer from '../../../src/Container/Producer.mjs';
-import TeqFw_Di_Container_Wrapper from '../../../src/Container/Wrapper.mjs';
-import {createObserver} from '../../../src/Container/Observer.mjs';
-import TeqFw_Di_Enum_AddressKind from '../../../src/Enum/AddressKind.mjs';
-import TeqFw_Di_Enum_Lifestyle from '../../../src/Enum/Lifestyle.mjs';
 import TeqFw_Di_Enum_ObservationEvent from '../../../src/Enum/ObservationEvent.mjs';
-import {Factory as DepIdFactory} from '../../../src/Dto/DepId.mjs';
-
-const factory = new DepIdFactory();
 
 describe('TeqFw_Di_Container_Resolution', () => {
     it('observes route before load and keeps export selection before production', async () => {
-        const depId = factory.create({
-            addressKind: TeqFw_Di_Enum_AddressKind.TEQ,
-            address: 'App_Service',
-            exportName: 'default',
-            lifestyle: TeqFw_Di_Enum_Lifestyle.SINGLETON,
-            wrappers: [],
-        });
-        const observer = createObserver('App_Service$');
+        const depId = Object.freeze({addressKind: 'teq', address: 'App_Service', exportName: 'default', lifestyle: 'S', wrappers: Object.freeze([])});
         /** @type {string[]} */
         const order = [];
+        /** @type {string[]} */
+        const events = [];
         const namespace = {default: () => ({value: 42})};
         const result = await executeResolution(/** @type {any} */ ({
             canonicalizer: {
                 parse() { return depId; },
                 preprocess() { return {effective: depId, preprocessing: []}; },
             },
-            lifecycle: new TeqFw_Di_Container_Lifecycle(),
+            lifecycle: {lookup() { return 'miss'; }, async apply(/** @type {TeqFw_Di_Dto_DepId} */ _depId, /** @type {() => Promise<unknown>} */ onMiss) { return onMiss(); }, evict() {}},
             moduleRouter: {route() { order.push('route'); return {specifier: '/App/Service.mjs'}; }},
             moduleLoader: {
                 async load() { order.push('load'); return namespace; },
             },
-            producer: new TeqFw_Di_Container_Producer(),
-            postprocessor: new TeqFw_Di_Container_Postprocessor(),
-            wrapper: new TeqFw_Di_Container_Wrapper(),
-            hardener: new TeqFw_Di_Container_Hardener(),
+            producer: {produce(/** @type {Function} */ selected) { order.push('produce'); return selected(); }},
+            postprocessor: {apply(/** @type {unknown} */ value) { order.push('postprocess'); return value; }, count() { return 0; }},
+            wrapper: {execute(/** @type {TeqFw_Di_Dto_DepId} */ _depId, /** @type {unknown} */ value) { order.push('wrapper'); return value; }},
+            hardener: {registerRuntimeOwned() {}, harden(/** @type {unknown} */ value) { order.push('harden'); return {value: Object.freeze(value), mode: 'frozen'}; }},
             findMock() { return {found: false, value: undefined}; },
             logger: {log() {}, error() {}},
-            observer,
+            observer: {addNode() {}, addEdge() {}, record(/** @type {string} */ kind) { events.push(kind); }, complete() {}, getSnapshot() { return null; }},
         }), 'App_Service$');
 
-        assert.deepEqual(result, {value: 42});
-        assert.deepEqual(order, ['route', 'load']);
-        observer.complete('success', 'Running');
-        const snapshot = /** @type {any} */ (observer.getSnapshot());
-        const events = /** @type {any[]} */ (snapshot.trace).map((event) => event.kind);
+        assert.deepEqual(result.value, {value: 42});
+        assert.deepEqual(order, ['route', 'load', 'produce', 'postprocess', 'wrapper', 'harden']);
         assert.ok(events.includes(TeqFw_Di_Enum_ObservationEvent.ROUTE));
+        assert.ok(events.includes(TeqFw_Di_Enum_ObservationEvent.SETTLEMENT));
     });
 });

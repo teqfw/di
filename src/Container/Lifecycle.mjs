@@ -59,6 +59,16 @@ export default class TeqFw_Di_Container_Lifecycle {
         };
 
         /**
+         * Removes a miss value when its entry cannot cross native Promise delivery.
+         *
+         * @param {string} key
+         * @returns {void}
+         */
+        this.evict = function (key) {
+            singletonCache.delete(key);
+        };
+
+        /**
          * Returns a cached Singleton value or runs the cache-miss callback.
          *
          * @param {TeqFw_Di_Dto_DepId} depId

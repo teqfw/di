@@ -176,6 +176,19 @@ export default class TeqFw_Di_Parser {
         };
 
         /**
+         * Parses declaration-only timing independently from dependency identity.
+         *
+         * @param {string} specifier
+         * @returns {TeqFw_Di_Parser_Declaration}
+         */
+        this.parseDeclaration = function (specifier) {
+            const deferred = specifier.startsWith('~');
+            const ordinarySpecifier = deferred ? specifier.slice(1) : specifier;
+            const depId = this.parse(ordinarySpecifier);
+            return Object.freeze({specifier: ordinarySpecifier, depId, deferred});
+        };
+
+        /**
          * Sets optional internal logger.
          *
          * @param {{log(message: string): void}|null} next

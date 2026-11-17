@@ -52,7 +52,8 @@ export default class TeqFw_Di_Container_Producer {
                 const callable = producer;
                 result = callable(resolvedDeps);
             }
-            if (result instanceof Promise) {
+            if (((result !== null) && ((typeof result === 'object') || (typeof result === 'function')))
+                && (typeof /** @type {{then?: unknown}} */ (result).then === 'function')) {
                 throw new Error('Producer must return synchronously (non-Promise).');
             }
             return result;

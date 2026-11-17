@@ -23,6 +23,7 @@ const TeqFw_Di_Enum_ResolutionStage = {
     DIRECT_ACQUISITION: 'Direct acquisition',
     POSTPROCESSOR_EXECUTION: 'Postprocessor execution',
     WRAPPER_EXECUTION: 'Wrapper execution',
+    VALUE_SETTLEMENT: 'value settlement',
     HARDENING: 'hardening',
     VALUE_EXPOSURE: 'value exposure',
     CONTAINER_STATE: 'Container state',

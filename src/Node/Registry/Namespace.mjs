@@ -29,7 +29,7 @@ export default class TeqFw_Di_Node_Registry_Namespace {
          */
         const isInside = function (rootAbs, candidateAbs) {
             const rel = path.relative(rootAbs, candidateAbs);
-            return (rel === '') || (!rel.startsWith('..') && !path.isAbsolute(rel));
+            return (rel === '') || ((rel !== '..') && !rel.startsWith(`..${path.sep}`) && !path.isAbsolute(rel));
         };
 
         /**
@@ -92,8 +92,8 @@ export default class TeqFw_Di_Node_Registry_Namespace {
         /**
          * @param {unknown} raw
          * @param {{name: string, rootAbs: string}} publisher
-         * @param {{source: 'canonical'|'legacy', index: number}} origin
-         * @returns {Promise<{entry: TeqFw_Di_Node_Registry_Namespace_Entry, origin: {source: 'canonical'|'legacy', index: number}}>}
+         * @param {{source: 'canonical', index: number}} origin
+         * @returns {Promise<{entry: TeqFw_Di_Node_Registry_Namespace_Entry, origin: {source: 'canonical', index: number}}>}
          */
         const normalizeEntry = async function (raw, publisher, origin) {
             const packageRootAbs = publisher.rootAbs;
@@ -131,11 +131,11 @@ export default class TeqFw_Di_Node_Registry_Namespace {
         };
 
         /**
-         * Selects one supported declaration set without merging schemas.
+         * Selects the canonical namespace declaration array.
          *
          * @param {Readonly<Record<string, unknown>>} packageJson
          * @param {{name: string, rootAbs: string}} publisher
-         * @returns {{source: 'canonical'|'legacy', entries: unknown[]}|undefined}
+         * @returns {{source: 'canonical', entries: unknown[]}|undefined}
          */
         const selectDeclarationSet = function (packageJson, publisher) {
             const teqfw = packageJson.teqfw;
@@ -155,12 +155,6 @@ export default class TeqFw_Di_Node_Registry_Namespace {
                     }
                 }
             }
-            if (Object.hasOwn(teqfw, 'namespaces')) {
-                if (!Array.isArray(teqfw.namespaces)) {
-                    throw new Error(`Legacy DI namespaces declared by ${publisherLabel(publisher)} must be an array.`);
-                }
-                return {source: 'legacy', entries: teqfw.namespaces};
-            }
             return undefined;
         };
 
@@ -169,7 +163,7 @@ export default class TeqFw_Di_Node_Registry_Namespace {
          */
         this.build = async function () {
             const packages = await new TeqFw_Di_Node_Registry_Package({fs, path, appRoot}).build();
-            /** @type {Map<string, {publisher: {name: string, rootAbs: string}, origin: {source: 'canonical'|'legacy', index: number}}>} */
+            /** @type {Map<string, {publisher: {name: string, rootAbs: string}, origin: {source: 'canonical', index: number}}>} */
             const publisherByPrefix = new Map();
             /** @type {TeqFw_Di_Node_Registry_Namespace_Entry[]} */
             const entries = [];

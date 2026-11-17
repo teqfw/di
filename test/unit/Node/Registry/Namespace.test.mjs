@@ -178,6 +178,21 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
         await assert.rejects(() => registry.build(), /lexically escapes/);
     });
 
+    it('accepts an in-root namespace directory whose name begins with two dots', async () => {
+        const registry = new TeqFw_Di_Node_Registry_Namespace({
+            fs: createMockFs({
+                files: {
+                    '/app/package.json': toJson({name: 'package', dependencies: {}, teqfw: {fw: {di: {namespaces: [{prefix: 'App_', path: './..modules'}]}}}}),
+                },
+                extraDirs: ['/app/..modules'],
+            }),
+            path,
+            appRoot: '/app',
+        });
+
+        assert.deepStrictEqual(await registry.build(), [{prefix: 'App_', dirAbs: '/app/..modules', ext: '.mjs'}]);
+    });
+
     it('fails when namespace directory does not exist', async () => {
         const appRoot = '/app';
         const fs = createMockFs({
@@ -222,7 +237,7 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
         });
     });
 
-    it('uses legacy arrays only when canonical metadata is absent', async () => {
+    it('ignores unsupported metadata without a canonical namespace array', async () => {
         const fs = createMockFs({
             files: {
                 '/app/package.json': toJson({name: 'package', dependencies: {dual: '1.0.0'}, teqfw: {namespaces: [{prefix: 'Legacy_', path: './legacy'}, {prefix: 'Legacy_Shared_', path: './legacy-shared'}]}}),
@@ -231,10 +246,7 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
             extraDirs: ['/app/legacy', '/app/legacy-shared', '/app/node_modules/dual/ignored'],
         });
         const result = await new TeqFw_Di_Node_Registry_Namespace({fs, path, appRoot: '/app'}).build();
-        assert.deepStrictEqual(result, [
-            {prefix: 'Legacy_Shared_', dirAbs: '/app/legacy-shared', ext: '.mjs'},
-            {prefix: 'Legacy_', dirAbs: '/app/legacy', ext: '.mjs'},
-        ]);
+        assert.deepStrictEqual(result, []);
     });
 
     it('rejects malformed selected declaration arrays and identifies invalid entry indexes', async () => {
@@ -245,8 +257,8 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
         await assert.rejects(() => registry.build(), /canonical namespace declaration at index 1/);
         const malformed = new TeqFw_Di_Node_Registry_Namespace({fs: createMockFs({files: {'/app/package.json': toJson({name: 'package', dependencies: {}, teqfw: {fw: {di: {namespaces: {}}}, namespaces: []}})}}), path, appRoot: '/app'});
         await assert.rejects(() => malformed.build(), /Canonical DI namespaces.*array/);
-        const malformedLegacy = new TeqFw_Di_Node_Registry_Namespace({fs: createMockFs({files: {'/app/package.json': toJson({name: 'package', dependencies: {}, teqfw: {namespaces: {}}})}}), path, appRoot: '/app'});
-        await assert.rejects(() => malformedLegacy.build(), /Legacy DI namespaces.*array/);
+        const unsupported = new TeqFw_Di_Node_Registry_Namespace({fs: createMockFs({files: {'/app/package.json': toJson({name: 'package', dependencies: {}, teqfw: {namespaces: {}}})}}), path, appRoot: '/app'});
+        assert.deepStrictEqual(await unsupported.build(), []);
     });
 
     it('rejects duplicate prefixes within one declaration set', async () => {

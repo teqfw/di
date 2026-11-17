@@ -11,8 +11,7 @@ const FIXTURE_DIR = path.resolve(__dirname, './fixture');
 
 describe('Integration 30: graph resolution', () => {
     it('injects a nested __deps__ graph into producers', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         const value = await container.get('Fx_GraphRoot$$');
 
@@ -23,15 +22,13 @@ describe('Integration 30: graph resolution', () => {
     });
 
     it('rejects cyclic dependency graph', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         await assert.rejects(() => container.get('Fx_CycleA$$'), /Cyclic dependency detected/);
     });
 
     it('rejects a recursive Singleton cycle', async () => {
-        const container = new TeqFw_Di_Container({introspection: true});
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         await assert.rejects(() => container.get('Fx_SingletonCycleA$'), /Cyclic dependency detected/);
         const observation = /** @type {any} */ (container.getIntrospection());
@@ -42,16 +39,14 @@ describe('Integration 30: graph resolution', () => {
     });
 
     it('isolates a deeper recursive Singleton cycle from a later entry', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         await assert.rejects(() => container.get('Fx_SingletonCycleDeepA$'), /Cyclic dependency detected/);
         assert.deepEqual(await container.get('Fx_Root$'), {name: 'root'});
     });
 
     it('injects a canonical mock for a transitive dependency', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         container.enableTestMode();
         const mock = {value: 'mocked-leaf'};
         container.register('Fx_Leaf', mock);

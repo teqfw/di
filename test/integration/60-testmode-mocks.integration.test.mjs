@@ -1,43 +1,28 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {describe, it} from 'node:test';
+import {beforeEach, describe, it} from 'node:test';
 
 import TeqFw_Di_Container from '@teqfw/di';
+import {effects, resetEffects} from './fixture/Policies.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const FIXTURE_DIR = path.resolve(__dirname, './fixture');
 
 describe('Integration 60: test mode and mocks', () => {
+    beforeEach(resetEffects);
     it('throws on register when test mode is disabled', () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         assert.throws(() => container.register('Fx_Root$', {mock: true}), /test mode is disabled/);
     });
 
     it('sends a substituted value through postprocessing, wrappers, hardening, and Singleton reuse', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({hardener: 'Fx_Policies__FreezeSelected$', postprocessors: ['Fx_Policies__AdaptMock$'], namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         container.enableTestMode();
         const mock = {steps: ['mock']};
-        let postprocessCalls = 0;
-        let hardeningCalls = 0;
         container.register('Fx_MockTarget$_wrapFirst', mock);
-        container.addPostprocess((value, context) => {
-            if (context.depId.address !== 'Fx_MockTarget') return value;
-            postprocessCalls += 1;
-            const observed = /** @type {{steps: string[]}} */ (value);
-            return {steps: [...observed.steps, 'postprocessor']};
-        });
-        container.setHardener((value) => {
-            if (typeof value === 'object' && value !== null && 'steps' in value
-                && /** @type {{steps: string[]}} */ (value).steps.includes('postprocessor')) {
-                hardeningCalls += 1;
-            }
-            return Object.freeze(/** @type {object} */ (value));
-        });
 
         const root = await container.get('Fx_GraphLifestyle$');
         const first = root.mockA;
@@ -46,22 +31,15 @@ describe('Integration 60: test mode and mocks', () => {
         assert.deepEqual(first.steps, ['mock', 'postprocessor', 'wrapFirst']);
         assert.strictEqual(first, second);
         assert.equal(Object.isFrozen(first), true);
-        assert.equal(postprocessCalls, 1);
-        assert.equal(hardeningCalls, 1);
+        assert.equal(effects.postprocessCalls, 1);
+        assert.equal(effects.hardeningCalls, 1);
     });
 
     it('uses the effective mock registered after preprocessing', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({preprocessors: ['Fx_Policies__MockAlias$'], namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         container.enableTestMode();
         const mock = {source: 'effective-mock'};
         container.register('Fx_Root$', mock);
-        container.addPreprocess((depId) => ({
-            ...depId,
-            address: depId.address === 'Fx_AliasForMock'
-                ? 'Fx_Root'
-                : depId.address,
-        }));
 
         const value = await container.get('Fx_AliasForMock$');
 
@@ -69,14 +47,11 @@ describe('Integration 60: test mode and mocks', () => {
         assert.equal(Object.isFrozen(value), true);
     });
 
-    it('finalizes a compatibility substitution through the complete preprocessing policy', async () => {
-        const container = new TeqFw_Di_Container();
+    it('finalizes a registered substitution through the complete preprocessing policy', async () => {
+        const container = new TeqFw_Di_Container({preprocessors: ['Fx_Policies__MockAlias$'], namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         container.enableTestMode();
-        const mock = {source: 'compatibility-effective-mock'};
+        const mock = {source: 'configured-effective-mock'};
         container.register('Fx_AliasForMock$', mock);
-        container.addPreprocess((depId) => depId.address === 'Fx_AliasForMock'
-            ? {...depId, address: 'Fx_Root'}
-            : depId);
 
         const value = await container.get('Fx_AliasForMock$');
 
@@ -85,13 +60,10 @@ describe('Integration 60: test mode and mocks', () => {
     });
 
     it('finalizes substitutions that change Address Kind', async () => {
-        const container = new TeqFw_Di_Container();
+        const container = new TeqFw_Di_Container({preprocessors: ['Fx_Policies__NpmAliases$'], namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         container.enableTestMode();
         const mock = {source: 'npm-effective-mock'};
         container.register('Fx_NpmAliasOne$', mock);
-        container.addPreprocess((depId) => depId.address === 'Fx_NpmAliasOne'
-            ? {...depId, addressKind: 'npm', address: '@teqfw/di', exportName: 'default'}
-            : depId);
 
         const value = await container.get('Fx_NpmAliasOne$');
 
@@ -100,44 +72,29 @@ describe('Integration 60: test mode and mocks', () => {
     });
 
     it('fails during substitution finalization before publishing an entry snapshot', async () => {
-        const container = new TeqFw_Di_Container({introspection: true});
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({preprocessors: ['Fx_Policies__BrokenRegistration$'], introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
         container.enableTestMode();
         container.register('Fx_BrokenSubstitution$', {source: 'must-not-run'});
-        container.addPreprocess((depId) => {
-            if (depId.address === 'Fx_BrokenSubstitution') {
-                throw new Error('registered substitution canonicalization failed');
-            }
-            return depId;
-        });
 
         await assert.rejects(() => container.get('Fx_Root$'), /registered substitution canonicalization failed/);
         assert.equal(container.getIntrospection(), null);
         await assert.rejects(() => container.get('Fx_Root$'), /preparation failed|unusable/i);
     });
 
-    it('substitutes an unresolved address without module loading and preserves the common output corridor', async () => {
+    it('rejects deferred syntax in test registration identifiers', async () => {
         const container = new TeqFw_Di_Container({introspection: true});
         container.enableTestMode();
-        const mock = {steps: ['mock']};
-        let postprocessCalls = 0;
-        let hardeningCalls = 0;
-        container.register('NoRoute_Unresolvable$', mock);
-        container.addPostprocess((value, context) => {
-            if (context.depId.address !== 'NoRoute_Unresolvable') return value;
-            postprocessCalls += 1;
-            const observed = /** @type {{steps: string[]}} */ (value);
-            return {steps: [...observed.steps, 'postprocessor']};
-        });
-        container.setHardener((value) => {
-            if (typeof value === 'object' && value !== null && 'steps' in value
-                && /** @type {{steps: string[]}} */ (value).steps.includes('postprocessor')) {
-                hardeningCalls += 1;
-            }
-            return Object.freeze(/** @type {object} */ (value));
-        });
+        container.register('~NoRoute_Value$', {value: true});
+        await assert.rejects(container.get('node:path'), Error);
+        assert.equal(container.getIntrospection(), null);
+    });
 
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+    it('substitutes an unresolved address without module loading and preserves the common output corridor', async () => {
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}], hardener: 'Fx_Policies__FreezeSelected$', postprocessors: ['Fx_Policies__AdaptUnresolved$'], introspection: true});
+        container.enableTestMode();
+        const mock = {steps: ['mock']};
+        container.register('NoRoute_Unresolvable$', mock);
+
         const root = await container.get('Fx_MockRoot$');
         const first = root.first;
         const second = root.second;
@@ -145,8 +102,8 @@ describe('Integration 60: test mode and mocks', () => {
 
         assert.deepEqual(first.steps, ['mock', 'postprocessor']);
         assert.strictEqual(first, second);
-        assert.equal(postprocessCalls, 1);
-        assert.equal(hardeningCalls, 1);
+        assert.equal(effects.postprocessCalls, 1);
+        assert.equal(effects.hardeningCalls, 1);
         assert.ok(observation.explanation.resolutions.some((/** @type {any} */ resolution) => resolution.cache === 'hit'));
         const noRoute = observation.explanation.resolutions.find(
             (/** @type {any} */ resolution) => resolution.effective.address === 'NoRoute_Unresolvable'
@@ -172,5 +129,45 @@ describe('Integration 60: test mode and mocks', () => {
 
         assert.strictEqual(value, mockFunction);
         assert.equal(Object.isFrozen(value), true);
+    });
+
+    it('does not cache or publish success when a late then accessor breaks delivery', async () => {
+        const container = new TeqFw_Di_Container({introspection: true});
+        let reads = 0;
+        const unstable = {get then() {
+            reads += 1;
+            if (reads > 1) throw new Error('late delivery failed');
+            return undefined;
+        }};
+        container.enableTestMode();
+        container.register('NoRoute_Unstable$', unstable);
+
+        await assert.rejects(container.get('NoRoute_Unstable$'), /late delivery failed|safely through native Promise delivery/);
+        const failed = /** @type {any} */ (container.getIntrospection());
+        assert.equal(failed.explanation.outcome, 'failure');
+        assert.equal(failed.explanation.failure.stage, 'value exposure');
+        assert.equal(failed.explanation.resolutions[0].cache, 'miss');
+        await assert.rejects(container.get('NoRoute_Unstable$'), /late delivery failed|safely through native Promise delivery/);
+        assert.equal((/** @type {any} */ (container.getIntrospection())).explanation.resolutions[0].cache, 'miss');
+    });
+
+    it('does not cache a Singleton whose adapted Promise rejects', async () => {
+        const container = new TeqFw_Di_Container({introspection: true});
+        const rejected = Object.freeze({
+            then(/** @type {(value: unknown) => void} */ resolve, /** @type {(reason: Error) => void} */ reject) {
+                void resolve;
+                reject(new Error('singleton settlement rejected'));
+            },
+        });
+        container.enableTestMode();
+        container.register('NoRoute_Rejecting$', rejected);
+
+        await assert.rejects(container.get('NoRoute_Rejecting$'), /singleton settlement rejected/);
+        const first = /** @type {any} */ (container.getIntrospection());
+        assert.equal(first.explanation.failure.stage, 'value settlement');
+        assert.equal(first.explanation.resolutions[0].cache, 'miss');
+        await assert.rejects(container.get('NoRoute_Rejecting$'), /singleton settlement rejected/);
+        const second = /** @type {any} */ (container.getIntrospection());
+        assert.equal(second.explanation.resolutions[0].cache, 'miss');
     });
 });

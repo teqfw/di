@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import vm from 'node:vm';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Container_Wrapper from '../../../src/Container/Wrapper.mjs';
@@ -14,5 +15,11 @@ describe('TeqFw_Di_Container_Wrapper', () => {
 
         assert.equal(wrapper.execute(depId, 'value', namespace), 'value:first:second');
         assert.throws(() => wrapper.execute(/** @type {any} */ ({wrappers: ['missing']}), 'value', namespace), /not found/);
+        const promise = vm.runInNewContext('Promise.resolve(1)');
+        assert.throws(() => wrapper.execute(
+            /** @type {any} */ ({wrappers: ['async']}),
+            'value',
+            {async: () => promise}
+        ), /synchronously/);
     });
 });

@@ -31,7 +31,8 @@ export default class TeqFw_Di_Container_Wrapper {
                     throw new Error(`Wrapper '${name}' must be callable.`);
                 }
                 current = candidate(current);
-                if (current instanceof Promise) {
+                if (((current !== null) && ((typeof current === 'object') || (typeof current === 'function')))
+                    && (typeof /** @type {{then?: unknown}} */ (current).then === 'function')) {
                     throw new Error(`Wrapper '${name}' must return synchronously (non-Promise).`);
                 }
             }

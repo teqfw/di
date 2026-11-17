@@ -5,9 +5,10 @@
  * @description Immutable JSON-safe construction policy for one Container.
  */
 
-import {Factory as TeqFw_Di_Dto_ModuleRouter_Config_Namespace_Factory} from '../ModuleRouter/Config/Namespace.mjs';
+import {Factory as NamespaceFactory} from '../ModuleRouter/Config/Namespace.mjs';
 
 /** @typedef {import('../ModuleRouter/Config/Namespace.mjs').default} TeqFw_Di_Dto_ModuleRouter_Config_Namespace */
+/** @typedef {import('../ModuleRouter/Config/Namespace.mjs').Factory} TeqFw_Di_Dto_ModuleRouter_Config_Namespace_Factory */
 
 /**
  * Immutable Container construction policy.
@@ -32,7 +33,8 @@ export default class TeqFw_Di_Dto_Container_Config {
  */
 export class Factory {
     constructor() {
-        const namespaceFactory = new TeqFw_Di_Dto_ModuleRouter_Config_Namespace_Factory();
+        /** @type {TeqFw_Di_Dto_ModuleRouter_Config_Namespace_Factory} */
+        const namespaceFactory = new NamespaceFactory();
 
         /**
          * @param {{namespaces?: Array<{prefix: string, target: string, defaultExt: string}>, preprocessors?: string[], postprocessors?: string[], hardener?: string|null, logging?: boolean, introspection?: boolean}} [data]

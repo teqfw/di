@@ -35,7 +35,7 @@ describe('TeqFw_Di_Container_Hardener', () => {
         assert.ok(Object.isFrozen(lookalike));
     });
 
-    it('uses the configured host hardener as a complete replacement', () => {
+    it('applies mandatory freezing after configured host hardening', () => {
         const hardener = new TeqFw_Di_Container_Hardener();
         const value = {kind: 'configured'};
         hardener.setConfigured((received) => received);
@@ -44,6 +44,22 @@ describe('TeqFw_Di_Container_Hardener', () => {
 
         assert.strictEqual(result.value, value);
         assert.equal(result.mode, 'configured');
-        assert.equal(Object.isFrozen(value), false);
+        assert.equal(Object.isFrozen(value), true);
+    });
+
+    it('rejects a configured deferred replacement, even if it is already frozen', () => {
+        const hardener = new TeqFw_Di_Container_Hardener();
+        const result = Object.freeze(Promise.resolve({later: true}));
+        hardener.setConfigured(() => result);
+        assert.throws(() => hardener.harden({input: true}), /terminal value synchronously/);
+    });
+
+    it('freezes a mutable configured replacement', () => {
+        const hardener = new TeqFw_Di_Container_Hardener();
+        hardener.setConfigured(() => ({replacement: true}));
+        const result = hardener.harden({input: true});
+        assert.deepEqual(result.value, {replacement: true});
+        assert.equal(Object.isFrozen(result.value), true);
+        assert.equal(result.mode, 'configured');
     });
 });

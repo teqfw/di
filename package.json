@@ -1,6 +1,6 @@
 {
   "name": "@teqfw/di",
-  "version": "2.11.0",
+  "version": "2.12.0",
   "description": "Deterministic dependency-resolution container for native JavaScript ES modules.",
   "keywords": [
     "teqfw",
@@ -48,8 +48,7 @@
       "default": "./src/Container.mjs"
     },
     "./node/registry/namespace": "./src/Node/Registry/Namespace.mjs",
-    "./node/registry/package": "./src/Node/Registry/Package.mjs",
-    "./src/Config/NamespaceRegistry.mjs": "./src/Config/NamespaceRegistry.mjs"
+    "./node/registry/package": "./src/Node/Registry/Package.mjs"
   },
   "type": "module",
   "teqfw": {
@@ -60,16 +59,6 @@
             "prefix": "TeqFw_Di_",
             "path": "./src",
             "ext": ".mjs"
-          }
-        ]
-      }
-    },
-    "platform": {
-      "unitTests": {
-        "exclusions": [
-          {
-            "path": "src/Config/NamespaceRegistry.mjs",
-            "reason": "Deprecated compatibility re-export with no component behavior."
           }
         ]
       }

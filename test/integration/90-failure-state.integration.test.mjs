@@ -4,15 +4,26 @@ import {fileURLToPath} from 'node:url';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Container from '@teqfw/di';
+import {getProducerCalls} from './fixture/ObservedSingleton.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const FIXTURE_DIR = path.resolve(__dirname, './fixture');
 
 describe('Integration 90: entry and preparation failures', () => {
+    it('retains a successful child Singleton when a later child fails', async () => {
+        const container = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
+        const before = getProducerCalls();
+
+        await assert.rejects(container.get('Fx_FailureAfterChild$'), /MissingChild\.mjs/);
+        const child = await container.get('Fx_ObservedSingleton$');
+        assert.equal(child.producerCalls, before + 1);
+        const snapshot = /** @type {any} */ (container.getIntrospection());
+        assert.equal(snapshot.explanation.resolutions[0].cache, 'hit');
+    });
+
     it('records a native module-loading entry failure and permits a later entry', async () => {
-        const container = new TeqFw_Di_Container({introspection: true});
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         await assert.rejects(
             () => container.get('Fx_UnavailableModule$'),
@@ -40,53 +51,37 @@ describe('Integration 90: entry and preparation failures', () => {
     });
 
     it('locks configuration but permits a later valid entry after failure', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         await assert.rejects(() => container.get('Fx_BadExport$'), /Export 'default' is not found/);
         const root = await container.get('Fx_Root$');
         assert.deepEqual(root, {name: 'root'});
 
-        assert.throws(() => container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs'));
-        assert.throws(() => container.enableLogging());
         assert.throws(() => container.enableTestMode());
-        assert.throws(() => container.addPreprocess((depId) => depId));
-        assert.throws(() => container.addPostprocess((value) => value));
         assert.throws(() => container.register('Fx_Root$', {mock: true}));
     });
 
     it('isolates parsing, preprocessing, and mapping entry failures', async () => {
         const cases = [
             {
-                configure(/** @type {TeqFw_Di_Container} */ _container) {},
+                config: {},
                 specifier: 'teq:Fx_Root$',
                 stage: 'identifier parsing',
             },
             {
-                configure(/** @type {TeqFw_Di_Container} */ container) {
-                    let failed = false;
-                    container.addPreprocess((depId) => {
-                        if (!failed) {
-                            failed = true;
-                            throw new Error('preprocess failed');
-                        }
-                        return depId;
-                    });
-                },
+                config: {preprocessors: ['Fx_Policies__FailPreprocessingOnce$']},
                 specifier: 'Fx_Root$',
                 stage: 'preprocessing',
             },
             {
-                configure(/** @type {TeqFw_Di_Container} */ _container) {},
+                config: {},
                 specifier: 'NoMapping_Root$',
                 stage: 'route selection',
             },
         ];
 
         for (const one of cases) {
-            const container = new TeqFw_Di_Container({introspection: true});
-            container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-            one.configure(container);
+            const container = new TeqFw_Di_Container({...one.config, introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
             await assert.rejects(() => container.get(one.specifier));
             const observation = /** @type {any} */ (container.getIntrospection());
@@ -100,14 +95,7 @@ describe('Integration 90: entry and preparation failures', () => {
         const cases = [
             {
                 name: 'child resolution',
-                configure(/** @type {TeqFw_Di_Container} */ container) {
-                    container.addPreprocess((depId) => ({
-                        ...depId,
-                        address: depId.address === 'Fx_Child'
-                            ? 'Fx_BadExport'
-                            : depId.address,
-                    }));
-                },
+                config: {preprocessors: ['Fx_Policies__BadChild$']},
                 specifier: 'Fx_GraphRoot$',
                 expected: /Export 'default' is not found/,
                 stage: 'Export Selection',
@@ -115,30 +103,21 @@ describe('Integration 90: entry and preparation failures', () => {
             },
             {
                 name: 'producer invocation',
-                configure(/** @type {TeqFw_Di_Container} */ _container) {},
+                config: {},
                 specifier: 'Fx_ThrowingProducer$',
                 expected: /producer failure/,
                 stage: 'producer invocation',
             },
             {
                 name: 'Postprocessor execution',
-                configure(/** @type {TeqFw_Di_Container} */ container) {
-                    let failed = false;
-                    container.addPostprocess((value) => {
-                        if (!failed) {
-                            failed = true;
-                            throw new Error('postprocessor failure');
-                        }
-                        return value;
-                    });
-                },
+                config: {postprocessors: ['Fx_Policies__FailPostprocessingOnce$']},
                 specifier: 'Fx_Root$',
                 expected: /postprocessor failure/,
                 stage: 'Postprocessor execution',
             },
             {
                 name: 'Wrapper execution',
-                configure(/** @type {TeqFw_Di_Container} */ _container) {},
+                config: {},
                 specifier: 'Fx_Wrapped$_wrapThenable',
                 expected: /must return synchronously \(non-Promise\)/,
                 stage: 'Wrapper execution',
@@ -146,9 +125,7 @@ describe('Integration 90: entry and preparation failures', () => {
         ];
 
         for (const one of cases) {
-            const container = new TeqFw_Di_Container({introspection: true});
-            container.addNamespaceRoot('Fx_', FIXTURE_DIR, '.mjs');
-            one.configure(container);
+            const container = new TeqFw_Di_Container({...one.config, introspection: true, namespaces: [{prefix: 'Fx_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
             await assert.rejects(() => container.get(one.specifier), one.expected);
             const observation = /** @type {any} */ (container.getIntrospection());

@@ -108,16 +108,6 @@ export default class TeqFw_Di_Node_Registry_Package {
         };
 
         /**
-         * @param {string} rootAbs
-         * @param {string} candidateAbs
-         * @returns {boolean}
-         */
-        const isInside = function (rootAbs, candidateAbs) {
-            const rel = path.relative(rootAbs, candidateAbs);
-            return (rel === '') || (!rel.startsWith('..') && !path.isAbsolute(rel));
-        };
-
-        /**
          * @param {string} candidateAbs
          * @returns {Promise<boolean>}
          */
@@ -137,12 +127,11 @@ export default class TeqFw_Di_Node_Registry_Package {
          */
         const resolveDependencyPackageRoot = async function (packageName, fromPackageRootAbs) {
             let cursor = fromPackageRootAbs;
-            while (isInside(appRootAbs, cursor)) {
+            while (true) {
                 const candidate = path.join(cursor, 'node_modules', packageName);
                 if ((await isDirectory(candidate)) && (await hasPackageJson(candidate))) {
                     return path.resolve(candidate);
                 }
-                if (cursor === appRootAbs) break;
                 const parent = path.dirname(cursor);
                 if (parent === cursor) break;
                 cursor = parent;

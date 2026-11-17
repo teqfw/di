@@ -9,11 +9,6 @@ It is useful when an ESM application needs explicit dependencies, late binding,
 and an inspectable composition space. Small applications that do not need
 runtime composition can use direct imports instead.
 
-The FIFO, deferred-dependency, and strengthened final-value hardening contracts
-below are accepted targets awaiting implementation and verification. Examples
-using these capabilities describe the target; check availability in the
-installed release before relying on them.
-
 ## Install
 
 ```sh
@@ -97,8 +92,7 @@ and tests are the exceptions that may use static imports.
 ## Deferred dependencies
 
 A single leading `~` in `__deps__` injects a frozen Provider exposing only
-`resolve()`. This accepted capability is tracked in
-[issue #59](https://github.com/teqfw/di/issues/59).
+`resolve()`.
 
 ```js
 export const __deps__ = {
@@ -123,8 +117,21 @@ ordinary export semantics. The Provider has no result cache and exposes no
 Container. Public `get()` and configured policy identifiers reject `~`.
 
 Call the Provider from application work after the creating entry settles, as in
-`run()` above. An active entry awaiting its own later queued request can
-deadlock; the Container provides no re-entrancy guard or automatic recovery.
+`run()` above. **It is an application error for an active resolution to await
+`resolve()` on a Provider belonging to the same Container.** The Provider's
+request waits behind the active entry, while that entry waits for the request:
+both remain pending and later requests cannot run. The Container does not detect
+this deadlock, throw an exception, or recover automatically. Apply the same rule
+to an active entry awaiting a later `get()` from its own Container.
+
+## Updating from 2.11
+
+Pass mappings and policy producers to `new Container(config)` instead of the
+removed configuration builders. Import Namespace Registry from
+`@teqfw/di/node/registry/namespace` and move package namespace declarations to
+the `teqfw.fw.di.namespaces` array; the old source import and
+`teqfw.namespaces` fallback have been removed. Account for FIFO entry ordering
+and shallow freezing of the final objects and functions delivered by Container.
 
 ## Dependency Identifiers
 
@@ -211,8 +218,8 @@ Node.js `node_modules` lookup. Installed packages contribute metadata; declared
 packages absent from the installation, including those omitted by
 `npm ci --omit=dev`, are skipped. Undeclared packages are not scanned. The
 package list is dependency-first, with ascending package names breaking ties.
-`@teqfw/di/src/Config/NamespaceRegistry.mjs` remains only as the deprecated
-COMPAT-001 migration import; new code must use the canonical namespace path.
+All `src/**` package subpaths are internal. Configure mappings, policy producers
+and diagnostics through `new Container(config)`.
 
 ## Inspect entry resolutions
 

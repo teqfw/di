@@ -140,6 +140,21 @@ describe('TeqFw_Di_Node_Registry_Package', () => {
         assert.deepStrictEqual(records.map((item) => item.name), ['alpha', 'zulu', 'app']);
     });
 
+    it('discovers declared packages in ancestor node_modules for root and transitive dependencies', async () => {
+        const records = await new PackageRegistry({
+            fs: mockFs({
+                '/mono/app/package.json': json({name: 'app', dependencies: {shared: '1'}}),
+                '/mono/node_modules/shared/package.json': json({name: 'shared', dependencies: {tool: '1'}}),
+                '/mono/node_modules/tool/package.json': json({name: 'tool'}),
+            }),
+            path,
+            appRoot: '/mono/app',
+        }).build();
+
+        assert.deepStrictEqual(records.map((item) => item.name), ['tool', 'shared', 'app']);
+        assert.deepStrictEqual(records.at(-1)?.dependencies, ['/mono/node_modules/shared']);
+    });
+
     it('deduplicates canonical package roots through symlinks', async () => {
         const fs = mockFs({
             '/app/package.json': json({name: 'app', dependencies: {a: '1', alias: '1'}}),

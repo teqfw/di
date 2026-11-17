@@ -91,6 +91,16 @@ export default class TeqFw_Di_Container_Canonicalizer {
         };
 
         /**
+         * Parses a dependency declaration without applying preprocessing.
+         *
+         * @param {string} specifier
+         * @returns {TeqFw_Di_Parser_Declaration}
+         */
+        this.parseDeclaration = function (specifier) {
+            return parser.parseDeclaration(specifier);
+        };
+
+        /**
          * Applies configured substitutions to one parsed requested identity.
          *
          * @param {TeqFw_Di_Dto_DepId} requested

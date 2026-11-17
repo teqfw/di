@@ -16,7 +16,7 @@ import {executeResolution} from './Resolution.mjs';
 /**
  * Materializes policy producers with mappings and default policy only.
  *
- * @param {{config: TeqFw_Di_Dto_Container_Config, canonicalizer: TeqFw_Di_Container_Canonicalizer, moduleRouter: TeqFw_Di_Container_ModuleRouter, moduleLoader: TeqFw_Di_Container_ModuleLoader, producer: TeqFw_Di_Container_Producer, wrapper: TeqFw_Di_Container_Wrapper, hardener: TeqFw_Di_Container_Hardener, postprocessor: TeqFw_Di_Container_Postprocessor, logger: TeqFw_Di_Internal_Logger_Contract}} deps
+ * @param {{config: TeqFw_Di_Dto_Container_Config, canonicalizer: TeqFw_Di_Container_Canonicalizer, moduleRouter: TeqFw_Di_Container_ModuleRouter, moduleLoader: TeqFw_Di_Container_ModuleLoader, producer: TeqFw_Di_Container_Producer, wrapper: TeqFw_Di_Container_Wrapper, hardener: TeqFw_Di_Container_Hardener, postprocessor: TeqFw_Di_Container_Postprocessor, logger: TeqFw_Di_Internal_Logger_Contract, enqueue: (specifier: string) => Promise<unknown>}} deps
  * @returns {Promise<void>}
  */
 export async function configureContainer(deps) {
@@ -30,6 +30,7 @@ export async function configureContainer(deps) {
         hardener,
         postprocessor,
         logger,
+        enqueue,
     } = deps;
     const policyLifecycle = new TeqFw_Di_Container_Lifecycle(logger);
     const policyPostprocessor = new TeqFw_Di_Container_Postprocessor({logger});
@@ -44,7 +45,7 @@ export async function configureContainer(deps) {
      * @returns {Promise<unknown>}
      */
     const resolvePolicy = async function (specifier) {
-        return executeResolution({
+        const result = await executeResolution({
             canonicalizer,
             lifecycle: policyLifecycle,
             moduleRouter,
@@ -58,7 +59,9 @@ export async function configureContainer(deps) {
             },
             logger,
             observer,
+            enqueue,
         }, specifier);
+        return result.value;
     };
 
     /** @type {Array<(depId: TeqFw_Di_Dto_DepId, context: TeqFw_Di_Container_ResolutionContext) => TeqFw_Di_Dto_DepId>} */

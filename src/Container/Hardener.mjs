@@ -69,10 +69,19 @@ export default class TeqFw_Di_Container_Hardener {
          * @returns {TeqFw_Di_Container_Hardening_Result}
          */
         this.harden = function (value) {
+            /** @type {unknown} */
+            let candidate = value;
+            let configured = false;
             if (configuredHardener !== null) {
-                return {value: configuredHardener(value), mode: 'configured'};
+                configured = true;
+                candidate = configuredHardener(value);
+                if (((candidate !== null) && ((typeof candidate === 'object') || (typeof candidate === 'function')))
+                    && (typeof /** @type {{then?: unknown}} */ (candidate).then === 'function')) {
+                    throw new Error('Configured Hardener must return a terminal value synchronously.');
+                }
             }
-            return hardenByDefault(value);
+            const result = hardenByDefault(candidate);
+            return configured ? {value: result.value, mode: 'configured'} : result;
         };
     }
 }

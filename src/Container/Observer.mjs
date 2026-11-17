@@ -134,6 +134,7 @@ export function createObserver(specifier, entryId = 'entry-0') {
             effective: payload.effective,
             preprocessing: [],
             children: [],
+            providers: [],
         });
     };
 
@@ -209,6 +210,12 @@ export function createObserver(specifier, entryId = 'entry-0') {
             resolution.wrappers = payload.wrappers;
         } else if (kind === TeqFw_Di_Enum_ObservationEvent.HARDENING) {
             resolution.hardening = Object.freeze({mode: payload.mode});
+        } else if (kind === TeqFw_Di_Enum_ObservationEvent.SETTLEMENT) {
+            resolution.settlement = 'fulfilled';
+        } else if (kind === TeqFw_Di_Enum_ObservationEvent.PROVIDER) {
+            /** @type {object[]} */
+            const providers = /** @type {object[]} */ (resolution.providers);
+            providers.push(Object.freeze({dependencyName: payload.dependencyName, requestedSpecifier: payload.requestedSpecifier}));
         }
     };
 

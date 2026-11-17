@@ -49,8 +49,11 @@ settles. Each call creates a new FIFO entry with empty ancestors, ordinary
 preprocessing once, shared Container policy and Singleton cache, and mandatory
 final-value hardening. The Provider itself caches no result; `~...$$` produces
 a fresh Transient value per successful call. Public and policy identifiers
-reject `~`. Awaiting a later queued request from its own active entry can
-deadlock; no re-entrancy guard prevents this application error.
+reject `~`. Awaiting `workspace.resolve()` during resolution of an active entry
+in the same Container is an application error: the Provider request waits for
+that entry, which is waiting for the Provider, and the queue stays blocked. The
+Container does not detect or throw for this error. Call it after the entry settles;
+the same rule applies to awaiting a later `get()` from that Container.
 
 ## Staged entries in a Node.js Composition Root
 
@@ -108,8 +111,8 @@ const app = await container.get("App$");
 ```
 
 A package publishes mappings in the canonical array at
-`package.json#teqfw.fw.di.namespaces`. The legacy `teqfw.namespaces` fallback is
-active only when canonical metadata is absent. `appRoot` is the absolute
+`package.json#teqfw.fw.di.namespaces`. Only this namespace declaration array is
+interpreted. `appRoot` is the absolute
 application root containing its `package.json`. Browser-reachable modules must
 not import either registry.
 
@@ -146,7 +149,7 @@ const app = await container.get("App$");
 
 Enable test mode and register substitutions before the first `get()`. A value
 may be any runtime JavaScript value; it is intentionally outside the JSON-safe
-DTO. The first `get()` applies the complete configured and compatibility
+DTO. The first `get()` applies the complete configured
 preprocessing policy to each registered specifier, then lookup uses its
 effective dependency identity. A canonicalization failure fails preparation;
 the returned substitution otherwise still passes through the applicable output

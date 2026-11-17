@@ -11,9 +11,7 @@ const FIXTURE_DIR = path.resolve(__dirname, './fixture');
 
 describe('Integration 20: namespace mapping', () => {
     it('uses longest matching namespace prefix for overlapping prefixes', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('Fx_', path.join(FIXTURE_DIR, 'ns-short'), '.mjs');
-        container.addNamespaceRoot('Fx_Long_', path.join(FIXTURE_DIR, 'ns-long'), '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: path.join(FIXTURE_DIR, 'ns-short'), defaultExt: '.mjs'}, {prefix: 'Fx_Long_', target: path.join(FIXTURE_DIR, 'ns-long'), defaultExt: '.mjs'}]});
 
         const value = await container.get('Fx_Long_Service');
 

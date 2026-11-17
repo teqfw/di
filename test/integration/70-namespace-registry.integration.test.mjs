@@ -80,8 +80,6 @@ export const moduleUrl = import.meta.url;
 
         const publicNamespaceRegistry = await import("@teqfw/di/node/registry/namespace");
         assert.equal(publicNamespaceRegistry.default, TeqFw_Di_Node_Registry_Namespace);
-        const legacyNamespaceRegistry = await import("@teqfw/di/src/Config/NamespaceRegistry.mjs");
-        assert.equal(legacyNamespaceRegistry.default, publicNamespaceRegistry.default);
         // These subpaths must NOT be exported by the package; the dynamic specifiers
         // are kept non-literal because only the runtime resolution is being asserted.
         const namespaceSubpath = "@teqfw/di/src/Node/Registry/Namespace.mjs";
@@ -111,28 +109,13 @@ export const moduleUrl = import.meta.url;
             ext: '.js',
         });
 
-        const container = new TeqFw_Di_Container();
-        /** @type {{prefix: string, dirAbs: string, ext: string}[]} */
-        const applied = [];
-        const addNamespaceRoot = container.addNamespaceRoot;
-        container.addNamespaceRoot = function (prefix, target, defaultExt) {
-            applied.push({prefix, dirAbs: target, ext: defaultExt});
-            return addNamespaceRoot.call(this, prefix, target, defaultExt);
-        };
-
-        for (const entry of registry) {
-            container.addNamespaceRoot(entry.prefix, entry.dirAbs, entry.ext);
-        }
-
-        assert.deepStrictEqual(applied, registry);
+        const config = {namespaces: registry.map(({prefix, dirAbs, ext}) => ({prefix, target: dirAbs, defaultExt: ext}))};
+        const container = new TeqFw_Di_Container(config);
 
         const resolved = await container.get('App_Long_Service');
         assert.equal(resolved.provider, 'dep-long');
         assert.equal(fileURLToPath(resolved.moduleUrl), path.join(depLongRoot, 'modules/Service.js'));
-        const otherContainer = new TeqFw_Di_Container();
-        for (const entry of registry) {
-            otherContainer.addNamespaceRoot(entry.prefix, entry.dirAbs, entry.ext);
-        }
+        const otherContainer = new TeqFw_Di_Container(config);
         assert.equal((await otherContainer.get('Root_Service')).provider, 'root-extra');
     });
 });

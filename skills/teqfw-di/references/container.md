@@ -37,8 +37,11 @@ The Provider retains no result cache and exposes no Container. Deferred timing
 does not change Singleton identity; Transient is fresh per successful call.
 
 Queueing is allowed from synchronous policy hooks, but those hooks remain
-synchronous. An active entry that awaits its own later queued request can
-deadlock. There is no re-entrancy guard, automatic timeout, or recovery promise.
+synchronous. It is an application error for active resolution to await a
+Provider `resolve()` or later `get()` queued in the same Container. The active
+entry and queued request remain pending and block later requests. Invoke the
+Provider after the entry settles. The Container does not detect this error or
+throw; there is no automatic timeout or recovery promise.
 
 ## Configuration DTO
 
@@ -49,11 +52,8 @@ not callbacks, so it can be JSON-serialized; a target path or URL must still be
 loadable in the receiving runtime. It does not contain runtime test-substitution
 values.
 
-For new integrations, use this DTO. The shipped builder methods
-`addNamespaceRoot()`, `addPreprocess()`, `addPostprocess()`, `setHardener()`,
-and `enableLogging()` are compatibility surfaces only while the Container is
-`Configuring`; the first `get()` locks all of them. They do not provide mutable
-introspection configuration.
+This DTO is the only composition-policy surface. Mappings, ordered policy
+producers, logging and introspection are captured at construction.
 
 ## Test substitutions
 
@@ -69,7 +69,7 @@ container.register("App_Data_Repository$", mockRepository);
 ```
 
 `register()` requires test mode and retains the requested specifier until the
-first `get()`. After configured and compatibility Preprocessors are installed,
+first `get()`. After configured Preprocessors are installed,
 the Container applies that complete policy and indexes the substitution by
 effective dependency identity. Test substitutions are not part of the JSON-safe
 DTO, do not materialize configured policy producers, and remain subject to
@@ -85,10 +85,10 @@ an immutable object with:
 
 - `entries` — completed entry snapshots with explicit `entryId` and root
   provenance;
-- `graph`, `trace`, and `explanation` — compatibility views of the latest
+- `graph`, `trace`, and `explanation` — views of the latest
   entry, with the same projections available on every entry snapshot.
 
-This structured API is different from `enableLogging()`. Introspection is
+This structured API is different from optional console logging. Introspection is
 enabled only by the configuration DTO; there is no mutable
 `enableIntrospection()` path. Console messages and
 private graph objects are diagnostics, not a public substitute for introspection.

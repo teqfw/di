@@ -45,8 +45,7 @@ test('release browser distributions match a clean Rollup build', async () => {
 test('browser ESM distribution preserves current resolution semantics', async () => {
     const {default: Container} = await import(pathToFileURL(path.join(rootDir, 'dist', 'esm.js')).href);
     const fixtureDir = pathToFileURL(path.join(rootDir, 'test', 'integration', 'fixture')).href;
-    const container = new Container({introspection: true});
-    container.addNamespaceRoot('Fx_', fixtureDir, '.mjs');
+    const container = new Container({introspection: true, namespaces: [{prefix: 'Fx_', target: fixtureDir, defaultExt: '.mjs'}]});
 
     const root = await container.get('Fx_GraphLifestyle$');
 
@@ -65,6 +64,16 @@ test('browser ESM distribution preserves current resolution semantics', async ()
     assert.doesNotMatch(artifact, /PromiseSafe/);
     assert.doesNotMatch(artifact, /class Resolver/);
     assert.doesNotMatch(artifact, /class Pipeline/);
+
+    const providerContainer = new Container({
+        introspection: true,
+        namespaces: [{prefix: 'Fx_', target: pathToFileURL(path.join(rootDir, 'test', 'integration', 'fixture') + path.sep).href, defaultExt: '.mjs'}],
+    });
+    const providerRoot = await providerContainer.get('Fx_DeferredRoot$');
+    assert.equal(Object.isFrozen(providerRoot.target), true);
+    const deferred = await providerRoot.target.resolve();
+    assert.equal(Object.isFrozen(deferred), true);
+    assert.equal(deferred.steps.at(-1), 'wrapper');
 });
 
 test('browser UMD distribution exposes Container as its global constructor', async () => {

@@ -2,14 +2,25 @@ import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Container_Canonicalizer from '../../../src/Container/Canonicalizer.mjs';
-import TeqFw_Di_Parser from '../../../src/Parser.mjs';
-import {Factory as DepIdFactory} from '../../../src/Dto/DepId.mjs';
+
+const baseDepId = Object.freeze({addressKind: 'teq', address: 'App_Requested', exportName: 'default', lifestyle: 'S', wrappers: Object.freeze([])});
+
+/** @param {object} data @returns {any} */
+function fakeDepIdFactory(data) {
+    const wrappers = /** @type {{wrappers?: string[]}} */ (data).wrappers ?? [];
+    return Object.freeze({...data, wrappers: Object.freeze([...wrappers])});
+}
+
+/** @returns {any} */
+function fakeParser() {
+    return {parse() { return baseDepId; }};
+}
 
 describe('TeqFw_Di_Container_Canonicalizer', () => {
     it('keeps parsing separate from ordered effective-identity substitution', () => {
-        const depIdFactory = new DepIdFactory();
+        const depIdFactory = {create: fakeDepIdFactory};
         const canonicalizer = new TeqFw_Di_Container_Canonicalizer({
-            parser: new TeqFw_Di_Parser(),
+            parser: /** @type {any} */ (fakeParser()),
             depIdFactory,
         });
         /** @type {number[]} */
@@ -30,8 +41,8 @@ describe('TeqFw_Di_Container_Canonicalizer', () => {
 
     it('rejects incoherent Preprocessor output before it becomes effective identity', () => {
         const canonicalizer = new TeqFw_Di_Container_Canonicalizer({
-            parser: new TeqFw_Di_Parser(),
-            depIdFactory: new DepIdFactory(),
+            parser: /** @type {any} */ (fakeParser()),
+            depIdFactory: {create: fakeDepIdFactory},
         });
         canonicalizer.add((depId) => ({...depId, lifestyle: 'invalid'}));
 

@@ -45,7 +45,6 @@ test('declares the supported package metadata and export surface', async () => {
         '.',
         './node/registry/namespace',
         './node/registry/package',
-        './src/Config/NamespaceRegistry.mjs',
     ]);
     assert.deepEqual(manifest.exports['.'].browser, {
         import: './dist/esm.js',
@@ -57,22 +56,19 @@ test('declares the supported package metadata and export surface', async () => {
         path: './src',
         ext: '.mjs',
     }]);
-    assert.deepEqual(manifest.teqfw.platform.unitTests.exclusions, [{
-        path: 'src/Config/NamespaceRegistry.mjs',
-        reason: 'Deprecated compatibility re-export with no component behavior.',
-    }]);
+    assert.equal(manifest.teqfw.platform, undefined);
 
     const {default: Container} = await import('@teqfw/di');
     const {default: PackageRegistry} = await import('@teqfw/di/node/registry/package');
     const {default: NamespaceRegistry} = await import('@teqfw/di/node/registry/namespace');
-    const {default: DeprecatedNamespaceRegistry} = await import('@teqfw/di/src/Config/NamespaceRegistry.mjs');
 
     assert.equal(typeof Container, 'function');
     assert.equal(typeof PackageRegistry, 'function');
     assert.equal(typeof NamespaceRegistry, 'function');
-    assert.equal(DeprecatedNamespaceRegistry, NamespaceRegistry);
     const unexportedPath = '@teqfw/di/' + 'src/Parser.mjs';
     await assert.rejects(import(unexportedPath), {code: 'ERR_PACKAGE_PATH_NOT_EXPORTED'});
+    const removedRegistryPath = '@teqfw/di/' + 'src/Config/NamespaceRegistry.mjs';
+    await assert.rejects(import(removedRegistryPath), {code: 'ERR_PACKAGE_PATH_NOT_EXPORTED'});
 });
 
 test('keeps every publication allowlist entry available to npm', () => {

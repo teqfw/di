@@ -1,5 +1,31 @@
 # Changelog
 
+## 2.12.0 - 2026-11-17 - FIFO and deferred resolution
+
+* Serialize public `get()` and deferred Provider requests in a Container-owned
+  FIFO queue. Entries share prepared policy and Singleton values; an entry
+  failure leaves the Container usable and the queue continues.
+* Support deferred `~` declarations in `__deps__`, which inject a frozen Provider
+  whose `resolve()` starts a separate entry. Awaiting a Provider of the same
+  Container during an active resolution is an application error that blocks the
+  queue; invoke it after the active entry settles.
+* Settle adapted Promise/thenable values before mandatory final-value hardening.
+  Ordinary objects and functions delivered by the Container are shallow-frozen,
+  including values returned by a configured Hardener.
+* Isolate resolution, settlement, hardening, and exposure failures; retain
+  meaningful per-entry observations and prevent failed delivery from caching a
+  successful root Singleton. Diagnostic logging cannot change resolution.
+* Refresh public types, Node.js package lookup and namespace containment, browser
+  bundles, usage documentation, and the distributed Agent Skill.
+
+* Breaking: removed the deprecated Namespace Registry source import and its type
+  alias. Use `@teqfw/di/node/registry/namespace`.
+* Breaking: removed Container configuration builders. Supply Namespace Mappings,
+  ordered policy-producer identifiers, logging and introspection through
+  `new Container(config)`; test-only `enableTestMode()` and `register()` remain.
+* Breaking: namespace discovery reads only `teqfw.fw.di.namespaces`.
+  Removed the `teqfw.namespaces` fallback and the unit-test mapping exclusion.
+
 ## 2.11.0 - 2026-09-21 - Dependency-resolution release
 
 * Prepared the package documentation for the current dependency-resolution

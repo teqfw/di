@@ -20,8 +20,7 @@ const FIXTURE_DIR = path.resolve(__dirname, '../fixtures/deps');
 
 describe('Integration 37: as-is export resolution', () => {
     it('resolves default export as-is and allows manual instantiation', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'TestSample_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         const RootClass = await container.get('TestSample_Canonical__default');
 
@@ -37,8 +36,7 @@ describe('Integration 37: as-is export resolution', () => {
     });
 
     it('resolves named export as-is and allows manual instantiation', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'TestSample_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         const FactoryClass = await container.get('TestSample_Canonical__Factory');
 
@@ -55,8 +53,7 @@ describe('Integration 37: as-is export resolution', () => {
     });
 
     it('resolves Singleton with a Lifestyle marker and produces an instance', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'TestSample_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         const instance = await container.get('TestSample_Canonical$');
 
@@ -67,8 +64,7 @@ describe('Integration 37: as-is export resolution', () => {
     });
 
     it('resolves whole namespace as-is without export name', async () => {
-        const container = new TeqFw_Di_Container();
-        container.addNamespaceRoot('TestSample_', FIXTURE_DIR, '.mjs');
+        const container = new TeqFw_Di_Container({namespaces: [{prefix: 'TestSample_', target: FIXTURE_DIR, defaultExt: '.mjs'}]});
 
         const namespace = await container.get('TestSample_Canonical');
 
@@ -80,13 +76,11 @@ describe('Integration 37: as-is export resolution', () => {
     it('does not invoke callable or class Direct exports or inspect their producer declarations', async () => {
         const directFixtureDir = path.resolve(__dirname, './fixture');
 
-        const callableContainer = new TeqFw_Di_Container({introspection: true});
-        callableContainer.addNamespaceRoot('Fx_', directFixtureDir, '.mjs');
+        const callableContainer = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: directFixtureDir, defaultExt: '.mjs'}]});
         const callable = await callableContainer.get('Fx_DirectProducer__Callable');
         const callableObservation = /** @type {any} */ (callableContainer.getIntrospection());
 
-        const classContainer = new TeqFw_Di_Container({introspection: true});
-        classContainer.addNamespaceRoot('Fx_', directFixtureDir, '.mjs');
+        const classContainer = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: directFixtureDir, defaultExt: '.mjs'}]});
         const directClass = await classContainer.get('Fx_DirectProducer__DirectClass');
         const classObservation = /** @type {any} */ (classContainer.getIntrospection());
 
@@ -103,12 +97,10 @@ describe('Integration 37: as-is export resolution', () => {
     it('keeps explicit $$$ Direct as-is before applicable wrapper adaptation', async () => {
         const directFixtureDir = path.resolve(__dirname, './fixture');
 
-        const explicitContainer = new TeqFw_Di_Container();
-        explicitContainer.addNamespaceRoot('Fx_', directFixtureDir, '.mjs');
+        const explicitContainer = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: directFixtureDir, defaultExt: '.mjs'}]});
         const explicitDirect = await explicitContainer.get('Fx_DirectProducer$$$');
 
-        const wrappedContainer = new TeqFw_Di_Container();
-        wrappedContainer.addNamespaceRoot('Fx_', directFixtureDir, '.mjs');
+        const wrappedContainer = new TeqFw_Di_Container({namespaces: [{prefix: 'Fx_', target: directFixtureDir, defaultExt: '.mjs'}]});
         const value = await wrappedContainer.get('Fx_DirectProducer__Callable$$$_wrapIdentity');
 
         assert.strictEqual(explicitDirect, DirectClass);
@@ -120,9 +112,8 @@ describe('Integration 37: as-is export resolution', () => {
     });
 
     it('preserves an already frozen Direct value', async () => {
-        const container = new TeqFw_Di_Container({introspection: true});
         const directFixtureDir = path.resolve(__dirname, './fixture');
-        container.addNamespaceRoot('Fx_', directFixtureDir, '.mjs');
+        const container = new TeqFw_Di_Container({introspection: true, namespaces: [{prefix: 'Fx_', target: directFixtureDir, defaultExt: '.mjs'}]});
 
         const value = await container.get('Fx_AlreadyFrozen__value');
         const observation = /** @type {any} */ (container.getIntrospection());

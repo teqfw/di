@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import vm from 'node:vm';
 import {describe, it} from 'node:test';
 
 import TeqFw_Di_Container_Postprocessor from '../../../src/Container/Postprocessor.mjs';
@@ -15,5 +16,9 @@ describe('TeqFw_Di_Container_Postprocessor', () => {
         const invalid = new TeqFw_Di_Container_Postprocessor();
         invalid.add(() => Promise.resolve('later'));
         assert.throws(() => invalid.apply('value', /** @type {any} */ ({})), /synchronously/);
+        const foreign = new TeqFw_Di_Container_Postprocessor();
+        const promise = vm.runInNewContext('Promise.resolve(1)');
+        foreign.add(() => promise);
+        assert.throws(() => foreign.apply('value', /** @type {any} */ ({})), /synchronously/);
     });
 });

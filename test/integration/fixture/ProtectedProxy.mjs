@@ -4,9 +4,6 @@ export default function Fx_ProtectedProxy() {
         defineProperty() {
             throw new Error('defineProperty is forbidden');
         },
-        get(obj, prop, receiver) {
-            if (prop === 'then') throw new Error('then is forbidden');
-            return Reflect.get(obj, prop, receiver);
-        }
+        get(obj, prop, receiver) { return Reflect.get(obj, prop, receiver); }
     });
 }

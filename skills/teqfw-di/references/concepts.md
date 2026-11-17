@@ -43,6 +43,9 @@ or lazy composition, not ad-hoc retrieval.
 
 A deferred `__deps__` declaration injects a frozen Provider without resolving
 its target. Each `resolve()` creates a separate queued entry with the same
-policy and cache. An entry awaiting its own later queued request can deadlock.
+policy and cache. Awaiting that request during an active entry in the same
+Container is an application error: both remain pending and block the queue.
+Call the Provider after the entry settles; the Container does not detect or
+throw for this error.
 The ordinary delivered object or function is shallow-frozen after adaptation
 and Promise/thenable settlement; optional custom policy cannot disable Hardener.
