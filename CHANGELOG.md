@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.12.1 - 2026-11-17 - Host-local package discovery
+
+* Discover the host and installed TeqFW packages in its immediate `node_modules`,
+  including packages without DI namespaces, and order participants by their
+  installed dependencies for application startup and shutdown.
+* Ignore non-TeqFW dependencies in the package graph and deduplicate physical
+  packages, avoiding false cycles caused by self-referencing symlinks.
+* Reject conflicting namespace claims from distinct physical packages, and update
+  usage guidance and tests for package and namespace discovery.
+
 ## 2.12.0 - 2026-11-17 - FIFO and deferred resolution
 
 * Serialize public `get()` and deferred Provider requests in a Container-owned
