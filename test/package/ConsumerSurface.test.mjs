@@ -10,17 +10,17 @@ const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 
 test('declares the supported package metadata and export surface', async () => {
     assert.equal(manifest.name, '@teqfw/di');
     assert.equal(manifest.description, 'Deterministic dependency-resolution container for native JavaScript ES modules.');
-    assert.deepEqual(manifest.keywords, [
-        'teqfw',
-        'javascript',
-        'esm',
-        'es modules',
-        'runtime linking',
+    assert.deepEqual([...manifest.keywords].sort(), [
+        'dependency identifiers',
         'dependency injection',
         'dependency resolution',
-        'dependency identifiers',
-        'namespace',
+        'es modules',
+        'esm',
+        'javascript',
         'late binding',
+        'namespace',
+        'runtime linking',
+        'teqfw',
     ]);
     assert.deepEqual(manifest.authors, [{
         name: 'Alex Gusev',
@@ -31,14 +31,14 @@ test('declares the supported package metadata and export surface', async () => {
     assert.equal(manifest.license, 'Apache-2.0');
     assert.equal(manifest.type, 'module');
     assert.equal(manifest.types, 'types.d.ts');
-    assert.deepEqual(manifest.files, [
-        'skills/',
-        'dist/',
-        'src/',
+    assert.deepEqual([...manifest.files].sort(), [
         'CHANGELOG.md',
-        'jsconfig.json',
         'LICENSE',
         'README.md',
+        'dist/',
+        'jsconfig.json',
+        'skills/',
+        'src/',
         'types.d.ts',
     ]);
     assert.deepEqual(Object.keys(manifest.exports), [

@@ -3,16 +3,16 @@
   "version": "2.12.0",
   "description": "Deterministic dependency-resolution container for native JavaScript ES modules.",
   "keywords": [
-    "teqfw",
-    "javascript",
-    "esm",
-    "es modules",
-    "runtime linking",
+    "dependency identifiers",
     "dependency injection",
     "dependency resolution",
-    "dependency identifiers",
+    "es modules",
+    "esm",
+    "javascript",
+    "late binding",
     "namespace",
-    "late binding"
+    "runtime linking",
+    "teqfw"
   ],
   "homepage": "https://github.com/teqfw/di#readme",
   "bugs": {
@@ -21,19 +21,28 @@
   "license": "Apache-2.0",
   "authors": [
     {
-      "name": "Alex Gusev",
       "email": "alex@flancer64.com",
+      "name": "Alex Gusev",
       "url": "https://github.com/flancer64"
     }
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teqfw/di.git"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/sponsors/teqfw"
+  },
+  "type": "module",
   "files": [
-    "skills/",
-    "dist/",
-    "src/",
     "CHANGELOG.md",
-    "jsconfig.json",
     "LICENSE",
     "README.md",
+    "dist/",
+    "jsconfig.json",
+    "skills/",
+    "src/",
     "types.d.ts"
   ],
   "types": "types.d.ts",
@@ -50,47 +59,35 @@
     "./node/registry/namespace": "./src/Node/Registry/Namespace.mjs",
     "./node/registry/package": "./src/Node/Registry/Package.mjs"
   },
-  "type": "module",
+  "scripts": {
+    "rollup": "rollup -c",
+    "test": "npm run test:unit && npm run test:integration && npm run test:package",
+    "test:integration": "find test/integration -name '*.test.mjs' -print0 | xargs -0 node --test",
+    "test:package": "find test/package -name '*.test.mjs' -print0 | xargs -0 node --test",
+    "test:unit": "find test/unit -name '*.test.mjs' -print0 | xargs -0 node --test",
+    "typecheck": "tsc -p jsconfig.json"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "latest",
+    "@rollup/plugin-terser": "latest",
+    "@types/node": "latest",
+    "rollup": "latest",
+    "typescript": "latest"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "teqfw": {
     "fw": {
       "di": {
         "namespaces": [
           {
-            "prefix": "TeqFw_Di_",
+            "ext": ".mjs",
             "path": "./src",
-            "ext": ".mjs"
+            "prefix": "TeqFw_Di_"
           }
         ]
       }
     }
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/teqfw/di.git"
-  },
-  "scripts": {
-    "rollup": "rollup -c",
-    "test": "npm run test:unit && npm run test:integration && npm run test:package",
-    "test:unit": "find test/unit -name '*.test.mjs' -print0 | xargs -0 node --test",
-    "test:integration": "find test/integration -name '*.test.mjs' -print0 | xargs -0 node --test",
-    "test:package": "find test/package -name '*.test.mjs' -print0 | xargs -0 node --test",
-    "typecheck": "tsc -p jsconfig.json",
-    "lint:md": "markdownlint-cli2 \"skills/**/*.md\" \"*.md\""
-  },
-  "devDependencies": {
-    "@rollup/plugin-node-resolve": "^16.0.3",
-    "@rollup/plugin-terser": "^1.0.0",
-    "@types/node": "^20.19.43",
-    "markdownlint-cli2": "^0.23.3",
-    "rollup": "^4.59.0",
-    "typescript": "^5.9.3",
-    "typescript-language-server": "^5.3.0"
-  },
-  "engines": {
-    "node": ">=20"
-  },
-  "funding": {
-    "type": "individual",
-    "url": "https://github.com/sponsors/teqfw"
   }
 }

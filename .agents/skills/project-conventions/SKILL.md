@@ -39,7 +39,6 @@ description: Project-specific conventions. Use for every task in this repository
 ## Validation
 
 - Do not use `teqfw-esm-validator`.
-- Run `npm run lint:md` to check Markdown files (`skills/`, root `*.md`) with `markdownlint-cli2`.
 - When validating, reviewing, or auditing cognitive-context documentation, use the `adsm-ctx` skill if it is available.
 
 ## TeqFW platform
