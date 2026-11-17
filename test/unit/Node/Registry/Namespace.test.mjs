@@ -131,7 +131,7 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
         });
         const registry = new TeqFw_Di_Node_Registry_Namespace({fs, path, appRoot});
 
-        await assert.rejects(() => registry.build(), /Duplicate DI namespace prefix.*package 'package'.*package '@scope\/dep-a'/);
+        await assert.rejects(() => registry.build(), /Duplicate DI namespace prefix.*package '@scope\/dep-a'.*package 'package'/);
     });
 
     it('fails for invalid prefix format without trailing underscore', async () => {
@@ -263,7 +263,7 @@ describe('TeqFw_Di_Node_Registry_Namespace', () => {
 
     it('rejects duplicate prefixes within one declaration set', async () => {
         const fs = createMockFs({files: {'/app/package.json': toJson({name: 'package', dependencies: {}, teqfw: {fw: {di: {namespaces: [{prefix: 'App_', path: './one'}, {prefix: 'App_', path: './two'}]}}}})}, extraDirs: ['/app/one', '/app/two']});
-        await assert.rejects(() => new TeqFw_Di_Node_Registry_Namespace({fs, path, appRoot: '/app'}).build(), /index 1.*index 0/);
+        await assert.rejects(() => new TeqFw_Di_Node_Registry_Namespace({fs, path, appRoot: '/app'}).build(), /index 0.*index 1/);
     });
 
     it('ignores the unsupported singular metadata node', async () => {

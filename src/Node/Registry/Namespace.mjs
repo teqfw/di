@@ -163,26 +163,66 @@ export default class TeqFw_Di_Node_Registry_Namespace {
          */
         this.build = async function () {
             const packages = await new TeqFw_Di_Node_Registry_Package({fs, path, appRoot}).build();
-            /** @type {Map<string, {publisher: {name: string, rootAbs: string}, origin: {source: 'canonical', index: number}}>} */
-            const publisherByPrefix = new Map();
+            /** @type {Map<string, Array<{entry: TeqFw_Di_Node_Registry_Namespace_Entry, publisher: {name: string, rootAbs: string, rootReal: string}, origin: {source: 'canonical', index: number}}>>} */
+            const claims = new Map();
             /** @type {TeqFw_Di_Node_Registry_Namespace_Entry[]} */
             const entries = [];
 
             for (const onePackage of packages) {
                 const packageJson = onePackage.packageJson;
-                const publisher = {name: onePackage.name, rootAbs: onePackage.rootAbs};
+                const publisher = {name: onePackage.name, rootAbs: onePackage.rootAbs, rootReal: onePackage.rootReal};
                 const declarationSet = selectDeclarationSet(packageJson, publisher);
                 if (declarationSet === undefined) continue;
                 for (const [index, raw] of declarationSet.entries.entries()) {
                     const origin = {source: declarationSet.source, index};
                     const normalized = await normalizeEntry(raw, publisher, origin);
-                    const existing = publisherByPrefix.get(normalized.entry.prefix);
-                    if (existing) {
-                        throw new Error(`Duplicate DI namespace prefix '${normalized.entry.prefix}' declared by ${publisherLabel(publisher)} ${origin.source} namespace declaration at index ${origin.index} conflicts with ${publisherLabel(existing.publisher)} ${existing.origin.source} namespace declaration at index ${existing.origin.index}.`);
-                    }
-                    publisherByPrefix.set(normalized.entry.prefix, {publisher, origin: normalized.origin});
-                    entries.push(normalized.entry);
+                    const group = claims.get(normalized.entry.prefix) ?? [];
+                    group.push({entry: normalized.entry, publisher, origin});
+                    claims.set(normalized.entry.prefix, group);
                 }
+            }
+
+            for (const [prefix, group] of claims) {
+                const conflict = function () {
+                    const details = group.map(({publisher, origin}) => `${publisherLabel(publisher)} ${origin.source} namespace declaration at index ${origin.index}`).join('; ');
+                    return new Error(`Duplicate DI namespace prefix '${prefix}': ${details}.`);
+                };
+                const first = group[0];
+                if (group.some(({publisher}) => publisher.name !== first.publisher.name)) throw conflict();
+                /** @type {Map<string, typeof first>} */
+                const byRoot = new Map();
+                for (const claim of group) {
+                    const previous = byRoot.get(claim.publisher.rootReal);
+                    if (previous && ((previous.entry.dirAbs !== claim.entry.dirAbs) || (previous.entry.ext !== claim.entry.ext))) throw conflict();
+                    byRoot.set(claim.publisher.rootReal, claim);
+                }
+                if (byRoot.size === 1) {
+                    entries.push(first.entry);
+                    continue;
+                }
+                let cursor = path.resolve(appRoot);
+                let selected;
+                while (true) {
+                    const candidate = path.join(cursor, 'node_modules', first.publisher.name);
+                    if (await isDirectory(candidate)) {
+                        let hasManifest = false;
+                        try {
+                            await fs.stat(path.join(candidate, 'package.json'));
+                            hasManifest = true;
+                        } catch {
+                            // Follow the package registry's missing-candidate behavior.
+                        }
+                        if (hasManifest) {
+                            selected = byRoot.get(await fs.realpath(candidate));
+                            break;
+                        }
+                    }
+                    const parent = path.dirname(cursor);
+                    if (parent === cursor) break;
+                    cursor = parent;
+                }
+                if (!selected) throw conflict();
+                entries.push(selected.entry);
             }
 
             entries.sort((a, b) => (b.prefix.length - a.prefix.length) || a.prefix.localeCompare(b.prefix));

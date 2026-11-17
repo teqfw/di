@@ -30,6 +30,61 @@ async function writeText(fileAbs, content) {
 }
 
 describe('Namespace registry integration', () => {
+    it('selects the root-visible copy while retaining the installed dependency graph', async (t) => {
+        const appRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'teqfw-di-copies-'));
+        t.after(() => fs.rm(appRoot, {recursive: true, force: true}));
+        const rootA = path.join(appRoot, 'node_modules/a');
+        const tool = path.join(appRoot, 'node_modules/tool');
+        const nestedA = path.join(tool, 'node_modules/a');
+        const nestedOnly = path.join(tool, 'node_modules/only');
+        /** @param {string} prefix */
+        const mapping = (prefix) => ({fw: {di: {namespaces: [{prefix, path: './src'}, {prefix, path: './src', ext: 'mjs'}]}}});
+        await writeJson(path.join(appRoot, 'package.json'), {name: 'host', dependencies: {a: '*'}, devDependencies: {tool: '*'}});
+        await writeJson(path.join(rootA, 'package.json'), {name: 'a', teqfw: mapping('A_')});
+        await writeText(path.join(rootA, 'src/Service.mjs'), 'export const provider = "root";\n');
+        await writeJson(path.join(tool, 'package.json'), {name: 'tool', dependencies: {a: '*', only: '*'}});
+        await writeJson(path.join(nestedA, 'package.json'), {name: 'a', teqfw: mapping('A_')});
+        await writeText(path.join(nestedA, 'src/Service.mjs'), 'export const provider = "nested";\n');
+        await writeJson(path.join(nestedOnly, 'package.json'), {name: 'only', teqfw: mapping('Only_')});
+        await writeText(path.join(nestedOnly, 'src/Service.mjs'), 'export const provider = "only";\n');
+
+        const graph = await new TeqFw_Di_Node_Registry_Package({fs, path, appRoot}).build();
+        assert.equal(graph.filter((record) => record.name === 'a').length, 2);
+        assert.ok(graph.some((record) => record.rootAbs === nestedOnly));
+        const mappings = await new TeqFw_Di_Node_Registry_Namespace({fs, path, appRoot}).build();
+        assert.equal(mappings.filter(({prefix}) => prefix === 'A_').length, 1);
+        assert.equal(mappings.find(({prefix}) => prefix === 'A_')?.dirAbs, path.join(rootA, 'src'));
+        const container = new TeqFw_Di_Container({namespaces: mappings.map(({prefix, dirAbs, ext}) => ({prefix, target: dirAbs, defaultExt: ext}))});
+        assert.equal((await container.get('A_Service')).provider, 'root');
+        assert.equal((await container.get('Only_Service')).provider, 'only');
+
+        // The same physical root is reachable from two dependency edges.
+        await fs.rm(nestedA, {recursive: true});
+        const shared = await new TeqFw_Di_Node_Registry_Package({fs, path, appRoot}).build();
+        assert.equal(shared.filter((record) => record.name === 'a').length, 1);
+        assert.equal((await new TeqFw_Di_Node_Registry_Namespace({fs, path, appRoot}).build()).filter(({prefix}) => prefix === 'A_').length, 1);
+    });
+
+    it('rejects multiple nested-only copies without a root-visible claimant', async (t) => {
+        const appRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'teqfw-di-ambiguous-'));
+        t.after(() => fs.rm(appRoot, {recursive: true, force: true}));
+        await writeJson(path.join(appRoot, 'package.json'), {name: 'host', devDependencies: {one: '*', two: '*'}});
+        for (const tool of ['one', 'two']) {
+            const toolRoot = path.join(appRoot, 'node_modules', tool);
+            const nested = path.join(toolRoot, 'node_modules/a');
+            await writeJson(path.join(toolRoot, 'package.json'), {name: tool, dependencies: {a: '*'}});
+            await writeJson(path.join(nested, 'package.json'), {name: 'a', teqfw: {fw: {di: {namespaces: [{prefix: 'A_', path: './src'}]}}}});
+            await writeText(path.join(nested, 'src/Service.mjs'), 'export const value = 1;\n');
+        }
+        await assert.rejects(() => new TeqFw_Di_Node_Registry_Namespace({fs, path, appRoot}).build(), (error) => {
+            assert.ok(error instanceof Error);
+            assert.match(error.message, /Duplicate DI namespace prefix 'A_'/);
+            assert.ok(error.message.includes(path.join(appRoot, 'node_modules/one/node_modules/a')));
+            assert.ok(error.message.includes(path.join(appRoot, 'node_modules/two/node_modules/a')));
+            return true;
+        });
+    });
+
     it('builds registry and drives real container namespace resolution', async (t) => {
         const appRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'teqfw-di-registry-'));
         t.after(async () => {

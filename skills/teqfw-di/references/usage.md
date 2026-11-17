@@ -116,6 +116,13 @@ interpreted. `appRoot` is the absolute
 application root containing its `package.json`. Browser-reachable modules must
 not import either registry.
 
+For a prefix claimed by installed copies of the same package, the registry
+selects the claiming copy visible through Node-style lookup from `appRoot`.
+A single nested-only claimant is valid; multiple copies without a root-visible
+claimant or claims by different package names fail. Equivalent declarations in
+one physical package are deduplicated. This selection does not imply version
+compatibility.
+
 ## Browser-compatible ESM
 
 The same runtime declaration can use a URL-backed Teq Namespace Mapping:

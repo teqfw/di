@@ -218,6 +218,12 @@ Node.js `node_modules` lookup. Installed packages contribute metadata; declared
 packages absent from the installation, including those omitted by
 `npm ci --omit=dev`, are skipped. Undeclared packages are not scanned. The
 package list is dependency-first, with ascending package names breaking ties.
+When installed copies of the same package claim a prefix, the registry selects
+the claiming copy visible from the application root via Node-style package
+lookup. A single nested-only claimant is accepted; multiple copies without a
+root-visible claimant and claims by different package names fail. Equivalent
+declarations in one physical package are deduplicated. Selection does not
+guarantee compatibility between versions.
 All `src/**` package subpaths are internal. Configure mappings, policy producers
 and diagnostics through `new Container(config)`.
 
