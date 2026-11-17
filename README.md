@@ -213,17 +213,16 @@ import NamespaceRegistry from "@teqfw/di/node/registry/namespace";
 `NamespaceRegistry` builds namespace roots from package metadata for a Node.js
 Composition Root. `PackageRegistry` reads the installed package graph in
 Node.js-only infrastructure. Neither belongs in browser-reachable modules.
-Both registries follow `dependencies` and `devDependencies` recursively through
-Node.js `node_modules` lookup. Installed packages contribute metadata; declared
-packages absent from the installation, including those omitted by
-`npm ci --omit=dev`, are skipped. Undeclared packages are not scanned. The
-package list is dependency-first, with ascending package names breaking ties.
-When installed copies of the same package claim a prefix, the registry selects
-the claiming copy visible from the application root via Node-style package
-lookup. A single nested-only claimant is accepted; multiple copies without a
-root-visible claimant and claims by different package names fail. Equivalent
-declarations in one physical package are deduplicated. Selection does not
-guarantee compatibility between versions.
+The package registry includes the host and packages with `teqfw` metadata
+installed immediately in its `node_modules`, including scoped packages and
+CLI-only participants. It does not discover nested or ancestor installations.
+Both `dependencies` and `devDependencies` order the discovered participants;
+missing and non-TeqFW targets add no edge. The deterministic package list is
+dependency-first, suitable for startup and reverse-order shutdown. Self-edges
+are ignored; cycles between distinct participants fail. Namespace mappings are
+read from these participants; distinct physical packages claiming the same
+prefix fail, and equivalent declarations within one package are deduplicated.
+The Composition Root can supply additional mappings explicitly.
 All `src/**` package subpaths are internal. Configure mappings, policy producers
 and diagnostics through `new Container(config)`.
 

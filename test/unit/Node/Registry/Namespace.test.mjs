@@ -49,6 +49,11 @@ function createMockFs(input) {
             if (!files.has(key)) throw createNotFound(key);
             return /** @type {string} */ (files.get(key));
         },
+        async readdir(/** @type {string} */ absPath) {
+            const key = path.resolve(absPath);
+            if (!dirs.has(key)) throw createNotFound(key);
+            return [...new Set([...dirs, ...files.keys()].filter((entry) => path.dirname(entry) === key).map((entry) => path.basename(entry)))];
+        },
         async stat(/** @type {string} */ absPath) {
             const key = path.resolve(absPath);
             if (dirs.has(key)) return {isDirectory: () => true};

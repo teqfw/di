@@ -196,33 +196,8 @@ export default class TeqFw_Di_Node_Registry_Namespace {
                     if (previous && ((previous.entry.dirAbs !== claim.entry.dirAbs) || (previous.entry.ext !== claim.entry.ext))) throw conflict();
                     byRoot.set(claim.publisher.rootReal, claim);
                 }
-                if (byRoot.size === 1) {
-                    entries.push(first.entry);
-                    continue;
-                }
-                let cursor = path.resolve(appRoot);
-                let selected;
-                while (true) {
-                    const candidate = path.join(cursor, 'node_modules', first.publisher.name);
-                    if (await isDirectory(candidate)) {
-                        let hasManifest = false;
-                        try {
-                            await fs.stat(path.join(candidate, 'package.json'));
-                            hasManifest = true;
-                        } catch {
-                            // Follow the package registry's missing-candidate behavior.
-                        }
-                        if (hasManifest) {
-                            selected = byRoot.get(await fs.realpath(candidate));
-                            break;
-                        }
-                    }
-                    const parent = path.dirname(cursor);
-                    if (parent === cursor) break;
-                    cursor = parent;
-                }
-                if (!selected) throw conflict();
-                entries.push(selected.entry);
+                if (byRoot.size !== 1) throw conflict();
+                entries.push(first.entry);
             }
 
             entries.sort((a, b) => (b.prefix.length - a.prefix.length) || a.prefix.localeCompare(b.prefix));

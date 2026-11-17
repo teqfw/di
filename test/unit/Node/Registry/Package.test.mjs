@@ -1,244 +1,68 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import {describe, it} from 'node:test';
-
 import PackageRegistry from '../../../../src/Node/Registry/Package.mjs';
 
-/**
- * @param {unknown} value
- * @returns {string}
- */
-function json(value) {
-    return JSON.stringify(value);
-}
-
-/**
- * Builds an in-memory fake for the `node:fs/promises` subset used by the registry.
- *
- * @param {Record<string, string>} files
- * @param {Record<string, string>} [realpaths]
- * @returns {typeof import('node:fs/promises')}
- */
-function mockFs(files, realpaths = {}) {
-    const content = new Map(Object.entries(files).map(([file, value]) => [path.resolve(file), value]));
-    const dirs = new Set();
-    for (const file of content.keys()) {
-        let cursor = path.dirname(file);
-        while (!dirs.has(cursor)) {
-            dirs.add(cursor);
-            const parent = path.dirname(cursor);
-            if (parent === cursor) break;
-            cursor = parent;
-        }
-    }
-    return /** @type {typeof import('node:fs/promises')} */ (/** @type {unknown} */ ({
-        async readFile(/** @type {string} */ file) {
-            const key = path.resolve(file);
-            if (!content.has(key)) throw new Error('ENOENT ' + key);
-            return /** @type {string} */ (content.get(key));
-        },
-        async stat(/** @type {string} */ target) {
-            const key = path.resolve(target);
-            if (dirs.has(key)) return {isDirectory: () => true};
-            if (content.has(key)) return {isDirectory: () => false};
-            throw new Error('ENOENT ' + key);
-        },
-        async realpath(/** @type {string} */ target) {
-            const key = path.resolve(target);
-            if (realpaths[key]) return path.resolve(realpaths[key]);
-            if (dirs.has(key) || content.has(key)) return key;
-            throw new Error('ENOENT ' + key);
-        },
-    }));
+/** @param {string} root @param {Record<string, unknown>} data */
+async function manifest(root, data) {
+    await fs.mkdir(root, {recursive: true});
+    await fs.writeFile(path.join(root, 'package.json'), JSON.stringify(data));
 }
 
 describe('TeqFw_Di_Node_Registry_Package', () => {
-    it('builds immutable dependency-first records for scoped, nested, and hoisted dependencies', async () => {
-        const fs = mockFs({
-            '/app/package.json': json({name: 'app', dependencies: {'z': '1', '@scope/a': '1', 'b': '1'}, devDependencies: {dev: '1'}}),
-            '/app/node_modules/@scope/a/package.json': json({name: '@scope/a', dependencies: {nested: '1'}}),
-            '/app/node_modules/b/package.json': json({name: 'b', dependencies: {shared: '1'}, peerDependencies: {peer: '1'}}),
-            '/app/node_modules/z/package.json': json({name: 'z', dependencies: {}, optionalDependencies: {optional: '1'}}),
-            '/app/node_modules/@scope/a/node_modules/nested/package.json': json({name: 'nested', dependencies: {}}),
-            '/app/node_modules/shared/package.json': json({name: 'shared', dependencies: {}}),
-        });
-        const records = await new PackageRegistry({fs, path, appRoot: '/app'}).build();
-
-        const last = records.at(-1);
-        assert.ok(last);
-        assert.equal(last.rootAbs, '/app');
-        assert.equal(last.rootReal, '/app');
-        const scopeA = records.find((item) => item.name === '@scope/a');
-        assert.ok(scopeA);
-        assert.deepStrictEqual(scopeA.dependencies, ['/app/node_modules/@scope/a/node_modules/nested']);
-        const app = records.find((item) => item.name === 'app');
-        assert.ok(app);
-        assert.deepStrictEqual(app.dependencies, [
-            '/app/node_modules/@scope/a',
-            '/app/node_modules/b',
-            '/app/node_modules/z',
-        ]);
-        assert.equal(records.some((item) => item.name === 'dev'), false);
+    it('discovers only immediate TeqFW packages and orders installed runtime and development edges', async (t) => {
+        const base = await fs.mkdtemp(path.join(os.tmpdir(), 'di-packages-'));
+        t.after(() => fs.rm(base, {recursive: true, force: true}));
+        const appRoot = path.join(base, 'app');
+        const modules = path.join(appRoot, 'node_modules');
+        await manifest(appRoot, {name: 'host', dependencies: {a: '*', typescript: '*', missing: '*'}, devDependencies: {'@s/tool': '*', absent: '*'}});
+        await manifest(path.join(modules, 'a'), {name: 'a', teqfw: {}, dependencies: {shared: '*', nested: '*'}, devDependencies: {shared: '*'}});
+        await manifest(path.join(modules, '@s/tool'), {name: '@s/tool', teqfw: {fw: {cli: {plugin: 'Tool$'}}}, devDependencies: {shared: '*'}});
+        await manifest(path.join(modules, 'shared'), {name: 'shared', teqfw: {}});
+        await manifest(path.join(modules, 'undeclared'), {name: 'undeclared', teqfw: {}});
+        await manifest(path.join(modules, 'typescript'), {name: 'typescript', devDependencies: {typescript: '*'}});
+        await manifest(path.join(modules, 'a/node_modules/nested'), {name: 'nested', teqfw: {}});
+        await manifest(path.join(base, 'node_modules/ancestor'), {name: 'ancestor', teqfw: {}});
+        await fs.symlink(path.join(modules, 'shared'), path.join(modules, 'shared-alias'), 'dir');
+        const registry = new PackageRegistry({fs, path, appRoot});
+        const records = await registry.build();
+        assert.deepEqual(await registry.build(), records);
+        assert.deepEqual(records.map((x) => x.name), ['shared', '@s/tool', 'a', 'host', 'undeclared']);
+        assert.deepEqual(records.find((x) => x.name === 'host')?.dependencies, [path.join(modules, '@s/tool'), path.join(modules, 'a')]);
+        assert.deepEqual(records.find((x) => x.name === 'a')?.dependencies, [path.join(modules, 'shared')]);
+        assert.equal(records.filter((x) => x.name === 'shared').length, 1);
         for (const record of records) {
-            const recordIndex = records.indexOf(record);
-            for (const dependencyRoot of record.dependencies) {
-                const dependencyIndex = records.findIndex((item) => item.rootReal === dependencyRoot);
-                assert.ok(dependencyIndex >= 0);
-                assert.ok(dependencyIndex < recordIndex);
-            }
+            assert.ok(Object.isFrozen(record) && Object.isFrozen(record.dependencies) && Object.isFrozen(record.packageJson));
+            for (const dep of record.dependencies) assert.ok(records.findIndex((x) => x.rootReal === dep) < records.indexOf(record));
         }
-        assert.equal(Object.isFrozen(records), true);
-        assert.equal(Object.isFrozen(records[0]), true);
-        assert.equal(Object.isFrozen(records[0].packageJson), true);
-        assert.equal(Object.isFrozen(records[0].dependencies), true);
-        assert.throws(() => {
-            // @ts-ignore intentional mutation of frozen array
-            records.push({});
-        });
-        assert.throws(() => {
-            // @ts-ignore intentional mutation of frozen record
-            records[0].packageJson.name = 'changed';
-        });
-        assert.throws(() => {
-            // @ts-ignore intentional mutation of frozen array
-            records[0].dependencies.push('/changed');
-        });
+        assert.ok(Object.isFrozen(records));
     });
 
-    it('visits installed declarations from both fields recursively and skips absent declarations', async () => {
-        const records = await new PackageRegistry({
-            fs: mockFs({
-                '/app/package.json': json({name: 'app', dependencies: {runtime: '1', absentRuntime: '1', shared: '1'}, devDependencies: {tool: '1', absentDev: '1', shared: '1'}}),
-                '/app/node_modules/runtime/package.json': json({name: 'runtime', dependencies: {nested: '1', missing: '1'}, devDependencies: {nestedDev: '1'}}),
-                '/app/node_modules/runtime/node_modules/nested/package.json': json({name: 'nested'}),
-                '/app/node_modules/runtime/node_modules/nestedDev/package.json': json({name: 'nestedDev'}),
-                '/app/node_modules/shared/package.json': json({name: 'shared'}),
-                '/app/node_modules/tool/package.json': json({name: 'tool', devDependencies: {shared: '1', missing: '1'}}),
-                '/app/node_modules/undeclared/package.json': json({name: 'undeclared'}),
-            }),
-            path,
-            appRoot: '/app',
-        }).build();
-
-        assert.deepStrictEqual(records.map((item) => item.name), ['nested', 'nestedDev', 'runtime', 'shared', 'tool', 'app']);
-        assert.deepStrictEqual(records.at(-1)?.dependencies, ['/app/node_modules/runtime', '/app/node_modules/shared', '/app/node_modules/tool']);
-        assert.deepStrictEqual(records.find((item) => item.name === 'runtime')?.dependencies, ['/app/node_modules/runtime/node_modules/nested', '/app/node_modules/runtime/node_modules/nestedDev']);
-        assert.deepStrictEqual(records.find((item) => item.name === 'tool')?.dependencies, ['/app/node_modules/shared']);
+    it('ignores same-physical self edges and rejects cycles between distinct participants', async (t) => {
+        const appRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'di-cycles-'));
+        t.after(() => fs.rm(appRoot, {recursive: true, force: true}));
+        const modules = path.join(appRoot, 'node_modules');
+        await manifest(appRoot, {name: 'host', dependencies: {a: '*'}});
+        await manifest(path.join(modules, 'a'), {name: 'a', teqfw: {}, dependencies: {a: '*', alias: '*'}});
+        await fs.symlink(path.join(modules, 'a'), path.join(modules, 'alias'), 'dir');
+        const registry = new PackageRegistry({fs, path, appRoot});
+        assert.deepEqual((await registry.build()).find((x) => x.name === 'a')?.dependencies, []);
+        await manifest(path.join(modules, 'a'), {name: 'a', teqfw: {}, dependencies: {b: '*'}});
+        await manifest(path.join(modules, 'b'), {name: 'b', teqfw: {}, devDependencies: {a: '*'}});
+        await assert.rejects(() => registry.build(), /Cyclic package dependency detected: .*a -> .*b -> .*a\./);
     });
 
-    it('uses ascending dependency package names as the stable tie-breaker', async () => {
-        const records = await new PackageRegistry({
-            fs: mockFs({
-                '/app/package.json': json({name: 'app', dependencies: {zulu: '1', alpha: '1'}}),
-                '/app/node_modules/alpha/package.json': json({name: 'alpha', dependencies: {}}),
-                '/app/node_modules/zulu/package.json': json({name: 'zulu', dependencies: {}}),
-            }),
-            path,
-            appRoot: '/app',
-        }).build();
-
-        assert.deepStrictEqual(records.map((item) => item.name), ['alpha', 'zulu', 'app']);
-    });
-
-    it('discovers declared packages in ancestor node_modules for root and transitive dependencies', async () => {
-        const records = await new PackageRegistry({
-            fs: mockFs({
-                '/mono/app/package.json': json({name: 'app', dependencies: {shared: '1'}}),
-                '/mono/node_modules/shared/package.json': json({name: 'shared', dependencies: {tool: '1'}}),
-                '/mono/node_modules/tool/package.json': json({name: 'tool'}),
-            }),
-            path,
-            appRoot: '/mono/app',
-        }).build();
-
-        assert.deepStrictEqual(records.map((item) => item.name), ['tool', 'shared', 'app']);
-        assert.deepStrictEqual(records.at(-1)?.dependencies, ['/mono/node_modules/shared']);
-    });
-
-    it('deduplicates canonical package roots through symlinks', async () => {
-        const fs = mockFs({
-            '/app/package.json': json({name: 'app', dependencies: {a: '1', alias: '1'}}),
-            '/app/node_modules/a/package.json': json({name: 'a', dependencies: {}}),
-            '/app/node_modules/alias/package.json': json({name: 'alias', dependencies: {}}),
-            '/app/node_modules/a/node_modules/app/package.json': json({name: 'app', dependencies: {}}),
-        }, {
-            '/app/node_modules/alias': '/store/a',
-            '/app/node_modules/a': '/store/a',
-        });
-        const records = await new PackageRegistry({fs, path, appRoot: '/app'}).build();
-
-        assert.deepStrictEqual(records.map((item) => item.name), ['a', 'app']);
-        assert.deepStrictEqual(records[1].dependencies, ['/store/a']);
-    });
-
-    it('orders a shared dependency before each consumer and keeps one graph node', async () => {
-        const records = await new PackageRegistry({
-            fs: mockFs({
-                '/app/package.json': json({name: 'app', dependencies: {a: '1', b: '1'}}),
-                '/app/node_modules/a/package.json': json({name: 'a', dependencies: {shared: '1'}}),
-                '/app/node_modules/b/package.json': json({name: 'b', dependencies: {shared: '1'}}),
-                '/app/node_modules/shared/package.json': json({name: 'shared', dependencies: {}}),
-            }),
-            path,
-            appRoot: '/app',
-        }).build();
-
-        assert.equal(records.filter((item) => item.name === 'shared').length, 1);
-        const a = records.find((item) => item.name === 'a');
-        assert.ok(a);
-        assert.deepStrictEqual(a.dependencies, ['/app/node_modules/shared']);
-        const b = records.find((item) => item.name === 'b');
-        assert.ok(b);
-        assert.deepStrictEqual(b.dependencies, ['/app/node_modules/shared']);
-
-        for (const record of records) {
-            const recordIndex = records.indexOf(record);
-            for (const dependencyRoot of record.dependencies) {
-                const dependencyIndex = records.findIndex((item) => item.rootReal === dependencyRoot);
-                assert.ok(dependencyIndex >= 0);
-                assert.ok(dependencyIndex < recordIndex);
-            }
-        }
-    });
-
-    it('fails with the complete cycle when a package dependency has no startup order', async () => {
-        const registry = new PackageRegistry({
-            fs: mockFs({
-                '/app/package.json': json({name: 'app', dependencies: {a: '1'}}),
-                '/app/node_modules/a/package.json': json({name: 'a', dependencies: {app: '1'}}),
-                '/app/node_modules/a/node_modules/app/package.json': json({name: 'app', dependencies: {a: '1'}}),
-            }, {
-                '/app/node_modules/a/node_modules/app': '/app',
-            }),
-            path,
-            appRoot: '/app',
-        });
-
-        await assert.rejects(
-            () => registry.build(),
-            /Cyclic package dependency detected: \/app -> \/app\/node_modules\/a -> \/app\./,
-        );
-    });
-
-    it('fails for invalid package and dependency metadata', async () => {
-        const invalidJson = new PackageRegistry({
-            fs: mockFs({'/app/package.json': '{'}),
-            path,
-            appRoot: '/app',
-        });
-        const invalidDependencies = new PackageRegistry({
-            fs: mockFs({'/app/package.json': json({name: 'app', dependencies: []})}),
-            path,
-            appRoot: '/app',
-        });
-        const invalidDevDependencies = new PackageRegistry({
-            fs: mockFs({'/app/package.json': json({name: 'app', devDependencies: []})}),
-            path,
-            appRoot: '/app',
-        });
-
-        await assert.rejects(() => invalidJson.build(), /Invalid package metadata/);
-        await assert.rejects(() => invalidDependencies.build(), /Invalid dependency metadata/);
-        await assert.rejects(() => invalidDevDependencies.build(), /Invalid dependency metadata/);
+    it('includes an unmarked host with no node_modules and rejects invalid participant metadata', async (t) => {
+        const appRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'di-host-'));
+        t.after(() => fs.rm(appRoot, {recursive: true, force: true}));
+        await manifest(appRoot, {name: 'host'});
+        const registry = new PackageRegistry({fs, path, appRoot});
+        assert.deepEqual((await registry.build()).map((x) => x.name), ['host']);
+        await manifest(path.join(appRoot, 'node_modules/bad'), {name: 'bad', teqfw: null});
+        await assert.rejects(() => registry.build(), /Invalid TeqFW metadata/);
+        await manifest(path.join(appRoot, 'node_modules/bad'), {name: 'bad', teqfw: {}, devDependencies: []});
+        await assert.rejects(() => registry.build(), /Invalid dependency metadata/);
     });
 });

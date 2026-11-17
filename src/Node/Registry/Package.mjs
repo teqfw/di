@@ -2,7 +2,7 @@
 
 /**
  * @namespace TeqFw_Di_Node_Registry_Package
- * @description Deterministic Node.js composition-stage graph of installed declared packages.
+ * @description Deterministic Node.js composition-stage graph of installed TeqFW participants.
  */
 
 /**
@@ -13,7 +13,7 @@
  */
 
 /**
- * Builds a deterministic immutable dependency-first list of root and installed declared packages.
+ * Builds a deterministic immutable dependency-first list of the host and immediate TeqFW packages.
  */
 export default class TeqFw_Di_Node_Registry_Package {
     /**
@@ -67,11 +67,16 @@ export default class TeqFw_Di_Node_Registry_Package {
 
         /**
          * @param {string} packageRootAbs
-         * @returns {Promise<{name: string, packageJson: Record<string, unknown>, dependencies: string[]}>}
+         * @param {boolean} [host]
+         * @returns {Promise<{name: string, packageJson: Record<string, unknown>, dependencies: string[]}|undefined>}
          */
-        const readPackageMetadata = async function (packageRootAbs) {
+        const readPackageMetadata = async function (packageRootAbs, host = false) {
             const packageJsonAbs = path.join(packageRootAbs, 'package.json');
             const packageJson = await readJson(packageJsonAbs);
+            if (!host && !Object.hasOwn(packageJson, 'teqfw')) return undefined;
+            if (Object.hasOwn(packageJson, 'teqfw') && !isRecord(packageJson.teqfw)) {
+                throw new Error('Invalid TeqFW metadata ' + packageJsonAbs + ': teqfw must be an object.');
+            }
             const name = packageJson.name;
             if ((typeof name !== 'string') || (name.length === 0)) {
                 throw new Error('Invalid package metadata ' + packageJsonAbs + ': name must be a non-empty string.');
@@ -102,8 +107,9 @@ export default class TeqFw_Di_Node_Registry_Package {
         const isDirectory = async function (absPath) {
             try {
                 return (await fs.stat(absPath)).isDirectory();
-            } catch {
-                return false;
+            } catch (error) {
+                if (/** @type {NodeJS.ErrnoException} */ (error).code === 'ENOENT') return false;
+                throw error;
             }
         };
 
@@ -115,36 +121,65 @@ export default class TeqFw_Di_Node_Registry_Package {
             try {
                 await fs.stat(path.join(candidateAbs, 'package.json'));
                 return true;
-            } catch {
-                return false;
+            } catch (error) {
+                if (/** @type {NodeJS.ErrnoException} */ (error).code === 'ENOENT') return false;
+                throw error;
             }
         };
 
         /**
-         * @param {string} packageName
-         * @param {string} fromPackageRootAbs
-         * @returns {Promise<string | undefined>}
+         * @param {string} directory
+         * @returns {Promise<string[]>}
          */
-        const resolveDependencyPackageRoot = async function (packageName, fromPackageRootAbs) {
-            let cursor = fromPackageRootAbs;
-            while (true) {
-                const candidate = path.join(cursor, 'node_modules', packageName);
-                if ((await isDirectory(candidate)) && (await hasPackageJson(candidate))) {
-                    return path.resolve(candidate);
-                }
-                const parent = path.dirname(cursor);
-                if (parent === cursor) break;
-                cursor = parent;
+        const readNames = async function (directory) {
+            try {
+                return (await fs.readdir(directory)).sort();
+            } catch (error) {
+                if (/** @type {NodeJS.ErrnoException} */ (error).code === 'ENOENT') return [];
+                throw error;
             }
-            return undefined;
         };
 
         /**
          * @returns {Promise<ReadonlyArray<TeqFw_Di_Node_Registry_Package_Record>>}
          */
         this.build = async function () {
-            /** @type {Map<string, TeqFw_Di_Node_Registry_Package_Record>} */
-            const recordsByRoot = new Map();
+            /** @type {Map<string, {rootAbs: string, rootReal: string, metadata: {name: string, packageJson: Record<string, unknown>, dependencies: string[]}}>} */
+            const participants = new Map();
+            /** @type {Map<string, string>} */
+            const rootsByName = new Map();
+
+            /** @param {string} rootAbs @param {string | undefined} installedName @param {boolean} host */
+            const discover = async function (rootAbs, installedName, host) {
+                if (!host && (!(await isDirectory(rootAbs)) || !(await hasPackageJson(rootAbs)))) return;
+                const rootReal = await fs.realpath(rootAbs);
+                if (participants.has(rootReal)) {
+                    if (installedName !== undefined) rootsByName.set(installedName, rootReal);
+                    return;
+                }
+                const metadata = await readPackageMetadata(rootAbs, host);
+                if (metadata === undefined) return;
+                participants.set(rootReal, {rootAbs, rootReal, metadata});
+                if (installedName !== undefined) rootsByName.set(installedName, rootReal);
+            };
+
+            await discover(appRootAbs, undefined, true);
+            const modules = path.join(appRootAbs, 'node_modules');
+            for (const name of await readNames(modules)) {
+                if (name.startsWith('.')) continue;
+                const entry = path.join(modules, name);
+                if (name.startsWith('@')) {
+                    if (!(await isDirectory(entry))) continue;
+                    for (const scoped of await readNames(entry)) {
+                        await discover(path.join(entry, scoped), name + '/' + scoped, false);
+                    }
+                } else {
+                    await discover(entry, name, false);
+                }
+            }
+
+            /** @type {Set<string>} */
+            const visited = new Set();
             /** @type {Set<string>} */
             const visitingRoots = new Set();
             /** @type {TeqFw_Di_Node_Registry_Package_Record[]} */
@@ -155,17 +190,11 @@ export default class TeqFw_Di_Node_Registry_Package {
             /**
              * Visits a package after all of its dependencies.
              *
-             * @param {string} rootAbs
-             * @returns {Promise<string>}
+             * @param {string} rootReal
+             * @returns {void}
              */
-            const visit = async function (rootAbs) {
-                let rootReal;
-                try {
-                    rootReal = await fs.realpath(rootAbs);
-                } catch (error) {
-                    throw new Error('Unable to resolve package root ' + rootAbs + ': ' + String(error) + '.');
-                }
-                if (recordsByRoot.has(rootReal)) return rootReal;
+            const visit = function (rootReal) {
+                if (visited.has(rootReal)) return;
                 if (visitingRoots.has(rootReal)) {
                     const cycleStart = pathStack.indexOf(rootReal);
                     const cycle = [...pathStack.slice(cycleStart), rootReal].join(' -> ');
@@ -174,14 +203,19 @@ export default class TeqFw_Di_Node_Registry_Package {
                 visitingRoots.add(rootReal);
                 pathStack.push(rootReal);
 
-                const metadata = await readPackageMetadata(rootAbs);
+                const participant = participants.get(rootReal);
+                if (!participant) throw new Error('Missing discovered participant ' + rootReal + '.');
+                const {rootAbs, metadata} = participant;
                 const packageJson = /** @type {Readonly<Record<string, unknown>>} */ (freezeDeep(metadata.packageJson));
                 /** @type {string[]} */
                 const dependencies = [];
 
                 for (const dependencyName of metadata.dependencies) {
-                    const dependencyRootAbs = await resolveDependencyPackageRoot(dependencyName, rootAbs);
-                    if (dependencyRootAbs !== undefined) dependencies.push(await visit(dependencyRootAbs));
+                    const target = rootsByName.get(dependencyName);
+                    if (target !== undefined && target !== rootReal && !dependencies.includes(target)) {
+                        visit(target);
+                        dependencies.push(target);
+                    }
                 }
 
                 pathStack.pop();
@@ -193,12 +227,11 @@ export default class TeqFw_Di_Node_Registry_Package {
                     packageJson,
                     dependencies: Object.freeze([...new Set(dependencies)]),
                 });
-                recordsByRoot.set(rootReal, record);
+                visited.add(rootReal);
                 records.push(record);
-                return rootReal;
             };
 
-            await visit(appRootAbs);
+            for (const rootReal of participants.keys()) visit(rootReal);
             return Object.freeze(records);
         };
     }
